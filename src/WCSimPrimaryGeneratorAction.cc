@@ -13,6 +13,7 @@
 #include <fstream>
 #include <vector>
 #include <string>
+#include "G4SystemOfUnits.hh"
 
 #include "G4Navigator.hh"
 #include "G4TransportationManager.hh"
