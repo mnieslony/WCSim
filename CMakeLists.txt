@@ -8,10 +8,14 @@ project(WCSim)
 # Find ROOT (required package) in CONFIG mode. Looking for ROOTConfig.cmake.
 # Crucial for loading the proper definitions!
 #
+#set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} /home/marc/LinuxSystemFiles/ROOT/root-5.34.09/install/etc/cmake)
+# above to try to make it use root5.34: seems to be ignored for some reason. :| maybe an env variable still set?
 find_package(ROOT CONFIG REQUIRED)
 if(NOT ROOT_FOUND)
   message(STATUS "ROOT package not found.")  
   return()
+else()
+  message(STATUS "found ROOT at: ${ROOT_USE_FILE}")
 endif()
 
 ## Load macros: need to compile ROOT through cmake first and execute bin/thisroot.sh
@@ -20,6 +24,7 @@ include(${ROOT_USE_FILE})
 #----------------------------------------------------------------------------
 # Locate sources and headers for this project
 # ## NOT NEEDED FOR DICT
+message(STATUS "using Geant4_INCLUDE_DIR: ${Geant4_INCLUDE_DIR}")
 include_directories(${PROJECT_SOURCE_DIR}/include 
                     ${PROJECT_SOURCE_DIR}/../shared/include 
                     ${Geant4_INCLUDE_DIR}
@@ -57,6 +62,7 @@ endif()
 # Setup Geant4 include directories and compile definitions
 # Setup include directory for this project
 #
+message(STATUS "using Geant4: ${Geant4_USE_FILE}")
 include(${Geant4_USE_FILE})  ## NOT needed for Dict
 
 
