@@ -53,8 +53,9 @@ WCSimDetectorConstruction::WCSimDetectorConstruction(G4int DetConfig,WCSimTuning
   // Set the default WC geometry.  This can be changed later.
   //-----------------------------------------------------
 
-  SetSuperKGeometry();
+  //SetSuperKGeometry();
   //SetHyperKGeometry();
+  SetANNIEGeometry();
 
   //----------------------------------------------------- 
   // Set whether or not Pi0-specific info is saved
@@ -126,6 +127,7 @@ G4VPhysicalVolume* WCSimDetectorConstruction::Construct()
   G4LogicalVolume* logicWCBox;
   // Select between HyperK and cylinder
   if (isHyperK) logicWCBox = ConstructHyperK();
+  else if (isANNIE) logicWCBox = ConstructANNIE();
   else logicWCBox = ConstructCylinder(); 
 
   G4cout << " WCLength       = " << WCLength/CLHEP::m << " m"<< G4endl;
@@ -194,14 +196,17 @@ G4VPhysicalVolume* WCSimDetectorConstruction::Construct()
   //  TraverseReplicas(physiWCBox, 0, G4Transform3D(), 
   //	   &WCSimDetectorConstruction::PrintGeometryTree) ;
   
+  G4cout<<"Beginning the perverse traverse"<<G4endl;
   TraverseReplicas(physiWCBox, 0, G4Transform3D(), 
 	           &WCSimDetectorConstruction::DescribeAndRegisterPMT) ;
   
-  
+  G4cout<<"That was fun, let's go round again"<<G4endl;
   TraverseReplicas(physiWCBox, 0, G4Transform3D(), 
 		   &WCSimDetectorConstruction::GetWCGeom) ;
-  
+  G4cout<<"OK enough"<<G4endl;
+  G4cout<<"Dumping map to disk"<<G4endl;
   DumpGeometryTableToFile();
+  G4cout<<"Done. Let's get out of here."<<G4endl;
   
   // Return the pointer to the physical experimental hall
   return physiExpHall;

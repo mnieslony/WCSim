@@ -16,7 +16,40 @@
  *
  ***********************************************************/
 
-
+void WCSimDetectorConstruction::SetANNIEGeometry()
+{
+  isANNIE=true;
+  WCDetectorName = "ANNIE";
+  WCIDCollectionName = WCDetectorName +"-glassFaceWCPMT";
+  WCSimPMTObject * PMT = CreatePMTObject("PMT8inch", WCIDCollectionName);
+ 
+  WCPMTName = PMT->GetPMTName();
+  WCPMTExposeHeight = PMT->GetExposeHeight();
+  WCPMTRadius = PMT->GetRadius();
+  WCAddGd = false;
+  // TODO: conver these with the ones below, and add in other constants from MRD definition etc.
+  tankouterRadius= 1.524*m;		// 120" exactly (TSW blueprint) = 3.048m diameter
+  tankhy = 1.98*m;				// 13ft exactly (TSW blueprint) = 3.96m tall; hz is HALF height
+  tankzoffset = 15.70*cm;		//15.70*cm
+  tankyoffset = 144.64875*mm;
+  expHall_x = 50*m;
+  expHall_y = expHall_z = 500*m;
+  GDMLFilename = "../../../../WChSandBox_v1/src/annie_v01.gdml";
+  
+  WCLength = tankhy;
+  WCPosition = 0.;	//??
+  
+//  WCIDDiameter          = 3.048*m; 				//inner detector diameter
+//  WCIDHeight            = 3.96*m; 				//"" "" height
+//  WCBarrelPMTOffset     = 0.0715*m; 			//offset from vertical	// irrelevant until phase 2
+//  WCBarrelNumPMTHorizontal  = 1; 				// phase 2: however many
+//  WCBarrelNRings        = 1;					// phase 2: however many
+//  WCPMTperCellHorizontal= 1;					// however many
+//  WCPMTperCellVertical  = 1;					//    "      "
+//  WCCapPMTSpacing       = WCPMTRadius+0.035*m;	// i don't know, something like that
+//  WCCapEdgeLimit        = 16.9*m;				// what does this even mean
+//  WCBlackSheetThickness = 1.01*mm;				// liner is 40 mil. which is, of course, 40 milli inches. 
+}
 
 void WCSimDetectorConstruction::SetSuperKGeometry()
 {

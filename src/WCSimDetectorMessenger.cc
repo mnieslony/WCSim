@@ -23,10 +23,11 @@ WCSimDetectorMessenger::WCSimDetectorMessenger(WCSimDetectorConstruction* WCSimD
 			  "SuperK_12inchBandL_15perCent\n"
 			  "SuperK_20inchBandL_14perCent\n"
 			  "Cylinder_60x74_20inchBandL_14perCent\n"
-      			  "Cylinder_60x74_20inchBandL_40perCent\n"
+			  "Cylinder_60x74_20inchBandL_40perCent\n"
 			  "Cylinder_12inchHPD_15perCent\n"
                           "HyperK\n"
                           "HyperK_withHPD\n"
+                          "ANNIE\n"
                          );
   PMTConfig->SetParameterName("PMTConfig", false);
   PMTConfig->SetCandidates("SuperK "
@@ -35,10 +36,11 @@ WCSimDetectorMessenger::WCSimDetectorMessenger(WCSimDetectorConstruction* WCSimD
 			   "SuperK_12inchBandL_15perCent "
 			   "SuperK_20inchBandL_14perCent "
 			   "Cylinder_60x74_20inchBandL_14perCent\n"
-      			   "Cylinder_60x74_20inchBandL_40perCent\n"
+			   "Cylinder_60x74_20inchBandL_40perCent\n"
 			   "Cylinder_12inchHPD_15perCent "
 			   "HyperK "
-                           "HyperK_withHPD "
+			   "HyperK_withHPD "
+			   "ANNIE "
                            );
   PMTConfig->AvailableForStates(G4State_PreInit, G4State_Idle);
 
@@ -118,10 +120,10 @@ WCSimDetectorMessenger::~WCSimDetectorMessenger()
 
 void WCSimDetectorMessenger::SetNewValue(G4UIcommand* command,G4String newValue)
 {    
-	if( command == PMTConfig ) { 
+	if( command == PMTConfig ) {
 		WCSimDetector->SetIsUpright(false);
-                WCSimDetector->SetIsHyperK(false);
-                if ( newValue == "SuperK") {
+		WCSimDetector->SetIsHyperK(false);
+    if ( newValue == "SuperK") {
 		  WCSimDetector->SetSuperKGeometry();
 		} else if (newValue == "SuperK_20inchPMT_20perCent" ){
 		  WCSimDetector->SuperK_20inchPMT_20perCent();
@@ -137,14 +139,17 @@ void WCSimDetectorMessenger::SetNewValue(G4UIcommand* command,G4String newValue)
 		  WCSimDetector->Cylinder_60x74_20inchBandL_40perCent();
 		} else if (newValue == "Cylinder_12inchHPD_15perCent" ){
 		  WCSimDetector->Cylinder_12inchHPD_15perCent();
-                } else if ( newValue == "HyperK") {
-                        WCSimDetector->SetIsHyperK(true);
-			WCSimDetector->SetHyperKGeometry();
-                } else if ( newValue == "HyperK_withHPD") {
-                        WCSimDetector->SetIsHyperK(true);
-			WCSimDetector->SetHyperKGeometry_withHPD();
-		} else
+		} else if ( newValue == "HyperK") {
+		  WCSimDetector->SetIsHyperK(true);
+		  WCSimDetector->SetHyperKGeometry();
+		} else if ( newValue == "HyperK_withHPD") {
+		  WCSimDetector->SetIsHyperK(true);
+		  WCSimDetector->SetHyperKGeometry_withHPD();
+		} else if (newValue == "ANNIE") {
+		  WCSimDetector->SetANNIEGeometry();
+		} else {
 		  G4cout << "That geometry choice not defined!" << G4endl;
+		}
 	}
   
 	if (command == SavePi0){

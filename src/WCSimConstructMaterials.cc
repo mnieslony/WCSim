@@ -10,6 +10,11 @@
 #include "G4LogicalSkinSurface.hh"
 #include "G4OpBoundaryProcess.hh"
 
+#include "G4NistManager.hh"
+#include "G4SystemOfUnits.hh"
+#include "G4PhysicalConstants.hh"
+
+
 void WCSimDetectorConstruction::ConstructMaterials()
 {
   //****Materials Definitions****
@@ -73,7 +78,7 @@ void WCSimDetectorConstruction::ConstructMaterials()
     = new G4Element("Iron","Fe", 26,a);
   
   density = 7.8*CLHEP::g/CLHEP::cm3;
-  G4Material* Steel
+  Steel
     = new G4Material("Steel",density,2);
   Steel->AddElement(elC, 1.*CLHEP::perCent);
   Steel->AddElement(elFe, 99.*CLHEP::perCent);
@@ -138,7 +143,7 @@ void WCSimDetectorConstruction::ConstructMaterials()
     = new G4Element("Nitrogen","N", 7,a);
   
   density = 1.290*CLHEP::mg/CLHEP::cm3;
-  G4Material* Air 
+  Air 
     = new G4Material("Air",density,2);
   Air->AddElement(elN, 70.*CLHEP::perCent);
   Air->AddElement(elO, 30.*CLHEP::perCent);
@@ -259,9 +264,132 @@ void WCSimDetectorConstruction::ConstructMaterials()
   //nist->FindOrBuildMaterial("G4_Pyrex_Glass");
   //nist->FindOrBuildMaterial("G4_POLYETHYLENE");
 
+// **** ANNIE additions ***
+  G4int z,n;
+  G4int nelements;
+  G4double fracMass;
+// **** end ANNIE additions ***
 
+// **** NCV additions *****
+  // Definition of gadolinium
+  // natural gadolinium
+  G4Isotope* Gd152 = new G4Isotope("Gd152", z= 64, n= 152, a= 152.0*g/mole);
+  G4Isotope* Gd154 = new G4Isotope("Gd154", z= 64, n= 154, a= 154.0*g/mole);
+  G4Isotope* Gd155 = new G4Isotope("Gd155", z= 64, n= 155, a= 155.0*g/mole);
+  G4Isotope* Gd156 = new G4Isotope("Gd156", z= 64, n= 156, a= 156.0*g/mole);
+  G4Isotope* Gd157 = new G4Isotope("Gd157", z= 64, n= 157, a= 157.0*g/mole);
+  G4Isotope* Gd158 = new G4Isotope("Gd158", z= 64, n= 158, a= 158.0*g/mole);
+  G4Isotope* Gd160 = new G4Isotope("Gd160", z= 64, n= 160, a= 160.0*g/mole);
 
+  /*G4Element**/ Gd = new G4Element("Gadolinium", "Gd",7);
+  Gd->AddIsotope(Gd152,  0.2*perCent); // beware : it is abundance, not fraction mass
+  Gd->AddIsotope(Gd154,  2.2*perCent);
+  Gd->AddIsotope(Gd155, 14.9*perCent);
+  Gd->AddIsotope(Gd156, 20.6*perCent);
+  Gd->AddIsotope(Gd157, 15.7*perCent);
+  Gd->AddIsotope(Gd158, 24.7*perCent);
+  Gd->AddIsotope(Gd160, 21.7*perCent);
+  
+  // --- Mineral Oil  (CH2)n ------
+  density = 0.77*g/cm3;
+  nelements = 2;
+  G4Material* mineral_oil 
+   = new G4Material("MineralOil", density, nelements);
+  mineral_oil -> AddElement(elC, 1);
+  mineral_oil -> AddElement(elH, 2);
+  
+// --- Pseudo-cumene (C9 H12) also called 1,2,4-Trimethybenzene
+  density = 0.8758 *g/cm3;  // at T=20 deg C
+  nelements=2;
+  G4Material* pseudocumene 
+    = new G4Material("pseudocumene",density,nelements);
+  pseudocumene->AddElement(elC, 9);
+  pseudocumene->AddElement(elH, 12); 
+   
+// --- PPO (C15 H11 N 0) -- also called DPO, 2,5-diphenyloxazole
+  density = 1.0 *g/cm3;  // ??? at T=?
+  G4Material* PPO 
+     = new G4Material("PPO",density,nelements=4);
+  PPO->AddElement(elC, 15);
+  PPO->AddElement(elH, 11);
+  PPO->AddElement(elN, 1);
+  PPO->AddElement(elO, 1);
+   
+// --- Bis-MSB ------
+  density= 1.3*g/cm3;
+  G4Material* BisMSB 
+    = new G4Material("Bis-MSB",density, nelements= 2);  // density unknown
+  BisMSB -> AddElement(elC, 24);
+  BisMSB -> AddElement(elH, 2);
+  
+// --- NCVliquid - EJ-335 (0.25% Gd), composition taken from the simulation of the Nucifer experiment ---
+// --- Concentrations (IN VOLUME): 60% mineral oil, 40% pseudocumene, 6e-3 g/cm3 of PPO, 2e-5 g/cm3 of bis-MSB
+// --- Mail from Eljen -> 45% oil, 45% PC, the rest is unknown 
+// --- These volume concentrations need to be multiplied by the density to be handled as mass concentrations 
+  density = 0.89*g/cm3;
+  G4double PPO_fraction= 6.*g/(1e3*cm3*density);
+  G4double BisMSB_fraction= 2.*g/(1e5*cm3*density);
+  G4double Gd_fraction= 0.25*perCent;
+  G4Material* NCVliquid = new G4Material("NCVliquid",density,5);
+  NCVliquid->AddMaterial(mineral_oil, 60.*perCent / (1.0 + PPO_fraction + BisMSB_fraction + Gd_fraction) ); G4cout << 60.*perCent / (1.0 + PPO_fraction + BisMSB_fraction + Gd_fraction) << G4endl;
+  NCVliquid->AddMaterial(pseudocumene, 40.*perCent / (1.0 + PPO_fraction + BisMSB_fraction + Gd_fraction) ); G4cout << 40.*perCent / (1.0 + PPO_fraction + BisMSB_fraction + Gd_fraction) << G4endl;
+  NCVliquid->AddMaterial(PPO, PPO_fraction / (1.0 + PPO_fraction + BisMSB_fraction + Gd_fraction) ); G4cout << PPO_fraction / (1.0 + PPO_fraction + BisMSB_fraction + Gd_fraction) << G4endl;
+  NCVliquid->AddMaterial(BisMSB, BisMSB_fraction / (1.0 + PPO_fraction + BisMSB_fraction + Gd_fraction) ); G4cout << BisMSB_fraction / (1.0 + PPO_fraction + BisMSB_fraction + Gd_fraction) << G4endl;
+  NCVliquid->AddElement(Gd, Gd_fraction / (1.0 + PPO_fraction + BisMSB_fraction + Gd_fraction) ); G4cout << Gd_fraction / (1.0 + PPO_fraction + BisMSB_fraction + Gd_fraction) << G4endl;
+  
+   //               H H 
+  // --- Acrylic  -C-C- --------------------
+  //               H COOCH3
+  density = 1.14*g/cm3;
+  nelements = 3;
+  G4Material* Acrylic = new G4Material("Acrylic", density, nelements);
+  Acrylic -> AddElement(elH, 6);
+  Acrylic -> AddElement(elC, 4);
+  Acrylic -> AddElement(elO, 2);
+ 
+// **** END NCV additions ****
 
+  //*****************SciBooNE integration
+  
+  G4NistManager* man = G4NistManager::Instance();
+  man->SetVerbose(1);
+  
+  // Polystyrene scintillator for SciBar (scintillator, WLS fiber) and MRD
+  //G4Material* Scinti = man->FindOrBuildMaterial("G4_POLYSTYRENE");	// not found?
+  
+  density= 1.021 *g/cm3;
+  Scinti = new G4Material("Scinti", density, 2);
+  Scinti-> AddElement(elC, 8);	// marcus: elC-> C, natoms=8 -> 8
+  Scinti-> AddElement(elH, 8);	// marcus: elH-> H, natoms=8 -> 8
+  
+  
+  // Iron for MRD
+  a= 55.847 *g/mole;
+  density= 7.841 *g/cm3;
+  MRDIron = new G4Material("Iron", 26., a, density);
+  
+  // Aluminum for MRD support structure
+  Al  = man->FindOrBuildMaterial("G4_Al");
+  
+  // Mylar for MRD scintillator paddle cladding
+  // from http://hypernews.slac.stanford.edu/HyperNews/geant4/get/AUX/2011/06/01/03.27-76314-2DetectorConstruction.txt
+  G4Material* Mylar = man->FindOrBuildMaterial("G4_MYLAR");
+  /*
+  density = 1.397*g/cm3;
+  G4Material* Mylar = new G4Material("Mylar", density, 3);
+  Mylar->AddElement(elO,2);
+  Mylar->AddElement(elC,5);
+  Mylar->AddElement(elH,4);
+  */
+  
+  G4MaterialPropertiesTable* mptMylar = new G4MaterialPropertiesTable();
+  G4double AbsorptionLengthMylar = 100.*cm;
+  G4double refractiveIndexMylar = 1.640;
+  mptMylar->AddConstProperty("RINDEX",refractiveIndexMylar);
+  mptMylar->AddConstProperty("ABSLENGTH",AbsorptionLengthMylar);
+  Mylar->SetMaterialPropertiesTable(mptMylar);
+  
+  //****************/SciBooNE integration
 
 
 

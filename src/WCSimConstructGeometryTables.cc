@@ -254,7 +254,7 @@ void WCSimDetectorConstruction::TraverseReplicas
 {
   // Recursively visit all of the geometry below the physical volume
   // pointed to by aPV including replicas.
-  
+  G4cout<<"layer "<<aDepth<<"..."<<aPV->GetName()<<G4endl;
   G4ThreeVector     originalTranslation = aPV->GetTranslation();
   G4RotationMatrix* pOriginalRotation   = aPV->GetRotation();
   
@@ -266,6 +266,7 @@ void WCSimDetectorConstruction::TraverseReplicas
     G4bool   consuming;
 
     aPV->GetReplicationData(axis,nReplicas,width,offset,consuming);
+    G4cout<<"Ohh look, "<<nReplicas<<"more!"<<G4endl;
     
     for (int n = 0; n < nReplicas; n++) 
     {
@@ -325,6 +326,7 @@ void WCSimDetectorConstruction::DescribeAndDescendGeometry
  const G4Transform3D& aTransform,  DescriptionFcnPtr registrationRoutine)
 {
   // Calculate the new transform relative to the old transform
+  //G4cout<<"Checking map"<<G4endl;
 
   G4Transform3D* transform = 
     new G4Transform3D(*(aPV->GetObjectRotation()), aPV->GetTranslation());
@@ -339,7 +341,7 @@ void WCSimDetectorConstruction::DescribeAndDescendGeometry
   (this->*registrationRoutine)(aPV, aDepth, replicaNo, newTransform);
 
   int nDaughters = aPV->GetLogicalVolume()->GetNoDaughters();
-  
+  //if(nDaughters>0){G4cout<<"Hey look there's more down here..."<<G4endl;}
   for (int iDaughter = 0; iDaughter < nDaughters; iDaughter++) 
     TraverseReplicas(aPV->GetLogicalVolume()->GetDaughter(iDaughter),
 		     aDepth+1, newTransform, registrationRoutine);

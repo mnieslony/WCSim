@@ -18,6 +18,22 @@
 // warning : hash_map is not part of the standard
 #include <ext/hash_map>
 
+// **************SciBooNE integration
+//#include "SBsimInputCard.hh"	--crossed out by marcus, try to simplify by extracting just mrd struct
+#include "G4UserLimits.hh"
+#include "G4PVPlacement.hh"
+#include "G4SubtractionSolid.hh"
+#include "G4AssemblyVolume.hh"
+#include "G4Material.hh"
+#include "G4Box.hh"
+#include "G4Tubs.hh"
+#include "G4Polyhedra.hh"
+#include "G4Trd.hh"
+#include "G4SystemOfUnits.hh"
+#include "SBsimMRDDB.hh"
+static const G4double INCH = 2.54*cm;
+// *************/SciBooNE integration
+
 
 using __gnu_cxx::hash;
 using __gnu_cxx::hashtable;
@@ -66,6 +82,7 @@ public:
   void Cylinder_60x74_20inchBandL_40perCent();
   void Cylinder_12inchHPD_15perCent();
   void UpdateGeometry();
+  void SetANNIEGeometry();
   
 
   G4String GetDetectorName()      {return WCDetectorName;}
@@ -394,6 +411,86 @@ private:
   G4double innerradius;
  
   std::vector<WCSimPmtInfo*> fpmts;
+  
+  // annie variables
+  public:
+  G4LogicalVolume* ConstructANNIE();
+  void DefineMRD(G4PVPlacement* expHall);
+  void ConstructMRD(G4LogicalVolume* expHall_log, G4VPhysicalVolume* expHall_phys);
+  void ConstructVETO(G4LogicalVolume* expHall_log, G4VPhysicalVolume* expHall_phys);
+  void ConstructNCV(G4LogicalVolume* waterTank_log);
+//  private:
+  G4bool isANNIE;
+  G4String GDMLFilename;
+  G4double tankouterRadius;
+  G4double tankhy;
+  G4double tankzoffset;
+  G4double tankyoffset;
+  G4double expHall_x;
+  G4double expHall_y;
+  G4double expHall_z;
+  G4int doOverlapCheck;
+  public:
+    // ****************SciBooNE integration
+    SBsimMRDDB*     mrddb;
+    inline SBsimMRDDB* GetMRDDB() {return mrddb;};
+    
+    G4Material *Air, *Al, *Fe, *Pb;
+    G4Material *Steel, *Scinti, *Lucite;
+    G4Material *ECScinti, *MRDIron;
+    G4Material *Plywood;
+    
+		// for MRD
+		G4VSolid *MRDIron_Solid[12];
+		G4VSolid *MRDVScinti_Solid, *MRDHScinti_Solid;
+		G4VSolid *MRDTScinti_Solid;
+		G4VSolid *MRDLG_Solid;
+
+		G4LogicalVolume *MRDIron_LV[12];
+		G4LogicalVolume *MRDVScinti_LV, *MRDHScinti_LV;
+		G4LogicalVolume *MRDTScinti_LV;
+		G4LogicalVolume *MRDLG_LV;
+
+		// for MRD Al support
+		G4SubtractionSolid *MRDAlV1_Solid;
+		G4SubtractionSolid *MRDAlV2_Solid;
+		G4SubtractionSolid *MRDAlV3_Solid;
+		G4SubtractionSolid *MRDAlV4_Solid;
+		G4SubtractionSolid *MRDAlV5_Solid;
+		G4SubtractionSolid *MRDAlH1_Solid;
+		G4SubtractionSolid *MRDAlH2_Solid;
+		G4SubtractionSolid *MRDAlH3_Solid;
+
+		G4VSolid *MRDAlV1_Outer;
+		G4VSolid *MRDAlV2_Outer;
+		G4VSolid *MRDAlV3_Outer;
+		G4VSolid *MRDAlV4_Outer;
+		G4VSolid *MRDAlV5_Outer;
+		G4VSolid *MRDAlH1_Outer;
+		G4VSolid *MRDAlH2_Outer;
+		G4VSolid *MRDAlH3_Outer;
+
+		G4VSolid *MRDAlV1_Inner;
+		G4VSolid *MRDAlV2_Inner;
+		G4VSolid *MRDAlV3_Inner;
+		G4VSolid *MRDAlV4_Inner;
+		G4VSolid *MRDAlV5_Inner;
+		G4VSolid *MRDAlH1_Inner;
+		G4VSolid *MRDAlH2_Inner;
+		G4VSolid *MRDAlH3_Inner;
+
+		G4LogicalVolume *MRDAlV1_LV;
+		G4LogicalVolume *MRDAlV2_LV;
+		G4LogicalVolume *MRDAlV3_LV;
+		G4LogicalVolume *MRDAlV4_LV;
+		G4LogicalVolume *MRDAlV5_LV;
+		G4LogicalVolume *MRDAlH1_LV;
+		G4LogicalVolume *MRDAlH2_LV;
+		G4LogicalVolume *MRDAlH3_LV;
+
+		G4AssemblyVolume * MRDAlSupportV;
+		G4AssemblyVolume * MRDAlSupportH;
+    // *********/SciBooNE integration
   
 };
 
