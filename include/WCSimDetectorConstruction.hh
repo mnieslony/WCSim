@@ -1,3 +1,4 @@
+//  -*- mode:c++; tab-width:2;  -*-
 #ifndef WCSimDetectorConstruction_H
 #define WCSimDetectorConstruction_H 1
 
@@ -81,6 +82,7 @@ public:
   void Cylinder_60x74_20inchBandL_14perCent();
   void Cylinder_60x74_20inchBandL_40perCent();
   void Cylinder_12inchHPD_15perCent();
+  void SetHyperKGeometry();
   void UpdateGeometry();
   void SetANNIEGeometry();
   
@@ -139,16 +141,16 @@ public:
   // Geometry options
   void   SetIsUpright(G4bool choice) {isUpright = choice;}
 
-  // *** Begin HyperK Geometry ***
+  // *** Begin Egg-Shaped HyperK Geometry ***
 
-  void   SetIsHyperK(G4bool choice) {isHyperK = choice;}
-  G4bool GetIsHyperK() {return isHyperK;}
+  void   SetIsEggShapedHyperK(G4bool choice) {isEggShapedHyperK = choice;}
+  G4bool GetIsEggShapedHyperK() {return isEggShapedHyperK;}
 
-  void SetHyperKGeometry();
-  void SetHyperKGeometry_withHPD();
+  void SetEggShapedHyperKGeometry();
+  void SetEggShapedHyperKGeometry_withHPD();
 
 
-  // *** End HyperK Geometry ***
+  // *** End Egg-Shaped HyperK Geometry ***
 
   std::vector<WCSimPmtInfo*>* Get_Pmts() {return &fpmts;}
 
@@ -323,10 +325,10 @@ private:
   // amb79: to universally make changes in structure and geometry
   bool isUpright;
 
-  // *** Begin HyperK Geometry ***
+  // *** Begin egg-shaped HyperK Geometry ***
 
-    void MatchWCSimAndHyperK();
-    G4LogicalVolume* ConstructHyperK();
+    void MatchWCSimAndEggShapedHyperK();
+    G4LogicalVolume* ConstructEggShapedHyperK();
 
     G4Material* FindMaterial(G4String);
 
@@ -343,14 +345,14 @@ private:
                                          G4double, G4double,
                                          G4double, G4double);
 
-    G4bool isHyperK;
-  
-  G4double waterTank_TopR;
-  G4double waterTank_BotR;
-  G4double waterTank_Height;
-  G4double waterTank_UpperA;
-  G4double waterTank_LowerB;
-  G4double waterTank_Length;
+    G4bool isEggShapedHyperK;
+
+    G4double waterTank_TopR;
+    G4double waterTank_BotR;
+    G4double waterTank_Height;
+    G4double waterTank_UpperA;
+    G4double waterTank_LowerB;
+    G4double waterTank_Length;
 
     G4double innerPMT_TopR;
     G4double innerPMT_BotR;
@@ -385,7 +387,7 @@ private:
     G4int PMTCopyNo;
     G4int wallSlabCopyNo;
 
-  // *** End HyperK Geometry ***
+  // *** End egg-shaped HyperK Geometry ***
 
   // amb79: debug to display all parts
   bool debugMode;
@@ -412,14 +414,27 @@ private:
  
   std::vector<WCSimPmtInfo*> fpmts;
   
-  // annie variables
+  // MRD & Veto variables
+  // ====================================================
   public:
   G4LogicalVolume* ConstructANNIE();
   void DefineMRD(G4PVPlacement* expHall);
+  void DefineANNIEdimensions();
   void ConstructMRD(G4LogicalVolume* expHall_log, G4VPhysicalVolume* expHall_phys);
   void ConstructVETO(G4LogicalVolume* expHall_log, G4VPhysicalVolume* expHall_phys);
   void ConstructNCV(G4LogicalVolume* waterTank_log);
+  void ComputePaddleTransformation (const G4int copyNo, G4VPhysicalVolume* physVol);
+  void ComputeTaperTransformation (const G4int copyNo, G4VPhysicalVolume* physVol, G4bool lgs);
+  void ComputeSteelTransformation (const G4int copyNo, G4VPhysicalVolume* physVol);
+  void ComputeVetoPaddleTransformation (const G4int copyNo, G4VPhysicalVolume* physVol, G4bool surf);
+  void PlacePaddles(G4LogicalVolume* totMRD_log);
+  void PlaceTapers(G4LogicalVolume* totMRD_log);
+  void PlaceLGs(G4LogicalVolume* totMRD_log);
+  void PlaceSteels(G4LogicalVolume* totMRD_log);
+  void makeAlu(G4AssemblyVolume* totMRD);
+  void PlaceVetoPaddles(G4LogicalVolume* totVeto_log);
 //  private:
+
   G4bool isANNIE;
   G4String GDMLFilename;
   G4double tankouterRadius;
@@ -430,6 +445,131 @@ private:
   G4double expHall_y;
   G4double expHall_z;
   G4int doOverlapCheck;
+  
+	G4double Xposition, Yposition, Zposition;		// used for positioning parameterisations.
+	G4int numpaddlesperpanelh;									// paddles per h scintillator panel
+	G4int numpaddlesperpanelv;									// paddles per v scintillator panel
+	G4int numpanels;														// scintillator panels
+	G4int numrpcs;															// rpc panels
+	G4int numplates;														// steel plates
+	G4int numalustructs;												// number of supporting structs. We may be dropping one as we have fewer scintillators?
+	G4int numvetopaddles;												// number of scintillator paddles in the FACC; 13 panels in 2 layers
+	G4int vetopaddlesperpanel;									// number of scintillator paddles in each FACC panel
+
+	G4double scintbordergap;										// gap between each scintillator (cm) (border to account for cladding etc)
+	G4double steelscintgap;											// gap between steel and scintillator
+	G4double scintalugap;												// gap between scintillator and alu struct
+	G4double alusteelgap; 											// gap between alu struct and subsequent steel of next layer
+	G4double layergap;													// total gaps of layers
+
+	G4double steelfullxlen;
+	G4double steelfullylen;
+	G4double steelfullzlen;
+
+	G4double scintfullxlen;
+	G4double scintfullzlen;
+	G4double scinthfullylen;
+	G4double scintvfullylen;
+
+	G4double scinttapfullwidth; 								// width of the tapering part of scintillator paddles at the narrow end
+	G4double scinttapfullheight; 								// z length of tapering part of scint paddles.
+
+	G4double scintlgfullwidth; 									// tapered light guides at narrow end
+	G4double scintlgfullheight;
+
+	G4double alufullxlen;												// outer thicknesses - total frame dims are about those of the steel plate
+	G4double alufullylen;												// 
+	G4double alufullzlen;												// 
+	G4double alufullxthickness;									// 
+	G4double alufullythickness;
+	G4double windowwidth;												// (full length - 4 beams) / 3 windows
+	G4double windowheight;
+
+	G4double mrdZlen; 
+
+	G4double vetopaddlefullxlen;
+	G4double vetopaddlefullylen;
+	G4double vetopaddlefullzlen;
+	G4double vetolayer2offset;
+	G4double vetopaddlegap;
+	G4double nothickness;
+
+	G4double vetoZlen;
+
+	G4double maxwidth;
+	G4double maxheight;
+
+	// Define solids 
+	//==============  
+	// G4Box* variableName = new G4Box("SolidName", x_halflength, y_halflength, z_halflength);
+	// G4Trd("SolidName", x_halflength1, x_halflength2, y_halflength1, y_halflength2, z_halflength); 
+	// 2 x and y dimensions given - define dims of the cross-sections at the two z ends. 
+
+	G4Box* sciMRDhpaddle_box;										// Paddles - h 
+	G4Box* sciMRDvpaddle_box;										// and v
+	G4Trd* mrdScintTap_box;											// Paddle Tapered ends
+
+	G4Trd* mrdLG_box;														// Tapered Light Guides
+
+	G4Box* steelMRDplate_box;										// Steel plates
+
+	G4Box* aluMRDstruc_box;											// The alu support structure is roughly the external size of the steel plates...
+	G4Box* aluMRDwindow_box;										// with a 3x3 grid of ~even sized holes  
+
+	G4Box* totMRD_box;
+
+	G4Box* vetoPaddle_box;
+	G4Box* vetoSurface_box;
+	G4Box* totVeto_box;
+	
+	// Define logical volumes 
+	//=======================
+	// G4LogicalVolume* variableName = new G4LogicalVolume(solidVariableName, Material, "logicalVolName");
+	// Can't do this outside a function - the materials aren't defined yet.
+
+	G4LogicalVolume* hpaddle_log;
+	G4LogicalVolume* vpaddle_log;
+	G4LogicalVolume* taper_log;
+	G4LogicalVolume* lg_log;
+	G4LogicalVolume* steel_log;
+
+	G4LogicalVolume* vetoPaddle_log;
+	G4LogicalVolume* vetol2Paddle_log;
+	G4LogicalVolume* vetoSurface_log;
+
+	// Physical Volumes
+	// ================
+	// to place optical surface between tapers and LGs for optical detection we need pointers to the physical volumes
+	// declare containers for the pointers here, they'll be filled by the placement function.
+	std::vector<G4VPhysicalVolume*> paddles_phys;
+	std::vector<G4VPhysicalVolume*> tapers_phys;
+	std::vector<G4VPhysicalVolume*> lgs_phys;
+	std::vector<G4VPhysicalVolume*> vetopaddles_phys;
+	std::vector<G4VPhysicalVolume*> vetosurfaces_phys;
+
+	// Define rotation matrices 
+	//=========================
+	// rotated and unrotated scintillator paddles. Could do away with one by changing dims but hey.
+	G4RotationMatrix* noRot;										// null rotation pointer
+	G4RotationMatrix* rotatedmatx;							// horizontal config for scint paddles
+
+	// Note trapezium narrows along z axis, so need to define a rotation of 90deg about the y(??)-axis to bring taper into the x-y plane. 
+	G4RotationMatrix* upmtx;
+	G4RotationMatrix* downmtx;
+	G4RotationMatrix* rightmtx;
+	G4RotationMatrix* leftmtx;
+
+	// Define Visualisation Attributes 
+	//================================
+	G4VisAttributes* scinthatts;
+	G4VisAttributes* scintvatts;
+	G4VisAttributes* steelatts;
+	G4VisAttributes* scinttapatts;
+	G4VisAttributes* scintlgatts;
+	
+  // End MRD & Veto variables
+  // ====================================================
+  
   public:
     // ****************SciBooNE integration
     SBsimMRDDB*     mrddb;

@@ -25,7 +25,7 @@ void WCSimDetectorConstruction::ConstructMaterials()
   //---Vacuum
 
   density     = CLHEP::universe_mean_density;              //from PhysicalConstants.h
-  G4double pressure    = 1.e-19*CLHEP::hep_pascal;
+  G4double pressure    = 1.e-19*CLHEP::pascal;
   G4double temperature = 0.1*CLHEP::kelvin;
   a = 1.01*CLHEP::g/CLHEP::mole;
   G4Material* Vacuum = 
@@ -78,8 +78,7 @@ void WCSimDetectorConstruction::ConstructMaterials()
     = new G4Element("Iron","Fe", 26,a);
   
   density = 7.8*CLHEP::g/CLHEP::cm3;
-  Steel
-    = new G4Material("Steel",density,2);
+  Steel = new G4Material("Steel",density,2);
   Steel->AddElement(elC, 1.*CLHEP::perCent);
   Steel->AddElement(elFe, 99.*CLHEP::perCent);
   
@@ -143,8 +142,7 @@ void WCSimDetectorConstruction::ConstructMaterials()
     = new G4Element("Nitrogen","N", 7,a);
   
   density = 1.290*CLHEP::mg/CLHEP::cm3;
-  Air 
-    = new G4Material("Air",density,2);
+  Air = new G4Material("Air",density,2);
   Air->AddElement(elN, 70.*CLHEP::perCent);
   Air->AddElement(elO, 30.*CLHEP::perCent);
   

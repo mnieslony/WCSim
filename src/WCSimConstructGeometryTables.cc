@@ -13,6 +13,7 @@
 #include "G4VisAttributes.hh"
 #include "G4Tubs.hh"
 #include "G4Sphere.hh"
+#include "G4SystemOfUnits.hh"
 
 #include <sstream>
 #include <iomanip>
@@ -162,7 +163,7 @@ void WCSimDetectorConstruction::DumpGeometryTableToFile()
   innerradius = sqrt(pow(firstTransform.getTranslation().getX()/CLHEP::cm,2)
                             + pow(firstTransform.getTranslation().getY()/CLHEP::cm,2));
 
-  if (isHyperK){
+  if (isEggShapedHyperK){
     geoFile << setw(8)<< 0;
     geoFile << setw(8)<< 0;
   }else{
@@ -254,7 +255,7 @@ void WCSimDetectorConstruction::TraverseReplicas
 {
   // Recursively visit all of the geometry below the physical volume
   // pointed to by aPV including replicas.
-  G4cout<<"layer "<<aDepth<<"..."<<aPV->GetName()<<G4endl;
+//  G4cout<<"layer "<<aDepth<<"..."<<aPV->GetName()<<G4endl;
   G4ThreeVector     originalTranslation = aPV->GetTranslation();
   G4RotationMatrix* pOriginalRotation   = aPV->GetRotation();
   
@@ -266,7 +267,7 @@ void WCSimDetectorConstruction::TraverseReplicas
     G4bool   consuming;
 
     aPV->GetReplicationData(axis,nReplicas,width,offset,consuming);
-    G4cout<<"Ohh look, "<<nReplicas<<"more!"<<G4endl;
+//    G4cout<<"Ohh look, "<<nReplicas<<"more!"<<G4endl;
     
     for (int n = 0; n < nReplicas; n++) 
     {

@@ -37,18 +37,18 @@ public:
   void FillRootEvent(G4int, 
 		     const struct ntupleStruct&, 
 		     G4TrajectoryContainer*,
-		     WCSimWCHitsCollection*,
 		     WCSimWCDigitsCollection*,
 		     WCSimWCTriggeredDigitsCollection*);
   WCSimRunAction* GetRunAction(){return runAction;}
   void SetDigitizerChoice(G4String digitizer) { DigitizerChoice = digitizer; }
   void SetTriggerChoice  (G4String trigger)   { TriggerChoice   = trigger;   }
 
-  void  CreateDAQInstances(); //TODO make this private
-
 private:
   G4int WCSimEventFindStartingVolume( G4ThreeVector vtx);
   G4int WCSimEventFindStoppingVolume( G4String stopVolumeName);
+
+  ///Create instances of the user-chosen digitizer and trigger classes
+  void  CreateDAQInstances();
 
   G4String DigitizerChoice;
   G4String TriggerChoice;

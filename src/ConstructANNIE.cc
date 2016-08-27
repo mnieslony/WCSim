@@ -55,7 +55,7 @@
 #include "G4VisAttributes.hh"
 #include "G4Colour.hh"
 
-#include "MRDDetectorConstruction.hh"
+//#include "MRDDetectorConstruction.hh"
 #include "MRDSD.hh"
 #include "G4SDManager.hh"
 #include "G4LogicalBorderSurface.hh"
@@ -95,9 +95,9 @@ G4LogicalVolume* WCSimDetectorConstruction::ConstructANNIE()
   //Decide if adding Gd
   G4cout<<"Tank is full of ";
   G4bool isNCV = true; // Construct the Neutron Capture Volume
-  G4String water = "Water";
+  G4String watertype = "Water";
   if (WCAddGd)
-    {water = "Doped Water";
+    {watertype = "Doped Water";
     G4cout<<"***Dope Water***"<<G4endl;}
   else 
     {G4cout<<"refreshing water"<<G4endl;}
@@ -114,7 +114,7 @@ G4LogicalVolume* WCSimDetectorConstruction::ConstructANNIE()
   
   // Create Experimental Hall
   //G4Box* expHall_box = new G4Box("Hall",expHall_x,expHall_y,expHall_z);
-  G4Box* expHall_box = new G4Box("Hall",20*m,20*m,25*m);		//just..nicer for now.
+  G4Box* expHall_box = new G4Box("Hall",5*m,5*m,5*m);		//just..nicer for now.
   G4LogicalVolume* MatryoshkaMother = new G4LogicalVolume(expHall_box,G4Material::GetMaterial("Air"),"MatryoshkaMother",0,0,0);
   G4LogicalVolume* expHall_log = new G4LogicalVolume(expHall_box,G4Material::GetMaterial("Air"),"Hall",0,0,0);
   G4VPhysicalVolume* expHall_phys = new G4PVPlacement(0,G4ThreeVector(),expHall_log,"Hall",MatryoshkaMother,false,0);
@@ -122,11 +122,13 @@ G4LogicalVolume* WCSimDetectorConstruction::ConstructANNIE()
   // Create Water Tank
   //G4Tubs* aTube = new G4Tubs("Name", innerRadius, outerRadius, hz, startAngle, spanningAngle);
   G4Tubs* waterTank_tubs = new G4Tubs("waterTank",0.*m,tankouterRadius,tankhy,0.*deg,360.*deg);	//prev dims: 5.5m radius, 11m height.
-  G4LogicalVolume* waterTank_log = new G4LogicalVolume(waterTank_tubs,G4Material::GetMaterial(water),"waterTank",0,0,0);
+  G4LogicalVolume* waterTank_log = new G4LogicalVolume(waterTank_tubs,G4Material::GetMaterial(watertype),"waterTank",0,0,0);
   G4RotationMatrix* rotm = new G4RotationMatrix();				// declare a rotation matrix
   rotm->rotateX(90*deg); 							// rotate Y
   G4VPhysicalVolume* waterTank_phys = new G4PVPlacement(rotm,G4ThreeVector(0,-tankyoffset*mm,tankouterRadius+tankzoffset),waterTank_log,"waterTank",expHall_log,false,0);
 
+  // set all the paddle dimensions etc and create solids, logical volumes etc. for the MRD & VETO
+  DefineANNIEdimensions();
   // Create MRD
   //ConstructMRD(expHall_log, expHall_phys);			// marcus' MRD construction
   
@@ -137,7 +139,7 @@ G4LogicalVolume* WCSimDetectorConstruction::ConstructANNIE()
   
   // Create FACC
   //G4cout<<"Calling construction for the VETO"<<G4endl;
-  //ConstructVETO(expHall_log, expHall_phys);
+  ConstructVETO(expHall_log, expHall_phys);
   
   if (isNCV){
     G4ThreeVector NCVposition;
@@ -279,214 +281,6 @@ void WCSimDetectorConstruction::DefineMRD(G4PVPlacement* expHall)
 }
 // *******************/End SciBooNE integration****************
 // ============================================================
-
-void WCSimDetectorConstruction::ConstructMRD(G4LogicalVolume* expHall_log, G4VPhysicalVolume* expHall_phys){
-
-  //===============================================================================================================
-  // MRD DETECTOR DEFINITION
-  //===============================================================================================================
-
-  // Set up some sort of offset for the MRD from the tank. Leave the tank centred on the origin. 
-  // N.B. Hall is 50*500*500m
-
-  // need for the mother volume size
-  extern G4double mrdZlen; 
-//  extern G4double maxwidth;
-//  extern G4double maxheight;
-   
-  // offset MRD by half of length of both so edges touch + 2cm offset, with 1.52m tank radius puts MRD at z = 1.54*m.
-  G4double mrdZoffset = (2*tankouterRadius) + tankzoffset + (mrdZlen/2.) + 5*cm;
-  G4cout<<"MRD z start: "<<(tankouterRadius + 2*cm)<<" and total length: "<<mrdZlen<<G4endl;
-
-  extern G4Box* totMRD_box;
-  G4LogicalVolume* totMRD_log = new G4LogicalVolume(totMRD_box, G4Material::GetMaterial("Air"),"totMRDlog",0,0,0);
-  G4VPhysicalVolume* totMRD_phys = new G4PVPlacement(0,G4ThreeVector(0,0,mrdZoffset),totMRD_log,"totMRDphys",expHall_log,false,0);
-  
-  // ADD SCINTS & STEEL TO MRD
-  // =========================
-  PlacePaddles(totMRD_log);
-  PlaceTapers(totMRD_log);
-  PlaceLGs(totMRD_log);
-  PlaceSteels(totMRD_log);
-
-  // ADD ALU STRUCTURE
-  // =================
-  G4AssemblyVolume* aluMRDassembly = new G4AssemblyVolume();
-  makeAlu(aluMRDassembly);
-  G4RotationMatrix rot (0,0,0);
-  G4ThreeVector trans(0,0,0);
-  aluMRDassembly->MakeImprint(totMRD_log,trans,&rot);
-  
-  // ADD VIS ATTRIBS
-  //================
-  G4VisAttributes* simpleBoxVisAtt= new G4VisAttributes(G4Colour(0.0,1.0,1.0));
-  simpleBoxVisAtt->SetVisibility(false);
-  totMRD_log->SetVisAttributes(simpleBoxVisAtt);
-
-  // Retrieve Logical volumes and associate with sensitive detectors
-  //================================================================
-  extern G4LogicalVolume* hpaddle_log;
-  extern G4LogicalVolume* vpaddle_log;
-  extern G4LogicalVolume* taper_log;
-  extern G4LogicalVolume* lg_log;
-  
-  // Get pointer to detector manager
-  G4SDManager* SDman = G4SDManager::GetSDMpointer();
-  
-  // Create a new instance of MRD sensitive detector
-  G4VSensitiveDetector* mrdSD = new MRDSD("MuonRangeDetector"); 
-  // Register detector with manager
-  SDman->AddNewDetector(mrdSD);
-  // Attach detector to volume defining scintillator paddles
-  hpaddle_log->SetSensitiveDetector(mrdSD);
-  vpaddle_log->SetSensitiveDetector(mrdSD);
-  taper_log->SetSensitiveDetector(mrdSD);
-  //steel_log->SetSensitiveDetector(mrdSD);
-  //aluStructsMRD_log->SetSensitiveDetector(mrdSD);
-  
-  // Create sensitive detector for pmts that will detect photon hits at the ends of the paddles
-  G4VSensitiveDetector* mrdpmtSD = new mrdPMTSD("MRDPMTSD"); 
-  // Register detector with manager
-  SDman->AddNewDetector(mrdpmtSD);
-  // gets called manually and tracks get killed before they enter it; don't need to associate with any logical volumes
-  
-  // Define Paddle Boundaries for MRD PMT photon detection
-  // =====================================================
-  extern G4int numpaddlesperpanelh;
-  extern G4int numpaddlesperpanelv;
-  extern G4int numpanels;
-  extern std::vector<G4VPhysicalVolume*> tapers_phys;
-  extern std::vector<G4VPhysicalVolume*> lgs_phys;
-  
-  // Define efficiency for reflection & detection between paddles and PMTs at their ends
-  // ===================================================================================
-  G4OpticalSurface* lgSurface_op = new G4OpticalSurface("lgopsurface",glisur, polished, dielectric_metal);  
-  const G4int lgmptentries = 2;
-  G4double ELGphoton[lgmptentries] = {2.038*eV, 4.144*eV};
-  G4double lgsurf_EFF[lgmptentries]={0.95,0.95};
-  G4double lgsurf_REFL[lgmptentries]={0.,0.};
-  G4MaterialPropertiesTable* lgsurf_MPT = new G4MaterialPropertiesTable();
-  lgsurf_MPT->AddProperty("EFFICIENCY",  ELGphoton, lgsurf_EFF,  lgmptentries);
-  lgsurf_MPT->AddProperty("REFLECTIVITY",ELGphoton, lgsurf_REFL, lgmptentries);
-  lgSurface_op->SetMaterialPropertiesTable(lgsurf_MPT);
-  
-  // must be dielectric_metal to invoke absorption/detection process - but is this overridden if both volumes have a ref index?
-  // for dielectric_metal transmittance isn't possible, so either reflection or absorption with probability from mat. properties. 
-  for(G4int i=0;i<((numpaddlesperpanelv+numpaddlesperpanelh)*(numpanels/2));i++){
-  	G4LogicalBorderSurface* lgSurface_log = new G4LogicalBorderSurface("lgborderlog",tapers_phys.at(i),lgs_phys.at(i),lgSurface_op);
-  }
-  
-  // Define Mylar cladding on paddles
-  // ================================
-  G4OpticalSurface* scintSurface_op = new G4OpticalSurface("mylarSurface",glisur, ground, dielectric_metal);
-  const G4int mylarmptentries = 2;
-  G4double mylar_Energy[mylarmptentries] = {2.0*eV, 3.6*eV};
-  G4double mylar_REFL[mylarmptentries] = {0.9,0.9};
-  G4double mylar_EFFI[mylarmptentries] = {0.0, 0.0};
-  G4MaterialPropertiesTable* MPTmylarSurface = new G4MaterialPropertiesTable();
-  MPTmylarSurface->AddProperty("REFLECTIVITY",mylar_Energy,mylar_REFL,mylarmptentries);
-  MPTmylarSurface->AddProperty("EFFICIENCY",mylar_Energy,mylar_EFFI,mylarmptentries);
-  scintSurface_op->SetMaterialPropertiesTable(MPTmylarSurface);
-	
-	// Place cladding on MRD paddles
-  for(G4int i=0;i<((numpaddlesperpanelv+numpaddlesperpanelh)*(numpanels/2));i++){
-  		G4LogicalBorderSurface* scintSurface_log
-  		 = new G4LogicalBorderSurface("scintcladdinglog",lgs_phys.at(i),expHall_phys,scintSurface_op);
-  }
-
-}
-
-void WCSimDetectorConstruction::ConstructVETO(G4LogicalVolume* expHall_log, G4VPhysicalVolume* expHall_phys){
-  //===============================================================================================================
-  // VETO WALL DEFINITION
-  //===============================================================================================================
-  extern G4double vetoZlen;
-  
-  G4cout<<"Constructing VETO"<<G4endl;
-  G4double vetoZoffset = -(0*tankouterRadius) + (vetoZlen/2.) + 2*cm;	// by definition of rob's geometry, FACC is ~z=0
-  G4cout << "Veto z start: " << vetoZoffset-(vetoZlen/2.) << " and total length: "<< vetoZlen << G4endl;
-  
-  extern G4Box* totVeto_box;
-  G4LogicalVolume* totVeto_log = new G4LogicalVolume(totVeto_box, G4Material::GetMaterial("Air"), "totVetolog",0,0,0);
-  G4VPhysicalVolume* totVeto_phys = new G4PVPlacement(0,G4ThreeVector(0,-137.64875*mm,vetoZoffset),totVeto_log,"totVetoPhys",expHall_log,false,0); 
-  
-  
-  // FACC VETO
-  // =========
-  PlaceVetoPaddles(totVeto_log); 
-  
-  // ADD VIS ATTRIBS
-  //================
-  G4VisAttributes* simpleBoxVisAtt= new G4VisAttributes(G4Colour(0.0,1.0,1.0));
-  simpleBoxVisAtt->SetVisibility(false);
-  totVeto_log->SetVisAttributes(simpleBoxVisAtt);
-  
-  // Retrieve Logical volumes and associate with sensitive detectors
-  //================================================================
-  extern G4LogicalVolume* vetoPaddle_log;
-  extern G4LogicalVolume* vetol2Paddle_log;
-  
-  // Get pointer to detector manager
-  G4SDManager* SDman = G4SDManager::GetSDMpointer();
-  
-  // Sensitive detector for Veto paddles
-  G4VSensitiveDetector* faccSD = new FACCSD("FrontAntiCoincidenceCounter");
-  SDman->AddNewDetector(faccSD);
-  vetoPaddle_log->SetSensitiveDetector(faccSD);
-  vetol2Paddle_log->SetSensitiveDetector(faccSD);
-  
-  // Sensitive detector for Veto PMTs
-  G4VSensitiveDetector* faccpmtSD = new faccPMTSD("FACCPMTSD"); 
-  // Register detector with manager
-  SDman->AddNewDetector(faccpmtSD);
-  // gets called manually and tracks get killed before they enter it; don't need to associate with any logical volumes
-  
-  // Define Paddle Boundaries for MRD PMT photon detection
-  // =====================================================
-  extern G4int numvetopaddles;
-  extern std::vector<G4VPhysicalVolume*> vetopaddles_phys;
-  
-  // Define 'Surface' volume boundaries for Veto PMT detection
-  // =========================================================
-  extern std::vector<G4VPhysicalVolume*> vetosurfaces_phys;
-  
-  // Define efficiency for reflection & detection between paddles and PMTs at their ends
-  // ===================================================================================
-  G4OpticalSurface* vetoSensSurface_op = new G4OpticalSurface("vetosenssurfaceop",glisur, polished, dielectric_metal);
-  const G4int vetosensmptentries = 2;
-  G4double EVetophoton[vetosensmptentries] = {2.038*eV, 4.144*eV};
-  G4double vetosenssurf_EFF[vetosensmptentries]={0.95,0.95};	// should be 5% efficient?!!
-  G4double vetosenssurf_REFL[vetosensmptentries]={0.,0.};
-  G4MaterialPropertiesTable* vetosenssurf_MPT = new G4MaterialPropertiesTable();
-  vetosenssurf_MPT->AddProperty("EFFICIENCY",  EVetophoton, vetosenssurf_EFF,  vetosensmptentries);
-  vetosenssurf_MPT->AddProperty("REFLECTIVITY",EVetophoton, vetosenssurf_REFL, vetosensmptentries);
-  vetoSensSurface_op->SetMaterialPropertiesTable(vetosenssurf_MPT);
-  
-  // must be dielectric_metal to invoke absorption/detection process - but is this overridden if both volumes have a ref index?
-  // for dielectric_metal transmittance isn't possible, so either reflection or absorption with probability from mat. properties. 
-  for(G4int i=0;i<(numvetopaddles);i++){
-  	G4LogicalBorderSurface* vetoBorderSurface_log = new G4LogicalBorderSurface("vetoborderlog",vetopaddles_phys.at(i),vetosurfaces_phys.at(i),vetoSensSurface_op);
-  }
-  
-  // Define Mylar cladding on paddles
-  // ================================
-  G4OpticalSurface* scintSurface_op = new G4OpticalSurface("mylarSurface",glisur, ground, dielectric_metal);
-  const G4int mylarmptentries = 2;
-  G4double mylar_Energy[mylarmptentries] = {2.0*eV, 3.6*eV};
-  G4double mylar_REFL[mylarmptentries] = {0.9,0.9};
-  G4double mylar_EFFI[mylarmptentries] = {0.0, 0.0};
-  G4MaterialPropertiesTable* MPTmylarSurface = new G4MaterialPropertiesTable();
-  MPTmylarSurface->AddProperty("REFLECTIVITY",mylar_Energy,mylar_REFL,mylarmptentries);
-  MPTmylarSurface->AddProperty("EFFICIENCY",mylar_Energy,mylar_EFFI,mylarmptentries);
-  scintSurface_op->SetMaterialPropertiesTable(MPTmylarSurface);
-  
-  // Place cladding on Veto paddles
-  for(G4int i=0;i<(numvetopaddles);i++){
-  		G4LogicalBorderSurface* vetoSurface_log
-  		 = new G4LogicalBorderSurface("vetocladdinglog",vetopaddles_phys.at(i),expHall_phys,scintSurface_op);
-  }
-  
-}
 
 void WCSimDetectorConstruction::ConstructNCV(G4LogicalVolume* waterTank_log){
   //===============================================================================================================

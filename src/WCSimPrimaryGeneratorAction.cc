@@ -13,6 +13,7 @@
 #include <fstream>
 #include <vector>
 #include <string>
+#include "G4SystemOfUnits.hh"
 
 #include "G4Navigator.hh"
 #include "G4TransportationManager.hh"
@@ -102,7 +103,7 @@ void WCSimPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
     {
       G4cout << "Set a vector file using the command /mygen/vecfile name"
 	     << G4endl;
-      return;
+      exit(-1);
     }
 
     //

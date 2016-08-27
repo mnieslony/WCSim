@@ -96,7 +96,6 @@ void WCSimTrajectory::DrawTrajectory(G4int i_mode) const
   // i_mode is removed in 4.10 - FDL
   //G4VTrajectory::DrawTrajectory(i_mode);
   G4VTrajectory::DrawTrajectory();
-
   // ... or override with your own code here.
 }
 

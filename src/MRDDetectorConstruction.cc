@@ -22,177 +22,348 @@
 #include "G4PVPlacement.hh"
 #include "G4OpBoundaryProcess.hh" 
 #include "G4PVParameterised.hh"
-#include "MRDDetectorConstruction.hh"
+//#include "MRDDetectorConstruction.hh"
+#include "WCSimDetectorConstruction.hh"
+#include "G4SDManager.hh"
+#include "MRDSD.hh"
+#include "mrdPMTSD.hh"
+#include "FACCSD.hh"
+#include "faccPMTSD.hh"
 #include "G4VisAttributes.hh"
 #include "G4Colour.hh"
 #include "G4AssemblyVolume.hh"
 #include "G4SubtractionSolid.hh"
 #include "G4SystemOfUnits.hh"
 
-G4double Xposition=0, Yposition=0, Zposition=0;		// used for positioning parameterisations.
-G4int numpaddlesperpanelh=26;								// paddles per h scintillator panel
-G4int numpaddlesperpanelv=30;								// paddles per v scintillator panel
-G4int numpanels=12;													// scintillator panels
-G4int numrpcs=10;														// rpc panels
-G4int numplates=12;													// steel plates
-G4int numalustructs=13;											// number of supporting structs. We may be dropping one as we have fewer scintillators?
-G4int numvetopaddles=26;										// number of scintillator paddles in the FACC; 13 panels in 2 layers
-G4int vetopaddlesperpanel=13;								// number of scintillator paddles in each FACC panel
+// Define Variables that give MRD (and some other) specifications
+//===============================================================
+void WCSimDetectorConstruction::DefineANNIEdimensions(){
 
-G4double scintbordergap=0.3*cm;	// gap between each scintillator (cm) (border to account for cladding etc)
-G4double steelscintgap=0.5*cm;	// gap between steel and scintillator
-G4double scintalugap=0.2*cm;			// gap between scintillator and alu struct
-G4double alusteelgap=2.0*cm; 		// gap between alu struct and subsequent steel of next layer
-G4double layergap = steelscintgap + scintalugap + alusteelgap;	// total gaps of layers
+	Xposition=0, Yposition=0, Zposition=0;		// used for positioning parameterisations.
+	numpaddlesperpanelh=26;								// paddles per h scintillator panel
+	numpaddlesperpanelv=30;								// paddles per v scintillator panel
+	numpanels=12;													// scintillator panels
+	numrpcs=10;														// rpc panels
+	numplates=12;													// steel plates
+	numalustructs=13;											// number of supporting structs. We may be dropping one as we have fewer scintillators?
+	numvetopaddles=26;										// number of scintillator paddles in the FACC; 13 panels in 2 layers
+	vetopaddlesperpanel=13;								// number of scintillator paddles in each FACC panel
 
-G4double steelfullxlen = 305*cm;
-G4double steelfullylen = 274*cm;
-G4double steelfullzlen = 5*cm;
+	scintbordergap=0.3*cm;								// gap between each scintillator (cm) (border to account for cladding etc)
+	steelscintgap=0.5*cm;									// gap between steel and scintillator
+	scintalugap=0.2*cm;										// gap between scintillator and alu struct
+	alusteelgap=2.0*cm; 									// gap between alu struct and subsequent steel of next layer
+	layergap = steelscintgap + scintalugap + alusteelgap;	// total gaps of layers
 
-G4double scintfullxlen = 20*cm;
-G4double scintfullzlen= 0.6*cm;
-G4double scinthfullylen = 147.2*cm; //155cm - 7.8cm tapered section		147.1 according to sciboone gdml export		//swapped???
-G4double scintvfullylen= 130.2*cm;  //138cm - 7.8cm tapered section		129.4 according to sciboone gdml export
+	steelfullxlen = 305*cm;
+	steelfullylen = 274*cm;
+	steelfullzlen = 5*cm;
 
-G4double scinttapfullwidth = 17.1*cm; 			// width of the tapering part of scintillator paddles at the narrow end
-G4double scinttapfullheight = 7.8*cm; 			// z length of tapering part of scint paddles.
+	scintfullxlen = 20*cm;
+	scintfullzlen= 0.6*cm;
+	scinthfullylen = 147.2*cm; //155cm - 7.8cm tapered section		147.1 according to sciboone gdml export		//swapped???
+	scintvfullylen= 130.2*cm;  //138cm - 7.8cm tapered section		129.4 according to sciboone gdml export
 
-G4double scintlgfullwidth = 5.08*cm; 			// tapered light guides at narrow end
-G4double scintlgfullheight = 33.3*cm; 			// 
+	scinttapfullwidth = 17.1*cm; 			// width of the tapering part of scintillator paddles at the narrow end
+	scinttapfullheight = 7.8*cm; 			// z length of tapering part of scint paddles.
 
-G4double alufullxlen = steelfullxlen+15*cm;	// outer thicknesses - total frame dims are about those of the steel plate
-G4double alufullylen = steelfullylen+15*cm;	// basically making this up
-G4double alufullzlen = 3.81*cm;							// from eye and a skim of the mrdmodule.txt file, i'm guessing depth is ~0.75 inches (1.9cm)
-G4double alufullxthickness = 2.54*cm;				// as above, guessing frame to be 1 inch box cross-section
-G4double alufullythickness = 2.54*cm;
-G4double windowwidth = (steelfullxlen-(4*alufullxthickness))/3;	// (full length - 4 beams) / 3 windows
-G4double windowheight= (steelfullylen-(4*alufullythickness))/3;
+	scintlgfullwidth = 5.08*cm; 			// tapered light guides at narrow end
+	scintlgfullheight = 33.3*cm; 			// 
+
+	alufullxlen = steelfullxlen+15*cm;	// outer thicknesses - total frame dims are about those of the steel plate
+	alufullylen = steelfullylen+15*cm;	// basically making this up
+	alufullzlen = 3.81*cm;							// from eye and a skim of the mrdmodule.txt file, i'm guessing depth is ~0.75 inches (1.9cm)
+	alufullxthickness = 2.54*cm;				// as above, guessing frame to be 1 inch box cross-section
+	alufullythickness = 2.54*cm;
+	windowwidth = (steelfullxlen-(4*alufullxthickness))/3;	// (full length - 4 beams) / 3 windows
+	windowheight= (steelfullylen-(4*alufullythickness))/3;
 	
-G4double mrdZlen = numplates*steelfullzlen + (numpanels+1)*scintfullzlen + numalustructs*alufullzlen + numpanels*layergap + scintalugap; 
-// add another panel to full length because last alu struct is placed back assuming it's there. Maybe need to change... 
+	mrdZlen = numplates*steelfullzlen + (numpanels+1)*scintfullzlen + numalustructs*alufullzlen + numpanels*layergap + scintalugap; 
+	// add another panel to full length because last alu struct is placed back assuming it's there. Maybe need to change... 
 
-G4double vetopaddlefullxlen = 320.0*cm;
-G4double vetopaddlefullylen = 30.5*cm;
-G4double vetopaddlefullzlen = 2.0*cm;
-G4double vetolayer2offset = 1.27*cm;
-G4double vetopaddlegap = 0.2*cm;
-G4double nothickness = 0.01*cm;
+	vetopaddlefullxlen = 320.0*cm;
+	vetopaddlefullylen = 30.5*cm;
+	vetopaddlefullzlen = 2.0*cm;
+	vetolayer2offset = 1.27*cm;
+	vetopaddlegap = 0.2*cm;
+	nothickness = 0.01*cm;
 
-G4double vetoZlen = 2*vetopaddlefullzlen+vetopaddlegap;
+	vetoZlen = 2*vetopaddlefullzlen+vetopaddlegap;
 
-//extern G4double tankouterRadius;
+	//extern G4double tankouterRadius;
 
-// following measurements taken with tape measure; can be used to derive gaps. 
-// veto wall full height measured to be 158.75" = 403.2cm / 13 paddles = 31.1cm each in y height
-// paddle full x length measured to be 126.5" = 321.3cm in square section, followed by taper
-// paddle full z length measured to be 1" = 2.54cm;
-// taper length measured to be 14.5" = 36.8cm
-// taper narrow width measured to be 2" = 5.1cm (diameter of PMT)
-// taper depth at narrow end is difficult to measure due to interface between PMT and paddle/LG - assuming same
-// layer offset is 0.5" = 1.27cm
+	// following measurements taken with tape measure; can be used to derive gaps. 
+	// veto wall full height measured to be 158.75" = 403.2cm / 13 paddles = 31.1cm each in y height
+	// paddle full x length measured to be 126.5" = 321.3cm in square section, followed by taper
+	// paddle full z length measured to be 1" = 2.54cm;
+	// taper length measured to be 14.5" = 36.8cm
+	// taper narrow width measured to be 2" = 5.1cm (diameter of PMT)
+	// taper depth at narrow end is difficult to measure due to interface between PMT and paddle/LG - assuming same
+	// layer offset is 0.5" = 1.27cm
 
-/*
-Allowing for a typical deterioration rate of 5–10% per year, full efficiency should be retained more than 10 years and it will be over than useful lifetime of CDF. .. The technique relies on a wavelength shifter fibers to extract the light from the longer side of the scintillator bar. ... the scintillator used to construct the counters (UPS 923A) is a polystyrene-based plastic...The results of quality control tests performed at JINR show that the average ligh output ranges between 21ph.e./MIP (for the longest counters) for muons traversing the counters transversely at the furthest ends from the photomultipliers.
-*/
+	/*
+	Allowing for a typical deterioration rate of 5–10% per year, full efficiency should be retained more than 10 years and it will be over than useful lifetime of CDF. .. The technique relies on a wavelength shifter fibers to extract the light from the longer side of the scintillator bar. ... the scintillator used to construct the counters (UPS 923A) is a polystyrene-based plastic...The results of quality control tests performed at JINR show that the average ligh output ranges between 21ph.e./MIP (for the longest counters) for muons traversing the counters transversely at the furthest ends from the photomultipliers.
+	*/
 
-G4double widths[] = {2*(scinthfullylen+scinttapfullheight+scintlgfullheight+(scintbordergap/2)),((numpaddlesperpanelv/2)*(scintfullxlen+scintbordergap))};	
-// 2* and y dim because we stack 2 rotated h scint paddles end-to-end. 
-//
-G4double heights[] = {2*(scintvfullylen+scinttapfullheight+scintlgfullheight+(scintbordergap/2)),((numpaddlesperpanelh/2)*(scintfullxlen+scintbordergap))};
-//
-G4double maxwidth = *std::max_element(widths,widths+(sizeof(widths)/sizeof(widths[0])))+0.1*cm;
-G4double maxheight = *std::max_element(heights,heights+(sizeof(heights)/sizeof(heights[0])))+0.1*cm;
-        
-// Define solids 
-//==============  
-// G4Box* variableName = new G4Box("SolidName", x_halflength, y_halflength, z_halflength);
-// G4Trd("SolidName", x_halflength1, x_halflength2, y_halflength1, y_halflength2, z_halflength); 
-// 2 x and y dimensions given - define dims of the cross-sections at the two z ends. 
+	G4double widths[] = {2*(scinthfullylen+scinttapfullheight+scintlgfullheight+(scintbordergap/2)),((numpaddlesperpanelv/2)*(scintfullxlen+scintbordergap))};	
+	// 2* and y dim because we stack 2 rotated h scint paddles end-to-end. 
+	//
+	G4double heights[] = {2*(scintvfullylen+scinttapfullheight+scintlgfullheight+(scintbordergap/2)),((numpaddlesperpanelh/2)*(scintfullxlen+scintbordergap))};
+	//
+	maxwidth = *std::max_element(widths,widths+(sizeof(widths)/sizeof(widths[0])))+0.1*cm;
+	maxheight = *std::max_element(heights,heights+(sizeof(heights)/sizeof(heights[0])))+0.1*cm;
+		      
+	// Define solids 
+	//==============  
+	// G4Box* variableName = new G4Box("SolidName", x_halflength, y_halflength, z_halflength);
+	// G4Trd("SolidName", x_halflength1, x_halflength2, y_halflength1, y_halflength2, z_halflength); 
+	// 2 x and y dimensions given - define dims of the cross-sections at the two z ends. 
 
-// Paddles - h and v
-G4Box* sciMRDhpaddle_box = new G4Box("scintHpaddle",scintfullxlen/2,scinthfullylen/2,scintfullzlen/2);
-G4Box* sciMRDvpaddle_box = new G4Box("scintVpaddle",scintfullxlen/2,scintvfullylen/2,scintfullzlen/2);
+	// Paddles - h and v
+	sciMRDhpaddle_box = new G4Box("scintHpaddle",scintfullxlen/2,scinthfullylen/2,scintfullzlen/2);
+	sciMRDvpaddle_box = new G4Box("scintVpaddle",scintfullxlen/2,scintvfullylen/2,scintfullzlen/2);
 
-// Paddle Tapered ends
-G4Trd* mrdScintTap_box = new G4Trd("mrdScintTap_box", scintfullxlen/2, scinttapfullwidth/2, scintfullzlen/2, scintfullzlen/2, scinttapfullheight/2);	
+	// Paddle Tapered ends
+	mrdScintTap_box = new G4Trd("mrdScintTap_box", scintfullxlen/2, scinttapfullwidth/2, scintfullzlen/2, scintfullzlen/2, scinttapfullheight/2);	
 
-// Tapered Light Guides - same code as tapered ends. re-use rotations matrices as they're the same.
-G4Trd* mrdLG_box = new G4Trd("mrdLG_box", scinttapfullwidth/2, scintlgfullwidth/2, scintfullzlen/2, scintfullzlen/2, scintlgfullheight/2);	
+	// Tapered Light Guides - same code as tapered ends. re-use rotations matrices as they're the same.
+	mrdLG_box = new G4Trd("mrdLG_box", scinttapfullwidth/2, scintlgfullwidth/2, scintfullzlen/2, scintfullzlen/2, scintlgfullheight/2);	
 
-// Steel plates
-G4Box* steelMRDplate_box = new G4Box("steelPlate",steelfullxlen/2,steelfullylen/2,steelfullzlen/2);
+	// Steel plates
+	steelMRDplate_box = new G4Box("steelPlate",steelfullxlen/2,steelfullylen/2,steelfullzlen/2);
 
-//The alu support structure is roughly the external size of the steel plates...
-G4Box* aluMRDstruc_box = new G4Box("outer_Box", alufullxlen/2, alufullylen/2, alufullzlen/2);
+	//The alu support structure is roughly the external size of the steel plates...
+	aluMRDstruc_box = new G4Box("outer_Box", alufullxlen/2, alufullylen/2, alufullzlen/2);
 
-// ...with a 3x3 grid of ~even sized holes  
-G4Box* aluMRDwindow_box = new G4Box("inner_Box", windowwidth/2, windowheight/2, alufullzlen/2);
+	// ...with a 3x3 grid of ~even sized holes  
+	aluMRDwindow_box = new G4Box("inner_Box", windowwidth/2, windowheight/2, alufullzlen/2);
 
-G4Box* totMRD_box = new G4Box("totMRD",(maxwidth/2),(maxheight/2),mrdZlen/2);
+	totMRD_box = new G4Box("totMRD",(maxwidth/2),(maxheight/2),mrdZlen/2);
 
-G4Box* vetoPaddle_box = new G4Box("vetoPaddle_box",vetopaddlefullxlen/2, vetopaddlefullylen/2, vetopaddlefullzlen/2);
-G4Box* vetoSurface_box = new G4Box("vetoSurface_box",vetopaddlefullxlen/2,nothickness,vetopaddlefullzlen/2);
+	vetoPaddle_box = new G4Box("vetoPaddle_box",vetopaddlefullxlen/2, vetopaddlefullylen/2, vetopaddlefullzlen/2);
+	vetoSurface_box = new G4Box("vetoSurface_box",vetopaddlefullxlen/2,nothickness,vetopaddlefullzlen/2);
 
-G4Box* totVeto_box = new G4Box("totVeto_box", (vetopaddlefullxlen/2), ((vetopaddlefullylen/2)+vetopaddlegap)*(vetopaddlesperpanel)+(vetolayer2offset/2)+nothickness*2, (vetopaddlefullzlen+(vetopaddlegap/2)));
+	totVeto_box = new G4Box("totVeto_box", (vetopaddlefullxlen/2), ((vetopaddlefullylen/2)+vetopaddlegap)*(vetopaddlesperpanel)+(vetolayer2offset/2)+nothickness*2, (vetopaddlefullzlen+(vetopaddlegap/2)));
+
+	// Define rotation matrices 
+	//=========================
+	// rotated and unrotated scintillator paddles. Could do away with one by changing dims but hey.
+	noRot = new G4RotationMatrix();											// null rotation pointer
+	rotatedmatx = new G4RotationMatrix(0,0,90*deg);			// horizontal config for scint paddles
+
+	// Note trapezium narrows along z axis, so need to define a rotation of 90deg about the y(??)-axis to bring taper into the x-y plane. 
+	upmtx = new G4RotationMatrix(180*deg,90*deg,0*deg);
+	downmtx = new G4RotationMatrix(0*deg,90*deg,0*deg);
+	rightmtx = new G4RotationMatrix(90*deg,90*deg,0*deg);
+	leftmtx = new G4RotationMatrix(-90*deg,90*deg,0*deg);
+
+	// Define Visualisation Attributes 
+	//================================
+	scinthatts = new G4VisAttributes(G4Colour(0.5,0.0,1.0));     // pink
+	scintvatts = new G4VisAttributes(G4Colour(1.0,0.0,0.5));     // purple
+	steelatts = new G4VisAttributes(G4Colour(0.0,1.0,1.0));      // blue?
+	scinttapatts = new G4VisAttributes(G4Colour(0.6, 1.0, 0.8)); // light-green
+	scintlgatts = new G4VisAttributes(G4Colour(0.5, 0.5, 0.5));  // grey
+
+}
+
+  //===============================================================================================================
+  // MRD DETECTOR DEFINITION
+  //===============================================================================================================
+void WCSimDetectorConstruction::ConstructMRD(G4LogicalVolume* expHall_log, G4VPhysicalVolume* expHall_phys){
+
+  G4cout<<"CONSTRUCTING MRD"<<G4endl;
+  // Set up some sort of offset for the MRD from the tank. Leave the tank centred on the origin. 
+  // N.B. Hall is 50*500*500m
+   
+  // offset MRD by half of length of both so edges touch + 2cm offset, with 1.52m tank radius puts MRD at z = 1.54*m.
+  G4double mrdZoffset = (2*tankouterRadius) + tankzoffset + (mrdZlen/2.) + 5*cm;
+  G4cout<<"MRD z start: "<<(tankouterRadius + 2*cm)<<" and total length: "<<mrdZlen<<G4endl;
+
+  G4LogicalVolume* totMRD_log = new G4LogicalVolume(totMRD_box, G4Material::GetMaterial("Air"),"totMRDlog",0,0,0);
+  G4VPhysicalVolume* totMRD_phys = new G4PVPlacement(0,G4ThreeVector(0,0,mrdZoffset),totMRD_log,"totMRDphys",expHall_log,false,0);
+  
+  // REAL MRD CREATION STARTS HERE
+  // =============================
+  // ADD SCINTS & STEEL TO MRD
+  // =========================
+  G4cout<<"Placing paddles"<<G4endl;
+  PlacePaddles(totMRD_log);G4cout<<"Placing tapers"<<G4endl;
+  PlaceTapers(totMRD_log);G4cout<<"Placing LGs"<<G4endl;
+  PlaceLGs(totMRD_log);G4cout<<"Placing steel plates"<<G4endl;
+  PlaceSteels(totMRD_log);
+
+  // ADD ALU STRUCTURE
+  // =================
+  G4cout<<"Making aluminium assembly"<<G4endl;
+  G4AssemblyVolume* aluMRDassembly = new G4AssemblyVolume();
+  makeAlu(aluMRDassembly);
+  G4RotationMatrix rot (0,0,0);
+  G4ThreeVector trans(0,0,0);
+  aluMRDassembly->MakeImprint(totMRD_log,trans,&rot);
+  
+  // ADD VIS ATTRIBS
+  //================
+  G4VisAttributes* simpleBoxVisAtt= new G4VisAttributes(G4Colour(0.0,1.0,1.0));
+  simpleBoxVisAtt->SetVisibility(false);
+  totMRD_log->SetVisAttributes(simpleBoxVisAtt);
+
+  // Retrieve Logical volumes and associate with sensitive detectors
+  //================================================================
+  // Get pointer to detector manager
+  G4SDManager* SDman = G4SDManager::GetSDMpointer();
+  
+  // Create a new instance of MRD sensitive detector
+  G4VSensitiveDetector* mrdSD = new MRDSD("MuonRangeDetector"); 
+  // Register detector with manager
+  SDman->AddNewDetector(mrdSD);
+  // Attach detector to volume defining scintillator paddles
+  hpaddle_log->SetSensitiveDetector(mrdSD);
+  vpaddle_log->SetSensitiveDetector(mrdSD);
+  taper_log->SetSensitiveDetector(mrdSD);
+  //steel_log->SetSensitiveDetector(mrdSD);
+  //aluStructsMRD_log->SetSensitiveDetector(mrdSD);
+  
+  // Create sensitive detector for pmts that will detect photon hits at the ends of the paddles
+  G4VSensitiveDetector* mrdpmtSD = new mrdPMTSD("MRDPMTSD"); 
+  // Register detector with manager
+  SDman->AddNewDetector(mrdpmtSD);
+  // gets called manually and tracks get killed before they enter it; don't need to associate with any logical volumes
+  
+  // Define Paddle Boundaries for MRD PMT photon detection: 
+  // Define efficiency for reflection & detection between paddles and PMTs at their ends
+  // ===================================================================================
+  G4OpticalSurface* lgSurface_op = new G4OpticalSurface("lgopsurface",glisur, polished, dielectric_metal);  
+  const G4int lgmptentries = 2;
+  G4double ELGphoton[lgmptentries] = {2.038*eV, 4.144*eV};
+  G4double lgsurf_EFF[lgmptentries]={0.95,0.95};
+  G4double lgsurf_REFL[lgmptentries]={0.,0.};
+  G4MaterialPropertiesTable* lgsurf_MPT = new G4MaterialPropertiesTable();
+  lgsurf_MPT->AddProperty("EFFICIENCY",  ELGphoton, lgsurf_EFF,  lgmptentries);
+  lgsurf_MPT->AddProperty("REFLECTIVITY",ELGphoton, lgsurf_REFL, lgmptentries);
+  lgSurface_op->SetMaterialPropertiesTable(lgsurf_MPT);
+  
+  // must be dielectric_metal to invoke absorption/detection process - but is this overridden if both volumes have a ref index?
+  // for dielectric_metal transmittance isn't possible, so either reflection or absorption with probability from mat. properties. 
+  for(G4int i=0;i<((numpaddlesperpanelv+numpaddlesperpanelh)*(numpanels/2));i++){
+  	G4LogicalBorderSurface* lgSurface_log = new G4LogicalBorderSurface("lgborderlog",tapers_phys.at(i),lgs_phys.at(i),lgSurface_op);
+  }
+  
+  // Define Mylar cladding on paddles
+  // ================================
+  G4OpticalSurface* scintSurface_op = new G4OpticalSurface("mylarSurface",glisur, ground, dielectric_metal);
+  const G4int mylarmptentries = 2;
+  G4double mylar_Energy[mylarmptentries] = {2.0*eV, 3.6*eV};
+  G4double mylar_REFL[mylarmptentries] = {0.9,0.9};
+  G4double mylar_EFFI[mylarmptentries] = {0.0, 0.0};
+  G4MaterialPropertiesTable* MPTmylarSurface = new G4MaterialPropertiesTable();
+  MPTmylarSurface->AddProperty("REFLECTIVITY",mylar_Energy,mylar_REFL,mylarmptentries);
+  MPTmylarSurface->AddProperty("EFFICIENCY",mylar_Energy,mylar_EFFI,mylarmptentries);
+  scintSurface_op->SetMaterialPropertiesTable(MPTmylarSurface);
 	
-// Define logical volumes 
-//=======================
-// G4LogicalVolume* variableName = new G4LogicalVolume(solidVariableName, Material, "logicalVolName");
-// Can't do this outside a function - the materials aren't defined yet.
+	// Place cladding on MRD paddles
+  for(G4int i=0;i<((numpaddlesperpanelv+numpaddlesperpanelh)*(numpanels/2));i++){
+  		G4LogicalBorderSurface* scintSurface_log
+  		 = new G4LogicalBorderSurface("scintcladdinglog",lgs_phys.at(i),expHall_phys,scintSurface_op);
+  }
 
-G4LogicalVolume* hpaddle_log;
-			
-G4LogicalVolume* vpaddle_log;
+}
 
-G4LogicalVolume* taper_log;
-
-G4LogicalVolume* lg_log;
-
-G4LogicalVolume* steel_log;
-
-G4LogicalVolume* vetoPaddle_log;
-G4LogicalVolume* vetol2Paddle_log;
-G4LogicalVolume* vetoSurface_log;
-
-// Physical Volumes
-// ================
-// to place optical surface between tapers and LGs for optical detection we need pointers to the physical volumes
-// declare containers for the pointers here, they'll be filled by the placement function.
-std::vector<G4VPhysicalVolume*> paddles_phys;
-std::vector<G4VPhysicalVolume*> tapers_phys;
-std::vector<G4VPhysicalVolume*> lgs_phys;
-std::vector<G4VPhysicalVolume*> vetopaddles_phys;
-std::vector<G4VPhysicalVolume*> vetosurfaces_phys;
-
-// Define rotation matrices 
-//=========================
-// rotated and unrotated scintillator paddles. Could do away with one by changing dims but hey.
-G4RotationMatrix* noRot = new G4RotationMatrix();											// null rotation pointer
-G4RotationMatrix* rotatedmatx = new G4RotationMatrix(0,0,90*deg);			// horizontal config for scint paddles
-
-// Note trapezium narrows along z axis, so need to define a rotation of 90deg about the y(??)-axis to bring taper into the x-y plane. 
-G4RotationMatrix* upmtx = new G4RotationMatrix(180*deg,90*deg,0*deg);	
-G4RotationMatrix* downmtx = new G4RotationMatrix(0*deg,90*deg,0*deg);
-G4RotationMatrix* rightmtx = new G4RotationMatrix(90*deg,90*deg,0*deg);	
-G4RotationMatrix* leftmtx = new G4RotationMatrix(-90*deg,90*deg,0*deg);
-
-// Define Visualisation Attributes 
-//================================
-G4VisAttributes* scinthatts = new G4VisAttributes(G4Colour(0.5,0.0,1.0));     // pink
-G4VisAttributes* scintvatts = new G4VisAttributes(G4Colour(1.0,0.0,0.5));     // purple
-G4VisAttributes* steelatts = new G4VisAttributes(G4Colour(0.0,1.0,1.0));      // blue?
-G4VisAttributes* scinttapatts = new G4VisAttributes(G4Colour(0.6, 1.0, 0.8)); // light-green
-G4VisAttributes* scintlgatts = new G4VisAttributes(G4Colour(0.5, 0.5, 0.5));	// grey
-
-// ---------------------------------------------------------------------------------------
-// ---------------------------------------------------------------------------------------
-// Done declaring global variables. Now declare functions for how each instance is placed
-// ---------------------------------------------------------------------------------------
-// ---------------------------------------------------------------------------------------
+  //===============================================================================================================
+  // END MRD DETECTOR DEFINITION
+  //===============================================================================================================
+  
+  void WCSimDetectorConstruction::ConstructVETO(G4LogicalVolume* expHall_log, G4VPhysicalVolume* expHall_phys){
+  //===============================================================================================================
+  // VETO WALL DEFINITION
+  //===============================================================================================================
+ 
+  G4cout<<"Constructing VETO"<<G4endl;
+  G4double vetoZoffset = -(0*tankouterRadius) + (vetoZlen/2.) + 2*cm;	// by definition of rob's geometry, FACC is ~z=0
+  G4cout << "Veto z start: " << vetoZoffset-(vetoZlen/2.) << " and total length: "<< vetoZlen << G4endl;
+  
+  G4LogicalVolume* totVeto_log = new G4LogicalVolume(totVeto_box, G4Material::GetMaterial("Air"), "totVetolog",0,0,0);
+  G4VPhysicalVolume* totVeto_phys = new G4PVPlacement(0,G4ThreeVector(0,-137.64875*mm,vetoZoffset),totVeto_log,"totVetoPhys",expHall_log,false,0); 
+  
+  // FACC VETO
+  // =========
+  PlaceVetoPaddles(totVeto_log); 
+  
+  // ADD VIS ATTRIBS
+  //================
+  G4VisAttributes* simpleBoxVisAtt= new G4VisAttributes(G4Colour(0.0,1.0,1.0));
+  simpleBoxVisAtt->SetVisibility(false);
+  totVeto_log->SetVisAttributes(simpleBoxVisAtt);
+  
+  // Associate logical volumes with sensitive detectors
+  //================================================================  
+  // Get pointer to detector manager
+  G4SDManager* SDman = G4SDManager::GetSDMpointer();
+  
+  // Sensitive detector for Veto paddles
+  G4VSensitiveDetector* faccSD = new FACCSD("FrontAntiCoincidenceCounter");
+  SDman->AddNewDetector(faccSD);
+  vetoPaddle_log->SetSensitiveDetector(faccSD);
+  vetol2Paddle_log->SetSensitiveDetector(faccSD);
+  
+  // Sensitive detector for Veto PMTs
+  G4VSensitiveDetector* faccpmtSD = new faccPMTSD("FACCPMTSD"); 
+  // Register detector with manager
+  SDman->AddNewDetector(faccpmtSD);
+  // gets called manually and tracks get killed before they enter it; don't need to associate with any logical volumes
+  
+  // Define Paddle Boundaries for MRD PMT photon detection
+  // =====================================================
+  // Define 'Surface' volume boundaries for Veto PMT detection
+  // =========================================================
+  // Define efficiency for reflection & detection between paddles and PMTs at their ends
+  // ===================================================================================
+  G4OpticalSurface* vetoSensSurface_op = new G4OpticalSurface("vetosenssurfaceop",glisur, polished, dielectric_metal);
+  const G4int vetosensmptentries = 2;
+  G4double EVetophoton[vetosensmptentries] = {2.038*eV, 4.144*eV};
+  G4double vetosenssurf_EFF[vetosensmptentries]={0.95,0.95};	// should be 5% efficient?!!
+  G4double vetosenssurf_REFL[vetosensmptentries]={0.,0.};
+  G4MaterialPropertiesTable* vetosenssurf_MPT = new G4MaterialPropertiesTable();
+  vetosenssurf_MPT->AddProperty("EFFICIENCY",  EVetophoton, vetosenssurf_EFF,  vetosensmptentries);
+  vetosenssurf_MPT->AddProperty("REFLECTIVITY",EVetophoton, vetosenssurf_REFL, vetosensmptentries);
+  vetoSensSurface_op->SetMaterialPropertiesTable(vetosenssurf_MPT);
+  
+  // must be dielectric_metal to invoke absorption/detection process - but is this overridden if both volumes have a ref index?
+  // for dielectric_metal transmittance isn't possible, so either reflection or absorption with probability from mat. properties. 
+  for(G4int i=0;i<(numvetopaddles);i++){
+  	G4LogicalBorderSurface* vetoBorderSurface_log = new G4LogicalBorderSurface("vetoborderlog",vetopaddles_phys.at(i),vetosurfaces_phys.at(i),vetoSensSurface_op);
+  }
+  
+  // Define Mylar cladding on paddles
+  // ================================
+  G4OpticalSurface* scintSurface_op = new G4OpticalSurface("mylarSurface",glisur, ground, dielectric_metal);
+  const G4int mylarmptentries = 2;
+  G4double mylar_Energy[mylarmptentries] = {2.0*eV, 3.6*eV};
+  G4double mylar_REFL[mylarmptentries] = {0.9,0.9};
+  G4double mylar_EFFI[mylarmptentries] = {0.0, 0.0};
+  G4MaterialPropertiesTable* MPTmylarSurface = new G4MaterialPropertiesTable();
+  MPTmylarSurface->AddProperty("REFLECTIVITY",mylar_Energy,mylar_REFL,mylarmptentries);
+  MPTmylarSurface->AddProperty("EFFICIENCY",mylar_Energy,mylar_EFFI,mylarmptentries);
+  scintSurface_op->SetMaterialPropertiesTable(MPTmylarSurface);
+  
+  // Place cladding on Veto paddles
+  for(G4int i=0;i<(numvetopaddles);i++){
+  		G4LogicalBorderSurface* vetoSurface_log
+  		 = new G4LogicalBorderSurface("vetocladdinglog",vetopaddles_phys.at(i),expHall_phys,scintSurface_op);
+  }
+  
+}
+  
+  //===============================================================================================================
+  // END VETO WALL DEFINITION
+  //===============================================================================================================
+  
+// Definition of called functions below
+// ====================================
 
 // Define Positioning of Steel Plates
 //===================================
-void ComputeSteelTransformation (const G4int copyNo, G4VPhysicalVolume* physVol) {
+void WCSimDetectorConstruction::ComputeSteelTransformation (const G4int copyNo, G4VPhysicalVolume* physVol) {
 		Xposition=0, Yposition=0, Zposition=0;
 			
 		Zposition=(copyNo)*(steelfullzlen + scintfullzlen + alufullzlen + layergap);	// layer width offset is always constant
@@ -209,7 +380,7 @@ void ComputeSteelTransformation (const G4int copyNo, G4VPhysicalVolume* physVol)
 	
 // Define Positioning of Scintillator Paddles
 //===========================================
-void ComputePaddleTransformation (const G4int copyNo, G4VPhysicalVolume* physVol) {
+void WCSimDetectorConstruction::ComputePaddleTransformation (const G4int copyNo, G4VPhysicalVolume* physVol) {
 
 		Xposition=0, Yposition=0, Zposition=0;
 		G4RotationMatrix* rotmtx;
@@ -277,7 +448,7 @@ void ComputePaddleTransformation (const G4int copyNo, G4VPhysicalVolume* physVol
 // Define Positioning of Trapezoidal Taper ends of MRD paddles
 // ===========================================================
 // Combined with trapezoidal light-guide tapers as the code is 90% the same
-void ComputeTaperTransformation (const G4int copyNo, G4VPhysicalVolume* physVol, G4bool lgs) {
+void WCSimDetectorConstruction::ComputeTaperTransformation (const G4int copyNo, G4VPhysicalVolume* physVol, G4bool lgs) {
 
 		Xposition=0, Yposition=0, Zposition=0;
 		G4RotationMatrix* rotmtx;
@@ -351,7 +522,7 @@ void ComputeTaperTransformation (const G4int copyNo, G4VPhysicalVolume* physVol,
 
 // Define Positioning of Veto Paddles
 //===========================================
-void ComputeVetoPaddleTransformation (const G4int copyNo, G4VPhysicalVolume* physVol, G4bool surf) {
+void WCSimDetectorConstruction::ComputeVetoPaddleTransformation (const G4int copyNo, G4VPhysicalVolume* physVol, G4bool surf) {
 
 		Xposition=0, Yposition=0, Zposition=0;
 		G4RotationMatrix* rotmtx=0;																								// No rotations.
@@ -387,7 +558,7 @@ void ComputeVetoPaddleTransformation (const G4int copyNo, G4VPhysicalVolume* phy
 
 // Code to do generation and placement of scintillator paddles
 // ===========================================================
-void PlacePaddles(G4LogicalVolume* totMRD_log){
+void WCSimDetectorConstruction::PlacePaddles(G4LogicalVolume* totMRD_log){
 
 	hpaddle_log = new G4LogicalVolume(sciMRDhpaddle_box, G4Material::GetMaterial("Scinti"), "vpaddle_log");
 	vpaddle_log = new G4LogicalVolume(sciMRDvpaddle_box, G4Material::GetMaterial("Scinti"), "hpaddle_log");
@@ -414,7 +585,7 @@ void PlacePaddles(G4LogicalVolume* totMRD_log){
 
 // Code to do generation and placement of scintillator taper ends
 // ==============================================================
-void PlaceTapers(G4LogicalVolume* totMRD_log){
+void WCSimDetectorConstruction::PlaceTapers(G4LogicalVolume* totMRD_log){
 
 	taper_log = new G4LogicalVolume(mrdScintTap_box, G4Material::GetMaterial("Scinti"), "taper_log");			
 	G4VPhysicalVolume* taper_phys;
@@ -427,7 +598,7 @@ void PlaceTapers(G4LogicalVolume* totMRD_log){
 
 // Code to do generation and placement of glass light-guides
 // =========================================================
-void PlaceLGs(G4LogicalVolume* totMRD_log){
+void WCSimDetectorConstruction::PlaceLGs(G4LogicalVolume* totMRD_log){
 
 	lg_log = new G4LogicalVolume(mrdLG_box, G4Material::GetMaterial("Glass"), "lg_log");
 	G4VPhysicalVolume* lg_phys;
@@ -440,7 +611,7 @@ void PlaceLGs(G4LogicalVolume* totMRD_log){
 
 // Code to do generation and placement of steel plates
 // ===================================================
-void PlaceSteels(G4LogicalVolume* totMRD_log){
+void WCSimDetectorConstruction::PlaceSteels(G4LogicalVolume* totMRD_log){
 
 	steel_log = new G4LogicalVolume(steelMRDplate_box, G4Material::GetMaterial("Steel"), "steel_log");
 	G4VPhysicalVolume* steel_phys;
@@ -453,7 +624,7 @@ void PlaceSteels(G4LogicalVolume* totMRD_log){
 // Define Alu Support Structure
 //=============================
 
-void makeAlu(G4AssemblyVolume* aluMRDassembly){
+void WCSimDetectorConstruction::makeAlu(G4AssemblyVolume* aluMRDassembly){
 	// this code must be in a function as it uses for loops.
 
 	//N.B. subtraction solids can only use CGS solids or the output of boolean operations, not assemblies or other stuff
@@ -497,7 +668,7 @@ void makeAlu(G4AssemblyVolume* aluMRDassembly){
 
 // Code to do generation and placement of veto paddles
 // ===================================================
-void PlaceVetoPaddles(G4LogicalVolume* totVeto_log){
+void WCSimDetectorConstruction::PlaceVetoPaddles(G4LogicalVolume* totVeto_log){
 
 	// using same scintillator as MRD paddles
 	vetoPaddle_log = new G4LogicalVolume(vetoPaddle_box, G4Material::GetMaterial("Scinti"), "vetoPaddle_log");
