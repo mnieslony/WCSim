@@ -4,6 +4,7 @@
 #include "G4Event.hh"
 #include "G4UserSteppingAction.hh"
 #include "G4ThreeVector.hh"
+#include "G4OpBoundaryProcess.hh"
 
 class G4HCofThisEvent;
 class G4Event;
@@ -35,6 +36,9 @@ public:
 private:
 
   G4double ret[2];
+  G4OpBoundaryProcessStatus fExpectedNextStatus;
+  G4String ToName(G4OpBoundaryProcessStatus boundaryStatus);
+  G4String ToName2(G4StepStatus stepStatus);
 
 };
 

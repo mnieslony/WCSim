@@ -38,6 +38,12 @@
 #include "WCSimRootEvent.hh"
 #include "TStopwatch.h"
 
+#include "MRDSD.hh"
+#include "FACCSD.hh"
+#include "mrdPMTSD.hh"
+#include "faccPMTSD.hh"
+#include "NCVSD.hh"
+
 #ifndef _SAVE_RAW_HITS
 #define _SAVE_RAW_HITS
 #ifndef _SAVE_RAW_HITS_VERBOSE
@@ -73,11 +79,250 @@ WCSimEventAction::WCSimEventAction(WCSimRunAction* myRun,
   //create dark noise module
   WCSimWCAddDarkNoise* WCDNM = new WCSimWCAddDarkNoise("WCDarkNoise", detectorConstructor);
   DMman->AddNewModule(WCDNM);
+  
+  // Everything after this in constructor are files for storing truth hits for MRD+Veto+NCV
+  // =======================================================================================
+  
+  // file for recording particles and processes for which a code isn't yet assigned
+  textout = new std::fstream("TextOut.txt",std::ios::out);
+  unaccountedparticlesandprocesses = new std::ofstream("unaccountedparticlesandprocesses.txt",std::ios::out);
+  
+  // ****************
+  //  MRD TRUTH HITS
+  // ****************
+  
+  mrdfile = new TFile("MRDEvents.root","RECREATE");
+  mrdtree = new TTree("MRDTree","MRDTree"); 
+
+  mrdhit_x = new G4double[kmrdhitnmax];		// where/when was the hit?
+  mrdhit_y = new G4double[kmrdhitnmax];
+  mrdhit_z = new G4double[kmrdhitnmax];
+  mrdhit_t = new G4double[kmrdhitnmax];	
+  mrdhit_process = new G4int[kmrdhitnmax];	// what was the interaction process?
+  mrdhit_particleID = new G4int[kmrdhitnmax];	// what was the particle type interacting?
+  mrdhit_trackID = new G4int[kmrdhitnmax];	// what was the track ID
+  mrdhit_edep = new G4double[kmrdhitnmax]; 	// how much energy was deposited?
+  mrdhit_objnum = new G4int[kmrdhitnmax];	// which geometry object was hit?
+  mrdhit_copynum = new G4int[kmrdhitnmax];	// which copy was hit?
+  
+  mrdtree->Branch("evt",&eventcount);
+  mrdtree->Branch("mrd_numhits",&mrd_numhits);
+  
+  mrdtree->Branch("mrdhit_x",mrdhit_x,"mrdhit_x[mrd_numhits]/D");
+  mrdtree->Branch("mrdhit_y",mrdhit_y,"mrdhit_y[mrd_numhits]/D");
+  mrdtree->Branch("mrdhit_z",mrdhit_z,"mrdhit_z[mrd_numhits]/D");
+  mrdtree->Branch("mrdhit_t",mrdhit_t,"mrdhit_t[mrd_numhits]/D");
+  mrdtree->Branch("mrdhit_process",mrdhit_process,"mrdhit_process[mrd_numhits]/I");
+  mrdtree->Branch("mrdhit_particleID",mrdhit_particleID,"mrdhit_particleID[mrd_numhits]/I");
+  mrdtree->Branch("mrdhit_trackID",mrdhit_trackID,"mrdhit_trackID[mrd_numhits]/I");
+  mrdtree->Branch("mrdhit_edep",mrdhit_edep,"mrdhit_edep[mrd_numhits]/D");
+  mrdtree->Branch("mrdhit_objnum",mrdhit_objnum,"mrdhit_objnum[mrd_numhits]/I");
+  mrdtree->Branch("mrdhit_copynum",mrdhit_copynum,"mrdhit_copynum[mrd_numhits]/I");
+   
+  // **************
+  //  MRD PMT HITS
+  // **************
+  
+  mrdpmttree = new TTree("MRDPMTTree","MRDPMTTree");
+ 
+  mrdpmthit_x = new G4double[kpmthitnmax];			// where/when was the hit?
+  mrdpmthit_y = new G4double[kpmthitnmax];
+  mrdpmthit_z = new G4double[kpmthitnmax];
+  mrdpmthit_t = new G4double[kpmthitnmax];	
+  mrdpmthit_process = new G4int[kpmthitnmax];		// what was the creation process?
+  mrdpmthit_trackID = new G4int[kpmthitnmax];		// what was the track ID
+  mrdpmthit_parentID = new G4int[kpmthitnmax];		// track ID of parent particle
+  mrdpmthit_wavelength = new G4double[kpmthitnmax]; 	// what was the hit wavelength?  
+  mrdpmthit_copynum = new G4int[kpmthitnmax];		// which PMT/LG was hit?
+  
+  mrdpmttree->Branch("evt",&eventcount);
+  mrdpmttree->Branch("mrdpmt_numhits",&mrdpmt_numhits);
+  
+  mrdpmttree->Branch("mrdpmthit_x",mrdpmthit_x,"mrdpmthit_x[mrdpmt_numhits]/D");
+  mrdpmttree->Branch("mrdpmthit_y",mrdpmthit_y,"mrdpmthit_y[mrdpmt_numhits]/D");
+  mrdpmttree->Branch("mrdpmthit_z",mrdpmthit_z,"mrdpmthit_z[mrdpmt_numhits]/D");
+  mrdpmttree->Branch("mrdpmthit_t",mrdpmthit_t,"mrdpmthit_t[mrdpmt_numhits]/D");
+  mrdpmttree->Branch("mrdpmthit_process",mrdpmthit_process,"mrdpmthit_process[mrdpmt_numhits]/I");
+  mrdpmttree->Branch("mrdpmthit_trackID",mrdpmthit_trackID,"mrdpmthit_trackID[mrdpmt_numhits]/I");
+  mrdpmttree->Branch("mrdpmthit_parentID",mrdpmthit_parentID,"mrdpmthit_parentID[mrdpmt_numhits]/I");
+  mrdpmttree->Branch("mrdpmthit_wavelength",mrdpmthit_wavelength,"mrdpmthit_wavelength[mrdpmt_numhits]/D");
+  mrdpmttree->Branch("mrdpmthit_copynum",mrdpmthit_copynum,"mrdpmthit_copynum[mrdpmt_numhits]/I");
+
+  // ****************
+  //  FACC TRUTH HITS
+  // ****************
+  
+  facctree = new TTree("FACCTree","FACCTree"); 
+
+  facchit_x = new G4double[kmrdhitnmax];		// where/when was the hit?
+  facchit_y = new G4double[kmrdhitnmax];
+  facchit_z = new G4double[kmrdhitnmax];
+  facchit_t = new G4double[kmrdhitnmax];	
+  facchit_process = new G4int[kmrdhitnmax];	// what was the interaction process?
+  facchit_particleID = new G4int[kmrdhitnmax];	// what was the particle type interacting?
+  facchit_trackID = new G4int[kmrdhitnmax];	// what was the track ID
+  facchit_edep = new G4double[kmrdhitnmax]; 	// how much energy was deposited?
+  facchit_objnum = new G4int[kmrdhitnmax];	// which geometry object was hit?
+  facchit_copynum = new G4int[kmrdhitnmax];	// which copy was hit?
+  
+  facctree->Branch("evt",&eventcount);
+  facctree->Branch("facc_numhits",&facc_numhits);
+  
+  facctree->Branch("facchit_x",facchit_x,"facchit_x[facc_numhits]/D");
+  facctree->Branch("facchit_y",facchit_y,"facchit_y[facc_numhits]/D");
+  facctree->Branch("facchit_z",facchit_z,"facchit_z[facc_numhits]/D");
+  facctree->Branch("facchit_t",facchit_t,"facchit_t[facc_numhits]/D");
+  facctree->Branch("facchit_process",facchit_process,"facchit_process[facc_numhits]/I");
+  facctree->Branch("facchit_particleID",facchit_particleID,"facchit_particleID[facc_numhits]/I");
+  facctree->Branch("facchit_trackID",facchit_trackID,"facchit_trackID[facc_numhits]/I");
+  facctree->Branch("facchit_edep",facchit_edep,"facchit_edep[facc_numhits]/D");
+  facctree->Branch("facchit_objnum",facchit_objnum,"facchit_objnum[facc_numhits]/I");
+  facctree->Branch("facchit_copynum",facchit_copynum,"facchit_copynum[facc_numhits]/I");
+   
+  // **************
+  //  FACC PMT HITS
+  // **************
+  
+  faccpmttree = new TTree("FACCPMTTree","FACCPMTTree");
+ 
+  faccpmthit_x = new G4double[kpmthitnmax];			// where/when was the hit?
+  faccpmthit_y = new G4double[kpmthitnmax];
+  faccpmthit_z = new G4double[kpmthitnmax];
+  faccpmthit_t = new G4double[kpmthitnmax];	
+  faccpmthit_process = new G4int[kpmthitnmax];		// what was the creation process?
+  faccpmthit_trackID = new G4int[kpmthitnmax];		// what was the track ID
+  faccpmthit_parentID = new G4int[kpmthitnmax];		// track ID of parent particle
+  faccpmthit_wavelength = new G4double[kpmthitnmax]; 	// what was the hit wavelength?  
+  faccpmthit_copynum = new G4int[kpmthitnmax];		// which PMT/LG was hit?
+  
+  faccpmttree->Branch("evt",&eventcount);
+  faccpmttree->Branch("faccpmt_numhits",&faccpmt_numhits);
+  
+  faccpmttree->Branch("faccpmthit_x",faccpmthit_x,"faccpmthit_x[faccpmt_numhits]/D");
+  faccpmttree->Branch("faccpmthit_y",faccpmthit_y,"faccpmthit_y[faccpmt_numhits]/D");
+  faccpmttree->Branch("faccpmthit_z",faccpmthit_z,"faccpmthit_z[faccpmt_numhits]/D");
+  faccpmttree->Branch("faccpmthit_t",faccpmthit_t,"faccpmthit_t[faccpmt_numhits]/D");
+  faccpmttree->Branch("faccpmthit_process",faccpmthit_process,"faccpmthit_process[faccpmt_numhits]/I");
+  faccpmttree->Branch("faccpmthit_trackID",faccpmthit_trackID,"faccpmthit_trackID[faccpmt_numhits]/I");
+  faccpmttree->Branch("faccpmthit_parentID",faccpmthit_parentID,"faccpmthit_parentID[faccpmt_numhits]/I");
+  faccpmttree->Branch("faccpmthit_wavelength",faccpmthit_wavelength,"faccpmthit_wavelength[faccpmt_numhits]/D");
+  faccpmttree->Branch("faccpmthit_copynum",faccpmthit_copynum,"faccpmthit_copynum[faccpmt_numhits]/I");
+
+// *********
+// NCV HITS
+// *********
+
+  //ncvfile = new TFile("MRDEvents.root","RECREATE");
+  ncvtree = new TTree("NCVTree","NCVTree"); 
+
+  ncvhit_x = new G4double[kmrdhitnmax];		// where/when was the hit?
+  ncvhit_y = new G4double[kmrdhitnmax];
+  ncvhit_z = new G4double[kmrdhitnmax];
+  ncvhit_t = new G4double[kmrdhitnmax];	
+  ncvhit_process = new G4int[kmrdhitnmax];	// what was the interaction process?
+  ncvhit_particleID = new G4int[kmrdhitnmax];	// what was the particle type interacting?
+  ncvhit_trackID = new G4int[kmrdhitnmax];	// what was the track ID
+  ncvhit_edep = new G4double[kmrdhitnmax]; 	// how much energy was deposited?
+  
+  ncvtree->Branch("evt",&eventcount);
+  ncvtree->Branch("ncv_numhits",&ncv_numhits);
+  
+  ncvtree->Branch("ncvhit_x",ncvhit_x,"ncvhit_x[ncv_numhits]/D");
+  ncvtree->Branch("ncvhit_y",ncvhit_y,"ncvhit_y[ncv_numhits]/D");
+  ncvtree->Branch("ncvhit_z",ncvhit_z,"ncvhit_z[ncv_numhits]/D");
+  ncvtree->Branch("ncvhit_t",ncvhit_t,"ncvhit_t[ncv_numhits]/D");
+  ncvtree->Branch("ncvhit_process",ncvhit_process,"ncvhit_process[ncv_numhits]/I");
+  ncvtree->Branch("ncvhit_particleID",ncvhit_particleID,"ncvhit_particleID[ncv_numhits]/I");
+  ncvtree->Branch("ncvhit_trackID",ncvhit_trackID,"ncvhit_trackID[ncv_numhits]/I");
+  ncvtree->Branch("ncvhit_edep",ncvhit_edep,"ncvhit_edep[ncv_numhits]/D");
 }
 
 WCSimEventAction::~WCSimEventAction()
 {
   delete DAQMessenger;
+  
+  // Actions to cleanup WChSandbox style SD outputs:
+  // ===============================================
+   mrdfile->cd();
+//   G4cout<<"Writing mrd tree"<<G4endl;
+   mrdtree->Write();
+//   G4cout<<"Writing FACC tree"<<G4endl;
+   facctree->Write();
+//   G4cout<<"writing mrd pmt tree"<<G4endl;
+   mrdpmttree->Write();
+//   G4cout<<"writing faccpmt tree"<<G4endl;
+   faccpmttree->Write();
+//   G4cout<<"writing ncvtree"<<G4endl;
+   ncvtree->Write();
+//   G4cout<<"closing mrd file"<<G4endl;
+   mrdfile->Close();
+//   G4cout<<"deleting mrd file pointer"<<G4endl;
+   delete mrdfile;	// do do this?
+   
+//   G4cout<<"closing textout file"<<G4endl;
+   textout->close();
+//   G4cout<<"deleting textout file pointer"<<G4endl;
+   delete textout;	// don't do this?
+//   G4cout<<"closing unaccountedparticlesandprocesses file"<<G4endl;
+   unaccountedparticlesandprocesses->close();
+//   G4cout<<"deleting pointer"<<G4endl;
+   delete unaccountedparticlesandprocesses;	//? 
+   
+   //   G4cout<<"mrdhit_xxx"<<G4endl;
+   delete[] mrdhit_x;
+   delete[] mrdhit_y;
+   delete[] mrdhit_z;
+   delete[] mrdhit_t;
+   delete[] mrdhit_process;
+   delete[] mrdhit_particleID;
+   delete[] mrdhit_trackID;
+   delete[] mrdhit_edep;
+   delete[] mrdhit_objnum;
+   delete[] mrdhit_copynum;
+   
+//   G4cout<<"mrdpmthit_xxx"<<G4endl;
+   delete[] mrdpmthit_x;
+   delete[] mrdpmthit_y;
+   delete[] mrdpmthit_z;
+   delete[] mrdpmthit_t;
+   delete[] mrdpmthit_process;
+   delete[] mrdpmthit_trackID;
+   delete[] mrdpmthit_parentID;
+   delete[] mrdpmthit_wavelength;
+   delete[] mrdpmthit_copynum;
+   
+//   G4cout<<"facchit_xxx"<<G4endl;
+   delete[] facchit_x;
+   delete[] facchit_y;
+   delete[] facchit_z;
+   delete[] facchit_t;
+   delete[] facchit_process;
+   delete[] facchit_particleID;
+   delete[] facchit_trackID;
+   delete[] facchit_edep;
+   delete[] facchit_objnum;
+   delete[] facchit_copynum;
+   
+//   G4cout<<"faccpmthit_xxx"<<G4endl;
+   delete[] faccpmthit_x;
+   delete[] faccpmthit_y;
+   delete[] faccpmthit_z;
+   delete[] faccpmthit_t;
+   delete[] faccpmthit_process;
+   delete[] faccpmthit_trackID;
+   delete[] faccpmthit_parentID;
+   delete[] faccpmthit_wavelength;
+   delete[] faccpmthit_copynum;
+
+//   G4cout<<"ncvhit_xxx"<<G4endl;
+   delete[] ncvhit_x;
+   delete[] ncvhit_y;
+   delete[] ncvhit_z;
+   delete[] ncvhit_t;
+   delete[] ncvhit_process;
+   delete[] ncvhit_particleID;
+   delete[] ncvhit_trackID;
+   delete[] ncvhit_edep;
 }
 
 void WCSimEventAction::CreateDAQInstances()
@@ -163,10 +408,11 @@ void WCSimEventAction::EndOfEventAction(const G4Event* evt)
   G4HCofThisEvent* HCE         = evt->GetHCofThisEvent();
   WCSimWCHitsCollection* WCHC = 0;
   G4String WCIDCollectionName = detectorConstructor->GetIDCollectionName();
+  G4int collectionID;
   if (HCE)
   { 
     G4String name =   WCIDCollectionName;
-    G4int collectionID = SDman->GetCollectionID(name);
+    collectionID = SDman->GetCollectionID(name);
     WCHC = (WCSimWCHitsCollection*)HCE->GetHC(collectionID);
   }
 
@@ -393,7 +639,260 @@ void WCSimEventAction::EndOfEventAction(const G4Event* evt)
 		trajectoryContainer,
 		WCDC_hits,
 		WCDC);
+		
+		// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		// CODE TO RECORD HITS FROM WCHSANDBOX MRD+VETO SD'S
+		// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		
+		
+  MRDHitsCollection* mymrdCollection=0;
+  mrdPMThitsCollection* myMRDPMTCollection=0;
+  FACCHitsCollection* myfaccCollection=0;
+  faccPMThitsCollection* myFACCPMTCollection=0;
+  
+  collectionID = SDman->GetCollectionID("mrdHitsCollection");
+  mymrdCollection = (MRDHitsCollection*)(HCE->GetHC(collectionID));
+  collectionID = SDman->GetCollectionID("mrdpmtHitCollection");
+  myMRDPMTCollection = (mrdPMThitsCollection*)(HCE->GetHC(collectionID));
+  collectionID = SDman->GetCollectionID("faccHitsCollection");
+  myfaccCollection = (FACCHitsCollection*)(HCE->GetHC(collectionID));
+  collectionID = SDman->GetCollectionID("faccpmtHitCollection");
+  myFACCPMTCollection = (faccPMThitsCollection*)(HCE->GetHC(collectionID));
+  collectionID=0;
+  NCVHitsCollection* myncvCollection=0;
+  if(detectorConstructor->GetDetectorName()=="ANNIEp1"){
+		collectionID = SDman->GetCollectionID("NCVHitsCollection");
+		if(collectionID!=0){myncvCollection = (NCVHitsCollection*)(HCE->GetHC(collectionID));}
+  }
+  
+  //--------- HANDLING MRD HITS -------------
+  //=========================================
+  G4double totalEnergy = 0.;
+  G4int numberOfHits = mymrdCollection->GetSize();
+  G4cout << "&&&&  A total of " << numberOfHits << " hits on MRD were recorded!" << G4endl;
+  if (mymrdCollection!=0) {
+    for (G4int hitnum=0; hitnum<numberOfHits; hitnum++) {
+       MRDHit* aHit = (*mymrdCollection)[hitnum];
+       totalEnergy += aHit->GetHitEdeposit();
+       G4ThreeVector hitPos = aHit->GetHitPos();
+       hitPosx=hitPos.x();
+       hitPosy=hitPos.y();
+       hitPosz=hitPos.z();
+       hitTime = aHit->GetHitTime();
+       hitParticleName = aHit->GetHitParticleName();
+       hitTrackID = aHit->GetHitTrackID(); 
+       hitPartCode = ConvertParticleNameToCode(hitParticleName); // or use hitParticleID - from PDGEncoding?
+       //hitPartCode = aHit->GetHitParticleID();
+       hitProcessName = aHit->GetHitProcessName();
+       hitProcessCode = ConvertProcessNameToCode(hitProcessName);
+       if(hitProcessCode<0){G4cout<<"MRD hit process unaccounted"<<G4endl;}
+       hitEdep = aHit->GetHitEdeposit();
+       hitCopyNum = aHit->GetHitCopyNum();
+       hitPhysical = (std::string)aHit->GetHitPhysical();
+       // aHit->Print();
+       
+       mrdhit_x[hitnum] = hitPosx;
+       mrdhit_y[hitnum] = hitPosy;
+       mrdhit_z[hitnum] = hitPosz;
+       mrdhit_t[hitnum] = hitTime;
+       mrdhit_process[hitnum] = hitProcessCode;
+       mrdhit_particleID[hitnum] = hitPartCode;
+       mrdhit_trackID[hitnum] = hitTrackID;
+       mrdhit_edep[hitnum] = hitEdep;
+       mrdhit_copynum[hitnum] = hitCopyNum;
+       if(hitPhysical=="mrdPaddles"){objnum=0;}	// all hits have this object num.. why...
+       else if(hitPhysical=="mrdPlates"){objnum=1;}
+       else if(hitPhysical.find("alu")!=0){objnum=2;} 	//found!=std::string::npos
+       else{objnum=-1;}
+       mrdhit_objnum[hitnum] = objnum;
+    }
+    mrd_numhits=numberOfHits;
+  }
+  mrdtree->Fill();
+  G4cout<<"Energy deposited in MRD: "<<totalEnergy*MeV<<" MeV"<<G4endl;
 
+  //------- DONE HANDLING MRD HITS ----------
+  //=========================================
+  
+  //------------ HANDLING MRD PMT DETECTIONS -----------
+  //====================================================
+  G4int numberOfPMThits = myMRDPMTCollection->GetSize();
+  G4cout << "@@@@@@    A total of " << numberOfPMThits << " hits on MRD PMTs were recorded!" << G4endl;
+  //if(numberOfPMThits>0){G4cout<<"****** VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV *********"<<G4endl;}
+  if (myMRDPMTCollection!=0) {
+    for (G4int pmt_hitnum=0; pmt_hitnum<numberOfPMThits; pmt_hitnum++) {
+       //G4cout<<"adding PMT hit"<<G4endl;
+       if(pmt_hitnum>kpmthitnmax){G4cout<<"max num PMT hits exceeded!"<<G4endl;break;}
+       mrdPMThit* aHit = (*myMRDPMTCollection)[pmt_hitnum];
+       hitTrackID = aHit->GetHitTrackID();
+       hitParentID = aHit->GetHitParentID();
+       hitPMTnumber = aHit->GetPMTNumber();
+       G4ThreeVector hitPos = aHit->GetHitPos();
+       hitPosx=hitPos.x();
+       hitPosy=hitPos.y();
+       hitPosz=hitPos.z();
+       hitTime = aHit->GetHitTime();
+       hitProcessName = aHit->GetCreationProcess();
+       hitProcessCode = ConvertProcessNameToCode(hitProcessName);
+       if(hitProcessCode<0){G4cout<<"MRD PMT hit process unaccounted"<<G4endl;}
+       hitWavelength = aHit->GetHitWavelength();
+
+       // aHit->Print();  
+  
+       mrdpmthit_x[pmt_hitnum] = hitPosx;
+       mrdpmthit_y[pmt_hitnum] = hitPosy;
+       mrdpmthit_z[pmt_hitnum] = hitPosz;
+       mrdpmthit_t[pmt_hitnum] = hitTime;
+       mrdpmthit_process[pmt_hitnum] = hitProcessCode;
+       mrdpmthit_trackID[pmt_hitnum] = hitTrackID;
+       mrdpmthit_parentID[pmt_hitnum] = hitParentID;
+       mrdpmthit_wavelength[pmt_hitnum] = hitWavelength;
+       mrdpmthit_copynum[pmt_hitnum] = hitPMTnumber;
+
+    }
+    mrdpmt_numhits=numberOfPMThits;
+  }
+  mrdpmttree->Fill();
+
+  //--------- DONE HANDLING MRD PMT DETECTIONS ---------
+  //====================================================
+  
+  //--------- HANDLING FACC HITS ------------
+  //=========================================
+  totalEnergy = 0.;
+  numberOfHits = myfaccCollection->GetSize();
+  G4cout << "A total of " << numberOfHits << " hits on FACC were recorded!" << G4endl;
+  if (myfaccCollection!=0) {
+    for (G4int hitnum=0; hitnum<numberOfHits; hitnum++) {
+       FACCHit* aHit = (*myfaccCollection)[hitnum];
+       totalEnergy += aHit->GetHitEdeposit();
+       G4ThreeVector hitPos = aHit->GetHitPos();
+       hitPosx=hitPos.x();
+       hitPosy=hitPos.y();
+       hitPosz=hitPos.z();
+       hitTime = aHit->GetHitTime();
+       hitParticleName = aHit->GetHitParticleName();
+       hitTrackID = aHit->GetHitTrackID(); 
+       hitPartCode = ConvertParticleNameToCode(hitParticleName); // or use hitParticleID - from PDGEncoding?
+       //hitPartCode = aHit->GetHitParticleID();
+       hitProcessName = aHit->GetHitProcessName();
+       hitProcessCode = ConvertProcessNameToCode(hitProcessName);
+       if(hitProcessCode<0){G4cout<<"FACC hit process unaccounted"<<G4endl;}
+       hitEdep = aHit->GetHitEdeposit();
+       hitCopyNum = aHit->GetHitCopyNum();
+       hitPhysical = (std::string)aHit->GetHitPhysical();
+       // aHit->Print();
+       
+       facchit_x[hitnum] = hitPosx;
+       facchit_y[hitnum] = hitPosy;
+       facchit_z[hitnum] = hitPosz;
+       facchit_t[hitnum] = hitTime;
+       facchit_process[hitnum] = hitProcessCode;
+       facchit_particleID[hitnum] = hitPartCode;
+       facchit_trackID[hitnum] = hitTrackID;
+       facchit_edep[hitnum] = hitEdep;
+       facchit_copynum[hitnum] = hitCopyNum;
+       facchit_objnum[hitnum] = -1;
+    }
+    facc_numhits=numberOfHits;
+  }
+  facctree->Fill();
+  G4cout<<"Energy deposited in FACC: "<<totalEnergy*MeV<<" MeV"<<G4endl;
+
+  //------- DONE HANDLING FACC HITS ---------
+  //=========================================
+  
+  //------------ HANDLING FACC PMT DETECTIONS ----------
+  //====================================================
+  numberOfPMThits = myFACCPMTCollection->GetSize();
+  G4cout << "A total of " << numberOfPMThits << " hits on FACC PMTs were recorded!" << G4endl;
+  if (myFACCPMTCollection!=0) {
+    for (G4int pmt_hitnum=0; pmt_hitnum<numberOfPMThits; pmt_hitnum++) {
+       //G4cout<<"adding PMT hit"<<G4endl;
+       if(pmt_hitnum>kpmthitnmax){G4cout<<"max num PMT hits exceeded!"<<G4endl;break;}
+       faccPMThit* aHit = (*myFACCPMTCollection)[pmt_hitnum];
+       hitTrackID = aHit->GetHitTrackID();
+       hitParentID = aHit->GetHitParentID();
+       hitPMTnumber = aHit->GetPMTNumber();
+       G4ThreeVector hitPos = aHit->GetHitPos();
+       hitPosx=hitPos.x();
+       hitPosy=hitPos.y();
+       hitPosz=hitPos.z();
+       hitTime = aHit->GetHitTime();
+       hitProcessName = aHit->GetCreationProcess();
+       hitProcessCode = ConvertProcessNameToCode(hitProcessName);
+       if(hitProcessCode<0){G4cout<<"FACC PMT hit process unaccounted"<<G4endl;}
+       hitWavelength = aHit->GetHitWavelength();
+
+       // aHit->Print();  
+  
+       faccpmthit_x[pmt_hitnum] = hitPosx;
+       faccpmthit_y[pmt_hitnum] = hitPosy;
+       faccpmthit_z[pmt_hitnum] = hitPosz;
+       faccpmthit_t[pmt_hitnum] = hitTime;
+       faccpmthit_process[pmt_hitnum] = hitProcessCode;
+       faccpmthit_trackID[pmt_hitnum] = hitTrackID;
+       faccpmthit_parentID[pmt_hitnum] = hitParentID;
+       faccpmthit_wavelength[pmt_hitnum] = hitWavelength;
+       faccpmthit_copynum[pmt_hitnum] = hitPMTnumber;
+
+    }
+    faccpmt_numhits=numberOfPMThits;
+  }
+  faccpmttree->Fill();
+     
+  //--------- DONE HANDLING FACC PMT DETECTIONS --------
+  //====================================================
+  
+  //--------- HANDLING NCV HITS -------------
+  //=========================================
+  if(myncvCollection!=0){
+		totalEnergy = 0.;
+		numberOfHits = myncvCollection->GetSize();
+		G4cout << "&&&&  A total of " << numberOfHits << " hits on NCV were recorded!" << G4endl;
+		if (myncvCollection!=0) {
+		  for (G4int hitnum=0; hitnum<numberOfHits; hitnum++) {
+		     NCVHit* aHit = (*myncvCollection)[hitnum];
+		     totalEnergy += aHit->GetHitEdeposit();
+		     G4ThreeVector hitPos = aHit->GetHitPos();
+		     hitPosx=hitPos.x();
+		     hitPosy=hitPos.y();
+		     hitPosz=hitPos.z();
+		     hitTime = aHit->GetHitTime();
+		     hitParticleName = aHit->GetHitParticleName();
+		     hitTrackID = aHit->GetHitTrackID(); 
+		     hitPartCode = ConvertParticleNameToCode(hitParticleName); // or use hitParticleID - from PDGEncoding?
+		     //hitPartCode = aHit->GetHitParticleID();
+		     hitProcessName = aHit->GetHitProcessName();
+		     hitProcessCode = ConvertProcessNameToCode(hitProcessName);
+		     if(hitProcessCode<0){G4cout<<"NCV hit process unaccounted"<<G4endl;}
+		     hitEdep = aHit->GetHitEdeposit();
+		     // aHit->Print();
+		     
+		     ncvhit_x[hitnum] = hitPosx;
+		     ncvhit_y[hitnum] = hitPosy;
+		     ncvhit_z[hitnum] = hitPosz;
+		     ncvhit_t[hitnum] = hitTime;
+		     ncvhit_process[hitnum] = hitProcessCode;
+		     ncvhit_particleID[hitnum] = hitPartCode;
+		     ncvhit_trackID[hitnum] = hitTrackID;
+		     ncvhit_edep[hitnum] = hitEdep;
+		  }
+		  ncv_numhits=numberOfHits;
+		}
+		ncvtree->Fill();
+		G4cout<<"Energy deposited in NCV: "<<totalEnergy*MeV<<" MeV"<<G4endl;
+  }
+
+  //------- DONE HANDLING NCV HITS ----------
+  //=========================================
+  
+  
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // END OF WCHSANDBOX SD MRD/VETO WRITEOUT
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 }
 
 G4int WCSimEventAction::WCSimEventFindStartingVolume(G4ThreeVector vtx)
@@ -904,4 +1403,110 @@ void WCSimEventAction::FillRootEvent(G4int event_id,
   // M Fechner : reinitialize the super event after the writing is over
   wcsimrootsuperevent->ReInitialize();
   
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+G4int WCSimEventAction::ConvertParticleNameToCode(TString particleName){
+    G4int particleCode = -1;
+    if(particleName=="opticalphoton") particleCode=100;
+    if(particleName=="e+") particleCode=-11;
+    if(particleName=="e-") particleCode=11;
+    if(particleName=="gamma") particleCode=22;
+    if(particleName=="mu+") particleCode=-13;
+    if(particleName=="mu-") particleCode=13;
+    if(particleName=="pi0") particleCode=111;
+    if(particleName=="pi+") particleCode=211;
+    if(particleName=="pi-") particleCode=-211;
+    if(particleName=="neutron") particleCode = 2112 ;
+    if(particleName=="proton") particleCode = 2212 ;
+    if(particleName=="nu_mu") particleCode=14;
+    if(particleName=="nu_e") particleCode=12;
+    if(particleName=="anti_nu_e") particleCode=-12;
+    if(particleName=="anti_nu_mu") particleCode=-14;
+    if(particleName=="alpha") particleCode=3328;
+    if(particleName=="deuteron") particleCode=3329;
+    if(particleName=="triton") particleCode=3330;
+    if(particleName=="Li7[0.0]") particleCode=3351;
+    if(particleName=="Be8") particleCode=3356;//
+    if(particleName=="C10[0.0]") particleCode=3331;
+    if(particleName=="B11[0.0]") particleCode=3345;
+    if(particleName=="C12[0.0]") particleCode=3332;
+    if(particleName=="C12") particleCode=3332;
+    if(particleName=="C13[0.0]") particleCode=3350;
+    if(particleName=="C13") particleCode=3350;
+    if(particleName=="N13[0.0]") particleCode=3349;
+    if(particleName=="N14[0.0]") particleCode=3340;
+    if(particleName=="N14") particleCode=3340;
+    if(particleName=="N15[0.0]") particleCode=3333;
+    if(particleName=="O15") particleCode=3357;
+    if(particleName=="N16[0.0]") particleCode=3334;
+    if(particleName=="O16[0.0]") particleCode=3335;
+    if(particleName=="O16") particleCode=3335;
+    if(particleName=="Al27[0.0]") particleCode=3346;
+    if(particleName=="Fe54[0.0]") particleCode=3341;
+    if(particleName=="Fe56") particleCode=3354;
+    if(particleName=="Fe57") particleCode=3355;
+    if(particleName=="Mn54[0.0]") particleCode=3348;
+    if(particleName=="Mn55[0.0]") particleCode=3342;
+    if(particleName=="Mn56[0.0]") particleCode=3352;
+    if(particleName=="Fe56[0.0]") particleCode=3343;
+    if(particleName=="Fe57[0.0]") particleCode=3344;
+    if(particleName=="Fe58[0.0]") particleCode=3347; 
+    if(particleName=="Eu154[0.0]") particleCode=3353;
+    if(particleName=="Gd158[0.0]") particleCode=3336;
+    if(particleName=="Gd156[0.0]") particleCode=3337;
+    if(particleName=="Gd157[0.0]") particleCode=3338;
+    if(particleName=="Gd155[0.0]") particleCode=3339;
+    //3357
+    
+    if(particleCode==-1) {
+    	G4cout<<"unaccounted for particle: "<<particleName<<G4endl;
+    	(*unaccountedparticlesandprocesses) << particleName.Data() << G4endl;
+    }
+    
+    return particleCode;
+}
+
+G4int WCSimEventAction::ConvertProcessNameToCode(TString processName){
+    G4int processCode=-1;
+    if(processName=="Transportation") processCode=0;
+    if(processName=="Scintillation") processCode=1;
+    if(processName=="Cerenkov") processCode=2;
+    if(processName=="phot") processCode=3;
+    if(processName=="OpAbsorption") processCode=4;
+    if(processName=="eIoni") processCode=5;
+    if(processName=="muIoni") processCode=6;
+    if(processName=="hIoni") processCode=7;
+    if(processName=="eBrem") processCode=8;
+    if(processName=="muBrem") processCode=9;
+    if(processName=="HadronElastic") processCode=10;
+    if(processName=="hadElastic") processCode=10;
+    if(processName=="nCapture") processCode=11;
+    if(processName=="compt") processCode=12;
+    if(processName=="Decay") processCode=13;
+    if(processName=="muMinusCaptureAtRest") processCode=14;
+    if(processName=="NeutronInelastic") processCode=15;
+    if(processName=="neutronInelastic") processCode=15;
+    if(processName=="ProtonInelastic") processCode=16;
+    if(processName=="protonInelastic") processCode=16;
+    if(processName=="conv") processCode=17;
+    if(processName=="annihil") processCode=18;
+    if(processName=="PiMinusAbsorptionAtRest") processCode=19;
+    if(processName=="PionMinusInelastic") processCode=20;
+    if(processName=="PionPlusInelastic") processCode=21;
+    if(processName=="pi+Inelastic") processCode=21;
+    if(processName=="Electromagnetic") processCode=22;
+    if(processName=="msc") processCode=23;	//msc = multiple scattering
+    if(processName=="ionIoni") processCode=24;	//new withG410?
+    if(processName=="UserLimit") processCode=25;	//G410?
+    if(processName=="Primary") processCode=30;
+    
+    
+    if(processCode<0) {
+    	G4cout<<"Process unaccounted for "<<processName<<G4endl;
+    	(*unaccountedparticlesandprocesses) <<  processName.Data() << G4endl;
+    }
+    
+    return processCode;
 }

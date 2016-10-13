@@ -13,6 +13,10 @@
 #include "G4SDManager.hh"
 #include "G4RunManager.hh"
 
+#include "mrdPMTSD.hh"
+#include "faccPMTSD.hh"
+#include "G4OpBoundaryProcess.hh"
+#include "G4TrackStatus.hh"
 
 void WCSimSteppingAction::UserSteppingAction(const G4Step* aStep)
 {
@@ -37,7 +41,111 @@ void WCSimSteppingAction::UserSteppingAction(const G4Step* aStep)
 //    G4cout << " PROBLEM! " << theTrack->GetCreatorProcess()->GetProcessName() <<
 //  std::flush << G4endl;
 //  }
+
+  // record hits manually for photons crossing boundaries into 'pmt' surfaces in the veto / mrd sandbox style
+  // ========================================================================================================
   
+  // retrieve the pointer to the optical boundary process: this code only gets executed once
+  // use 'static' variable - will retain it's value between calls ...
+  static G4OpBoundaryProcess* boundary=NULL;
+  // ... so that once boundary has a value, the following will be skipped:
+  // Retrieve pointer to the 'optical boundary process' so that we may retrive it's status
+  // (invoked, what type of action etc) at the end of each step
+  if(!boundary){
+    G4ProcessManager* pm = aStep->GetTrack()->GetDefinition()->GetProcessManager();
+    G4int nprocesses = pm->GetProcessListLength();
+    G4ProcessVector* pv = pm->GetProcessList();
+    G4int i;
+    for( i=0;i<nprocesses;i++){
+      if((*pv)[i]->GetProcessName()=="OpBoundary"){
+        boundary = (G4OpBoundaryProcess*)(*pv)[i];
+        //G4cout<<"optical boundary process: "<<boundary<<G4endl;
+        break;
+      }
+    }
+  }
+
+  G4StepPoint* thePostPoint = aStep->GetPostStepPoint();
+  G4VPhysicalVolume* thePostPV = thePostPoint->GetPhysicalVolume();
+  // NOTE: if the step is limited by hitting a boundary, thePostPV will point to the volume it is ENTERING, 
+  // NOT the volume this STEP WAS THROUGH.
+  if(!thePostPV){
+    //out of world
+    fExpectedNextStatus=Undefined;
+    return;
+  }
+  
+  
+  G4ParticleDefinition* particleType = track->GetDefinition();
+  if(particleType==G4OpticalPhoton::OpticalPhotonDefinition()){ 	//Optical photon only
+   // for photons entering the 'sensitive' volumes
+   if((thePostPV->GetName()=="mrdsdsurf_phys")||(thePostPV->GetName()=="vetoSurface_phys")){	// &&(thePostPoint->GetProcessDefinedStep()->GetProcessName() == "OpAbsorption")
+      aStep->GetTrack()->SetTrackStatus(fStopAndKill);	//needs a non-const track pointer
+      G4OpBoundaryProcessStatus boundaryStatus=Undefined;
+      boundaryStatus=boundary->GetStatus();
+      // double check to ensure particle at boundary (may not be valid for vers <Geant4.6.0-p1? omittable >?)
+      if(thePostPoint->GetStepStatus()==fGeomBoundary){
+        if(fExpectedNextStatus==StepTooSmall){
+          if(boundaryStatus!=StepTooSmall){
+            G4cout<<"expected status step too small, but boundary status isn't!"<<G4endl;
+            /*G4ExceptionDescription ed;     // exceptiondescription not in geant4.9.4
+            ed << "SteppingAction::UserSteppingAction(): "
+               << "No reallocation step after reflection!"
+               << G4endl;
+            G4Exception("SteppingAction::UserSteppingAction()", "Expl01", FatalException,ed,
+            "Something is wrong with the surface normal or geometry"); */
+            G4Exception("SteppingAction::UserSteppingAction()","Expl01",FatalException,"No reallocation step after reflection!");
+            // G4Exception(const char* issure, const char* errorCode, G4ExceptionSeverity severity, const char* comments);
+          }
+        }
+        fExpectedNextStatus=Undefined;
+        // perform actions based on boundary status... 
+        switch(boundaryStatus){
+          case Absorption:
+              //G4cout<<"Absorption of optical photon on boundary of "<<thePostPV->GetName()<<G4endl;
+              //info->SetMRDdetected(boundaryAbsorbed);
+              break;
+          case Detection: {
+              //G4cout<<"Detection of optical photon on boundary of "<<thePostPV->GetName()<<G4endl;
+              G4SDManager* SDman = G4SDManager::GetSDMpointer();
+              if(thePostPV->GetName()=="mrdsdsurf_phys"){
+                G4String sdName="MRDPMTSD";
+                mrdPMTSD* pmtSD = (mrdPMTSD*)SDman->FindSensitiveDetector(sdName);
+                if(pmtSD){
+                  pmtSD->ProcessHits_PhotonHit(aStep, NULL);
+                  //G4cout<<"called process photon hit!"<<G4endl;
+                  //info->SetMRDdetected(hitPMT);
+                }
+              } else if(thePostPV->GetName()=="vetoSurface_phys"){
+                G4String sdName="FACCPMTSD";
+                faccPMTSD* pmtSD = (faccPMTSD*)SDman->FindSensitiveDetector(sdName);
+                if(pmtSD){
+                  pmtSD->ProcessHits_PhotonHit(aStep, NULL);
+                  //G4cout<<"called process photon hit!"<<G4endl;
+                  //info->SetFACCdetected(hitPMT);
+                }
+              }
+              break;
+          }
+          case FresnelReflection:
+          case TotalInternalReflection:
+          case LambertianReflection:
+          case LobeReflection:
+          case SpikeReflection:
+             // trackInformation->IncReflections();
+             break;
+          case BackScattering: {
+               // trackInformation->IncReflections();
+               fExpectedNextStatus=StepTooSmall;
+               //G4cout<<"boundary status backscattering - ignore the next step (too small)"<<G4endl;
+               break;
+          }
+          default:
+              break;
+        }	//close switch statement
+     } // post-step status not on boundary
+   } // post-step volume was not in a 'sensitive' volume
+  } // not an optical photon
 }
 
 
@@ -160,3 +268,11 @@ double WCSimSteppingAction::FieldLines(G4double /*x*/,G4double /*y*/,G4int /*coo
 //     return 0.1*((abs(y)/y)*(1-Radius*Radius/((x*x+y*y)*(x*x+y*y))) + abs(y)*(2*Radius*Radius*y/((x*x+y*y)*(x*x+y*y))));
   return 0;
 }
+
+G4String ToName(G4OpBoundaryProcessStatus boundaryStatus){
+G4String processnames[14]={"Undefined","FresnelRefraction","FresnelReflection","TotalInternalReflection","LambertianReflection","LobeReflection","SpikeReflection","BackScattering","Absorption","Detection","NotAtBoundary","SameMaterial","StepTooSmall","NoRINDEX"};
+return processnames[boundaryStatus];}
+
+G4String ToName2(G4StepStatus stepStatus){
+G4String processnames[8]={"fWorldBoundary","fGeomBoundary","fAtRestDoItProc","fAlongStepDoItProc","fPostStepDoItProc","fUserDefinedLimit","fExclusivelyForcedProc","fUndefined"};
+return processnames[stepStatus];}

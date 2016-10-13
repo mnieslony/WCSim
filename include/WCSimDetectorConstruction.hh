@@ -431,12 +431,13 @@ private:
   void ConstructVETO(G4LogicalVolume* expHall_log, G4VPhysicalVolume* expHall_phys);
   void ConstructNCV(G4LogicalVolume* waterTank_log);
   void ComputePaddleTransformation (const G4int copyNo, G4VPhysicalVolume* physVol);
-  void ComputeTaperTransformation (const G4int copyNo, G4VPhysicalVolume* physVol, G4int selector);
+  void ComputeTaperTransformation (const G4int copyNo, G4VPhysicalVolume* physVol, G4int selector, G4bool additionaloffset);
   void ComputeSteelTransformation (const G4int copyNo, G4VPhysicalVolume* physVol);
   void ComputeVetoPaddleTransformation (const G4int copyNo, G4VPhysicalVolume* physVol, G4int selector);
   void PlacePaddles(G4LogicalVolume* totMRD_log);
   void PlaceTapers(G4LogicalVolume* totMRD_log);
   void PlaceLGs(G4LogicalVolume* totMRD_log);
+  void PlaceMRDSDSurfs(G4LogicalVolume* totMRD_log, G4PVPlacement* expHall);
   void PlaceMRDPMTs(G4LogicalVolume* totMRD_log, G4PVPlacement* expHall);
   void PlaceSteels(G4LogicalVolume* totMRD_log);
   void makeAlu(G4AssemblyVolume* totMRD);
@@ -524,6 +525,7 @@ private:
 
 	G4double maxwidth;
 	G4double maxheight;
+	G4double mrdZoffset;
 
 	// Define solids 
 	//==============  
@@ -536,6 +538,7 @@ private:
 	G4Trd* mrdScintTap_box;											// Paddle Tapered ends
 
 	G4Trd* mrdLG_box;														// Tapered Light Guides
+	G4Box* mrdSurface_box;											// little box for surface to detect photons
 
 	G4Box* steelMRDplate_box;										// Steel plates
 
@@ -560,6 +563,7 @@ private:
 	G4LogicalVolume* taper_log;
 	G4LogicalVolume* lg_log;
 	G4LogicalVolume* steel_log;
+	G4LogicalVolume* mrdsdsurf_log;
 
 	G4LogicalVolume* vetoPaddle_log;
 	G4LogicalVolume* vetol2Paddle_log;
@@ -576,8 +580,10 @@ private:
 	std::vector<G4VPhysicalVolume*> paddles_phys;
 	std::vector<G4VPhysicalVolume*> tapers_phys;
 	std::vector<G4VPhysicalVolume*> lgs_phys;
+	std::vector<G4VPhysicalVolume*> mrdsdsurfs_phys;
 	std::vector<G4VPhysicalVolume*> vetopaddles_phys;
 	std::vector<G4VPhysicalVolume*> vetosurfaces_phys;
+	std::vector<G4VPhysicalVolume*> vetolgs_phys;
 
 	// Define rotation matrices 
 	//=========================
@@ -598,6 +604,7 @@ private:
 	G4VisAttributes* steelatts;
 	G4VisAttributes* scinttapatts;
 	G4VisAttributes* scintlgatts;
+	G4VisAttributes* senssurfatts;
 	
   // End MRD & Veto variables
   // ====================================================
