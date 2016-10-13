@@ -13,11 +13,11 @@ WCSimPrimaryGeneratorMessenger::WCSimPrimaryGeneratorMessenger(WCSimPrimaryGener
   genCmd = new G4UIcmdWithAString("/mygen/generator",this);
   genCmd->SetGuidance("Select primary generator.");
   //T. Akiri: Addition of laser
-  genCmd->SetGuidance(" Available generators : muline, normal, laser");
+  genCmd->SetGuidance(" Available generators : muline, normal, laser, beam");
   genCmd->SetParameterName("generator",true);
-  genCmd->SetDefaultValue("muline");
+  genCmd->SetDefaultValue("beam");	// previously muline
   //T. Akiri: Addition of laser
-  genCmd->SetCandidates("muline normal laser");
+  genCmd->SetCandidates("muline normal laser beam");
 
   fileNameCmd = new G4UIcmdWithAString("/mygen/vecfile",this);
   fileNameCmd->SetGuidance("Select the file of vectors.");
@@ -41,19 +41,27 @@ void WCSimPrimaryGeneratorMessenger::SetNewValue(G4UIcommand * command,G4String 
       myAction->SetMulineEvtGenerator(true);
       myAction->SetNormalEvtGenerator(false);
       myAction->SetLaserEvtGenerator(false);
+      myAction->SetBeamEvtGenerator(false);
     }
     else if ( newValue == "normal")
     {
       myAction->SetMulineEvtGenerator(false);
       myAction->SetNormalEvtGenerator(true);
       myAction->SetLaserEvtGenerator(false);
+      myAction->SetBeamEvtGenerator(false);
     }
     else if ( newValue == "laser")   //T. Akiri: Addition of laser
     {
       myAction->SetMulineEvtGenerator(false);
       myAction->SetNormalEvtGenerator(false);
       myAction->SetLaserEvtGenerator(true);
+      myAction->SetBeamEvtGenerator(false);
     }
+    else if ( newValue == "beam")
+      myAction->SetMulineEvtGenerator(false);
+      myAction->SetNormalEvtGenerator(false);
+      myAction->SetLaserEvtGenerator(false);
+      myAction->SetBeamEvtGenerator(true);
   }
 
   if( command == fileNameCmd )
@@ -76,6 +84,8 @@ G4String WCSimPrimaryGeneratorMessenger::GetCurrentValue(G4UIcommand* command)
       { cv = "normal"; }
     else if(myAction->IsUsingLaserEvtGenerator())
       { cv = "laser"; }   //T. Akiri: Addition of laser
+    else if(myAction->IsUsingBeamEvtGenerator())
+      { cv = "beam"; }
   }
   
   return cv;

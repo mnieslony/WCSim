@@ -55,7 +55,8 @@ WCSimDetectorConstruction::WCSimDetectorConstruction(G4int DetConfig,WCSimTuning
 
   //SetSuperKGeometry();
   //SetHyperKGeometry();
-  SetANNIEGeometry();
+  //SetANNIEPhase1Geometry();
+  SetANNIEPhase2Geometry();
 
   //----------------------------------------------------- 
   // Set whether or not Pi0-specific info is saved

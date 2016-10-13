@@ -72,7 +72,7 @@
 
 // **********SciBooNE integration
 // ==============================
-#include "SBsimMRDSD.hh"
+//#include "SBsimMRDSD.hh"
 #include "SBsimMRDDB.hh"
 // **********/SciBooNE integration
 // ===============================
@@ -94,13 +94,14 @@ G4LogicalVolume* WCSimDetectorConstruction::ConstructANNIE()
   
   //Decide if adding Gd
   G4cout<<"Tank is full of ";
-  G4bool isNCV = true; // Construct the Neutron Capture Volume
+  G4bool isNCV;
+  if(WCDetectorName=="ANNIEp1"){isNCV = true;} else {isNCV=false;} // Construct the Neutron Capture Volume
   G4String watertype = "Water";
   if (WCAddGd)
     {watertype = "Doped Water";
-    G4cout<<"***Dope Water***"<<G4endl;}
+    G4cout<<"***Doped Water***"<<G4endl;}
   else 
-    {G4cout<<"refreshing water"<<G4endl;}
+    {G4cout<<"Refreshing Water"<<G4endl;}
   
 //  //  ===== Rob Hatcher's integration
 //  G4GDMLParser parser;  // Read GDML file
@@ -119,44 +120,59 @@ G4LogicalVolume* WCSimDetectorConstruction::ConstructANNIE()
   G4LogicalVolume* expHall_log = new G4LogicalVolume(expHall_box,G4Material::GetMaterial("Air"),"Hall",0,0,0);
   G4VPhysicalVolume* expHall_phys = new G4PVPlacement(0,G4ThreeVector(),expHall_log,"Hall",MatryoshkaMother,false,0);
   
-  // Create Water Tank
-  //G4Tubs* aTube = new G4Tubs("Name", innerRadius, outerRadius, hz, startAngle, spanningAngle);
-  G4Tubs* waterTank_tubs = new G4Tubs("waterTank",0.*m,tankouterRadius,tankhy,0.*deg,360.*deg);	//prev dims: 5.5m radius, 11m height.
-  G4LogicalVolume* waterTank_log = new G4LogicalVolume(waterTank_tubs,G4Material::GetMaterial(watertype),"waterTank",0,0,0);
-  G4RotationMatrix* rotm = new G4RotationMatrix();				// declare a rotation matrix
-  rotm->rotateX(90*deg); 							// rotate Y
-  G4VPhysicalVolume* waterTank_phys = new G4PVPlacement(rotm,G4ThreeVector(0,-tankyoffset*mm,tankouterRadius+tankzoffset),waterTank_log,"waterTank",expHall_log,false,0);
+  G4RotationMatrix* rotm = new G4RotationMatrix();
+  rotm->rotateX(90*deg); // rotate Y
+  G4LogicalVolume* waterTank_log;
+  G4VPhysicalVolume* waterTank_phys;
+  if(WCDetectorName=="ANNIEp1") {
+		// Manually Create Water Tank and add PMTs just to the bottom
+		//G4Tubs* aTube = new G4Tubs("Name", innerRadius, outerRadius, hz, startAngle, spanningAngle);
+		G4Tubs* waterTank_tubs = new G4Tubs("waterTank",0.*m,tankouterRadius,tankhy,0.*deg,360.*deg);	//prev dims: 5.5m radius, 11m height.
+		waterTank_log = new G4LogicalVolume(waterTank_tubs,G4Material::GetMaterial(watertype),"waterTank",0,0,0);
+		waterTank_phys = 
+		new G4PVPlacement(rotm,G4ThreeVector(0,-tankyoffset*mm,tankouterRadius+tankzoffset),waterTank_log,"waterTank",expHall_log,false,0);
+		AddANNIEPhase1PMTs(waterTank_log); 
+	} else { 
+		waterTank_log = ConstructCylinder();
+		waterTank_phys = 
+		new G4PVPlacement(rotm,G4ThreeVector(0,-tankyoffset*mm,tankouterRadius+tankzoffset),waterTank_log,"waterTank",expHall_log,false,0);
+	}
 
   // set all the paddle dimensions etc and create solids, logical volumes etc. for the MRD & VETO
-  DefineANNIEdimensions();
-  // Create MRD
+  DefineANNIEdimensions();												// part of MRDDetectorConstruction.cc
+  // Create MRD																		// part of MRDDetectorConstruction.cc
   //ConstructMRD(expHall_log, expHall_phys);			// marcus' MRD construction
   
   // ===== SciBooNE integration
-  //G4PVPlacement* expHall= new G4PVPlacement(0, G4ThreeVector(), "EXP_HALL_PV", expHall_log, 0, false, 0);
-  DefineMRD((G4PVPlacement*)expHall_phys);	// used to take in expHall above
+  DefineMRD((G4PVPlacement*)expHall_phys);				// Subroutine below - combines FACC from MRDDetectorConstruction
+  																								// with MRD from DefineMRD.icc
   //  ===== /SciBooNE integration
   
   // Create FACC
   //G4cout<<"Calling construction for the VETO"<<G4endl;
-  ConstructVETO(expHall_log, expHall_phys);
-  
+  ConstructVETO(expHall_log, expHall_phys);				// part of MRDDetectorConstruction.cc
   if (isNCV){
     G4ThreeVector NCVposition;
     NCVposition.setX(0.*m); // Position of the NCV
     NCVposition.setY(0.*m);
     NCVposition.setZ(0.*m);
-    ConstructNCV(waterTank_log);
+    ConstructNCV(waterTank_log);									// subroutine below
     G4cout << "************ Neutron Capture Volume will be included in the simulation ! ************\n";
   } else{
-    G4cout << "************ Neutron Capture Volume will not be included in the simulation ! ************\n";
+    G4cout << "************ Neutron Capture Volume will NOT be included in the simulation ! ********\n";
   }
   
   expHall_log->SetVisAttributes (G4VisAttributes::Invisible);	// set hall volume invisible
-  //always return the physical World
   
-  // WCSim PMT additions
-  // ===================
+  //return expHall_phys;
+  return MatryoshkaMother;	// return a logical volume not a physical one
+}
+
+  // =====================================================================
+  // =====================================================================
+  //          Phase 1 PMT additions - not using ConstructCylinder
+  // =====================================================================
+void WCSimDetectorConstruction::AddANNIEPhase1PMTs(G4LogicalVolume* waterTank_log){
   
 	G4LogicalVolume* logicWCPMT = ConstructPMT(WCPMTName, WCIDCollectionName);
 		
@@ -193,7 +209,7 @@ If used here, uncomment the SetVisAttributes(WClogic) line, and comment out the 
 					new G4PVPlacement(	0,						// no rotation
 										PMTpos,									// its position
 										logicWCPMT,							// its logical volume
-										"WCPMT",								// its name 
+										"WCPMT",								// its name
 										waterTank_log,					// its mother volume
 										false,									// no boolean os
 										icopy);									// every PMT need a unique id.
@@ -212,12 +228,10 @@ If used here, uncomment the SetVisAttributes(WClogic) line, and comment out the 
 	
 	// Register PMTs with sensitive detector - done in Construct()
 	//TraverseReplicas(waterTank_phys, 0, G4Transform3D(), &WCLiteDetectorConstruction::DescribeAndRegisterPMT);
-
-	// End WCSim PMT additions
-	//=======================
 	
-  //return expHall_phys;
-  return MatryoshkaMother;
+	//============================================================
+	//                    End Phase 1 PMT additions 
+	//============================================================
 }
 
 // ********************SciBooNE Geometry code******************
@@ -277,6 +291,10 @@ void WCSimDetectorConstruction::DefineMRD(G4PVPlacement* expHall)
     G4LogicalBorderSurface* scintSurface_log
       = new G4LogicalBorderSurface("scintcladdinglog",lgs_phys.at(i),expHall,scintSurface_op);
   }
+  
+  // add MRD PMTs:
+  //G4cout<<"Placing MRD PMTs"<<G4endl; 			PlaceMRDPMTs(0, expHall);
+  //G4cout<<"done placing mrd pmts"<<G4endl;
   
 }
 // *******************/End SciBooNE integration****************

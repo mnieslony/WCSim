@@ -84,7 +84,8 @@ public:
   void Cylinder_12inchHPD_15perCent();
   void SetHyperKGeometry();
   void UpdateGeometry();
-  void SetANNIEGeometry();
+  void SetANNIEPhase1Geometry(); //phase 1 geometry - just 60 PMTs on bottom, with NCV.
+  void SetANNIEPhase2Geometry(); // phase 2 geometry - 60 PMTs on bottom, top, and 200 PMTs around barrel.
   
 
   G4String GetDetectorName()      {return WCDetectorName;}
@@ -155,6 +156,8 @@ public:
   std::vector<WCSimPmtInfo*>* Get_Pmts() {return &fpmts;}
 
   G4String GetIDCollectionName(){return WCIDCollectionName;}
+  G4String GetMRDCollectionName(){return WCMRDCollectionName;}
+  G4String GetFACCCollectionName(){return WCFACCCollectionName;}
 
  
 private:
@@ -264,6 +267,8 @@ private:
   G4String WCDetectorName;
   G4String WCIDCollectionName;
   G4String WCODCollectionName;
+  G4String WCMRDCollectionName;
+  G4String WCFACCCollectionName;
 
 
   // WC PMT parameters
@@ -420,19 +425,27 @@ private:
   G4LogicalVolume* ConstructANNIE();
   void DefineMRD(G4PVPlacement* expHall);
   void DefineANNIEdimensions();
+  void AddANNIEPhase1PMTs(G4LogicalVolume* waterTank_log);
+  void AddANNIEPhase2PMTs(G4LogicalVolume* waterTank_log);
   void ConstructMRD(G4LogicalVolume* expHall_log, G4VPhysicalVolume* expHall_phys);
   void ConstructVETO(G4LogicalVolume* expHall_log, G4VPhysicalVolume* expHall_phys);
   void ConstructNCV(G4LogicalVolume* waterTank_log);
   void ComputePaddleTransformation (const G4int copyNo, G4VPhysicalVolume* physVol);
-  void ComputeTaperTransformation (const G4int copyNo, G4VPhysicalVolume* physVol, G4bool lgs);
+  void ComputeTaperTransformation (const G4int copyNo, G4VPhysicalVolume* physVol, G4int selector);
   void ComputeSteelTransformation (const G4int copyNo, G4VPhysicalVolume* physVol);
-  void ComputeVetoPaddleTransformation (const G4int copyNo, G4VPhysicalVolume* physVol, G4bool surf);
+  void ComputeVetoPaddleTransformation (const G4int copyNo, G4VPhysicalVolume* physVol, G4int selector);
   void PlacePaddles(G4LogicalVolume* totMRD_log);
   void PlaceTapers(G4LogicalVolume* totMRD_log);
   void PlaceLGs(G4LogicalVolume* totMRD_log);
+  void PlaceMRDPMTs(G4LogicalVolume* totMRD_log, G4PVPlacement* expHall);
   void PlaceSteels(G4LogicalVolume* totMRD_log);
   void makeAlu(G4AssemblyVolume* totMRD);
   void PlaceVetoPaddles(G4LogicalVolume* totVeto_log);
+  void PlaceVetoLGs(G4LogicalVolume* totVeto_log);
+  void PlaceVetoSDsurfs(G4LogicalVolume* totVeto_log);
+  void PlaceVetoPMTs(G4LogicalVolume* totVeto_log);
+  G4String GetMRDPMTName()			  {return MRDPMTName;}
+  G4String GetFACCPMTName()			  {return FACCPMTName;}
 //  private:
 
   G4bool isANNIE;
@@ -445,6 +458,12 @@ private:
   G4double expHall_y;
   G4double expHall_z;
   G4int doOverlapCheck;
+  G4String MRDPMTName;
+  G4double MRDPMTExposeHeight;
+  G4double MRDPMTRadius;
+  G4String FACCPMTName;
+  G4double FACCPMTExposeHeight;
+  G4double FACCPMTRadius;
   
 	G4double Xposition, Yposition, Zposition;		// used for positioning parameterisations.
 	G4int numpaddlesperpanelh;									// paddles per h scintillator panel
@@ -484,6 +503,8 @@ private:
 	G4double alufullythickness;
 	G4double windowwidth;												// (full length - 4 beams) / 3 windows
 	G4double windowheight;
+	
+	G4double mrdpmtfullheight;									// full length of MRD PMTs
 
 	G4double mrdZlen; 
 
@@ -493,6 +514,11 @@ private:
 	G4double vetolayer2offset;
 	G4double vetopaddlegap;
 	G4double nothickness;
+	
+	G4double vetolgfullxlen;								// width of the veto light guides at narrow end
+	G4double vetolgfullylen;
+	
+	G4double vetopmtfullheight;
 
 	G4double vetoZlen;
 
@@ -521,6 +547,8 @@ private:
 	G4Box* vetoPaddle_box;
 	G4Box* vetoSurface_box;
 	G4Box* totVeto_box;
+	G4Trd* vetoLG_box;
+	
 	
 	// Define logical volumes 
 	//=======================
@@ -536,6 +564,10 @@ private:
 	G4LogicalVolume* vetoPaddle_log;
 	G4LogicalVolume* vetol2Paddle_log;
 	G4LogicalVolume* vetoSurface_log;
+	G4LogicalVolume* vetolg_log;
+	
+	G4LogicalVolume* logicMRDPMT;
+	G4LogicalVolume* logicFACCPMT;
 
 	// Physical Volumes
 	// ================
