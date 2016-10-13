@@ -41,7 +41,7 @@
 #/WCSim/EggShapedHyperK/waterTank_Length 247500. mm # Equivalent length for 1 partition
 
 # switch geometry to ANNIE
-/WCSim/WCgeom ANNIE
+/WCSim/WCgeom ANNIEp2
 
 #/WCSim/Construct # This must be uncommented in order to construct a new detector configuration. 
 
@@ -106,21 +106,22 @@
 /DarkRate/SetDarkWindow 4000
 
 #Uncomment one of the lines below if you want to use the OGLSX or RayTracer visualizer
-#/control/execute visOGLSX.mac
+/control/execute visOGLSX.mac
 #/control/execute visRayTracer.mac
 
+/mygen/generator beam	# retrieve input primaries from GENIE output files
 
 # Or you can use the G4 Particle Gun
-/mygen/generator normal
-/gun/particle e-
-#/gun/particle pi0
-/gun/energy 500 MeV
-/gun/direction 1 0 0 
-/gun/position 0 0 0  
+#/mygen/generator normal
+#/gun/particle e-
+##/gun/particle pi0
+#/gun/energy 500 MeV
+#/gun/direction 1 0 0 
+#/gun/position 0 0 0  
 
 ## change the name of the output root file, default = wcsim.root
 
 /WCSimIO/RootFile wcsim.root
 
-#/run/beamOn 10
-#exit
+/run/beamOn 10
+exit

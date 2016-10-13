@@ -105,7 +105,7 @@ void WCSimDetectorConstruction::DescribeAndRegisterPMT(G4VPhysicalVolume* aPV ,i
 
   replicaNoString[aDepth] = pvname.str() + "-" + depth.str();
 
-  if (aPV->GetName()== WCIDCollectionName ||aPV->GetName()== WCODCollectionName ) 
+  if (pvname== WCIDCollectionName ||pvname== WCODCollectionName || pvname== WCMRDCollectionName || pvname== WCFACCCollectionName) 
     {
 
     // First increment the number of PMTs in the tank.

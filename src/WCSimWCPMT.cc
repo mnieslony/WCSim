@@ -24,12 +24,19 @@ extern "C" void skrn1pe_(float* );
 //extern "C" void rn1pe_(float* ); // 1Kton
 
 WCSimWCPMT::WCSimWCPMT(G4String name,
-				   WCSimDetectorConstruction* myDetector)
-  :G4VDigitizerModule(name)
+				   WCSimDetectorConstruction* myDetector, G4String detectorElement)
+  :G4VDigitizerModule(name), detectorElement(detectorElement)
 {
-  G4String colName = "WCRawPMTSignalCollection";
+  //G4String colName = "WCRawPMTSignalCollection";
   this->myDetector = myDetector;
-  collectionName.push_back(colName);
+  if(1){	//(detectorElement=="tank"){
+  	G4cout<<"☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆"<<G4endl;
+  	collectionName.push_back("WCRawPMTSignalCollection");	// ☆
+  } else if(detectorElement=="mrd"){
+  	collectionName.push_back("WCRawMRDSignalCollection");
+  } else if(detectorElement=="facc"){
+  	collectionName.push_back("WCRawFACCSignalCollection");
+  }
   DigiHitMapPMT.clear();
   
 
@@ -40,9 +47,15 @@ WCSimWCPMT::~WCSimWCPMT(){
 }
 
 G4double WCSimWCPMT::rn1pe(){
-  G4String WCIDCollectionName = myDetector->GetIDCollectionName();
+  //G4String WCIDCollectionName = myDetector->GetIDCollectionName();	// ☆
   WCSimPMTObject * PMT;
-  PMT = myDetector->GetPMTPointer(WCIDCollectionName);
+  if(1){	//(detectorElement=="tank"){
+  	PMT = myDetector->GetPMTPointer(myDetector->GetIDCollectionName());	// ☆ arg WCIDCollectionName
+  } else if(detectorElement=="mrd"){ 
+  	PMT = myDetector->GetPMTPointer(myDetector->GetMRDCollectionName());
+  } else if(detectorElement=="facc"){
+  	PMT = myDetector->GetPMTPointer(myDetector->GetFACCCollectionName());
+  }
   G4int i;
   G4double random = G4UniformRand();
   G4double random2 = G4UniformRand(); 
@@ -62,21 +75,30 @@ G4double WCSimWCPMT::rn1pe(){
 
 void WCSimWCPMT::Digitize()
 {
-  DigitsCollection = new WCSimWCDigitsCollection ("WCDigitizedCollectionPMT",collectionName[0]);
-  G4String WCIDCollectionName = myDetector->GetIDCollectionName();
+  // Create a DigitCollection and retrieve the appropriate hitCollection name based on detectorElement
+  G4String WCCollectionName;
+  if(1){	//(detectorElement=="tank"){
+  	DigitsCollection = new WCSimWCDigitsCollection ("WCDigitizedCollectionPMT",collectionName[0]); //☆
+  	// Get the Associated Hit collection ID
+  	WCCollectionName = myDetector->GetIDCollectionName(); //☆
+  } else if(detectorElement=="mrd"){
+  	DigitsCollection = new WCSimWCDigitsCollection ("WCDigitizedCollectionMRD",collectionName[0]);
+  	// Get the Associated Hit collection ID
+  	WCCollectionName = myDetector->GetMRDCollectionName();
+  } else if(detectorElement=="facc"){
+  	DigitsCollection = new WCSimWCDigitsCollection ("WCDigitizedCollectionFACC",collectionName[0]);
+  	// Get the Associated Hit collection ID
+  	WCCollectionName = myDetector->GetFACCCollectionName();
+  }
+
   G4DigiManager* DigiMan = G4DigiManager::GetDMpointer();
- 
-  // Get the Associated Hit collection IDs
-  G4int WCHCID = DigiMan->GetHitsCollectionID(WCIDCollectionName);
-
+  // Get the Associated Hit collection ID
+  G4int WCHCID = DigiMan->GetHitsCollectionID(WCCollectionName);	// ☆
   // The Hits collection
-  WCSimWCHitsCollection* WCHC =
-    (WCSimWCHitsCollection*)(DigiMan->GetHitsCollection(WCHCID));
-
+  WCSimWCHitsCollection* WCHC = (WCSimWCHitsCollection*)(DigiMan->GetHitsCollection(WCHCID));
+  
   if (WCHC) {
-
     MakePeCorrection(WCHC);
-    
   }
 
   StoreDigiCollection(DigitsCollection);
@@ -88,8 +110,16 @@ void WCSimWCPMT::MakePeCorrection(WCSimWCHitsCollection* WCHC)
 { 
 
   //Get the PMT info for hit time smearing
-  G4String WCIDCollectionName = myDetector->GetIDCollectionName();
-  WCSimPMTObject * PMT = myDetector->GetPMTPointer(WCIDCollectionName);
+  G4String WCCollectionName;	// ☆
+  if(1){	//(detectorElement=="tank"){
+  	WCCollectionName = myDetector->GetIDCollectionName();
+  } else if(detectorElement=="mrd"){
+  	WCCollectionName = myDetector->GetMRDCollectionName();
+  } else if(detectorElement=="facc"){
+  	WCCollectionName = myDetector->GetFACCCollectionName();
+  }
+  
+  WCSimPMTObject * PMT = myDetector->GetPMTPointer(WCCollectionName);	//☆
 
   for (G4int i=0; i < WCHC->entries(); i++)
     {

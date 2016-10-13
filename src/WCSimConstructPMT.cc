@@ -23,13 +23,11 @@ WCSimDetectorConstruction::PMTMap_t WCSimDetectorConstruction::PMTLogicalVolumes
 G4LogicalVolume* WCSimDetectorConstruction::ConstructPMT(G4String PMTName, G4String CollectionName)
 {
   PMTKey_t key(PMTName,CollectionName);
-
   PMTMap_t::iterator it = PMTLogicalVolumes.find(key);
   if (it != PMTLogicalVolumes.end()) {
       //G4cout << "Restore PMT" << G4endl;
       return it->second;
   }
-
   //G4cout << "Create PMT" << G4endl;
 
 
@@ -50,8 +48,7 @@ else
   G4double expose;
   G4double radius;
   G4double glassThickness;
-  
-  WCSimPMTObject *PMT = GetPMTPointer(CollectionName);
+  WCSimPMTObject *PMT = GetPMTPointer(CollectionName);G4cout<<"OOO"<<G4endl;
   expose = PMT->GetExposeHeight();
   radius = PMT->GetRadius();
   glassThickness = PMT->GetPMTGlassThickness();
@@ -65,7 +62,6 @@ else
   G4double PMTHolderZ[2] = {0, expose};
   G4double PMTHolderR[2] = {radius, radius};
   G4double PMTHolderr[2] = {0,0};
-
   G4Polycone* solidWCPMT = 
    new G4Polycone("WCPMT",                    
                   0.0*deg,
@@ -74,7 +70,6 @@ else
                   PMTHolderZ,
                   PMTHolderr, // R Inner
                   PMTHolderR);// R Outer
-
 
   G4LogicalVolume* logicWCPMT =
     new G4LogicalVolume(    solidWCPMT,
@@ -208,10 +203,11 @@ else {
   G4String SDName = "/WCSim/";
   SDName += CollectionName;
 
+  G4cout<<"OOOsearchingforsd "<<G4endl;
   // If there is no such sensitive detector with that SDName yet,
   // make a new one
   if( ! SDman->FindSensitiveDetector(SDName, false) ) {
-    
+    G4cout<<"didn't find"<<G4endl;
     aWCPMT = new WCSimWCSD(CollectionName,SDName,this );
     SDman->AddNewDetector( aWCPMT );
   }

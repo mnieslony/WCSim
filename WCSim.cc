@@ -52,17 +52,16 @@ int main(int argc,char** argv)
   G4cout<<"Making detector"<<G4endl;
   WCSimDetectorConstruction* WCSimdetector = new 
     WCSimDetectorConstruction(WCSimConfiguration,tuningpars);
-  G4cout<<"Setting detector"<<G4endl;
   runManager->SetUserInitialization(WCSimdetector);
   G4cout<<"Making the physics"<<G4endl;
   // Added selectable physics lists 2010-07 by DMW
   // Set up the messenger hooks here, initialize the actual list after loading jobOptions.mac
   WCSimPhysicsListFactory *physFactory = new WCSimPhysicsListFactory();
-  G4cout<<"Getting job options"<<G4endl;
+  G4cout<<"Getting job options from jobOptions.mac"<<G4endl;
   // Currently, default model is set to BINARY
   file_exists("jobOptions.mac");
   UI->ApplyCommand("/control/execute jobOptions.mac");
-  G4cout<<"Initialising physics"<<G4endl;
+  G4cout<<"Initialising physics factories"<<G4endl;
   // Initialize the physics factory to register the selected physics.
   physFactory->InitializeList();
   runManager->SetUserInitialization(physFactory);
@@ -77,35 +76,32 @@ int main(int argc,char** argv)
   // by the program BEFORE the runManager is initialized.
   // If file does not exist, default model will be used.
   // Currently, default model is set to BINARY.
-  G4cout<<"Getting further job options"<<G4endl;
+  G4cout<<"Getting further job options from jobOptions2.mac"<<G4endl;
   file_exists("jobOptions2.mac");
   UI->ApplyCommand("/control/execute jobOptions2.mac");
-  G4cout<<"Creating visualisations"<<G4endl;
+  G4cout<<"Creating visualisation manager"<<G4endl;
   // Visualization
   G4VisManager* visManager = new WCSimVisManager;
-    G4cout<<"Initialising visualisations"<<G4endl;
   visManager->Initialize();
-  G4cout<<"Loading torpedo bays"<<G4endl;
+  G4cout<<"Creating Primary Generator Action"<<G4endl;
   // Set user action classes
   WCSimPrimaryGeneratorAction* myGeneratorAction = new 
     WCSimPrimaryGeneratorAction(WCSimdetector);
-  G4cout<<"Acquiring target lock"<<G4endl;
   runManager->SetUserAction(myGeneratorAction);
-  G4cout<<"Devising battle plan"<<G4endl;
+  G4cout<<"Creating Run Action"<<G4endl;
   WCSimRunAction* myRunAction = new WCSimRunAction(WCSimdetector);
-  G4cout<<"Submitting battle plan"<<G4endl;
   runManager->SetUserAction(myRunAction);
-  G4cout<<"Setting event action"<<G4endl;
+  G4cout<<"Creating Event Action"<<G4endl;
   runManager->SetUserAction(new WCSimEventAction(myRunAction, WCSimdetector,
 						 myGeneratorAction));
-  G4cout<<"Setting tracking action"<<G4endl;
+  G4cout<<"Creating Tracking Action"<<G4endl;
   runManager->SetUserAction(new WCSimTrackingAction);
-  G4cout<<"Setting stacking action"<<G4endl;
+  G4cout<<"Creating Stacking Action"<<G4endl;
   runManager->SetUserAction(new WCSimStackingAction(WCSimdetector));
-  G4cout<<"Setting stepping action"<<G4endl;
+  G4cout<<"Creating Stepping Action"<<G4endl;
   runManager->SetUserAction(new WCSimSteppingAction);
 
-  G4cout<<"Initialise"<<G4endl;
+  G4cout<<"Initialising G4 kernel"<<G4endl;
   // Initialize G4 kernel
   runManager->Initialize();
 
@@ -115,11 +111,11 @@ int main(int argc,char** argv)
     // Start UI Session
     G4UIsession* session =  new G4UIterminal(new G4UItcsh);
 
-    G4cout<<"On screen!"<<G4endl;
+    G4cout<<"Executing WCSim.mac"<<G4endl;
     // Visualization Macro
     UI->ApplyCommand("/control/execute WCSim.mac");
 
-    G4cout<<"Begin!"<<G4endl;
+    G4cout<<"Starting session"<<G4endl;
     // Start Interactive Mode
     session->SessionStart();
 

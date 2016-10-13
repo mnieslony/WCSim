@@ -3,7 +3,8 @@
 # Setup the project
 cmake_minimum_required(VERSION 2.8 FATAL_ERROR)
 project(WCSim)
-
+#set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -Wall -fdiagnostics-color=always")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -fdiagnostics-color=always")
 #----------------------------------------------------------------------------
 # Find ROOT (required package) in CONFIG mode. Looking for ROOTConfig.cmake.
 # Crucial for loading the proper definitions!

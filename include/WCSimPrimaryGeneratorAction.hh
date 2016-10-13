@@ -4,6 +4,12 @@
 #include "G4VUserPrimaryGeneratorAction.hh"
 #include "G4ThreeVector.hh"
 #include "globals.hh"
+#include "TTree.h"
+#include "TChain.h"
+#include "TRandom3.h"
+#include "TTreeReader.h"
+#include "TTreeReaderValue.h"
+#include "TTreeReaderArray.h"
 
 #include <fstream>
 
@@ -61,6 +67,7 @@ private:
   G4bool   useMulineEvt;
   G4bool   useNormalEvt;
   G4bool   useLaserEvt;  //T. Akiri: Laser flag
+  G4bool   useBeamEvt;
   std::fstream inputFile;
   G4String vectorFileName;
   G4bool   GenerateVertexInRock;
@@ -82,6 +89,47 @@ private:
 
   G4int    _counterRock; 
   G4int    _counterCublic; 
+  
+  TChain* inputdata;
+  //TTreeReader* inputfilereaderpointer;
+  TTreeReader* inputfilereader;
+  	TTreeReaderValue<Int_t>* rdrrunp;
+	TTreeReaderValue<Int_t>* rdrentryp;
+	TTreeReaderValue<Int_t>* rdriterp;
+	TTreeReaderValue<Int_t>* rdrniterp;
+	TTreeReaderValue<Int_t>* rdrnupdgp;
+	TTreeReaderValue<Double_t>* rdrnuvtxxp;
+	TTreeReaderValue<Double_t>* rdrnuvtxyp;
+	TTreeReaderValue<Double_t>* rdrnuvtxzp;
+	TTreeReaderValue<Double_t>* rdrnuvtxtp;
+	TTreeReaderValue<Int_t>* rdrintankp;
+	TTreeReaderValue<Int_t>* rdrinhallp;
+	TTreeReaderValue<Char_t>* rdrvtxvolp;
+	TTreeReaderValue<Char_t>* rdrvtxmatp;
+	TTreeReaderValue<Int_t>* rdrntankp;
+	TTreeReaderArray<Int_t>* rdrpdgtankp;
+	TTreeReaderArray<Int_t>* rdrprimaryp;
+	TTreeReaderArray<Double_t>* rdrvxp;
+	TTreeReaderArray<Double_t>* rdrvyp;
+	TTreeReaderArray<Double_t>* rdrvzp;
+	TTreeReaderArray<Double_t>* rdrvtp;
+	TTreeReaderArray<Double_t>* rdrpxp;
+	TTreeReaderArray<Double_t>* rdrpyp;
+	TTreeReaderArray<Double_t>* rdrpzp;
+	TTreeReaderArray<Double_t>* rdrEp;
+	TTreeReaderArray<Double_t>* rdrkEp;
+	
+	Int_t inputEntry;
+	Int_t treeNumber;
+	TBranch* runBranch=0, *vtxxBranch=0, *vtxyBranch=0, *vtxzBranch=0, *vtxtBranch=0, *pxBranch=0, *pyBranch=0, *pzBranch=0, *EBranch=0, *KEBranch=0, *pdgBranch=0, *nTankBranch=0, *nupdgBranch=0, *nuvtxxBranch=0, *nuvtxyBranch=0, *nuvtxzBranch=0, *nuvtxtBranch=0, *nuPVBranch=0, *nuvtxmatBranch=0, *geniePrimaryBranch=0;
+	Int_t runbranchval, entrybranchval, ntankbranchval, nupdgval;
+	Int_t* pdgbranchval=0, *genieprimarybranchval=0;
+	Int_t pdgval, genieprimaryval;
+	Double_t *vtxxbranchval=0, *vtxybranchval=0, *vtxzbranchval=0, *vtxtbranchval=0, *pxbranchval=0, *pybranchval=0, *pzbranchval=0, *ebranchval=0, *kebranchval=0;
+	Double_t vtxxval, vtxyval, vtxzval, vtxtval, pxval, pyval, pzval, eval, keval, nuvtxxval, nuvtxyval, nuvtxzval, nuvtxtval;
+	Char_t nupvval[100];
+	Char_t numatval[100];
+	
 public:
 
   inline void SetMulineEvtGenerator(G4bool choice) { useMulineEvt = choice; }
@@ -93,6 +141,9 @@ public:
   //T. Akiri: Addition of function for the laser flag
   inline void SetLaserEvtGenerator(G4bool choice) { useLaserEvt = choice; }
   inline G4bool IsUsingLaserEvtGenerator()  { return useLaserEvt; }
+  
+  inline void SetBeamEvtGenerator(G4bool choice) { useBeamEvt = choice; }
+  inline G4bool IsUsingBeamEvtGenerator()  { return useBeamEvt; }
 
   inline void OpenVectorFile(G4String fileName) 
   {

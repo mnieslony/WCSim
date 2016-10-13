@@ -67,7 +67,7 @@ WCSimEventAction::WCSimEventAction(WCSimRunAction* myRun,
   G4DigiManager* DMman = G4DigiManager::GetDMpointer();
 
   //create PMT response module
-  WCSimWCPMT* WCDMPMT = new WCSimWCPMT( "WCReadoutPMT", myDetector);
+  WCSimWCPMT* WCDMPMT = new WCSimWCPMT( "WCReadoutPMT", myDetector, "tank");
   DMman->AddNewModule(WCDMPMT);
 
   //create dark noise module
@@ -93,7 +93,7 @@ void WCSimEventAction::CreateDAQInstances()
 
   //create your choice of digitizer module
   if(DigitizerChoice == "SKI") {
-    WCSimWCDigitizerSKI* WCDM = new WCSimWCDigitizerSKI("WCReadoutDigits", detectorConstructor, DAQMessenger);
+    WCSimWCDigitizerSKI* WCDM = new WCSimWCDigitizerSKI("WCReadoutDigits", detectorConstructor, DAQMessenger, "tank"); //☆
     DMman->AddNewModule(WCDM);
   }
   else {
@@ -159,9 +159,10 @@ void WCSimEventAction::EndOfEventAction(const G4Event* evt)
 
   G4SDManager* SDman = G4SDManager::GetSDMpointer();
 
-  // Get Hit collection of this event
+  // Get Hit collections of this event
   G4HCofThisEvent* HCE         = evt->GetHCofThisEvent();
   WCSimWCHitsCollection* WCHC = 0;
+
   G4String WCIDCollectionName = detectorConstructor->GetIDCollectionName();
   if (HCE)
   { 
@@ -169,13 +170,12 @@ void WCSimEventAction::EndOfEventAction(const G4Event* evt)
     G4int collectionID = SDman->GetCollectionID(name);
     WCHC = (WCSimWCHitsCollection*)HCE->GetHC(collectionID);
   }
-
+  
   // To use Do like This:
   // --------------------
   //   if (WCHC)
   //     for (G4int i=0; i< WCHC->entries() ;i++)
   //       G4cout << (*WCHC)[i]->GetTotalPe() << G4endl;
-  
   
   // ----------------------------------------------------------------------
   //  Get Digitized Hit Collection

@@ -34,10 +34,17 @@
 WCSimWCDigitizerBase::WCSimWCDigitizerBase(G4String name,
 					   WCSimDetectorConstruction* inDetector,
 					   WCSimWCDAQMessenger* myMessenger,
-					   DigitizerType_t digitype)
-  :G4VDigitizerModule(name), myDetector(inDetector), DAQMessenger(myMessenger), DigitizerType(digitype)
+					   DigitizerType_t digitype, G4String detectorElement)
+  :G4VDigitizerModule(name), myDetector(inDetector), DAQMessenger(myMessenger), DigitizerType(digitype), detectorElement(detectorElement)
 {
-  G4String colName = "WCDigitizedStoreCollection";
+  G4String colName;
+  if(1){	//(detectorElement=="tank"){
+  	colName = "WCDigitizedStoreCollection"; //☆
+  } else if(detectorElement=="mrd"){
+  	colName = "MRDDigitizedStoreCollection";
+  } else if(detectorElement=="facc"){
+  	colName = "FACCDigitizedStoreCollection";
+  }
   collectionName.push_back(colName);
   ReInitialize();
 
@@ -86,7 +93,15 @@ void WCSimWCDigitizerBase::Digitize()
   G4DigiManager* DigiMan = G4DigiManager::GetDMpointer();
   
   // Get the PMT collection ID
-   G4int WCHCID = DigiMan->GetDigiCollectionID("WCRawPMTSignalCollection");
+  G4String rawcollectionName;
+  if(1){	//(detectorElement=="tank"){
+  	rawcollectionName = "WCRawPMTSignalCollection";	//☆
+  } else if(detectorElement=="mrd"){
+  	rawcollectionName = "WCRawMRDSignalCollection";
+  } else if(detectorElement=="facc"){
+  	rawcollectionName = "WCRawFACCSignalCollection";
+  }
+  G4int WCHCID = DigiMan->GetDigiCollectionID(rawcollectionName);
 
   // Get the PMT Digits collection
   WCSimWCDigitsCollection* WCHCPMT = 
@@ -158,8 +173,8 @@ bool WCSimWCDigitizerBase::AddNewDigit(int tube, int gate, float digihittime, fl
 
 WCSimWCDigitizerSKI::WCSimWCDigitizerSKI(G4String name,
 					 WCSimDetectorConstruction* myDetector,
-					 WCSimWCDAQMessenger* myMessenger)
-  : WCSimWCDigitizerBase(name, myDetector, myMessenger, kDigitizerSKI)
+					 WCSimWCDAQMessenger* myMessenger, G4String detectorElement)
+  : WCSimWCDigitizerBase(name, myDetector, myMessenger, kDigitizerSKI, detectorElement)
 {
   GetVariables();
 }

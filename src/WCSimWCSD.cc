@@ -36,8 +36,7 @@ WCSimWCSD::~WCSimWCSD() {}
 void WCSimWCSD::Initialize(G4HCofThisEvent* HCE)
 {
   // Make a new hits collection. With the name we set in the constructor
-  hitsCollection = new WCSimWCHitsCollection
-    (SensitiveDetectorName,collectionName[0]);
+  hitsCollection = new WCSimWCHitsCollection;
 
   // This is a trick.  We only want to do this once.  When the program
   // starts HCID will equal -1.  Then it will be set to the pointer to

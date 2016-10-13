@@ -15,3 +15,12 @@ geofile.txt
 #ingore root dictionary files? made automatically...
 src/WCSimRootDict.cxx
 src/WCSimRootDict_rdict.pcm
+
+WCSim running notes
+
+include/SBsimMRDHit.hhdisabled
+include/SBsimMRDResponse.hhdisabled
+include/SBsimMRDSD.hhdisabled
+src/SBsimMRDHit.ccdisabled
+src/SBsimMRDResponse.ccdisabled
+src/eventactionoldcode

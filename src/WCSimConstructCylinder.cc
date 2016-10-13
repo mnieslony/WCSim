@@ -76,14 +76,19 @@ G4LogicalVolume* WCSimDetectorConstruction::ConstructCylinder()
   outerAnnulusRadius = WCIDRadius + WCBlackSheetThickness + 1.*mm;//+ Stealstructure etc.
   // the radii are measured to the center of the surfaces
   // (tangent distance). Thus distances between the corner and the center are bigger.
-  WCLength    = WCIDHeight + 2*2.3*m;	//jl145 - reflects top veto blueprint, cf. Farshid Feyzi
-  WCRadius    = (WCIDDiameter/2. + WCBlackSheetThickness + 1.5*m)/cos(dPhi/2.) ; // TODO: OD 
+  
+  //WCLength    = WCIDHeight + 2*2.3*m;	//jl145 - reflects top veto blueprint, cf. Farshid Feyzi
+  //WCRadius    = (WCIDDiameter/2. + WCBlackSheetThickness + 1.5*m)/cos(dPhi/2.) ; // TODO: OD 
+  // modify for ANNIE - much more compact, smaller excess
+  WCLength    = WCIDHeight + 5.*cm;
+  WCRadius    = (WCIDDiameter/2. + WCBlackSheetThickness + 2*cm)/cos(dPhi/2.) ;
+  
  
-  // now we know the extend of the detector and are able to tune the tolerance
-  G4GeometryManager::GetInstance()->SetWorldMaximumExtent(WCLength > WCRadius ? WCLength : WCRadius);
-  G4cout << "Computed tolerance = "
-         << G4GeometryTolerance::GetInstance()->GetSurfaceTolerance()/mm
-         << " mm" << G4endl;
+//  // now we know the extend of the detector and are able to tune the tolerance
+//  G4GeometryManager::GetInstance()->SetWorldMaximumExtent(WCLength > WCRadius ? WCLength : WCRadius);
+//  G4cout << "Computed tolerance = "
+//         << G4GeometryTolerance::GetInstance()->GetSurfaceTolerance()/mm
+//         << " mm" << G4endl;
 
   //Decide if adding Gd
   water = "Water";
@@ -97,10 +102,17 @@ G4LogicalVolume* WCSimDetectorConstruction::ConstructCylinder()
 
   // The water barrel is placed in an tubs of air
   
+//  G4Tubs* solidWC = new G4Tubs("WC",
+//			       0.0*m,
+//			       WCRadius+2.*m, 
+//			       .5*WCLength+4.2*m,	//jl145 - per blueprint
+//			       0.*deg,
+//			       360.*deg);
+
   G4Tubs* solidWC = new G4Tubs("WC",
 			       0.0*m,
-			       WCRadius+2.*m, 
-			       .5*WCLength+4.2*m,	//jl145 - per blueprint
+			       WCRadius+2.*cm,
+			       .5*WCLength+2.*cm,	// smaller excess for ANNIE
 			       0.*deg,
 			       360.*deg);
   
@@ -114,17 +126,24 @@ G4LogicalVolume* WCSimDetectorConstruction::ConstructCylinder()
    G4VisAttributes* showColor = new G4VisAttributes(G4Colour(0.0,1.0,0.0));
    logicWC->SetVisAttributes(showColor);
 
-   logicWC->SetVisAttributes(G4VisAttributes::Invisible); //amb79
+   //logicWC->SetVisAttributes(G4VisAttributes::Invisible); //amb79
   
   //-----------------------------------------------------
   // everything else is contained in this water tubs
   //-----------------------------------------------------
+//  G4Tubs* solidWCBarrel = new G4Tubs("WCBarrel",
+//				     0.0*m,
+//				     WCRadius+1.*m, // add a bit of extra space
+//				     .5*WCLength,  //jl145 - per blueprint
+//				     0.*deg,
+//				     360.*deg);
+				     
   G4Tubs* solidWCBarrel = new G4Tubs("WCBarrel",
-				     0.0*m,
-				     WCRadius+1.*m, // add a bit of extra space
-				     .5*WCLength,  //jl145 - per blueprint
-				     0.*deg,
-				     360.*deg);
+  				     0.0*m,
+  				     WCRadius,		// why excess here?
+  				     0.5*WCLength,
+  				     0.*deg,
+  				     360.*deg);
   
   G4LogicalVolume* logicWCBarrel = 
     new G4LogicalVolume(solidWCBarrel,
