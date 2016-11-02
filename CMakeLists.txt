@@ -5,6 +5,11 @@ cmake_minimum_required(VERSION 2.8 FATAL_ERROR)
 project(WCSim)
 #set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -Wall -fdiagnostics-color=always")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -fdiagnostics-color=always")
+# NOTE: Geant4.10.2 changes the way VisualizationManager is instantiated - requires a verbosity argument.  
+# To handle the two types of instantiation: this env variable needs to be defined for geant versions > 10.1:
+if($ENV{GEANT4_10_2})
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DGEANT4_10_2")
+endif()
 #----------------------------------------------------------------------------
 # Find ROOT (required package) in CONFIG mode. Looking for ROOTConfig.cmake.
 # Crucial for loading the proper definitions!
@@ -65,7 +70,6 @@ endif()
 #
 message(STATUS "using Geant4: ${Geant4_USE_FILE}")
 include(${Geant4_USE_FILE})  ## NOT needed for Dict
-
 
 #----------------------------------------------------------------------------
 # Locate sources and headers for this project

@@ -86,7 +86,9 @@ int main(int argc,char** argv)
   G4cout<<"Creating Primary Generator Action"<<G4endl;
   // Set user action classes
   WCSimPrimaryGeneratorAction* myGeneratorAction = new 
-    WCSimPrimaryGeneratorAction(WCSimdetector);
+    WCSimPrimaryGeneratorAction(WCSimdetector, "../../../../WChSandBox/build/fluxesandtables/annie_tank_flux.*.root");
+    //"../../../../WChSandBox/build/fluxesandtables/annie_tank_flux.*.root"
+    //"/pnfs/annie/persistent/users/moflaher/g4dirt/annie_tank_flux.*.root"
   runManager->SetUserAction(myGeneratorAction);
   G4cout<<"Creating Run Action"<<G4endl;
   WCSimRunAction* myRunAction = new WCSimRunAction(WCSimdetector);

@@ -136,7 +136,7 @@ void WCSimDetectorConstruction::DefineANNIEdimensions(){
 	mrdLG_box = new G4Trd("mrdLG_box", scinttapfullwidth/2, scintlgfullwidth/2, scintfullzlen/2, scintfullzlen/2, scintlgfullheight/2);	
 	
 	// Little boxes to go on the ends of the light guides - photons entering these will be killed at the boundary & recorded
-	mrdSurface_box = new G4Box("mrdSurface_box",scintlgfullwidth/2,scintfullzlen/2,nothickness);
+	mrdSurface_box = new G4Box("mrdSurface_box",scintlgfullwidth/2,scintfullzlen/2,nothickness/2);
 
 	// Steel plates
 	steelMRDplate_box = new G4Box("steelPlate",steelfullxlen/2,steelfullylen/2,steelfullzlen/2);
@@ -150,7 +150,7 @@ void WCSimDetectorConstruction::DefineANNIEdimensions(){
 	totMRD_box = new G4Box("totMRD",(maxwidth/2),(maxheight/2),mrdZlen/2);
 
 	vetoPaddle_box = new G4Box("vetoPaddle_box",vetopaddlefullxlen/2, vetopaddlefullylen/2, vetopaddlefullzlen/2);
-	vetoSurface_box = new G4Box("vetoSurface_box",nothickness,vetolgfullylen/2,vetopaddlefullzlen/2);
+	vetoSurface_box = new G4Box("vetoSurface_box",nothickness/2,vetolgfullylen/2,vetopaddlefullzlen/2);
 	vetoLG_box = new G4Trd("vetoLG_box", vetopaddlefullylen/2, vetolgfullylen/2, vetopaddlefullzlen/2, vetopaddlefullzlen/2, vetolgfullxlen/2);
 
 	vetopmtfullheight = FACCPMTExposeHeight;
@@ -419,14 +419,14 @@ void WCSimDetectorConstruction::ComputePaddleTransformation (const G4int copyNo,
 		G4int panelnum;
 		G4int paddlenum;
 		G4bool isvpaddle=false, ishpaddle=false;
-		if(panelnumrem>numpaddlesperpanelv){																	// first layer is a VERTICAL layer (leading horizontal layer removed)
+		if(panelnumrem>(numpaddlesperpanelv-1)){																	// first layer is a VERTICAL layer (leading horizontal layer removed)	//## -1
 			panelnum = (panelpairnum*2) +1;
 			ishpaddle = true;
-			paddlenum = copyNo%numpaddlesperpanelh;
+			paddlenum = panelnumrem%numpaddlesperpanelv; // copyNo%numpaddlesperpanelh;	//## replaced!!!
 		} else {
 			panelnum = (panelpairnum*2);
 			isvpaddle = true;
-			paddlenum = copyNo%numpaddlesperpanelv;
+			paddlenum = panelnumrem; // copyNo%numpaddlesperpanelv;
 		}
 		G4int pairnum = floor(paddlenum/2);																		// Paddles 0&1 are a pair; 
 																																					// then X offset is the same for every pair
