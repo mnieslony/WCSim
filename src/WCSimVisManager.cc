@@ -131,7 +131,11 @@ void WCSimVisManager::RegisterGraphicsSystems () {
     G4cout <<
       "\nYou have successfully chosen to use the following graphics systems."
 	 << G4endl;
+#ifdef GEANT4_10_2
     PrintAvailableGraphicsSystems (G4VisManager::warnings);	//add verbosity argument for gent4.10.2
+#else
+    PrintAvailableGraphicsSystems ();	//add verbosity argument for gent4.10.2
+#endif
   }
   RegisterModel(mymodel);
 

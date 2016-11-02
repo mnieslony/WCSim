@@ -15,6 +15,7 @@
 #include <vector>
 #include <string>
 #include "G4SystemOfUnits.hh"
+#include <math.h> 
 
 #include "G4Navigator.hh"
 #include "G4TransportationManager.hh"
@@ -72,7 +73,7 @@ WCSimPrimaryGeneratorAction::WCSimPrimaryGeneratorAction(
   
   if(useBeamEvt){
 	inputdata = new TChain("tankflux");	// input is name of tree in contributing files
-	inputdata->Add("../../../../WChSandBox/build/fluxesandtables/annie_tank_flux.*.root");
+	inputdata->Add("/pnfs/annie/persistent/users/moflaher/g4dirt/annie_tank_flux.*.root");
 	inputdata->LoadTree(0);
 	
 	inputdata->SetBranchAddress("run",&runbranchval,&runBranch);
@@ -84,6 +85,7 @@ WCSimPrimaryGeneratorAction::WCSimPrimaryGeneratorAction(
 	inputdata->SetBranchAddress("nuvtxt",&nuvtxtval,&nuvtxtBranch);
 	inputdata->SetBranchAddress("vtxvol",&nupvval,&nuPVBranch);
 	inputdata->SetBranchAddress("vtxmat",&numatval,&nuvtxmatBranch);
+	entriesInThisTree = runBranch->GetEntries();
 	
 	vtxxBranch=inputdata->GetBranch("vx");
 	vtxyBranch=inputdata->GetBranch("vy");
@@ -96,8 +98,6 @@ WCSimPrimaryGeneratorAction::WCSimPrimaryGeneratorAction(
 	KEBranch=inputdata->GetBranch("kE");
 	pdgBranch=inputdata->GetBranch("pdgtank");
 	geniePrimaryBranch=inputdata->GetBranch("primary");
-//	nuPVBranch=inputdata->GetBranch("nuvtxvol");
-//	nuvtxmatBranch=inputdata->GetBranch("vtxmat");
 	
 	
 	if(runBranch==0||nTankBranch==0||vtxxBranch==0||vtxyBranch==0||vtxzBranch==0||vtxtBranch==0||pxBranch==0||pyBranch==0||pzBranch==0||EBranch==0||KEBranch==0||pdgBranch==0||nupdgBranch==0||nuvtxxBranch==0||nuvtxyBranch==0||nuvtxzBranch==0||nuvtxtBranch==0||nuPVBranch==0||nuvtxmatBranch==0||geniePrimaryBranch==0){
@@ -464,14 +464,45 @@ void WCSimPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 			G4cout<<"@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#"<<G4endl;
 			inputEntry=0;
 			localEntry = inputdata->LoadTree(inputEntry);
+			// should be done below since this opens a new tree
+//			inputdata->SetBranchAddress("run",&runbranchval,&runBranch);
+//			inputdata->SetBranchAddress("ntank",&ntankbranchval,&nTankBranch);
+//			inputdata->SetBranchAddress("nupdg",&nupdgval,&nupdgBranch);
+//			inputdata->SetBranchAddress("nuvtxx",&nuvtxxval,&nuvtxxBranch);
+//			inputdata->SetBranchAddress("nuvtxy",&nuvtxyval,&nuvtxyBranch);
+//			inputdata->SetBranchAddress("nuvtxz",&nuvtxzval,&nuvtxzBranch);
+//			inputdata->SetBranchAddress("nuvtxt",&nuvtxtval,&nuvtxtBranch);
+//			inputdata->SetBranchAddress("vtxvol",&nupvval,&nuPVBranch);
+//			inputdata->SetBranchAddress("vtxmat",&numatval,&nuvtxmatBranch);
+//			vtxxBranch=inputdata->GetBranch("vx");
+//			vtxyBranch=inputdata->GetBranch("vy");
+//			vtxzBranch=inputdata->GetBranch("vz");
+//			vtxtBranch=inputdata->GetBranch("vt");
+//			pxBranch=inputdata->GetBranch("px");
+//			pyBranch=inputdata->GetBranch("py");
+//			pzBranch=inputdata->GetBranch("pz");
+//			EBranch=inputdata->GetBranch("E");
+//			KEBranch=inputdata->GetBranch("kE");
+//			pdgBranch=inputdata->GetBranch("pdgtank");
+//			geniePrimaryBranch=inputdata->GetBranch("primary");
+//			entriesInThisTree = runBranch->GetEntries();
 		}
 		
 		Int_t nextTreeNumber = inputdata->GetTreeNumber();
 		if(treeNumber!=nextTreeNumber){
-			G4cout<<"Reached end of Tree. Last entries' tree number was "<<treeNumber<<", this entries' tree number is "<<nextTreeNumber<<G4endl;
+			G4cout<< "Reached end of Tree. Last entries' tree number was "
+						<< treeNumber <<", this entries' tree number is "<< nextTreeNumber <<G4endl;
 			G4cout<<"Getting new tree branches"<<G4endl;
-//			inputdata->SetBranchAddress("run",&runbranchval,&runBranch);
-//			inputdata->SetBranchAddress("ntank",&ntankbranchval,&nTankBranch);
+			// maybe all this isn't necessary??
+			inputdata->SetBranchAddress("run",&runbranchval,&runBranch);
+			inputdata->SetBranchAddress("ntank",&ntankbranchval,&nTankBranch);
+			inputdata->SetBranchAddress("nupdg",&nupdgval,&nupdgBranch);
+			inputdata->SetBranchAddress("nuvtxx",&nuvtxxval,&nuvtxxBranch);
+			inputdata->SetBranchAddress("nuvtxy",&nuvtxyval,&nuvtxyBranch);
+			inputdata->SetBranchAddress("nuvtxz",&nuvtxzval,&nuvtxzBranch);
+			inputdata->SetBranchAddress("nuvtxt",&nuvtxtval,&nuvtxtBranch);
+			inputdata->SetBranchAddress("vtxvol",&nupvval,&nuPVBranch);
+			inputdata->SetBranchAddress("vtxmat",&numatval,&nuvtxmatBranch);
 			vtxxBranch=inputdata->GetBranch("vx");
 			vtxyBranch=inputdata->GetBranch("vy");
 			vtxzBranch=inputdata->GetBranch("vz");
@@ -482,15 +513,9 @@ void WCSimPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 			EBranch=inputdata->GetBranch("E");
 			KEBranch=inputdata->GetBranch("kE");
 			pdgBranch=inputdata->GetBranch("pdgtank");
-			nupdgBranch=inputdata->GetBranch("nupdg");
-			nuvtxxBranch=inputdata->GetBranch("nuvtxx");
-			nuvtxyBranch=inputdata->GetBranch("nuvtxy");
-			nuvtxzBranch=inputdata->GetBranch("nuvtxz");
-			nuvtxtBranch=inputdata->GetBranch("nuvtxt");
-			nuPVBranch=inputdata->GetBranch("nuvtxvol");
-			nuvtxmatBranch=inputdata->GetBranch("vtxmat");
 			geniePrimaryBranch=inputdata->GetBranch("primary");
-			
+			entriesInThisTree = runBranch->GetEntries();
+		
 			if(runBranch==0||nTankBranch==0||vtxxBranch==0||vtxyBranch==0||vtxzBranch==0||vtxtBranch==0||pxBranch==0||pyBranch==0||pzBranch==0||EBranch==0||KEBranch==0||pdgBranch==0||nupdgBranch==0||nuvtxxBranch==0||nuvtxyBranch==0||nuvtxzBranch==0||nuvtxtBranch==0||nuPVBranch==0||nuvtxmatBranch==0||geniePrimaryBranch==0){
 				G4cout<<"BRANCHES ARE ZOMBIES ARGH!"<<G4endl;
 			} else { G4cout<<"entries in this tree: "<<vtxxBranch->GetEntries()<<G4endl; }
@@ -498,7 +523,7 @@ void WCSimPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 			treeNumber=nextTreeNumber;
 		}
 		
-		G4cout<<"Loading primaries from entry "<<inputEntry<<", localentry "<<localEntry<<G4endl;
+		G4cout<<"Loading primaries from entry "<<inputEntry<<", localentry "<<localEntry<<"/"<<entriesInThisTree<<G4endl;
 		//runBranch->GetEntry(localEntry);
 		//G4cout<<"Run is "<<runbranchval<<G4endl;
 		
@@ -588,6 +613,7 @@ void WCSimPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 			G4ThreeVector thepdir = G4ThreeVector(pxval, pyval, pzval);
 			thepdir.unit();		// normalise to unit vector
 			
+			if(keval==0){keval+=(pow(1.,-6.))*eV; eval+=(pow(1.,-6.))*eV; thepdir=G4ThreeVector(0.,0.,1.);}
 			parttype = particleTable->FindParticle(pdgval);
 			if(genieprimaryval==1){G4cout<<"genie primary ";} else {G4cout<<"genie secondary ";}
 			G4cout<<eval/GeV<<" GeV ";

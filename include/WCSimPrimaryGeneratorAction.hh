@@ -120,6 +120,7 @@ private:
 	TTreeReaderArray<Double_t>* rdrkEp;
 	
 	Int_t inputEntry;
+	Int_t entriesInThisTree;
 	Int_t treeNumber;
 	TBranch* runBranch=0, *vtxxBranch=0, *vtxyBranch=0, *vtxzBranch=0, *vtxtBranch=0, *pxBranch=0, *pyBranch=0, *pzBranch=0, *EBranch=0, *KEBranch=0, *pdgBranch=0, *nTankBranch=0, *nupdgBranch=0, *nuvtxxBranch=0, *nuvtxyBranch=0, *nuvtxzBranch=0, *nuvtxtBranch=0, *nuPVBranch=0, *nuvtxmatBranch=0, *geniePrimaryBranch=0;
 	Int_t runbranchval, entrybranchval, ntankbranchval, nupdgval;
