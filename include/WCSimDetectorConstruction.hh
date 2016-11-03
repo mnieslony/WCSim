@@ -35,6 +35,11 @@
 static const G4double INCH = 2.54*cm;
 // *************/SciBooNE integration
 
+#include "MRDSD.hh"
+#include "mrdPMTSD.hh"
+#include "faccPMTSD.hh"
+#include "FACCSD.hh"
+
 
 using __gnu_cxx::hash;
 using __gnu_cxx::hashtable;
@@ -92,7 +97,7 @@ public:
   G4double GetWaterTubeLength()   {return WCLength;}
   G4double GetWaterTubePosition() {return WCPosition;}
   G4double GetPMTSize()           {return WCPMTRadius;}
-  G4String GetPMTName()			  {return WCPMTName;}
+  G4String GetPMTName()           {return WCPMTName;}
   G4int    GetMyConfiguration()   {return myConfiguration;}
   G4double GetGeo_Dm(G4int);
   G4int    GetTotalNumPmts() {return totalNumPMTs;}
@@ -156,8 +161,6 @@ public:
   std::vector<WCSimPmtInfo*>* Get_Pmts() {return &fpmts;}
 
   G4String GetIDCollectionName(){return WCIDCollectionName;}
-  G4String GetMRDCollectionName(){return WCMRDCollectionName;}
-  G4String GetFACCCollectionName(){return WCFACCCollectionName;}
 
  
 private:
@@ -170,6 +173,7 @@ private:
   // to check their state if we change the geometry, otherwise will segfault
   // between events!
   WCSimWCSD* aWCPMT;
+  
 
   //Water, Blacksheet surface
   G4OpticalSurface * OpWaterBSSurface;
@@ -267,9 +271,6 @@ private:
   G4String WCDetectorName;
   G4String WCIDCollectionName;
   G4String WCODCollectionName;
-  G4String WCMRDCollectionName;
-  G4String WCFACCCollectionName;
-
 
   // WC PMT parameters
   G4String WCPMTName;
@@ -446,6 +447,8 @@ private:
   void PlaceVetoPMTs(G4LogicalVolume* totVeto_log);
   G4String GetMRDPMTName()			  {return MRDPMTName;}
   G4String GetFACCPMTName()			  {return FACCPMTName;}
+  G4String GetMRDCollectionName(){return WCMRDCollectionName;}
+  G4String GetFACCCollectionName(){return WCFACCCollectionName;}
 //  private:
 
   G4bool isANNIE;
@@ -458,12 +461,19 @@ private:
   G4double expHall_y;
   G4double expHall_z;
   G4int doOverlapCheck;
+  
+  G4String WCMRDCollectionName;
+  G4String WCFACCCollectionName;
   G4String MRDPMTName;
   G4double MRDPMTExposeHeight;
   G4double MRDPMTRadius;
   G4String FACCPMTName;
   G4double FACCPMTExposeHeight;
   G4double FACCPMTRadius;
+  faccPMTSD* afaccPMT;
+  FACCSD* afacc;
+  mrdPMTSD* aMRDPMT;
+  MRDSD* aMRD;
   
 	G4double Xposition, Yposition, Zposition;		// used for positioning parameterisations.
 	G4int numpaddlesperpanelh;									// paddles per h scintillator panel
