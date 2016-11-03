@@ -1,4 +1,4 @@
-	#include "WCSimWCSD.hh"
+#include "WCSimWCSD.hh"
 #include "G4ParticleTypes.hh"
 #include "G4HCofThisEvent.hh"
 #include "G4TouchableHistory.hh"
