@@ -141,11 +141,11 @@ G4LogicalVolume* WCSimDetectorConstruction::ConstructANNIE()
   // set all the paddle dimensions etc and create solids, logical volumes etc. for the MRD & VETO
   DefineANNIEdimensions();												// part of MRDDetectorConstruction.cc
   // Create MRD																		// part of MRDDetectorConstruction.cc
-  ConstructMRD(expHall_log, expHall_phys);			// marcus' MRD construction
+  ConstructMRD(expHall_log, expHall_phys);				// marcus' MRD construction
   
   // ===== SciBooNE integration
   //DefineMRD((G4PVPlacement*)expHall_phys);				// Subroutine below - combines FACC from MRDDetectorConstruction
-  																								// with MRD from DefineMRD.icc
+  																									// with MRD from DefineMRD.icc
   //  ===== /SciBooNE integration
   
   // Create FACC
@@ -241,18 +241,20 @@ void WCSimDetectorConstruction::DefineMRD(G4PVPlacement* expHall)
   #include "DefineMRD.icc"		// calls in the sciboone code to define MRD geometry
   
   // add little boxes for surface crossing photon detection:
-  G4cout<<"Placing MRD PMT SDs"<<G4endl; 			PlaceMRDSDSurfs(0, expHall);
+  G4cout<<"Placing MRD PMT SDs"<<G4endl; 			// PlaceMRDSDSurfs(0, expHall); // not compatible with sciboone MRD due to positioning
   G4cout<<"done placing mrd pmts"<<G4endl;
   
   // ======================================================================================================
   // Below are extensions to SciBooNE code that add paddle cladding and SDs for PMTs at paddle ends
   // ======================================================================================================
   
+  /* sciboone MRD not compatible with PMT SDs due to incorrect positioning of SD sensitive boxes @ ends of paddles!
   // Create sensitive detector for pmts that will detect photon hits at the ends of the paddles
-  //G4VSensitiveDetector* mrdpmtSD = new mrdPMTSD("MRDPMTSD"); 
+  G4VSensitiveDetector* mrdpmtSD = new mrdPMTSD("MRDPMTSD"); 
   // Register detector with manager
-  //SDman->AddNewDetector(mrdpmtSD);
+  SDman->AddNewDetector(mrdpmtSD);
   // gets called manually and tracks get killed before they enter it; don't need to associate with any logical volumes
+  */
   
   // Define Paddle Boundaries for MRD PMT photon detection
   // =====================================================
@@ -303,10 +305,6 @@ void WCSimDetectorConstruction::DefineMRD(G4PVPlacement* expHall)
   for(G4int i=0;i<((numpaddlesperpanelv+numpaddlesperpanelh)*(numpanels/2));i++){
       G4LogicalBorderSurface* lgSurface_log = new G4LogicalBorderSurface("lgborderlog",lgs_phys.at(i),mrdsdsurfs_phys.at(i),lgSurface_op);
   }
-  
-  // add MRD PMTs:
-  //G4cout<<"Placing MRD PMTs"<<G4endl; 			PlaceMRDPMTs(0, expHall);
-  //G4cout<<"done placing mrd pmts"<<G4endl;
   
   // add MRD PMTs:
   //G4cout<<"Placing MRD PMTs"<<G4endl; 			PlaceMRDPMTs(0, expHall);

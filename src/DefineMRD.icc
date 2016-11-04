@@ -7,7 +7,7 @@
   // MRDCard * mrdcard = InputCard->GetMRDCard(); << skipping by marcus; replaced below for simplicity
   // READ MRD CARD
 	// Active light guide
-	G4int MRDLGON=1;
+	G4int MRDLGON=0;
 	// Scale factor for MRD iron thickness
 	G4double IRONTHICKSCALE=1.0;
 	// END OF MRD CARD READ

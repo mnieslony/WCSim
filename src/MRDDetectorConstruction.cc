@@ -344,7 +344,7 @@ void WCSimDetectorConstruction::ConstructMRD(G4LogicalVolume* expHall_log, G4VPh
   		G4LogicalBorderSurface* vetoSurface_log
   		 = new G4LogicalBorderSurface("vetocladdinglog",vetolgs_phys.at(i),expHall_phys,scintSurface_op);
   }
-  
+  /*
   // Associate logical volumes with sensitive detectors
   //================================================================  
   // Get pointer to detector manager
