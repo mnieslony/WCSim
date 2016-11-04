@@ -7,10 +7,6 @@
 #include "TTree.h"
 #include "TChain.h"
 #include "TRandom3.h"
-#include "TTreeReader.h"
-#include "TTreeReaderValue.h"
-#include "TTreeReaderArray.h"
-
 #include <fstream>
 
 class WCSimDetectorConstruction;
@@ -22,7 +18,7 @@ class WCSimPrimaryGeneratorMessenger;
 class WCSimPrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
 {
 public:
-  WCSimPrimaryGeneratorAction(WCSimDetectorConstruction*);
+  WCSimPrimaryGeneratorAction(WCSimDetectorConstruction*, G4String infile);
   ~WCSimPrimaryGeneratorAction();
   
 public:
@@ -62,7 +58,8 @@ private:
   G4ParticleGun*                  particleGun;
   G4GeneralParticleSource*        MyGPS;  //T. Akiri: GPS to run Laser
   WCSimPrimaryGeneratorMessenger* messenger;
-
+  G4String                        fInputFileName;
+  
   // Variables set by the messenger
   G4bool   useMulineEvt;
   G4bool   useNormalEvt;
@@ -91,35 +88,9 @@ private:
   G4int    _counterCublic; 
   
   TChain* inputdata;
-  //TTreeReader* inputfilereaderpointer;
-  TTreeReader* inputfilereader;
-  	TTreeReaderValue<Int_t>* rdrrunp;
-	TTreeReaderValue<Int_t>* rdrentryp;
-	TTreeReaderValue<Int_t>* rdriterp;
-	TTreeReaderValue<Int_t>* rdrniterp;
-	TTreeReaderValue<Int_t>* rdrnupdgp;
-	TTreeReaderValue<Double_t>* rdrnuvtxxp;
-	TTreeReaderValue<Double_t>* rdrnuvtxyp;
-	TTreeReaderValue<Double_t>* rdrnuvtxzp;
-	TTreeReaderValue<Double_t>* rdrnuvtxtp;
-	TTreeReaderValue<Int_t>* rdrintankp;
-	TTreeReaderValue<Int_t>* rdrinhallp;
-	TTreeReaderValue<Char_t>* rdrvtxvolp;
-	TTreeReaderValue<Char_t>* rdrvtxmatp;
-	TTreeReaderValue<Int_t>* rdrntankp;
-	TTreeReaderArray<Int_t>* rdrpdgtankp;
-	TTreeReaderArray<Int_t>* rdrprimaryp;
-	TTreeReaderArray<Double_t>* rdrvxp;
-	TTreeReaderArray<Double_t>* rdrvyp;
-	TTreeReaderArray<Double_t>* rdrvzp;
-	TTreeReaderArray<Double_t>* rdrvtp;
-	TTreeReaderArray<Double_t>* rdrpxp;
-	TTreeReaderArray<Double_t>* rdrpyp;
-	TTreeReaderArray<Double_t>* rdrpzp;
-	TTreeReaderArray<Double_t>* rdrEp;
-	TTreeReaderArray<Double_t>* rdrkEp;
 	
 	Int_t inputEntry;
+	Int_t entriesInThisTree;
 	Int_t treeNumber;
 	TBranch* runBranch=0, *vtxxBranch=0, *vtxyBranch=0, *vtxzBranch=0, *vtxtBranch=0, *pxBranch=0, *pyBranch=0, *pzBranch=0, *EBranch=0, *KEBranch=0, *pdgBranch=0, *nTankBranch=0, *nupdgBranch=0, *nuvtxxBranch=0, *nuvtxyBranch=0, *nuvtxzBranch=0, *nuvtxtBranch=0, *nuPVBranch=0, *nuvtxmatBranch=0, *geniePrimaryBranch=0;
 	Int_t runbranchval, entrybranchval, ntankbranchval, nupdgval;

@@ -87,13 +87,15 @@ G4bool WCSimWCSD::ProcessHits(G4Step* aStep, G4TouchableHistory*)
   G4String volumeName        = aStep->GetTrack()->GetVolume()->GetName();
   
   //XQ Add the wavelength there
-  G4float  wavelength = (2.0*M_PI*197.3)/( aStep->GetTrack()->GetTotalEnergy()/CLHEP::eV);
+  G4float stepEnergy =aStep->GetTrack()->GetTotalEnergy()/CLHEP::eV;
+  G4float  wavelength = (stepEnergy!=0) ? (2.0*M_PI*197.3)/(stepEnergy) : 0;
   
   G4double energyDeposition  = aStep->GetTotalEnergyDeposit();
   G4double hitTime           = aStep->GetPreStepPoint()->GetGlobalTime();
 
   G4ParticleDefinition *particleDefinition = 
     aStep->GetTrack()->GetDefinition();
+    
 
   if ( particleDefinition != G4OpticalPhoton::OpticalPhotonDefinition() 
        && energyDeposition == 0.0) 
@@ -156,7 +158,6 @@ G4bool WCSimWCSD::ProcessHits(G4Step* aStep, G4TouchableHistory*)
   }
   
   
-
   if (G4UniformRand() <= photonQE){
     
      G4double local_x = localPosition.x();

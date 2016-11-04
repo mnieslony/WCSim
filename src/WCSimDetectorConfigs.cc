@@ -47,8 +47,8 @@ void WCSimDetectorConstruction::SetANNIEPhase1Geometry()
 //  WCBarrelNRings        = 5;					// 5 rings of 16 = 80 PMTs + 60 on each end cap = 200 total PMTs
 //  WCPMTperCellHorizontal= 2;					// 
 //  WCPMTperCellVertical  = 1;					// assume each row corresponds to a cell - significance of cells?
-//  WCCapPMTSpacing       = WCPMTRadius+0.035*m;	// something like that looks about right
-//  WCCapEdgeLimit        = 4*(WCCapPMTSpacing)*m;// 
+//  WCCapPMTSpacing       = 2*(WCPMTRadius+15.*mm);	// something like that looks about right
+//  WCCapEdgeLimit        = WCIDDiameter/2.0 - WCPMTRadius;// 
 //  WCBlackSheetThickness = 1.01*mm;				// liner is 40 mil. which is, of course, 40 milli inches. 
 }
 
@@ -76,7 +76,7 @@ void WCSimDetectorConstruction::SetANNIEPhase2Geometry()
 //  WCMRDCollectionName = WCDetectorName +"MRD" + "-glassFaceWCPMT";
 //  WCSimPMTObject* MRDPMT = CreatePMTObject("PMT8inch",WCMRDCollectionName);
 //  MRDPMTName = MRDPMT->GetPMTName();
-//  MRDPMTExposeHeight = MRDPMT->GetExposeHeight();
+    MRDPMTExposeHeight = 0; //MRDPMT->GetExposeHeight();
 //  MRDPMTRadius = MRDPMT->GetRadius();
 //  WCFACCCollectionName = WCDetectorName + "FACC" + "-glassFaceWCPMT";
 //  WCSimPMTObject* FACCPMT = CreatePMTObject("PMT8inch",WCFACCCollectionName);
@@ -93,8 +93,9 @@ void WCSimDetectorConstruction::SetANNIEPhase2Geometry()
   WCBarrelNRings        = 5;					// 5 rings of 16 = 80 PMTs + 60 on each end cap = 200 total PMTs
   WCPMTperCellHorizontal= 2;					// 
   WCPMTperCellVertical  = 1;					// assume each row corresponds to a cell - significance of cells?
-  WCCapPMTSpacing       = 2*(WCPMTRadius+25.*mm);	// something like that looks about right
-  WCCapEdgeLimit        = 4.9*WCCapPMTSpacing;	// 
+  WCCapPMTSpacing       = 2*(WCPMTRadius+15.*mm);	// something like that looks about right
+  //WCCapEdgeLimit        = 4.9*WCCapPMTSpacing;	// breaks geometry... 
+  WCCapEdgeLimit        = WCIDDiameter/2.0 - WCPMTRadius;
   WCBlackSheetThickness = 1.01*mm;				// liner is 40 mil. which is, of course, 40 milli inches. 
 }
 

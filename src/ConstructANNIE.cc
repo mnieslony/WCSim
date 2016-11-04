@@ -141,10 +141,10 @@ G4LogicalVolume* WCSimDetectorConstruction::ConstructANNIE()
   // set all the paddle dimensions etc and create solids, logical volumes etc. for the MRD & VETO
   DefineANNIEdimensions();												// part of MRDDetectorConstruction.cc
   // Create MRD																		// part of MRDDetectorConstruction.cc
-  //ConstructMRD(expHall_log, expHall_phys);			// marcus' MRD construction
+  ConstructMRD(expHall_log, expHall_phys);			// marcus' MRD construction
   
   // ===== SciBooNE integration
-  DefineMRD((G4PVPlacement*)expHall_phys);				// Subroutine below - combines FACC from MRDDetectorConstruction
+  //DefineMRD((G4PVPlacement*)expHall_phys);				// Subroutine below - combines FACC from MRDDetectorConstruction
   																								// with MRD from DefineMRD.icc
   //  ===== /SciBooNE integration
   
@@ -240,6 +240,10 @@ void WCSimDetectorConstruction::DefineMRD(G4PVPlacement* expHall)
 {
   #include "DefineMRD.icc"		// calls in the sciboone code to define MRD geometry
   
+  // add little boxes for surface crossing photon detection:
+  G4cout<<"Placing MRD PMT SDs"<<G4endl; 			PlaceMRDSDSurfs(0, expHall);
+  G4cout<<"done placing mrd pmts"<<G4endl;
+  
   // ======================================================================================================
   // Below are extensions to SciBooNE code that add paddle cladding and SDs for PMTs at paddle ends
   // ======================================================================================================
@@ -256,7 +260,33 @@ void WCSimDetectorConstruction::DefineMRD(G4PVPlacement* expHall)
   G4int numpaddlesperpanelv=15;
   G4int numpanels = mrdmod->NLayer+1;
   
-  // Define efficiency for reflection & detection between paddles and PMTs at their ends
+  // Define Mylar cladding
+  // =====================
+  G4OpticalSurface* scintSurface_op = new G4OpticalSurface("mylarSurface",glisur, ground, dielectric_metal);
+  const G4int mylarmptentries = 2;
+  G4double mylar_Energy[mylarmptentries] = {2.0*eV, 3.6*eV};
+  G4double mylar_REFL[mylarmptentries] = {0.9,0.9};
+  G4double mylar_EFFI[mylarmptentries] = {0.0, 0.0};
+  G4MaterialPropertiesTable* MPTmylarSurface = new G4MaterialPropertiesTable();
+  MPTmylarSurface->AddProperty("REFLECTIVITY",mylar_Energy,mylar_REFL,mylarmptentries);
+  MPTmylarSurface->AddProperty("EFFICIENCY",mylar_Energy,mylar_EFFI,mylarmptentries);
+  scintSurface_op->SetMaterialPropertiesTable(MPTmylarSurface);
+  
+  // Place cladding on MRD paddles
+  for(G4int i=0;i<((numpaddlesperpanelv+numpaddlesperpanelh)*(numpanels/2));i++){
+    G4LogicalBorderSurface* scintSurface_log
+      = new G4LogicalBorderSurface("scintcladdinglog",paddles_phys.at(i),expHall,scintSurface_op);
+    scintSurface_log
+      = new G4LogicalBorderSurface("scintcladdinglog",tapers_phys.at(i),expHall,scintSurface_op);
+  }
+  
+  // Place cladding on Light guides
+  for(G4int i=0;i<((numpaddlesperpanelv+numpaddlesperpanelh)*(numpanels/2));i++){
+    G4LogicalBorderSurface* scintSurface_log
+      = new G4LogicalBorderSurface("scintcladdinglog",lgs_phys.at(i),expHall,scintSurface_op);
+  }
+    
+  // Define efficiency for reflection & detection between LGs and "PMTs" at their ends
   // ===================================================================================
   G4OpticalSurface* lgSurface_op = new G4OpticalSurface("lgopsurface",glisur, polished, dielectric_metal);  
   const G4int lgmptentries = 2;
@@ -271,26 +301,12 @@ void WCSimDetectorConstruction::DefineMRD(G4PVPlacement* expHall)
   // must be dielectric_metal to invoke absorption/detection process - but is this overridden if both volumes have a ref index?
   // for dielectric_metal transmittance isn't possible, so either reflection or absorption with probability from mat. properties. 
   for(G4int i=0;i<((numpaddlesperpanelv+numpaddlesperpanelh)*(numpanels/2));i++){
-      G4LogicalBorderSurface* lgSurface_log = new G4LogicalBorderSurface("lgborderlog",tapers_phys.at(i),lgs_phys.at(i),lgSurface_op);
+      G4LogicalBorderSurface* lgSurface_log = new G4LogicalBorderSurface("lgborderlog",lgs_phys.at(i),mrdsdsurfs_phys.at(i),lgSurface_op);
   }
   
-  // Define Mylar cladding on paddles
-  // ================================
-  G4OpticalSurface* scintSurface_op = new G4OpticalSurface("mylarSurface",glisur, ground, dielectric_metal);
-  const G4int mylarmptentries = 2;
-  G4double mylar_Energy[mylarmptentries] = {2.0*eV, 3.6*eV};
-  G4double mylar_REFL[mylarmptentries] = {0.9,0.9};
-  G4double mylar_EFFI[mylarmptentries] = {0.0, 0.0};
-  G4MaterialPropertiesTable* MPTmylarSurface = new G4MaterialPropertiesTable();
-  MPTmylarSurface->AddProperty("REFLECTIVITY",mylar_Energy,mylar_REFL,mylarmptentries);
-  MPTmylarSurface->AddProperty("EFFICIENCY",mylar_Energy,mylar_EFFI,mylarmptentries);
-  scintSurface_op->SetMaterialPropertiesTable(MPTmylarSurface);
-  
-  // Place cladding on MRD paddles
-  for(G4int i=0;i<((numpaddlesperpanelv+numpaddlesperpanelh)*(numpanels/2));i++){
-    G4LogicalBorderSurface* scintSurface_log
-      = new G4LogicalBorderSurface("scintcladdinglog",lgs_phys.at(i),expHall,scintSurface_op);
-  }
+  // add MRD PMTs:
+  //G4cout<<"Placing MRD PMTs"<<G4endl; 			PlaceMRDPMTs(0, expHall);
+  //G4cout<<"done placing mrd pmts"<<G4endl;
   
   // add MRD PMTs:
   //G4cout<<"Placing MRD PMTs"<<G4endl; 			PlaceMRDPMTs(0, expHall);

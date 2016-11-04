@@ -258,9 +258,11 @@ MRDAlSupportH->AddPlacedVolume(MRDAlH3_LV, Ta,&Ra);
   std::vector<G4VPhysicalVolume*> paddles_phys;
   std::vector<G4VPhysicalVolume*> tapers_phys;
   std::vector<G4VPhysicalVolume*> lgs_phys;
+  //std::vector<G4VPhysicalVolume*> mrdsdsurfs_phys;
   G4VPhysicalVolume* paddle_phys;
   G4VPhysicalVolume* taper_phys;
   G4VPhysicalVolume* lg_phys;
+  G4VPhysicalVolume* mrdsdsurf_phys;
   // ================
 
   const G4double HSizeX = mrdmod->HScintiSize[0] +mrdmod->ScintiGap/2.;

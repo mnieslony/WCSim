@@ -10,9 +10,11 @@ tmp/
 
 #ignore run results
 wcsim.root
+
+#ignore geometry???????????????????
 geofile.txt
 
-#ingore root dictionary files? made automatically...
+#ignore root dictionary files? depend on the installed ROOT version?
 src/WCSimRootDict.cxx
 src/WCSimRootDict_rdict.pcm
 
@@ -24,3 +26,9 @@ include/SBsimMRDSD.hhdisabled
 src/SBsimMRDHit.ccdisabled
 src/SBsimMRDResponse.ccdisabled
 src/eventactionoldcode
+
+#ignore files that are specific to the location you're building in
+CMakeLists.txt   # different location of ROOT & GEANT install
+GNUmakefile_full # different location of ROOT & GEANT install
+sourceme
+WCSim.mac        # gpvm version shouldn't show visualisation

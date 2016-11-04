@@ -15,6 +15,7 @@
 #include <vector>
 #include <string>
 #include "G4SystemOfUnits.hh"
+#include <math.h> 
 
 #include "G4Navigator.hh"
 #include "G4TransportationManager.hh"
@@ -36,8 +37,9 @@ inline float atof( const string& s ) {return std::atof( s.c_str() );}
 inline int   atoi( const string& s ) {return std::atoi( s.c_str() );}
 
 WCSimPrimaryGeneratorAction::WCSimPrimaryGeneratorAction(
-					  WCSimDetectorConstruction* myDC)
+					  WCSimDetectorConstruction* myDC, G4String infile)
   :myDetector(myDC)
+  , fInputFileName(infile)
 {
   //T. Akiri: Initialize GPS to allow for the laser use 
   MyGPS = new G4GeneralParticleSource();
@@ -72,7 +74,7 @@ WCSimPrimaryGeneratorAction::WCSimPrimaryGeneratorAction(
   
   if(useBeamEvt){
 	inputdata = new TChain("tankflux");	// input is name of tree in contributing files
-	inputdata->Add("../../../../WChSandBox/build/fluxesandtables/annie_tank_flux.*.root");
+	inputdata->Add(fInputFileName);
 	inputdata->LoadTree(0);
 	
 	inputdata->SetBranchAddress("run",&runbranchval,&runBranch);
@@ -84,6 +86,7 @@ WCSimPrimaryGeneratorAction::WCSimPrimaryGeneratorAction(
 	inputdata->SetBranchAddress("nuvtxt",&nuvtxtval,&nuvtxtBranch);
 	inputdata->SetBranchAddress("vtxvol",&nupvval,&nuPVBranch);
 	inputdata->SetBranchAddress("vtxmat",&numatval,&nuvtxmatBranch);
+	entriesInThisTree = runBranch->GetEntries();
 	
 	vtxxBranch=inputdata->GetBranch("vx");
 	vtxyBranch=inputdata->GetBranch("vy");
@@ -96,9 +99,6 @@ WCSimPrimaryGeneratorAction::WCSimPrimaryGeneratorAction(
 	KEBranch=inputdata->GetBranch("kE");
 	pdgBranch=inputdata->GetBranch("pdgtank");
 	geniePrimaryBranch=inputdata->GetBranch("primary");
-//	nuPVBranch=inputdata->GetBranch("nuvtxvol");
-//	nuvtxmatBranch=inputdata->GetBranch("vtxmat");
-	
 	
 	if(runBranch==0||nTankBranch==0||vtxxBranch==0||vtxyBranch==0||vtxzBranch==0||vtxtBranch==0||pxBranch==0||pyBranch==0||pzBranch==0||EBranch==0||KEBranch==0||pdgBranch==0||nupdgBranch==0||nuvtxxBranch==0||nuvtxyBranch==0||nuvtxzBranch==0||nuvtxtBranch==0||nuPVBranch==0||nuvtxmatBranch==0||geniePrimaryBranch==0){
 		G4cout<<"BRANCHES ARE ZOMBIES ARGH!"<<G4endl;
@@ -109,96 +109,8 @@ WCSimPrimaryGeneratorAction::WCSimPrimaryGeneratorAction(
 	G4cout<<"first run: "<<runbranchval<<G4endl;
 	treeNumber=inputdata->GetTreeNumber();
 	
-//	inputfilereader = new TTreeReader(inputdata);
-//	Int_t numinputevents = inputfilereader->GetEntries(true);
-//	G4cout<<numinputevents<<" events in the input file."<<G4endl;
-//	TTreeReader::EEntryStatus entrystats = inputfilereader->SetEntry(0);
-//	G4cout<<"entrystat: "<<entrystats<<G4endl;
-//	Bool_t nextsuccess = inputfilereader->Next();
-//	if(nextsuccess){G4cout<<"success"<<G4endl;} else {G4cout<<"failure"<<G4endl;}
-//	
-//	TTreeReaderValue<Int_t> rdrrun((*inputfilereader), "run");
-//	TTreeReaderValue<Int_t> rdrentry((*inputfilereader), "entry");
-//	TTreeReaderValue<Int_t> rdriter((*inputfilereader), "iter");
-//	TTreeReaderValue<Int_t> rdrniter((*inputfilereader), "niter");
-//	TTreeReaderValue<Int_t> rdrnupdg((*inputfilereader), "nupdg");
-//	TTreeReaderValue<Double_t> rdrnuvtxx((*inputfilereader), "nuvtxx");
-//	TTreeReaderValue<Double_t> rdrnuvtxy((*inputfilereader), "nuvtxy");
-//	TTreeReaderValue<Double_t> rdrnuvtxz((*inputfilereader), "nuvtxz");
-//	TTreeReaderValue<Double_t> rdrnuvtxt((*inputfilereader), "nuvtxt");
-//	TTreeReaderValue<Int_t> rdrintank((*inputfilereader), "intank");
-//	TTreeReaderValue<Int_t> rdrinhall((*inputfilereader), "inhall");
-//	TTreeReaderValue<Char_t> rdrvtxvol((*inputfilereader), "vtxvol");
-//	TTreeReaderValue<Char_t> rdrvtxmat((*inputfilereader), "vtxmat");
-//	TTreeReaderValue<Int_t> rdrntank((*inputfilereader), "ntank");
-//	TTreeReaderArray<Int_t> rdrpdgtank((*inputfilereader), "pdgtank");
-//	TTreeReaderArray<Int_t> rdrprimary((*inputfilereader), "primary");
-//	TTreeReaderArray<Double_t> rdrvx((*inputfilereader), "vx");
-//	TTreeReaderArray<Double_t> rdrvy((*inputfilereader), "vy");
-//	TTreeReaderArray<Double_t> rdrvz((*inputfilereader), "vz");
-//	TTreeReaderArray<Double_t> rdrvt((*inputfilereader), "vt");
-//	TTreeReaderArray<Double_t> rdrpx((*inputfilereader), "px");
-//	TTreeReaderArray<Double_t> rdrpy((*inputfilereader), "py");
-//	TTreeReaderArray<Double_t> rdrpz((*inputfilereader), "pz");
-//	TTreeReaderArray<Double_t> rdrE((*inputfilereader), "E");
-//	TTreeReaderArray<Double_t> rdrkE((*inputfilereader), "kE");
-//	
-//	entrystats = inputfilereader->SetEntry(0);
-//	G4cout<<"entrystat: "<<entrystats<<G4endl;
-//	nextsuccess = inputfilereader->Next();
-//	if(nextsuccess){G4cout<<"success"<<G4endl;} else {G4cout<<"failure"<<G4endl;}
-//	
-//	if(rdrrun.GetSetupStatus()<0) G4cout<<rdrrun.GetSetupStatus()<<G4endl;
-//	if(rdrentry.GetSetupStatus()<0) G4cout<<rdrentry.GetSetupStatus()<<G4endl;
-//	if(rdriter.GetSetupStatus()<0) G4cout<<rdriter.GetSetupStatus()<<G4endl;
-//	if(rdrniter.GetSetupStatus()<0) G4cout<<rdrniter.GetSetupStatus()<<G4endl;
-//	if(rdrnupdg.GetSetupStatus()<0) G4cout<<rdrnupdg.GetSetupStatus()<<G4endl;
-//	if(rdrnuvtxx.GetSetupStatus()<0) G4cout<<rdrnuvtxx.GetSetupStatus()<<G4endl;
-//	if(rdrnuvtxy.GetSetupStatus()<0) G4cout<<rdrnuvtxy.GetSetupStatus()<<G4endl;
-//	if(rdrnuvtxz.GetSetupStatus()<0) G4cout<<rdrnuvtxz.GetSetupStatus()<<G4endl;
-//	if(rdrnuvtxt.GetSetupStatus()<0) G4cout<<rdrnuvtxt.GetSetupStatus()<<G4endl;
-//	if(rdrintank.GetSetupStatus()<0) G4cout<<rdrintank.GetSetupStatus()<<G4endl;
-//	if(rdrinhall.GetSetupStatus()<0) G4cout<<rdrinhall.GetSetupStatus()<<G4endl;
-//	if(rdrvtxvol.GetSetupStatus()<0) G4cout<<rdrvtxvol.GetSetupStatus()<<G4endl;
-//	if(rdrvtxmat.GetSetupStatus()<0) G4cout<<rdrvtxmat.GetSetupStatus()<<G4endl;
-//	if(rdrntank.GetSetupStatus()<0) G4cout<<rdrntank.GetSetupStatus()<<G4endl;
-//	if(rdrpdgtank.GetSetupStatus()<0) G4cout<<rdrpdgtank.GetSetupStatus()<<G4endl;
-//	if(rdrprimary.GetSetupStatus()<0) G4cout<<rdrprimary.GetSetupStatus()<<G4endl;
-//	if(rdrvx.GetSetupStatus()<0) G4cout<<rdrvx.GetSetupStatus()<<G4endl;
-//	if(rdrvy.GetSetupStatus()<0) G4cout<<rdrvy.GetSetupStatus()<<G4endl;
-//	if(rdrvz.GetSetupStatus()<0) G4cout<<rdrvz.GetSetupStatus()<<G4endl;
-//	if(rdrvt.GetSetupStatus()<0) G4cout<<rdrvt.GetSetupStatus()<<G4endl;
-//	if(rdrpx.GetSetupStatus()<0) G4cout<<rdrpx.GetSetupStatus()<<G4endl;
-//	if(rdrpy.GetSetupStatus()<0) G4cout<<rdrpy.GetSetupStatus()<<G4endl;
-//	if(rdrpz.GetSetupStatus()<0) G4cout<<rdrpz.GetSetupStatus()<<G4endl;
-//	if(rdrE.GetSetupStatus()<0) G4cout<<rdrE.GetSetupStatus()<<G4endl;
-//	if(rdrkE.GetSetupStatus()<0) G4cout<<rdrkE.GetSetupStatus()<<G4endl;
-//	
-//	rdrrunp = &rdrrun;
-//	rdrentryp = &rdrentry;
-//	rdriterp = &rdriter;
-//	rdrniterp = &rdrniter;
-//	rdrnupdgp = &rdrnupdg;
-//	rdrnuvtxxp = &rdrnuvtxx;
-//	rdrnuvtxyp = &rdrnuvtxy;
-//	rdrnuvtxtp = &rdrnuvtxt;
-//	rdrintankp = &rdrintank;
-//	rdrinhallp = &rdrinhall;
-//	rdrvtxvolp = &rdrvtxvol;
-//	rdrntankp = &rdrntank;
-//	rdrpdgtankp = &rdrpdgtank;
-//	rdrprimaryp = &rdrprimary;
-//	rdrvxp = &rdrvx;
-//	rdrvyp = &rdrvy;
-//	rdrvzp = &rdrvz;
-//	rdrvtp = &rdrvt;
-//	rdrpxp = &rdrpx;
-//	rdrpyp = &rdrpy;
-//	rdrpzp = &rdrpz;
-//	rdrEp = &rdrE;
-//	rdrkEp = &rdrkE;
-	
   }
+  
 }
 
 WCSimPrimaryGeneratorAction::~WCSimPrimaryGeneratorAction()
@@ -217,8 +129,8 @@ WCSimPrimaryGeneratorAction::~WCSimPrimaryGeneratorAction()
   if(useBeamEvt){
     inputdata->ResetBranchAddresses();
     delete inputdata;
-    delete inputfilereader;
   }
+
 }
 
 void WCSimPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
@@ -403,60 +315,7 @@ void WCSimPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
     }
   
   else if (useBeamEvt)
-    {   // read in from ROOT file output of rob hatcher's annie dirt simulations
-//  	if(!inputfilereader->Next()){
-//  		G4cout<<" END OF INPUT FILE!!!!!!"<<G4endl;
-//  		inputfilereader->SetEntry(0);
-//  	}
-//  
-//      if (inputfilereader->GetEntryStatus() == kEntryValid) {
-//         G4cout << "Loaded entry " << inputfilereader->GetCurrentEntry() << '\n';
-//      } else {
-//         switch (inputfilereader->GetEntryStatus()) {
-//         kEntryValid:
-//            // Handled above.
-//            break;
-//         kEntryNotLoaded:
-//            G4cerr << "Error: TTreeReader has not loaded any data yet!\n";
-//            break;
-//         kEntryNoTree:
-//            G4cerr << "Error: TTreeReader cannot find a tree names \"MyTree\"!\n";
-//            break;
-//         kEntryNotFound:
-//            // Can't really happen as TTreeReader::Next() knows when to stop.
-//            G4cerr << "Error: The entry number doe not exist\n";
-//            break;
-//         kEntryChainSetupError:
-//            G4cerr << "Error: TTreeReader cannot access a chain element, e.g. file without the tree\n";
-//            break;
-//         kEntryChainFileError:
-//            G4cerr << "Error: TTreeReader cannot open a chain element, e.g. missing file\n";
-//            break;
-//         kEntryDictionaryError:
-//            G4cerr << "Error: TTreeReader cannot find the dictionary for some data\n";
-//            break;
-//         }
-//         G4Exception("WCLitePrimaryGeneratorAction::GeneratePrimaries","Expl01",FatalException,"Error reading input file");
-//         return;
-//      }
-//  	G4cout<<"getting entry"<<G4endl;
-//  	for(int i=0;i<(**rdrntankp);i++){
-//  	// generate each of the primaries from this event
-//  		G4cout<<"entry got"<<G4endl;
-//  		
-//  		G4ThreeVector rdrvtx = G4ThreeVector((*rdrvxp)[i], (*rdrvyp)[i], (*rdrvzp)[i]);
-//  		G4ThreeVector rdrdir = G4ThreeVector((*rdrpxp)[i], (*rdrpyp)[i], (*rdrpzp)[i]);
-//  		rdrdir.unit();		// normalise to unit vector
-//  		G4cout<<"setting particle gun"<<G4endl;
-//  		particleGun->SetParticleDefinition( particleTable->FindParticle( (*rdrpdgtankp)[i] ) );	//FindParticle finds by either name or pdg.
-//  		particleGun->SetParticleEnergy((*rdrkEp)[i]);
-//  		particleGun->SetParticlePosition(rdrvtx);
-//  		particleGun->SetParticleTime((*rdrvtp)[i]);
-//  		particleGun->SetParticleMomentumDirection(rdrdir);
-//  		particleGun->GeneratePrimaryVertex(anEvent);	//anEvent is provided by geant4 when invoking the method
-//  		
-//  	}
-		
+    {   
 		Long64_t localEntry = inputdata->LoadTree(inputEntry);
 		if(localEntry<0){
 			G4cout<<"@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#"<<G4endl;
@@ -464,14 +323,45 @@ void WCSimPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 			G4cout<<"@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#"<<G4endl;
 			inputEntry=0;
 			localEntry = inputdata->LoadTree(inputEntry);
+			// should be done below since this opens a new tree
+//			inputdata->SetBranchAddress("run",&runbranchval,&runBranch);
+//			inputdata->SetBranchAddress("ntank",&ntankbranchval,&nTankBranch);
+//			inputdata->SetBranchAddress("nupdg",&nupdgval,&nupdgBranch);
+//			inputdata->SetBranchAddress("nuvtxx",&nuvtxxval,&nuvtxxBranch);
+//			inputdata->SetBranchAddress("nuvtxy",&nuvtxyval,&nuvtxyBranch);
+//			inputdata->SetBranchAddress("nuvtxz",&nuvtxzval,&nuvtxzBranch);
+//			inputdata->SetBranchAddress("nuvtxt",&nuvtxtval,&nuvtxtBranch);
+//			inputdata->SetBranchAddress("vtxvol",&nupvval,&nuPVBranch);
+//			inputdata->SetBranchAddress("vtxmat",&numatval,&nuvtxmatBranch);
+//			vtxxBranch=inputdata->GetBranch("vx");
+//			vtxyBranch=inputdata->GetBranch("vy");
+//			vtxzBranch=inputdata->GetBranch("vz");
+//			vtxtBranch=inputdata->GetBranch("vt");
+//			pxBranch=inputdata->GetBranch("px");
+//			pyBranch=inputdata->GetBranch("py");
+//			pzBranch=inputdata->GetBranch("pz");
+//			EBranch=inputdata->GetBranch("E");
+//			KEBranch=inputdata->GetBranch("kE");
+//			pdgBranch=inputdata->GetBranch("pdgtank");
+//			geniePrimaryBranch=inputdata->GetBranch("primary");
+//			entriesInThisTree = runBranch->GetEntries();
 		}
 		
 		Int_t nextTreeNumber = inputdata->GetTreeNumber();
 		if(treeNumber!=nextTreeNumber){
-			G4cout<<"Reached end of Tree. Last entries' tree number was "<<treeNumber<<", this entries' tree number is "<<nextTreeNumber<<G4endl;
+			G4cout<< "Reached end of Tree. Last entries' tree number was "
+						<< treeNumber <<", this entries' tree number is "<< nextTreeNumber <<G4endl;
 			G4cout<<"Getting new tree branches"<<G4endl;
-//			inputdata->SetBranchAddress("run",&runbranchval,&runBranch);
-//			inputdata->SetBranchAddress("ntank",&ntankbranchval,&nTankBranch);
+			// maybe all this isn't necessary??
+			inputdata->SetBranchAddress("run",&runbranchval,&runBranch);
+			inputdata->SetBranchAddress("ntank",&ntankbranchval,&nTankBranch);
+			inputdata->SetBranchAddress("nupdg",&nupdgval,&nupdgBranch);
+			inputdata->SetBranchAddress("nuvtxx",&nuvtxxval,&nuvtxxBranch);
+			inputdata->SetBranchAddress("nuvtxy",&nuvtxyval,&nuvtxyBranch);
+			inputdata->SetBranchAddress("nuvtxz",&nuvtxzval,&nuvtxzBranch);
+			inputdata->SetBranchAddress("nuvtxt",&nuvtxtval,&nuvtxtBranch);
+			inputdata->SetBranchAddress("vtxvol",&nupvval,&nuPVBranch);
+			inputdata->SetBranchAddress("vtxmat",&numatval,&nuvtxmatBranch);
 			vtxxBranch=inputdata->GetBranch("vx");
 			vtxyBranch=inputdata->GetBranch("vy");
 			vtxzBranch=inputdata->GetBranch("vz");
@@ -482,15 +372,9 @@ void WCSimPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 			EBranch=inputdata->GetBranch("E");
 			KEBranch=inputdata->GetBranch("kE");
 			pdgBranch=inputdata->GetBranch("pdgtank");
-			nupdgBranch=inputdata->GetBranch("nupdg");
-			nuvtxxBranch=inputdata->GetBranch("nuvtxx");
-			nuvtxyBranch=inputdata->GetBranch("nuvtxy");
-			nuvtxzBranch=inputdata->GetBranch("nuvtxz");
-			nuvtxtBranch=inputdata->GetBranch("nuvtxt");
-			nuPVBranch=inputdata->GetBranch("nuvtxvol");
-			nuvtxmatBranch=inputdata->GetBranch("vtxmat");
 			geniePrimaryBranch=inputdata->GetBranch("primary");
-			
+			entriesInThisTree = runBranch->GetEntries();
+		
 			if(runBranch==0||nTankBranch==0||vtxxBranch==0||vtxyBranch==0||vtxzBranch==0||vtxtBranch==0||pxBranch==0||pyBranch==0||pzBranch==0||EBranch==0||KEBranch==0||pdgBranch==0||nupdgBranch==0||nuvtxxBranch==0||nuvtxyBranch==0||nuvtxzBranch==0||nuvtxtBranch==0||nuPVBranch==0||nuvtxmatBranch==0||geniePrimaryBranch==0){
 				G4cout<<"BRANCHES ARE ZOMBIES ARGH!"<<G4endl;
 			} else { G4cout<<"entries in this tree: "<<vtxxBranch->GetEntries()<<G4endl; }
@@ -498,7 +382,7 @@ void WCSimPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 			treeNumber=nextTreeNumber;
 		}
 		
-		G4cout<<"Loading primaries from entry "<<inputEntry<<", localentry "<<localEntry<<G4endl;
+		G4cout<<"Loading primaries from entry "<<inputEntry<<", localentry "<<localEntry<<"/"<<entriesInThisTree<<G4endl;
 		//runBranch->GetEntry(localEntry);
 		//G4cout<<"Run is "<<runbranchval<<G4endl;
 		
@@ -588,6 +472,7 @@ void WCSimPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 			G4ThreeVector thepdir = G4ThreeVector(pxval, pyval, pzval);
 			thepdir.unit();		// normalise to unit vector
 			
+			if(keval==0){keval+=(pow(1.,-6.))*eV; eval+=(pow(1.,-6.))*eV; thepdir=G4ThreeVector(0.,0.,1.);}
 			parttype = particleTable->FindParticle(pdgval);
 			if(genieprimaryval==1){G4cout<<"genie primary ";} else {G4cout<<"genie secondary ";}
 			G4cout<<eval/GeV<<" GeV ";
@@ -608,6 +493,7 @@ void WCSimPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 		inputEntry++;
 		
 	}
+
 }
 
 // Returns a vector with the tokens
