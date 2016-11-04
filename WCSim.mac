@@ -123,5 +123,5 @@
 
 /WCSimIO/RootFile wcsim.root
 
-/run/beamOn 10
-exit
+#/run/beamOn 10
+#exit

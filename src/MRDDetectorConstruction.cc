@@ -312,7 +312,7 @@ void WCSimDetectorConstruction::ConstructMRD(G4LogicalVolume* expHall_log, G4VPh
   // =========
   G4cout<<"Placing veto paddles"<<G4endl; 			PlaceVetoPaddles(totVeto_log); 
   G4cout<<"Placing veto light guides"<<G4endl; 	PlaceVetoLGs(totVeto_log);
-  //G4cout<<"Placing veto SD surfaces"<<G4endl; 	PlaceVetoSDsurfs(totVeto_log);
+  G4cout<<"Placing veto SD surfaces"<<G4endl; 	PlaceVetoSDsurfs(totVeto_log);
   //G4cout<<"Placing veto PMTs"<<G4endl; 					PlaceVetoPMTs(totVeto_log);
   
   // ADD VIS ATTRIBS
