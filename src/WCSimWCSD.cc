@@ -64,7 +64,7 @@ void WCSimWCSD::Initialize(G4HCofThisEvent* HCE)
 G4bool WCSimWCSD::ProcessHits(G4Step* aStep, G4TouchableHistory*)
 { 
 
-if(detectorElement!="tank"){G4cout<<"Processing hit on detectorElement="<<detectorElement<<"!!!!!!!!!!!!!!"<<G4endl;}
+  //if(detectorElement!="tank"){G4cout<<"Processing hit on detectorElement="<<detectorElement<<"!!!!!!!!!!!!!!"<<G4endl;}
   G4StepPoint*       preStepPoint = aStep->GetPreStepPoint();
   G4TouchableHandle  theTouchable = preStepPoint->GetTouchableHandle();
   G4VPhysicalVolume* thePhysical  = theTouchable->GetVolume();

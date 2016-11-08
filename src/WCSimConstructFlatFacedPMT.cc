@@ -166,37 +166,37 @@ G4LogicalVolume* logicGlassFaceWCPMT = new G4LogicalVolume(roundedPMTface,
                     CollectionName,
                     0,0,0);
 
-// ... and give it suitable visualization properties
-G4VisAttributes* WCPMTVisAtt;
-if (1){//Vis_Choice == "RayTracer"){
-	WCPMTVisAtt = new G4VisAttributes(G4Colour(0,0.5,1.));
-	WCPMTVisAtt->SetForceSolid(true); 					// force the object to be visualized with a surface
-	WCPMTVisAtt->SetForceAuxEdgeVisible(true); 	// force auxiliary edges to be shown
-} else { // Gray wireframe visual style used in OGLSX visualizer
-	WCPMTVisAtt = new G4VisAttributes(G4Colour(0.2,0.2,0.2));
-	WCPMTVisAtt->SetForceWireframe(true);
-}
+//// ... and give it suitable visualization properties
+//G4VisAttributes* WCPMTVisAtt;
+//if (1){//Vis_Choice == "RayTracer"){
+//	WCPMTVisAtt = new G4VisAttributes(G4Colour(0,0.5,1.));
+//	WCPMTVisAtt->SetForceSolid(true); 					// force the object to be visualized with a surface
+//	WCPMTVisAtt->SetForceAuxEdgeVisible(true); 	// force auxiliary edges to be shown
+//} else { // Gray wireframe visual style used in OGLSX visualizer
+//	WCPMTVisAtt = new G4VisAttributes(G4Colour(0.2,0.2,0.2));
+//	WCPMTVisAtt->SetForceWireframe(true);
+//}
 
 
-// For either visualization type, logicGlassFaceWCPMT will either be visible or invisible depending on which
-// line is commented at the end of the respective if statements
+ For either visualization type, logicGlassFaceWCPMT will either be visible or invisible depending on which
+ line is commented at the end of the respective if statements
 
-//  if (Vis_Choice == "OGLSX")
-//   { // Gray wireframe visual style
-//    // used in OGLSX visualizer
-//  G4VisAttributes* WCPMTVisAtt = new G4VisAttributes(G4Colour(0.2,0.2,0.2));
-//  WCPMTVisAtt->SetForceWireframe(true);
-//  //logicGlassFaceWCPMT->SetVisAttributes(G4VisAttributes::Invisible);
-//  logicGlassFaceWCPMT->SetVisAttributes(WCPMTVisAtt);}
+  if (Vis_Choice == "OGLSX")
+   { // Gray wireframe visual style
+    // used in OGLSX visualizer
+  G4VisAttributes* WCPMTVisAtt = new G4VisAttributes(G4Colour(0.2,0.2,0.2));
+  WCPMTVisAtt->SetForceWireframe(true);
+  //logicGlassFaceWCPMT->SetVisAttributes(G4VisAttributes::Invisible);
+  logicGlassFaceWCPMT->SetVisAttributes(WCPMTVisAtt);}
 
-//  if (Vis_Choice == "RayTracer"){
-//    // Blue wireframe visual style
-//    // Used in the RayTracer visualizer
-//  G4VisAttributes* WCPMTVisAtt = new G4VisAttributes(G4Colour(0.0,0.0,1.0));
-//  WCPMTVisAtt->SetForceSolid(true); // force the object to be visualized with a surface
-//  WCPMTVisAtt->SetForceAuxEdgeVisible(true); // force auxiliary edges to be shown 
-//  //logicGlassFaceWCPMT->SetVisAttributes(G4VisAttributes::Invisible);
-//  logicGlassFaceWCPMT->SetVisAttributes(WCPMTVisAtt);}
+  if (Vis_Choice == "RayTracer"){
+    // Blue wireframe visual style
+    // Used in the RayTracer visualizer
+  G4VisAttributes* WCPMTVisAtt = new G4VisAttributes(G4Colour(0.0,0.0,1.0));
+  WCPMTVisAtt->SetForceSolid(true); // force the object to be visualized with a surface
+  WCPMTVisAtt->SetForceAuxEdgeVisible(true); // force auxiliary edges to be shown 
+  //logicGlassFaceWCPMT->SetVisAttributes(G4VisAttributes::Invisible);
+  logicGlassFaceWCPMT->SetVisAttributes(WCPMTVisAtt);}
 
 // place this glass face into the box of optical grease
 G4VPhysicalVolume* physiGlassFaceWCPMT = new G4PVPlacement(0,

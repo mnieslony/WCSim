@@ -448,7 +448,11 @@ void WCSimEventAction::EndOfEventAction(const G4Event* evt)
 		jhfNtuple,
 		trajectoryContainer,
 		WCDC_hits,
-		WCDC);
+		WCDC,
+		WCDC_hits_MRD,
+		WCDC_MRD,
+		WCDC_hits_FACC,
+		WCDC_FACC);
 
 
 }
@@ -498,7 +502,9 @@ G4int WCSimEventAction::WCSimEventFindStartingVolume(G4ThreeVector vtx)
   else if ( vtxVolumeName == "catcher" )
     vtxvol = 40;
   
-  
+  if(vtxvol<0){
+    G4cout<<"############# unkown vertex volume: "<<vtxVolumeName<<" ################"<<G4endl;
+  }
   return vtxvol;
 }
 
@@ -545,7 +551,9 @@ G4int WCSimEventAction::WCSimEventFindStoppingVolume(G4String stopVolumeName)
   else if ( stopVolumeName == "catcher" )
     stopvol = 40;
 
-  
+  if(stopvol<0){
+    G4cout<<"############# unkown vertex volume: "<<stopVolumeName<<" ################"<<G4endl;
+  }
   return stopvol;
 }
 
@@ -553,7 +561,12 @@ void WCSimEventAction::FillRootEvent(G4int event_id,
 				     const struct ntupleStruct& jhfNtuple,
 				     G4TrajectoryContainer* TC,
 				     WCSimWCDigitsCollection* WCDC_hits,
-				     WCSimWCTriggeredDigitsCollection* WCDC)
+				     WCSimWCTriggeredDigitsCollection* WCDC,
+				     WCSimWCDigitsCollection* WCDC_hits_MRD,
+				     WCSimWCTriggeredDigitsCollection* WCDC_MRD,
+				     WCSimWCDigitsCollection* WCDC_hits_FACC,
+				     WCSimWCTriggeredDigitsCollection* WCDC_FACC
+				     )
 {
   // Fill up a Root event with stuff from the ntuple
 
@@ -568,8 +581,16 @@ void WCSimEventAction::FillRootEvent(G4int event_id,
   G4DigiManager* DMman = G4DigiManager::GetDMpointer();
   WCSimWCTriggerBase* WCTM =
     (WCSimWCTriggerBase*)DMman->FindDigitizerModule("WCReadout");
+  WCSimWCTriggerBase* WCTM_MRD =
+    (WCSimWCTriggerBase*)DMman->FindDigitizerModule("WCReadout_MRD");
+  WCSimWCTriggerBase* WCTM_FACC =
+    (WCSimWCTriggerBase*)DMman->FindDigitizerModule("WCReadout_FACC");
   int ngates = WCTM->NumberOfGatesInThisEvent(); 
+  int ngates_mrd = WCTM_MRD->NumberOfGatesInThisEvent();
+  int ngates_facc = WCTM_FACC->NumberOfGatesInThisEvent();
   G4cout << "ngates =  " << ngates << "\n";
+  G4cout << "ngates_mrd = " << ngates_mrd << G4endl;
+  G4cout << "ngates_facc = " << ngates_facc << G4endl;
   for (int index = 0 ; index < ngates ; index++) 
     {
       if (index >=1 ) {
