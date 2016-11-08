@@ -101,6 +101,8 @@ public:
   G4int    GetMyConfiguration()   {return myConfiguration;}
   G4double GetGeo_Dm(G4int);
   G4int    GetTotalNumPmts() {return totalNumPMTs;}
+  G4int    GetTotalNumMrdPmts() {return totalNumMrdPMTs;}
+  G4int    GetTotalNumFaccPmts() {return totalNumFaccPMTs;}
   
   G4int    GetPMT_QE_Method(){return PMT_QE_Method;}
   G4double GetwaterTank_Length() {return waterTank_Length;} 
@@ -131,6 +133,12 @@ public:
   // Related to the WC tube ID
   static G4int GetTubeID(std::string tubeTag){return tubeLocationMap[tubeTag];}
   static G4Transform3D GetTubeTransform(int tubeNo){return tubeIDMap[tubeNo];}
+  // MRD tube ID
+  static G4int GetMrdTubeID(std::string tubeTag){return mrdtubeLocationMap[tubeTag];}
+  static G4Transform3D GetMrdTubeTransform(int tubeNo){return mrdtubeIDMap[tubeNo];}
+  // FACC tube ID
+  static G4int GetFaccTubeID(std::string tubeTag){return facctubeLocationMap[tubeTag];}
+  static G4Transform3D GetFaccTubeTransform(int tubeNo){return facctubeIDMap[tubeNo];}
 
   // Related to Pi0 analysis
   G4bool SavePi0Info()              {return pi0Info_isSaved;}
@@ -191,7 +199,8 @@ private:
 
   // The Construction routines
   G4LogicalVolume*   ConstructCylinder();
-  G4LogicalVolume* ConstructPMT(G4String,G4String);
+  G4LogicalVolume* ConstructPMT(G4String,G4String, G4String detectorElement="tank");
+  G4LogicalVolume* ConstructFlatFacedPMT(G4String PMTName, G4String CollectionName, G4String detectorElement="mrd");
 
   G4LogicalVolume* ConstructCaps(G4int zflip);
 
@@ -471,10 +480,19 @@ private:
   G4String FACCPMTName;
   G4double FACCPMTExposeHeight;
   G4double FACCPMTRadius;
-  faccPMTSD* afaccPMT;
-  FACCSD* afacc;
-  mrdPMTSD* aMRDPMT;
-  MRDSD* aMRD;
+  WCSimWCSD* afacc;
+  WCSimWCSD* aMRDPMT;
+  
+  // info for map of PMT locations
+  G4int totalNumMrdPMTs;
+  G4int totalNumFaccPMTs;
+  static std::map<int, G4Transform3D> mrdtubeIDMap; 
+  static std::map<int, G4Transform3D> facctubeIDMap;
+  static hash_map<std::string, int, hash<std::string> > mrdtubeLocationMap;
+  static hash_map<std::string, int, hash<std::string> > facctubeLocationMap; 
+  std::vector<WCSimPmtInfo*> fmrdpmts, ffaccpmts;
+  std::vector<WCSimPmtInfo*>* Get_MrdPmts() {return &fmrdpmts;}
+  std::vector<WCSimPmtInfo*>* Get_FaccPmts() {return &ffaccpmts;}
   
 	G4double Xposition, Yposition, Zposition;		// used for positioning parameterisations.
 	G4int numpaddlesperpanelh;									// paddles per h scintillator panel

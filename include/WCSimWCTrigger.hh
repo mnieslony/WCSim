@@ -35,7 +35,7 @@ class WCSimWCTriggerBase : public G4VDigitizerModule
 public:
 
   ///Create WCSimWCTriggerBase instance with knowledge of the detector and DAQ options
-  WCSimWCTriggerBase(G4String name, WCSimDetectorConstruction*, WCSimWCDAQMessenger*);
+  WCSimWCTriggerBase(G4String name, WCSimDetectorConstruction*, WCSimWCDAQMessenger*, G4String);
   
   virtual ~WCSimWCTriggerBase();
 
@@ -136,6 +136,7 @@ protected:
 
   WCSimWCDAQMessenger*       DAQMessenger; ///< Get the options from the .mac file
   WCSimDetectorConstruction* myDetector;   ///< Know about the detector, so can add appropriate PMT time smearing
+  G4String detectorElement;
 
   /// Clear the Trigger* vectors and DigiHitMap
   void ReInitialize() {
@@ -285,7 +286,7 @@ class WCSimWCTriggerNDigits : public WCSimWCTriggerBase
 public:
 
   ///Create WCSimWCTriggerNDigits instance with knowledge of the detector and DAQ options
-  WCSimWCTriggerNDigits(G4String name, WCSimDetectorConstruction*, WCSimWCDAQMessenger*);
+  WCSimWCTriggerNDigits(G4String name, WCSimDetectorConstruction*, WCSimWCDAQMessenger*, G4String detectorElement);
 
   ~WCSimWCTriggerNDigits();
   
@@ -313,7 +314,7 @@ class WCSimWCTriggerNDigits2 : public WCSimWCTriggerBase
 public:
 
   //not recommended to override these methods
-  WCSimWCTriggerNDigits2(G4String name, WCSimDetectorConstruction*, WCSimWCDAQMessenger*);
+  WCSimWCTriggerNDigits2(G4String name, WCSimDetectorConstruction*, WCSimWCDAQMessenger*, G4String detectorElement);
   ~WCSimWCTriggerNDigits2();
   
 private:

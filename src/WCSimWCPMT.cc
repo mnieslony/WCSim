@@ -29,8 +29,7 @@ WCSimWCPMT::WCSimWCPMT(G4String name,
 {
   //G4String colName = "WCRawPMTSignalCollection";
   this->myDetector = myDetector;
-  if(1){	//(detectorElement=="tank"){
-  	G4cout<<"☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆"<<G4endl;
+  if(detectorElement=="tank"){
   	collectionName.push_back("WCRawPMTSignalCollection");	// ☆
   } else if(detectorElement=="mrd"){
   	collectionName.push_back("WCRawMRDSignalCollection");
@@ -49,7 +48,7 @@ WCSimWCPMT::~WCSimWCPMT(){
 G4double WCSimWCPMT::rn1pe(){
   //G4String WCIDCollectionName = myDetector->GetIDCollectionName();	// ☆
   WCSimPMTObject * PMT;
-  if(1){	//(detectorElement=="tank"){
+  if(detectorElement=="tank"){
   	PMT = myDetector->GetPMTPointer(myDetector->GetIDCollectionName());	// ☆ arg WCIDCollectionName
   } else if(detectorElement=="mrd"){ 
   	PMT = myDetector->GetPMTPointer(myDetector->GetMRDCollectionName());
@@ -77,16 +76,16 @@ void WCSimWCPMT::Digitize()
 {
   // Create a DigitCollection and retrieve the appropriate hitCollection name based on detectorElement
   G4String WCCollectionName;
-  if(1){	//(detectorElement=="tank"){
-  	DigitsCollection = new WCSimWCDigitsCollection ("WCDigitizedCollectionPMT",collectionName[0]); //☆
+  if(detectorElement=="tank"){
+  	DigitsCollection = new WCSimWCDigitsCollection ("WCDigitizedCollection",collectionName[0]); //☆
   	// Get the Associated Hit collection ID
   	WCCollectionName = myDetector->GetIDCollectionName(); //☆
   } else if(detectorElement=="mrd"){
-  	DigitsCollection = new WCSimWCDigitsCollection ("WCDigitizedCollectionMRD",collectionName[0]);
+  	DigitsCollection = new WCSimWCDigitsCollection ("WCDigitizedCollection_MRD",collectionName[0]);
   	// Get the Associated Hit collection ID
   	WCCollectionName = myDetector->GetMRDCollectionName();
   } else if(detectorElement=="facc"){
-  	DigitsCollection = new WCSimWCDigitsCollection ("WCDigitizedCollectionFACC",collectionName[0]);
+  	DigitsCollection = new WCSimWCDigitsCollection ("WCDigitizedCollection_FACC",collectionName[0]);
   	// Get the Associated Hit collection ID
   	WCCollectionName = myDetector->GetFACCCollectionName();
   }
@@ -111,7 +110,7 @@ void WCSimWCPMT::MakePeCorrection(WCSimWCHitsCollection* WCHC)
 
   //Get the PMT info for hit time smearing
   G4String WCCollectionName;	// ☆
-  if(1){	//(detectorElement=="tank"){
+  if(detectorElement=="tank"){
   	WCCollectionName = myDetector->GetIDCollectionName();
   } else if(detectorElement=="mrd"){
   	WCCollectionName = myDetector->GetMRDCollectionName();

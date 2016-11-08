@@ -21,6 +21,8 @@ void WCSimDetectorConstruction::SetANNIEPhase1Geometry()
   isANNIE=true;
   WCDetectorName = "ANNIEp1";
   WCIDCollectionName = WCDetectorName +"-glassFaceWCPMT";
+  WCMRDCollectionName = WCDetectorName +"-glassFaceWCPMT_MRD";
+  WCFACCCollectionName = WCDetectorName +"-glassFaceWCPMT_FACC";
   WCSimPMTObject * PMT = CreatePMTObject("PMT8inch", WCIDCollectionName);
  
   WCPMTName = PMT->GetPMTName();
@@ -57,9 +59,11 @@ void WCSimDetectorConstruction::SetANNIEPhase2Geometry()
   isANNIE=true;
   WCDetectorName = "ANNIEp2";
   WCIDCollectionName = WCDetectorName +"-glassFaceWCPMT";
-  WCSimPMTObject * PMT = CreatePMTObject("PMT8inch", WCIDCollectionName);
+  WCMRDCollectionName = WCDetectorName +"-glassFaceWCPMT_MRD";
+  WCFACCCollectionName = WCDetectorName +"-glassFaceWCPMT_FACC";
   //disabling top veto is an option set in tuning_parameters.mac!
  
+  WCSimPMTObject * PMT = CreatePMTObject("PMT8inch", WCIDCollectionName);
   WCPMTName = PMT->GetPMTName();
   WCPMTExposeHeight = PMT->GetExposeHeight();
   WCPMTRadius = PMT->GetRadius();
@@ -73,16 +77,15 @@ void WCSimDetectorConstruction::SetANNIEPhase2Geometry()
   expHall_y = expHall_z = 500*m;
   GDMLFilename = "../../../../WChSandBox_v1/src/annie_v01.gdml";
   
-//  WCMRDCollectionName = WCDetectorName +"MRD" + "-glassFaceWCPMT";
-//  WCSimPMTObject* MRDPMT = CreatePMTObject("PMT8inch",WCMRDCollectionName);
-//  MRDPMTName = MRDPMT->GetPMTName();
-    MRDPMTExposeHeight = 0; //MRDPMT->GetExposeHeight();
-//  MRDPMTRadius = MRDPMT->GetRadius();
-//  WCFACCCollectionName = WCDetectorName + "FACC" + "-glassFaceWCPMT";
-//  WCSimPMTObject* FACCPMT = CreatePMTObject("PMT8inch",WCFACCCollectionName);
-//  FACCPMTName = FACCPMT->GetPMTName();
-//  FACCPMTExposeHeight = FACCPMT->GetExposeHeight();
-//  FACCPMTRadius = FACCPMT->GetRadius();
+  WCSimPMTObject* MRDPMT = CreatePMTObject("FlatFacedPMT8inch",WCMRDCollectionName);
+  MRDPMTName = MRDPMT->GetPMTName();
+  MRDPMTExposeHeight = MRDPMT->GetExposeHeight();
+  MRDPMTRadius = MRDPMT->GetRadius();
+  
+  WCSimPMTObject* FACCPMT = CreatePMTObject("PMT10inch",WCFACCCollectionName);
+  FACCPMTName = FACCPMT->GetPMTName();
+  FACCPMTExposeHeight = FACCPMT->GetExposeHeight();
+  FACCPMTRadius = FACCPMT->GetRadius();
   
   WCLength = tankhy;
   WCIDDiameter          = 2.503*m; 				// the shortest distance to the centre of a (hexagonal) cell wall;

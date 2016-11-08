@@ -6,6 +6,7 @@
 #include "G4Box.hh"
 #include "G4Tubs.hh"
 #include "G4UnionSolid.hh"
+#include "G4Torus.hh"
 #include "G4Sphere.hh"
 #include "G4Trd.hh"
 #include "G4IntersectionSolid.hh"
@@ -121,7 +122,6 @@ G4LogicalVolume* WCSimDetectorConstruction::ConstructCylinder()
 			G4Material::GetMaterial("Air"),
 			"WC",
 			0,0,0);
- 
  
    G4VisAttributes* showColor = new G4VisAttributes(G4Colour(0.0,1.0,0.0));
    logicWC->SetVisAttributes(showColor);
@@ -638,13 +638,35 @@ else {
   // The PMT
   //-----------------------------------------------------
 
+
+  // for testing, slap a flat faced PMT into the middle of the tank. BAM. 
+  G4cout<<"Calling ConstructFlatFacedPMT to make logical volume"<<G4endl;
+  G4LogicalVolume* WCFlatFacedPMT_log = ConstructFlatFacedPMT(MRDPMTName, WCMRDCollectionName, "mrd");
+  G4cout<<"making physical placement"<<G4endl;
+  G4VPhysicalVolume* flatfacedpmt = new G4PVPlacement(0,
+                  G4ThreeVector(0.,0.,200.),
+                  WCFlatFacedPMT_log,
+                  "WCPMT",
+                  logicWCBarrel,
+                  false, 0, true);
+  G4cout<<"Done making FlatFacedPMT"<<G4endl;
+  G4cout<<"Making another for the FACC collection - must have at least one PMT"<<G4endl;
+  G4LogicalVolume* WCFlatFacedPMT_log2 = ConstructPMT(FACCPMTName, WCFACCCollectionName, "facc");
+  G4cout<<"making physical placement"<<G4endl;
+  G4VPhysicalVolume* flatfacedpmt2 = new G4PVPlacement(0,
+                  G4ThreeVector(0.,0.,-200.),
+                  WCFlatFacedPMT_log2,
+                  "WCPMT",
+                  logicWCBarrel,
+                  false, 0, true);
+  G4cout<<"done"<<G4endl;
+  
   ////////////J Felde: The PMT logical volume is now constructed separately 
   // from any specific detector geometry so that any geometry can use the same definition. 
   // K.Zbiri: The PMT volume and the PMT glass are now put in parallel. 
   // The PMT glass is the sensitive volume in this new configuration.
 
-  G4LogicalVolume* logicWCPMT = ConstructPMT(WCPMTName, WCIDCollectionName);
-
+  G4LogicalVolume* logicWCPMT = ConstructPMT(WCPMTName, WCIDCollectionName, "tank");
 
   /*These lines of code will give color and volume to the PMTs if it hasn't been set in WCSimConstructPMT.cc.
 I recommend setting them in WCSimConstructPMT.cc. 
@@ -805,6 +827,9 @@ If used here, uncomment the SetVisAttributes(WClogic) line, and comment out the 
                   false, 0,true);
 
   return logicWC;
+  
+  
+  
 }
 
 
@@ -1201,7 +1226,7 @@ G4LogicalVolume* WCSimDetectorConstruction::ConstructCaps(G4int zflip)
   // Add top and bottom PMTs
   // -----------------------------------------------------
   
-	G4LogicalVolume* logicWCPMT = ConstructPMT(WCPMTName, WCIDCollectionName);
+	G4LogicalVolume* logicWCPMT = ConstructPMT(WCPMTName, WCIDCollectionName, "tank");
 	
 	// If using RayTracer and want to view the detector without caps, comment out the top and bottom PMT's
 

@@ -38,7 +38,7 @@ WCSimWCDigitizerBase::WCSimWCDigitizerBase(G4String name,
   :G4VDigitizerModule(name), myDetector(inDetector), DAQMessenger(myMessenger), DigitizerType(digitype), detectorElement(detectorElement)
 {
   G4String colName;
-  if(1){	//(detectorElement=="tank"){
+  if(detectorElement=="tank"){
   	colName = "WCDigitizedStoreCollection"; //☆
   } else if(detectorElement=="mrd"){
   	colName = "MRDDigitizedStoreCollection";
@@ -94,7 +94,7 @@ void WCSimWCDigitizerBase::Digitize()
   
   // Get the PMT collection ID
   G4String rawcollectionName;
-  if(1){	//(detectorElement=="tank"){
+  if(detectorElement=="tank"){
   	rawcollectionName = "WCRawPMTSignalCollection";	//☆
   } else if(detectorElement=="mrd"){
   	rawcollectionName = "WCRawMRDSignalCollection";

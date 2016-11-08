@@ -18,9 +18,12 @@
 #include "G4SolidStore.hh"
 
 std::map<int, G4Transform3D> WCSimDetectorConstruction::tubeIDMap;
+std::map<int, G4Transform3D> WCSimDetectorConstruction::mrdtubeIDMap;
+std::map<int, G4Transform3D> WCSimDetectorConstruction::facctubeIDMap;
 //std::map<int, cyl_location>  WCSimDetectorConstruction::tubeCylLocation;
-hash_map<std::string, int, hash<std::string> > 
-WCSimDetectorConstruction::tubeLocationMap;
+hash_map<std::string, int, hash<std::string> > WCSimDetectorConstruction::tubeLocationMap;
+hash_map<std::string, int, hash<std::string> > WCSimDetectorConstruction::mrdtubeLocationMap;
+hash_map<std::string, int, hash<std::string> > WCSimDetectorConstruction::facctubeLocationMap;
 
 WCSimDetectorConstruction::WCSimDetectorConstruction(G4int DetConfig,WCSimTuningParameters* WCSimTuningPars):WCSimTuningParams(WCSimTuningPars)
 {
@@ -44,8 +47,12 @@ WCSimDetectorConstruction::WCSimDetectorConstruction(G4int DetConfig,WCSimTuning
   //-----------------------------------------------------
 
   WCSimDetectorConstruction::tubeIDMap.clear();
+  WCSimDetectorConstruction::mrdtubeIDMap.clear();
+  WCSimDetectorConstruction::facctubeIDMap.clear();
   //WCSimDetectorConstruction::tubeCylLocation.clear();// (JF) Removed
   WCSimDetectorConstruction::tubeLocationMap.clear();
+  WCSimDetectorConstruction::mrdtubeLocationMap.clear();
+  WCSimDetectorConstruction::facctubeLocationMap.clear();
   WCSimDetectorConstruction::PMTLogicalVolumes.clear();
   totalNumPMTs = 0;
   WCPMTExposeHeight= 0.;
@@ -101,6 +108,14 @@ WCSimDetectorConstruction::~WCSimDetectorConstruction(){
     delete fpmts.at(i);
   }
   fpmts.clear();
+  for (unsigned int i=0;i<fmrdpmts.size();i++){
+    delete fmrdpmts.at(i);
+  }
+  fmrdpmts.clear();
+    for (unsigned int i=0;i<ffaccpmts.size();i++){
+    delete ffaccpmts.at(i);
+  }
+  ffaccpmts.clear();
 }
 
 G4VPhysicalVolume* WCSimDetectorConstruction::Construct()
@@ -115,6 +130,8 @@ G4VPhysicalVolume* WCSimDetectorConstruction::Construct()
   WCSimDetectorConstruction::PMTLogicalVolumes.clear();
 
   totalNumPMTs = 0;
+  totalNumMrdPMTs = 0;
+  totalNumFaccPMTs = 0;
   
   //-----------------------------------------------------
   // Create Logical Volumes
@@ -188,7 +205,11 @@ G4VPhysicalVolume* WCSimDetectorConstruction::Construct()
 
   // Reset the tubeID and tubeLocation maps before refiling them
   tubeIDMap.clear();
+  mrdtubeIDMap.clear();
+  facctubeIDMap.clear();
   tubeLocationMap.clear();
+  mrdtubeLocationMap.clear();
+  facctubeLocationMap.clear();
 
 
   // Traverse and print the geometry Tree
@@ -256,6 +277,11 @@ WCSimPMTObject *WCSimDetectorConstruction::CreatePMTObject(G4String PMTType, G4S
   }
   else if (PMTType == "BoxandLine12inchHQE"){
     WCSimPMTObject* PMT = new BoxandLine12inchHQE;
+    WCSimDetectorConstruction::SetPMTPointer(PMT, CollectionName);
+    return PMT;
+  }
+  else if (PMTType == "FlatFacedPMT8inch"){
+    WCSimPMTObject* PMT = new FlatFacedPMT8inch;
     WCSimDetectorConstruction::SetPMTPointer(PMT, CollectionName);
     return PMT;
   }

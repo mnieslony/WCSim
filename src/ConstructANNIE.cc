@@ -174,7 +174,7 @@ G4LogicalVolume* WCSimDetectorConstruction::ConstructANNIE()
   // =====================================================================
 void WCSimDetectorConstruction::AddANNIEPhase1PMTs(G4LogicalVolume* waterTank_log){
   
-	G4LogicalVolume* logicWCPMT = ConstructPMT(WCPMTName, WCIDCollectionName);
+	G4LogicalVolume* logicWCPMT = ConstructPMT(WCPMTName, WCIDCollectionName, "tank");
 		
 	/*These lines of code will give color and volume to the PMTs if it hasn't been set in WCSimConstructPMT.cc.
 I recommend setting them in WCSimConstructPMT.cc. 

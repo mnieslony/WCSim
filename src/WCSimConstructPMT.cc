@@ -1,3 +1,7 @@
+#ifndef __CONSTRUCT_PMT_VERBOSE__
+#define __CONSTRUCT_PMT_VERBOSE__ 1
+#endif
+
 #include "WCSimDetectorConstruction.hh"
 
 #include "G4Box.hh"
@@ -20,16 +24,25 @@
 
 WCSimDetectorConstruction::PMTMap_t WCSimDetectorConstruction::PMTLogicalVolumes;
 
-G4LogicalVolume* WCSimDetectorConstruction::ConstructPMT(G4String PMTName, G4String CollectionName)
+G4LogicalVolume* WCSimDetectorConstruction::ConstructPMT(G4String PMTName, G4String CollectionName, G4String detectorElement)
 {
+#ifdef __CONSTRUCT_PMT_VERBOSE__
+  G4cout<<"Making PMTKey_t (PMTName="<<PMTName<<", CollectionName="<<CollectionName<<") "<<G4endl;
+#endif
   PMTKey_t key(PMTName,CollectionName);
   PMTMap_t::iterator it = PMTLogicalVolumes.find(key);
   if (it != PMTLogicalVolumes.end()) {
+#ifdef __CONSTRUCT_PMT_VERBOSE__
+      G4cout<<"This key already exists in the PMTLogicalVolumes map. Restoring it."<<G4endl;
+#endif
       //G4cout << "Restore PMT" << G4endl;
       return it->second;
   }
   //G4cout << "Create PMT" << G4endl;
 
+#ifdef __CONSTRUCT_PMT_VERBOSE__
+G4cout<<"Key not found; creating a new PMT logical volume"<<G4endl;
+#endif
 
 if (Vis_Choice == "RayTracer"){
     // Blue wireframe visual style
@@ -48,7 +61,13 @@ else
   G4double expose;
   G4double radius;
   G4double glassThickness;
-  WCSimPMTObject *PMT = GetPMTPointer(CollectionName);G4cout<<"OOO"<<G4endl;
+#ifdef __CONSTRUCT_PMT_VERBOSE__
+  G4cout<<"Getting pointer to PMT object corresponding to CollectionName "<<CollectionName<<G4endl;
+#endif
+  WCSimPMTObject *PMT = GetPMTPointer(CollectionName);
+#ifdef __CONSTRUCT_PMT_VERBOSE__
+  G4cout<<"Retrieved PMT with name "<<PMT->GetPMTName()<<G4endl;
+#endif
   expose = PMT->GetExposeHeight();
   radius = PMT->GetRadius();
   glassThickness = PMT->GetPMTGlassThickness();
@@ -59,6 +78,10 @@ else
   //All components of the PMT are now contained in a single logical volume logicWCPMT.
   //Origin is on the blacksheet, faces positive z-direction.
   
+#ifdef __CONSTRUCT_PMT_VERBOSE__
+G4cout<<"Making the geometry"<<G4endl;
+#endif
+
   G4double PMTHolderZ[2] = {0, expose};
   G4double PMTHolderR[2] = {radius, radius};
   G4double PMTHolderr[2] = {0,0};
@@ -197,18 +220,26 @@ else {
   //logicGlassFaceWCPMT->SetVisAttributes(G4VisAttributes::Invisible);
   logicGlassFaceWCPMT->SetVisAttributes(WCPMTVisAtt);}
 
+#ifdef __CONSTRUCT_PMT_VERBOSE__
+  G4cout<<"Finished making the geometry"<<G4endl;
+#endif
   // Instantiate a new sensitive detector 
   // and register this sensitive detector volume with the SD Manager. 
   G4SDManager* SDman = G4SDManager::GetSDMpointer();
   G4String SDName = "/WCSim/";
   SDName += CollectionName;
 
-  G4cout<<"OOOsearchingforsd "<<G4endl;
+#ifdef __CONSTRUCT_PMT_VERBOSE__
+  G4cout<<"Searching for sensitive detector "<<SDName<<G4endl;
+#endif
   // If there is no such sensitive detector with that SDName yet,
   // make a new one
   if( ! SDman->FindSensitiveDetector(SDName, false) ) {
-    G4cout<<"didn't find"<<G4endl;
-    aWCPMT = new WCSimWCSD(CollectionName,SDName,this );
+#ifdef __CONSTRUCT_PMT_VERBOSE__
+    G4cout<<"Sensitive detector not found. Making aWCPMT = new WCSimWCSD("<<CollectionName<<", "<<SDName
+          <<", "<<"{DetectorConstruction}"<<", "<<detectorElement<<"), and adding to the SD manager"<<G4endl;
+#endif
+    aWCPMT = new WCSimWCSD(CollectionName,SDName,this,detectorElement );
     SDman->AddNewDetector( aWCPMT );
   }
 
@@ -216,11 +247,17 @@ else {
 
   PMTLogicalVolumes[key] = logicWCPMT;
 
+#ifdef __CONSTRUCT_PMT_VERBOSE__
+  G4cout<<"Adding optical surfaces to cathode"<<G4endl;
+#endif
   //Add Logical Border Surface
   new G4LogicalBorderSurface("GlassCathodeSurface",
                              physiGlassFaceWCPMT,
                              physiInteriorWCPMT,
                              OpGlassCathodeSurface);
 
+#ifdef __CONSTRUCT_PMT_VERBOSE__
+  G4cout<<"returning logical volume"<<G4endl;
+#endif
   return logicWCPMT;
 }

@@ -253,6 +253,7 @@ void WCSimPhysicsList::ConstructlArStepLimiter(){
 #include "G4OpWLS.hh"
 #include "G4OpMieHG.hh"
 #include "G4OpBoundaryProcess.hh"
+#include "G4Scintillation.hh"
 
 void WCSimPhysicsList::ConstructOp(){
 
@@ -262,6 +263,8 @@ void WCSimPhysicsList::ConstructOp(){
   G4OpWLS*              theWLSProcess                = new G4OpWLS();
   G4OpMieHG*  theMieHGScatteringProcess = new G4OpMieHG();
   G4OpBoundaryProcess* theBoundaryProcess          = new G4OpBoundaryProcess();
+  G4Scintillation* theScintProcess = new G4Scintillation("Scintillation");
+  
 
 //   theCherenkovProcess->DumpPhysicsTable();
 //   theAbsorptionProcess->DumpPhysicsTable();
@@ -273,12 +276,14 @@ void WCSimPhysicsList::ConstructOp(){
   theMieHGScatteringProcess->SetVerboseLevel(0);
   theBoundaryProcess->SetVerboseLevel(0);
   theWLSProcess->SetVerboseLevel(0);
+  theScintProcess->SetVerboseLevel(0);
 
   theWLSProcess->UseTimeProfile("exponential");
 
   G4int MaxNumPhotons = 300;
   theCherenkovProcess->SetTrackSecondariesFirst(true);
   theCherenkovProcess->SetMaxNumPhotonsPerStep(MaxNumPhotons);
+  theScintProcess->SetTrackSecondariesFirst(true);
 
   // FROM N06 example:
   // theCherenkovProcess->SetMaxNumPhotonsPerStep(20);
@@ -299,6 +304,12 @@ void WCSimPhysicsList::ConstructOp(){
       pmanager->AddProcess(theCherenkovProcess);
       pmanager->SetProcessOrdering(theCherenkovProcess,idxPostStep);
       }
+      
+     if (theScintProcess->IsApplicable(*particle)) {
+       pmanager->AddProcess(theScintProcess);
+       pmanager->SetProcessOrderingToLast(theScintProcess, idxAtRest);
+       pmanager->SetProcessOrderingToLast(theScintProcess, idxPostStep);
+     }
 
 
     if (particleName == "opticalphoton")

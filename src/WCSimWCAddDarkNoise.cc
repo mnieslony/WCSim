@@ -29,8 +29,8 @@
 #endif
 
 WCSimWCAddDarkNoise::WCSimWCAddDarkNoise(G4String name,
-					 WCSimDetectorConstruction* inDetector)
-  :G4VDigitizerModule(name), fCalledAddDarkNoise(false), myDetector(inDetector)
+					 WCSimDetectorConstruction* inDetector, G4String detectorElement)
+  :G4VDigitizerModule(name), fCalledAddDarkNoise(false), myDetector(inDetector), detectorElement(detectorElement)
 {
   //Set defaults to be unphysical, so that we know if they have been overwritten by the user
   PMTDarkRate = -99;
@@ -49,8 +49,15 @@ WCSimWCAddDarkNoise::~WCSimWCAddDarkNoise(){
 void WCSimWCAddDarkNoise::SetPMTDarkDefaults()
 {
   //Grab Dark Rate and Conversion from PMT itself
-  G4String WCIDCollectionName = myDetector->GetIDCollectionName();
-  WCSimPMTObject * PMT = myDetector->GetPMTPointer(WCIDCollectionName);
+  G4String WCCollectionName;
+  if(detectorElement=="tank"){
+    WCCollectionName = myDetector->GetIDCollectionName();
+  } else if(detectorElement=="mrd"){
+    WCCollectionName = myDetector->GetMRDCollectionName();
+  } else if(detectorElement=="facc"){
+    WCCollectionName = myDetector->GetFACCCollectionName();
+  }
+  WCSimPMTObject * PMT = myDetector->GetPMTPointer(WCCollectionName);
   double const conversion_to_kHz = 1000000; //ToDo: remove this and treat DarkRate in CLHEP units throughout the class.
 
   double defaultPMTDarkRate = PMT->GetDarkRate() * conversion_to_kHz;
@@ -74,9 +81,16 @@ void WCSimWCAddDarkNoise::AddDarkNoise(){
   ReInitialize();
 
   G4DigiManager* DigiMan = G4DigiManager::GetDMpointer();
-  // Get the PMT collection ID                                                                                                                                             
-  G4int WCHCID = DigiMan->GetDigiCollectionID("WCRawPMTSignalCollection");
-  // Get the PMT Digits collection                                                                                                                                        
+  // Get the PMT collection ID
+  G4int WCHCID;
+  if(detectorElement=="tank"){
+    WCHCID = DigiMan->GetDigiCollectionID("WCRawPMTSignalCollection");
+  } else if(detectorElement=="mrd"){
+    WCHCID = DigiMan->GetDigiCollectionID("WCRawMRDSignalCollection");
+  } else if(detectorElement=="facc"){
+    WCHCID = DigiMan->GetDigiCollectionID("WCRawFACCSignalCollection");
+  }
+  // Get the PMT Digits collection
   WCSimWCDigitsCollection* WCHCPMT =
     (WCSimWCDigitsCollection*)(DigiMan->GetDigiCollection(WCHCID));
   
@@ -105,7 +119,15 @@ void WCSimWCAddDarkNoise::AddDarkNoiseBeforeDigi(WCSimWCDigitsCollection* WCHCPM
     // Added by: Morgan Askins (maskins@ucdavis.edu)
 
     G4int number_entries = WCHCPMT->entries();
-    const G4int number_pmts = myDetector->GetTotalNumPmts();
+    G4int thenum_pmts;
+    if(detectorElement=="tank"){
+      thenum_pmts = myDetector->GetTotalNumPmts();
+    } else if(detectorElement=="mrd"){
+      thenum_pmts = myDetector->GetTotalNumMrdPmts();
+    } else if(detectorElement=="facc"){
+      thenum_pmts = myDetector->GetTotalNumFaccPmts();
+    }
+     const G4int number_pmts=thenum_pmts;
     int *PMTindex = new int [number_pmts+1];
 
     //initialize PMTindex
@@ -126,7 +148,14 @@ void WCSimWCAddDarkNoise::AddDarkNoiseBeforeDigi(WCSimWCDigitsCollection* WCHCPM
     }
 
     // Get the info for pmt positions
-    std::vector<WCSimPmtInfo*> *pmts = myDetector->Get_Pmts();
+    std::vector<WCSimPmtInfo*> *pmts;
+    if(detectorElement=="tank"){
+      pmts = myDetector->Get_Pmts();
+    } else if(detectorElement=="mrd"){
+      pmts = myDetector->Get_MrdPmts();
+    } else if(detectorElement=="facc"){
+      pmts = myDetector->Get_FaccPmts();
+    }
     // It works out that the pmts here are ordered !
     // pmts->at(i) has tubeid i+1
     
@@ -144,7 +173,14 @@ void WCSimWCAddDarkNoise::AddDarkNoiseBeforeDigi(WCSimWCDigitsCollection* WCHCPM
     double windowsize = num2 - num1;
 
     G4DigiManager* DMman = G4DigiManager::GetDMpointer();
-    WCSimWCPMT* WCPMT = (WCSimWCPMT*)DMman->FindDigitizerModule("WCReadoutPMT");
+    WCSimWCPMT* WCPMT;
+    if(detectorElement=="tank"){
+      WCPMT = (WCSimWCPMT*)DMman->FindDigitizerModule("WCReadoutPMT");
+    } else if(detectorElement=="mrd"){
+      WCPMT = (WCSimWCPMT*)DMman->FindDigitizerModule("WCReadoutPMT_MRD");
+    } else if(detectorElement=="facc"){
+      WCPMT = (WCSimWCPMT*)DMman->FindDigitizerModule("WCReadoutPMT_FACC");
+    }
    
     //average number of PMTs with noise
     double ave=number_pmts * this->PMTDarkRate * this->ConvRate * windowsize * 1E-6; 
@@ -171,7 +207,13 @@ void WCSimWCAddDarkNoise::AddDarkNoiseBeforeDigi(WCSimWCDigitsCollection* WCHCPM
 	    ahit->SetTubeID( noise_pmt);
 	    //G4cout<<"setting new noise pmt "<<noise_pmt<<" "<<ahit->GetTubeID()<<"\n";
 	    // This Logical volume is GlassFaceWCPMT
-	    ahit->SetLogicalVolume(G4LogicalVolumeStore::GetInstance()->GetVolume(myDetector->GetDetectorName()+"-glassFaceWCPMT"));
+	    if(detectorElement=="tank"){
+	      ahit->SetLogicalVolume(G4LogicalVolumeStore::GetInstance()->GetVolume(myDetector->GetDetectorName()+"-glassFaceWCPMT"));
+	    } else if(detectorElement=="mrd"){
+	      ahit->SetLogicalVolume(G4LogicalVolumeStore::GetInstance()->GetVolume(myDetector->GetDetectorName()+"-glassFaceWCPMT_MRD"));
+	    } else if(detectorElement=="facc"){
+	      ahit->SetLogicalVolume(G4LogicalVolumeStore::GetInstance()->GetVolume(myDetector->GetDetectorName()+"-glassFaceWCPMT_FACC"));
+	    }
 	    //G4cout<<"1 "<<(G4LogicalVolumeStore::GetInstance()->GetVolume("glassFaceWCPMT"))->GetName()<<"\n";
 	    //G4cout<<"2 "<<(*WCHCPMT)[0]->GetLogicalVolume()->GetName()<<"\n";
 	    ahit->SetTrackID(-1);

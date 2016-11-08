@@ -69,10 +69,18 @@ WCSimEventAction::WCSimEventAction(WCSimRunAction* myRun,
   //create PMT response module
   WCSimWCPMT* WCDMPMT = new WCSimWCPMT( "WCReadoutPMT", myDetector, "tank");
   DMman->AddNewModule(WCDMPMT);
+  WCSimWCPMT* WCDMPMT_MRD = new WCSimWCPMT( "WCReadoutPMT_MRD", myDetector, "mrd");
+  DMman->AddNewModule(WCDMPMT_MRD);
+  WCSimWCPMT* WCDMPMT_FACC = new WCSimWCPMT( "WCReadoutPMT_FACC", myDetector, "facc");
+  DMman->AddNewModule(WCDMPMT_FACC);
 
   //create dark noise module
-  WCSimWCAddDarkNoise* WCDNM = new WCSimWCAddDarkNoise("WCDarkNoise", detectorConstructor);
+  WCSimWCAddDarkNoise* WCDNM = new WCSimWCAddDarkNoise("WCDarkNoise", detectorConstructor, "tank");
   DMman->AddNewModule(WCDNM);
+  WCSimWCAddDarkNoise* WCNM_MRD = new WCSimWCAddDarkNoise("WCDarkNoise_MRD", detectorConstructor, "mrd");
+  DMman->AddNewModule(WCNM_MRD);
+  WCSimWCAddDarkNoise* WCNM_FACC = new WCSimWCAddDarkNoise("WCDarkNoise_FACC", detectorConstructor, "facc");
+  DMman->AddNewModule(WCNM_FACC);
 }
 
 WCSimEventAction::~WCSimEventAction()
@@ -95,6 +103,10 @@ void WCSimEventAction::CreateDAQInstances()
   if(DigitizerChoice == "SKI") {
     WCSimWCDigitizerSKI* WCDM = new WCSimWCDigitizerSKI("WCReadoutDigits", detectorConstructor, DAQMessenger, "tank"); //☆
     DMman->AddNewModule(WCDM);
+    WCSimWCDigitizerSKI* WCDM_MRD = new WCSimWCDigitizerSKI("WCReadoutDigits_MRD", detectorConstructor, DAQMessenger, "mrd");
+    DMman->AddNewModule(WCDM_MRD);
+    WCSimWCDigitizerSKI* WCDM_FACC = new WCSimWCDigitizerSKI("WCReadoutDigits_FACC", detectorConstructor, DAQMessenger, "facc");
+    DMman->AddNewModule(WCDM_FACC);
   }
   else {
     G4cerr << "Unknown DigitizerChoice " << DigitizerChoice << G4endl;
@@ -103,12 +115,21 @@ void WCSimEventAction::CreateDAQInstances()
 
   //create your choice of trigger module
   if(TriggerChoice == "NDigits") {
-    WCSimWCTriggerNDigits* WCTM = new WCSimWCTriggerNDigits("WCReadout", detectorConstructor, DAQMessenger);
+    WCSimWCTriggerNDigits* WCTM = new WCSimWCTriggerNDigits("WCReadout", detectorConstructor, DAQMessenger, "tank");
     DMman->AddNewModule(WCTM);
+    WCSimWCTriggerNDigits* WCTM_MRD = new WCSimWCTriggerNDigits("WCReadout_MRD", detectorConstructor, DAQMessenger, "mrd");
+    DMman->AddNewModule(WCTM_MRD);
+    WCSimWCTriggerNDigits* WCTM_FACC = new WCSimWCTriggerNDigits("WCReadout_FACC", detectorConstructor, DAQMessenger, "facc");
+    DMman->AddNewModule(WCTM_FACC);
+    
   }
   else if(TriggerChoice == "NDigits2") {
-    WCSimWCTriggerNDigits2* WCTM = new WCSimWCTriggerNDigits2("WCReadout", detectorConstructor, DAQMessenger);
+    WCSimWCTriggerNDigits2* WCTM = new WCSimWCTriggerNDigits2("WCReadout", detectorConstructor, DAQMessenger, "tank");
     DMman->AddNewModule(WCTM);
+    WCSimWCTriggerNDigits2* WCTM_MRD = new WCSimWCTriggerNDigits2("WCReadout_MRD", detectorConstructor, DAQMessenger, "mrd");
+    DMman->AddNewModule(WCTM_MRD);
+    WCSimWCTriggerNDigits2* WCTM_FACC = new WCSimWCTriggerNDigits2("WCReadout_FACC", detectorConstructor, DAQMessenger, "facc");
+    DMman->AddNewModule(WCTM_FACC);
   }
   else {
     G4cerr << "Unknown TriggerChoice " << TriggerChoice << G4endl;
@@ -127,7 +148,6 @@ void WCSimEventAction::BeginOfEventAction(const G4Event*)
 
 void WCSimEventAction::EndOfEventAction(const G4Event* evt)
 {
-
   // ----------------------------------------------------------------------
   //  Get Particle Table
   // ----------------------------------------------------------------------
@@ -201,7 +221,7 @@ void WCSimEventAction::EndOfEventAction(const G4Event* evt)
 
   //Convert the hits to PMT pulse
   WCDMPMT->Digitize();
-
+  
   //
   // Do the Dark Noise, then Digitization, then Trigger
   //
@@ -247,6 +267,32 @@ void WCSimEventAction::EndOfEventAction(const G4Event* evt)
     	    << " ; CPU = " << ms->CpuTime() << "\n";  
 #endif
 
+  // Repeat the steps for the MRD and FACC
+  WCSimWCPMT* WCDMPMT_MRD = (WCSimWCPMT*)DMman->FindDigitizerModule("WCReadoutPMT_MRD");
+  WCDMPMT_MRD->ReInitialize();
+  WCDMPMT_MRD->Digitize();
+  WCSimWCAddDarkNoise* WCDNM_MRD = (WCSimWCAddDarkNoise*)DMman->FindDigitizerModule("WCDarkNoise_MRD");
+  WCDNM_MRD->AddDarkNoise();
+  WCSimWCDigitizerBase* WCDM_MRD = (WCSimWCDigitizerBase*)DMman->FindDigitizerModule("WCReadoutDigits_MRD");
+  WCDM_MRD->Digitize();
+  WCSimWCTriggerBase* WCTM_MRD = (WCSimWCTriggerBase*)DMman->FindDigitizerModule("WCReadout_MRD");
+  WCTM_MRD->SetDarkRate(WCDNM_MRD->GetDarkRate());
+  WCTM_MRD->Digitize();
+  /////
+  WCSimWCPMT* WCDMPMT_FACC = (WCSimWCPMT*)DMman->FindDigitizerModule("WCReadoutPMT_FACC");
+  WCDMPMT_FACC->ReInitialize();
+  WCDMPMT_FACC->Digitize();
+  WCSimWCAddDarkNoise* WCDNM_FACC = (WCSimWCAddDarkNoise*)DMman->FindDigitizerModule("WCDarkNoise_FACC");
+  WCDNM_FACC->AddDarkNoise();
+  WCSimWCDigitizerBase* WCDM_FACC = (WCSimWCDigitizerBase*)DMman->FindDigitizerModule("WCReadoutDigits_FACC");
+  WCDM_FACC->Digitize();
+  WCSimWCTriggerBase* WCTM_FACC = (WCSimWCTriggerBase*)DMman->FindDigitizerModule("WCReadout_FACC");
+  WCTM_FACC->SetDarkRate(WCDNM_FACC->GetDarkRate());
+  WCTM_FACC->Digitize();
+  
+
+  /////////////////////////////////
+
    // Get the post-noise hit collection for the WC
    G4int WCDChitsID = DMman->GetDigiCollectionID("WCRawPMTSignalCollection");
    WCSimWCDigitsCollection * WCDC_hits = (WCSimWCDigitsCollection*) DMman->GetDigiCollection(WCDChitsID);
@@ -270,6 +316,16 @@ void WCSimEventAction::EndOfEventAction(const G4Event* evt)
        }
    */
    
+   // Also get the corresponding collections for the MRD & FACC
+   G4int WCDChitsID_MRD = DMman->GetDigiCollectionID("WCRawMRDSignalCollection");
+   WCSimWCDigitsCollection * WCDC_hits_MRD = (WCSimWCDigitsCollection*) DMman->GetDigiCollection(WCDChitsID_MRD);
+   G4int WCDCID_MRD = DMman->GetDigiCollectionID("WCDigitizedCollection_MRD");
+   WCSimWCTriggeredDigitsCollection * WCDC_MRD = (WCSimWCTriggeredDigitsCollection*) DMman->GetDigiCollection(WCDCID_MRD);
+   G4int WCDChitsID_FACC = DMman->GetDigiCollectionID("WCRawFACCSignalCollection");
+   WCSimWCDigitsCollection * WCDC_hits_FACC = (WCSimWCDigitsCollection*) DMman->GetDigiCollection(WCDChitsID_FACC);
+   G4int WCDCID_FACC = DMman->GetDigiCollectionID("WCDigitizedCollection_FACC");
+   WCSimWCTriggeredDigitsCollection * WCDC_FACC = (WCSimWCTriggeredDigitsCollection*) DMman->GetDigiCollection(WCDCID_FACC);
+
   // ----------------------------------------------------------------------
   //  Fill Ntuple
   // ----------------------------------------------------------------------
@@ -387,15 +443,16 @@ void WCSimEventAction::EndOfEventAction(const G4Event* evt)
    // G4cout << "MRDxHC: " << &MRDxHC << G4endl;
    // G4cout << "MRDyHC: " << &MRDyHC << G4endl;
    
-
+  //TODO: this needs to me modified to store the MRD+FACC information
   FillRootEvent(event_id,
 		jhfNtuple,
 		trajectoryContainer,
 		WCDC_hits,
 		WCDC);
 
-}
 
+}
+//TODO: Starting and Stopping Volume finders also need to be modified to add MRD and FACC volumes
 G4int WCSimEventAction::WCSimEventFindStartingVolume(G4ThreeVector vtx)
 {
   // Get volume of starting point (see GEANT4 FAQ)

@@ -34,10 +34,17 @@ const double WCSimWCTriggerBase::LongTime = 1E6; // ns = 1ms. event time
 
 WCSimWCTriggerBase::WCSimWCTriggerBase(G4String name,
 				       WCSimDetectorConstruction* inDetector,
-				       WCSimWCDAQMessenger* myMessenger)
-  :G4VDigitizerModule(name), DAQMessenger(myMessenger), myDetector(inDetector), triggerClassName("")
+				       WCSimWCDAQMessenger* myMessenger, G4String detectorElement)
+  :G4VDigitizerModule(name), DAQMessenger(myMessenger), myDetector(inDetector), triggerClassName(""), detectorElement(detectorElement)
 {
-  G4String colName = "WCDigitizedCollection";
+  G4String colName;
+  if(detectorElement=="tank"){
+    colName = "WCDigitizedCollection";
+  } else if(detectorElement=="mrd"){
+    colName = "WCDigitizedCollectionMRD";
+  } else if(detectorElement=="facc"){
+    colName = "WCDigitizedCollectionFACC";
+  }
   collectionName.push_back(colName);
 
   ReInitialize();
@@ -131,7 +138,14 @@ int WCSimWCTriggerBase::GetPostTriggerWindow(TriggerType_t t)
 
 void WCSimWCTriggerBase::AdjustNDigitsThresholdForNoise()
 {
-  int npmts = this->myDetector->GetTotalNumPmts();
+  int npmts;
+  if(detectorElement=="tank"){
+    npmts = this->myDetector->GetTotalNumPmts();
+  } else if(detectorElement=="mrd"){
+    npmts = this->myDetector->GetTotalNumMrdPmts();
+  } else if(detectorElement=="facc"){
+    npmts = this->myDetector->GetTotalNumFaccPmts();
+  }
   double trigger_window_seconds = ndigitsWindow * 1E-9;
   double dark_rate_Hz = PMTDarkRate * 1000;
   double average_occupancy = dark_rate_Hz * trigger_window_seconds * npmts;
@@ -159,12 +173,25 @@ void WCSimWCTriggerBase::Digitize()
   ReInitialize();
 
   //This is the output digit collection
-  DigitsCollection = new WCSimWCTriggeredDigitsCollection ("/WCSim/glassFaceWCPMT",collectionName[0]);
+  if(detectorElement=="tank"){
+    DigitsCollection = new WCSimWCTriggeredDigitsCollection ("/WCSim/glassFaceWCPMT",collectionName[0]);
+  } else if(detectorElement=="mrd"){
+    DigitsCollection = new WCSimWCTriggeredDigitsCollection ("/WCSim/glassFaceWCPMT_MRD",collectionName[0]);
+  } else if(detectorElement=="facc"){
+    DigitsCollection = new WCSimWCTriggeredDigitsCollection ("/WCSim/glassFaceWCPMT_FACC",collectionName[0]);
+  }
 
   G4DigiManager* DigiMan = G4DigiManager::GetDMpointer();
 
   // Get the Digitized hits collection ID
-  G4int WCDCID = DigiMan->GetDigiCollectionID("WCDigitizedStoreCollection");
+  G4int WCDCID;
+  if(detectorElement=="tank"){
+    WCDCID = DigiMan->GetDigiCollectionID("WCDigitizedStoreCollection");
+  } else if(detectorElement=="mrd"){
+    WCDCID = DigiMan->GetDigiCollectionID("MRDDigitizedStoreCollection");
+  } else if(detectorElement=="facc"){
+    WCDCID = DigiMan->GetDigiCollectionID("MRDDigitizedStoreCollection");
+  }
   // Get the PMT Digits Collection
   WCSimWCDigitsCollection* WCDCPMT = 
     (WCSimWCDigitsCollection*)(DigiMan->GetDigiCollection(WCDCID));
@@ -465,8 +492,8 @@ void WCSimWCDigiTrigger::Print()
 
 WCSimWCTriggerNDigits::WCSimWCTriggerNDigits(G4String name,
 					 WCSimDetectorConstruction* myDetector,
-					 WCSimWCDAQMessenger* myMessenger)
-  :WCSimWCTriggerBase(name, myDetector, myMessenger)
+					 WCSimWCDAQMessenger* myMessenger, G4String detectorElement)
+  :WCSimWCTriggerBase(name, myDetector, myMessenger, detectorElement)
 {
   triggerClassName = "NDigits";
   GetVariables();
@@ -488,8 +515,8 @@ void WCSimWCTriggerNDigits::DoTheWork(WCSimWCDigitsCollection* WCDCPMT) {
 
 WCSimWCTriggerNDigits2::WCSimWCTriggerNDigits2(G4String name,
 					 WCSimDetectorConstruction* myDetector,
-					 WCSimWCDAQMessenger* myMessenger)
-  :WCSimWCTriggerBase(name, myDetector, myMessenger)
+					 WCSimWCDAQMessenger* myMessenger, G4String detectorElement)
+  :WCSimWCTriggerBase(name, myDetector, myMessenger, detectorElement)
 {
   triggerClassName = "NDigits2";
   GetVariables();

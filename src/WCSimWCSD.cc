@@ -14,8 +14,8 @@
 #include "WCSimDetectorConstruction.hh"
 #include "WCSimTrackInformation.hh"
 
-WCSimWCSD::WCSimWCSD(G4String CollectionName, G4String name,WCSimDetectorConstruction* myDet)
-:G4VSensitiveDetector(name)
+WCSimWCSD::WCSimWCSD(G4String CollectionName, G4String name,WCSimDetectorConstruction* myDet, G4String detectorElement="tank")
+:G4VSensitiveDetector(name), detectorElement(detectorElement)
 {
   // Place the name of this collection on the list.  We can have more than one
   // in principle.  CollectionName is a vector.
@@ -63,6 +63,8 @@ void WCSimWCSD::Initialize(G4HCofThisEvent* HCE)
 
 G4bool WCSimWCSD::ProcessHits(G4Step* aStep, G4TouchableHistory*)
 { 
+
+if(detectorElement!="tank"){G4cout<<"Processing hit on detectorElement="<<detectorElement<<"!!!!!!!!!!!!!!"<<G4endl;}
   G4StepPoint*       preStepPoint = aStep->GetPreStepPoint();
   G4TouchableHandle  theTouchable = preStepPoint->GetTouchableHandle();
   G4VPhysicalVolume* thePhysical  = theTouchable->GetVolume();
@@ -105,7 +107,14 @@ G4bool WCSimWCSD::ProcessHits(G4Step* aStep, G4TouchableHistory*)
   // they don't in skdetsim. 
   if ( particleDefinition != G4OpticalPhoton::OpticalPhotonDefinition())
     return false;
-  G4String WCIDCollectionName = fdet->GetIDCollectionName();
+  G4String WCCollectionName;
+  if(detectorElement=="tank"){
+  	WCCollectionName = fdet->GetIDCollectionName();
+  } else if (detectorElement=="mrd"){
+  	WCCollectionName = fdet->GetMRDCollectionName();
+  } else if (detectorElement=="facc"){
+  	WCCollectionName = fdet->GetFACCCollectionName();
+  }
   // M Fechner : too verbose
   //  if (aStep->GetTrack()->GetTrackStatus() == fAlive)G4cout << "status is fAlive\n";
   if ((aStep->GetTrack()->GetTrackStatus() == fAlive )
@@ -136,7 +145,14 @@ G4bool WCSimWCSD::ProcessHits(G4Step* aStep, G4TouchableHistory*)
 //  G4cout << tubeTag.str() << G4endl;
 
   // Get the tube ID from the tubeTag
-  G4int replicaNumber = WCSimDetectorConstruction::GetTubeID(tubeTag.str());
+  G4int replicaNumber;
+  if(detectorElement=="tank"){
+    replicaNumber = WCSimDetectorConstruction::GetTubeID(tubeTag.str());
+  } else if(detectorElement=="mrd"){
+    replicaNumber = WCSimDetectorConstruction::GetMrdTubeID(tubeTag.str());
+  } else if(detectorElement=="facc"){
+    replicaNumber = WCSimDetectorConstruction::GetFaccTubeID(tubeTag.str());
+  }
 
     
   G4float theta_angle;
@@ -150,7 +166,7 @@ G4bool WCSimWCSD::ProcessHits(G4Step* aStep, G4TouchableHistory*)
   if (fdet->GetPMT_QE_Method()==1){
     photonQE = 1.1;
   }else if (fdet->GetPMT_QE_Method()==2){
-    maxQE = fdet->GetPMTQE(WCIDCollectionName,wavelength,0,240,660,ratio);
+    maxQE = fdet->GetPMTQE(WCCollectionName,wavelength,0,240,660,ratio);
     photonQE = fdet->GetPMTQE(volumeName, wavelength,1,240,660,ratio);
     photonQE = photonQE/maxQE;
   }else if (fdet->GetPMT_QE_Method()==3){
