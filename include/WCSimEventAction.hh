@@ -39,10 +39,7 @@ public:
 		     G4TrajectoryContainer*,
 		     WCSimWCDigitsCollection*,
 		     WCSimWCTriggeredDigitsCollection*,
-		     WCSimWCDigitsCollection*,
-		     WCSimWCTriggeredDigitsCollection*,
-		     WCSimWCDigitsCollection*,
-		     WCSimWCTriggeredDigitsCollection*
+		     G4String detectorElement
 		     );
   WCSimRunAction* GetRunAction(){return runAction;}
   void SetDigitizerChoice(G4String digitizer) { DigitizerChoice = digitizer; }

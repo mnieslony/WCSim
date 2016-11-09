@@ -178,8 +178,8 @@ G4LogicalVolume* logicGlassFaceWCPMT = new G4LogicalVolume(roundedPMTface,
 //}
 
 
- For either visualization type, logicGlassFaceWCPMT will either be visible or invisible depending on which
- line is commented at the end of the respective if statements
+// For either visualization type, logicGlassFaceWCPMT will either be visible or invisible depending on which
+// line is commented at the end of the respective if statements
 
   if (Vis_Choice == "OGLSX")
    { // Gray wireframe visual style

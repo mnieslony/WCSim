@@ -449,11 +449,28 @@ void WCSimEventAction::EndOfEventAction(const G4Event* evt)
 		trajectoryContainer,
 		WCDC_hits,
 		WCDC,
+		"tank");
+G4cout<<"Filling MRD Root Event"<<G4endl;
+  FillRootEvent(event_id,
+		jhfNtuple,
+		trajectoryContainer,
 		WCDC_hits_MRD,
 		WCDC_MRD,
+		"mrd");
+G4cout<<"Filling FACC Root Event"<<G4endl;
+  FillRootEvent(event_id,
+		jhfNtuple,
+		trajectoryContainer,
 		WCDC_hits_FACC,
-		WCDC_FACC);
-
+		WCDC_FACC,
+		"facc");
+  
+  TTree* tree = GetRunAction()->GetTree();
+  TFile* hfile = tree->GetCurrentFile();
+  // MF : overwrite the trees -- otherwise we have as many copies of the tree
+  // as we have events. All the intermediate copies are incomplete, only the
+  // last one is useful --> huge waste of disk space.
+  hfile->Write("",TObject::kOverwrite);
 
 }
 //TODO: Starting and Stopping Volume finders also need to be modified to add MRD and FACC volumes
@@ -562,35 +579,33 @@ void WCSimEventAction::FillRootEvent(G4int event_id,
 				     G4TrajectoryContainer* TC,
 				     WCSimWCDigitsCollection* WCDC_hits,
 				     WCSimWCTriggeredDigitsCollection* WCDC,
-				     WCSimWCDigitsCollection* WCDC_hits_MRD,
-				     WCSimWCTriggeredDigitsCollection* WCDC_MRD,
-				     WCSimWCDigitsCollection* WCDC_hits_FACC,
-				     WCSimWCTriggeredDigitsCollection* WCDC_FACC
+				     G4String detectorElement
 				     )
 {
   // Fill up a Root event with stuff from the ntuple
 
-  WCSimRootEvent* wcsimrootsuperevent = GetRunAction()->GetRootEvent();
+  WCSimRootEvent* wcsimrootsuperevent = GetRunAction()->GetRootEvent(detectorElement);
 
   // start with the first "sub-event"
   // if the WC digitization requires it, we will add another subevent
   // for the WC.
   // all the rest goes into the first "sub-event".
   WCSimRootTrigger* wcsimrootevent = wcsimrootsuperevent->GetTrigger(0);
-  // get number of gates
   G4DigiManager* DMman = G4DigiManager::GetDMpointer();
-  WCSimWCTriggerBase* WCTM =
-    (WCSimWCTriggerBase*)DMman->FindDigitizerModule("WCReadout");
-  WCSimWCTriggerBase* WCTM_MRD =
-    (WCSimWCTriggerBase*)DMman->FindDigitizerModule("WCReadout_MRD");
-  WCSimWCTriggerBase* WCTM_FACC =
-    (WCSimWCTriggerBase*)DMman->FindDigitizerModule("WCReadout_FACC");
+  WCSimWCTriggerBase* WCTM;
+  
+  if(detectorElement=="tank"){
+    WCTM = (WCSimWCTriggerBase*)DMman->FindDigitizerModule("WCReadout");
+  } else if(detectorElement=="mrd"){
+    WCTM = (WCSimWCTriggerBase*)DMman->FindDigitizerModule("WCReadout_MRD");
+  } else if(detectorElement=="facc"){
+    WCTM = (WCSimWCTriggerBase*)DMman->FindDigitizerModule("WCReadout_FACC");
+  }
+  
+  // get number of gates
   int ngates = WCTM->NumberOfGatesInThisEvent(); 
-  int ngates_mrd = WCTM_MRD->NumberOfGatesInThisEvent();
-  int ngates_facc = WCTM_FACC->NumberOfGatesInThisEvent();
-  G4cout << "ngates =  " << ngates << "\n";
-  G4cout << "ngates_mrd = " << ngates_mrd << G4endl;
-  G4cout << "ngates_facc = " << ngates_facc << G4endl;
+
+  G4cout << "ngates "<<detectorElement<<" =  " << ngates << "\n";
   for (int index = 0 ; index < ngates ; index++) 
     {
       if (index >=1 ) {
@@ -704,7 +719,7 @@ void WCSimEventAction::FillRootEvent(G4int event_id,
     {
       // initial point of the trajectory
       G4TrajectoryPoint* aa =   (G4TrajectoryPoint*)trj->GetPoint(0) ;   
-      runAction->incrementEventsGenerated();
+      if(detectorElement=="tank") runAction->incrementEventsGenerated();
 	
       G4int         ipnu   = trj->GetPDGEncoding();
       G4int         id     = trj->GetTrackID();
@@ -761,7 +776,6 @@ void WCSimEventAction::FillRootEvent(G4int event_id,
 	G4cout<<"part 2 start["<<l<<"]: "<< start[l] <<G4endl;
       }
 
-
       // Add the track to the TClonesArray, watching out for times
       if ( ! ( (ipnu==22)&&(parentType==999))  ) {
 	int choose_event=0;
@@ -774,7 +788,6 @@ void WCSimEventAction::FillRootEvent(G4int event_id,
 	  if (choose_event >= ngates) choose_event = ngates-1; // do not overflow the number of events
 	
 	}
-
 	wcsimrootevent= wcsimrootsuperevent->GetTrigger(choose_event);
 	wcsimrootevent->AddTrack(ipnu, 
 				  flag, 
@@ -791,7 +804,6 @@ void WCSimEventAction::FillRootEvent(G4int event_id,
 				 ttime,id); 
       }
       
-
       if (detectorConstructor->SavePi0Info() == true)
       {
 	G4cout<<"Pi0 parentType: " << parentType <<G4endl;
@@ -878,7 +890,6 @@ void WCSimEventAction::FillRootEvent(G4int event_id,
 #endif //_SAVE_RAW_HITS
 
   // Add the digitized hits
-
   if (WCDC) 
   {
 #ifdef SAVE_DIGITS_VERBOSE
@@ -949,7 +960,6 @@ void WCSimEventAction::FillRootEvent(G4int event_id,
     
   }
 
-    
   for (int i = 0 ; i < wcsimrootsuperevent->GetNumberOfEvents(); i++) {
     wcsimrootevent = wcsimrootsuperevent->GetTrigger(i);
     G4cout << ">>>Root event "
@@ -970,14 +980,15 @@ void WCSimEventAction::FillRootEvent(G4int event_id,
   //G4cout <<"WCFV digi:"<<std::setw(4)<<wcsimrootevent->GetNcherenkovdigihits()<<"  ";
   //G4cout <<"WCFV digi sumQ:"<<std::setw(4)<<wcsimrootevent->GetSumQ()<<"  ";
   //  }
-  
   TTree* tree = GetRunAction()->GetTree();
-  tree->Fill();
-  TFile* hfile = tree->GetCurrentFile();
-  // MF : overwrite the trees -- otherwise we have as many copies of the tree
-  // as we have events. All the intermediate copies are incomplete, only the
-  // last one is useful --> huge waste of disk space.
-  hfile->Write("",TObject::kOverwrite);
+  TBranch* branch = GetRunAction()->GetBranch(detectorElement);
+  branch->Fill();
+  //tree->Fill();
+//  TFile* hfile = tree->GetCurrentFile();
+//  // MF : overwrite the trees -- otherwise we have as many copies of the tree
+//  // as we have events. All the intermediate copies are incomplete, only the
+//  // last one is useful --> huge waste of disk space.
+//  hfile->Write("",TObject::kOverwrite);
   
   // M Fechner : reinitialize the super event after the writing is over
   wcsimrootsuperevent->ReInitialize();
