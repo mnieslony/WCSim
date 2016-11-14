@@ -195,6 +195,7 @@ G4bool WCSimWCSD::ProcessHits(G4Step* aStep, G4TouchableHistory*)
        if (PMTHitMap[replicaNumber] == 0)
 	 {
 	   WCSimWCHit* newHit = new WCSimWCHit();
+	   //if(detectorElement!="tank"){G4cout<<"new hit for "<<detectorElement<<G4endl;}
 	   newHit->SetTubeID(replicaNumber);
 	   newHit->SetTrackID(trackID);
 	   newHit->SetEdep(energyDeposition); 
@@ -215,6 +216,7 @@ G4bool WCSimWCSD::ProcessHits(G4Step* aStep, G4TouchableHistory*)
 	   //       newHit->Print();
 	 }
        else {
+   //if(detectorElement!="tank"){G4cout<<"Adding to hit on tube in "<<detectorElement<<G4endl;}
 	 (*hitsCollection)[PMTHitMap[replicaNumber]-1]->AddPe(hitTime);
 	 (*hitsCollection)[PMTHitMap[replicaNumber]-1]->AddParentID(primParentID);
 	 

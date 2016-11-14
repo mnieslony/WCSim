@@ -447,14 +447,16 @@ private:
   void PlacePaddles(G4LogicalVolume* totMRD_log);
   void PlaceTapers(G4LogicalVolume* totMRD_log);
   void PlaceLGs(G4LogicalVolume* totMRD_log);
-  void PlaceMRDSDSurfs(G4LogicalVolume* totMRD_log, G4PVPlacement* expHall);
-  void PlaceMRDPMTs(G4LogicalVolume* totMRD_log, G4PVPlacement* expHall);
+  void PlaceMRDSDSurfs(G4LogicalVolume* totMRD_log);
+  void PlaceMRDPMTs(G4LogicalVolume* totMRD_log);
+  void PlaceMylarOnMRDPaddles(G4VPhysicalVolume* expHall_phys);
   void PlaceSteels(G4LogicalVolume* totMRD_log);
   void makeAlu(G4AssemblyVolume* totMRD);
   void PlaceVetoPaddles(G4LogicalVolume* totVeto_log);
   void PlaceVetoLGs(G4LogicalVolume* totVeto_log);
   void PlaceVetoSDsurfs(G4LogicalVolume* totVeto_log);
   void PlaceVetoPMTs(G4LogicalVolume* totVeto_log);
+  void PlaceMylarOnFACCPaddles(G4VPhysicalVolume* expHall_phys);
   G4String GetMRDPMTName()			  {return MRDPMTName;}
   G4String GetFACCPMTName()			  {return FACCPMTName;}
   G4String GetMRDCollectionName(){return WCMRDCollectionName;}
@@ -600,6 +602,9 @@ private:
 	
 	G4LogicalVolume* logicMRDPMT;
 	G4LogicalVolume* logicFACCPMT;
+	
+	G4OpticalSurface* scintSurface_op;	// mylar reflective surface
+	G4OpticalSurface* lgSurface_op;			// optical surface with efficiency of detection defined, for boundary detection on ends of LGs
 
 	// Physical Volumes
 	// ================
@@ -639,6 +644,8 @@ private:
   
   public:
     // ****************SciBooNE integration
+    int startindex;
+    G4bool useadditionaloffset;
     SBsimMRDDB*     mrddb;
     inline SBsimMRDDB* GetMRDDB() {return mrddb;};
     

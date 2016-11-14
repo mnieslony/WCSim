@@ -637,29 +637,6 @@ else {
   //-----------------------------------------------------
   // The PMT
   //-----------------------------------------------------
-
-
-  // for testing, slap a flat faced PMT into the middle of the tank. BAM. 
-  G4cout<<"Calling ConstructFlatFacedPMT to make logical volume"<<G4endl;
-  G4LogicalVolume* WCFlatFacedPMT_log = ConstructFlatFacedPMT(MRDPMTName, WCMRDCollectionName, "mrd");
-  G4cout<<"making physical placement"<<G4endl;
-  G4VPhysicalVolume* flatfacedpmt = new G4PVPlacement(0,
-                  G4ThreeVector(0.,0.,200.),
-                  WCFlatFacedPMT_log,
-                  "WCPMT",
-                  logicWCBarrel,
-                  false, 0, true);
-  G4cout<<"Done making FlatFacedPMT"<<G4endl;
-  G4cout<<"Making another for the FACC collection - must have at least one PMT"<<G4endl;
-  G4LogicalVolume* WCFlatFacedPMT_log2 = ConstructPMT(FACCPMTName, WCFACCCollectionName, "facc");
-  G4cout<<"making physical placement"<<G4endl;
-  G4VPhysicalVolume* flatfacedpmt2 = new G4PVPlacement(0,
-                  G4ThreeVector(0.,0.,-200.),
-                  WCFlatFacedPMT_log2,
-                  "WCPMT",
-                  logicWCBarrel,
-                  false, 0, true);
-  G4cout<<"done"<<G4endl;
   
   ////////////J Felde: The PMT logical volume is now constructed separately 
   // from any specific detector geometry so that any geometry can use the same definition. 

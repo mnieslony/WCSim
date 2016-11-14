@@ -1,6 +1,6 @@
-#ifndef __CONSTRUCT_MRD_PMT_VERBOSE__
-#define __CONSTRUCT_MRD_PMT_VERBOSE__ 1
-#endif
+//#ifndef __CONSTRUCT_MRD_PMT_VERBOSE__
+//#define __CONSTRUCT_MRD_PMT_VERBOSE__ 1
+//#endif
 
 #include "WCSimDetectorConstruction.hh"
 #include "G4Box.hh"
@@ -44,20 +44,6 @@ G4LogicalVolume* WCSimDetectorConstruction::ConstructFlatFacedPMT(G4String PMTNa
 G4cout<<"Key not found; creating a new PMT logical volume"<<G4endl;
 #endif
 
-if (Vis_Choice == "RayTracer"){
-    // Blue wireframe visual style
-    // Used in the RayTracer visualizer
-  G4VisAttributes* WCPMTVisAtt = new G4VisAttributes(G4Colour(0.0,0.0,1.0));
-  WCPMTVisAtt->SetForceSolid(true); // force the object to be visualized with a surface
-  WCPMTVisAtt->SetForceAuxEdgeVisible(true); // force auxiliary edges to be shown 
-}
-
-else
-   { // Gray wireframe visual style
-    // used in OGLSX visualizer
-  G4VisAttributes* WCPMTVisAtt = new G4VisAttributes(G4Colour(0.2,0.2,0.2));
-  WCPMTVisAtt->SetForceWireframe(true);}
-
   G4double expose;
   G4double radius;
   G4double glassThickness;
@@ -68,12 +54,12 @@ else
 #ifdef __CONSTRUCT_MRD_PMT_VERBOSE__
   G4cout<<"Retrieved PMT with name "<<PMT->GetPMTName()<<G4endl;
 #endif
-  expose = PMT->GetExposeHeight();
+  expose = PMT->GetExposeHeight();							// net thickness of the construction
   radius = PMT->GetRadius();
   glassThickness = PMT->GetPMTGlassThickness();
-
-G4double shamferrad=radius/10.;	// arbitrary choice for now
-G4double gelthickness=0.2*cm;		// equally arbitrary
+  G4double shamferrad=PMT->GetShamferRadius();	// arbitrary choice for now
+  G4double gelthickness=PMT->GetGelThickness();		// equally arbitrary
+//G4cout<<"making flat faced pmt of radius "<<radius/cm<<" with shamferrad "<<shamferrad/cm<<" and glass thickness "<<glassThickness/cm<<" and gel thickness "<<gelthickness/cm<<G4endl;
 
 #ifdef __CONSTRUCT_MRD_PMT_VERBOSE__
 G4cout<<"Making the geometry"<<G4endl;
@@ -81,13 +67,13 @@ G4cout<<"Making the geometry"<<G4endl;
 
 // start with a box of silicon 'optical grease' gel - this will smoosh against the light guide
 G4Box* PMTgelbox = new G4Box("WCPMT",
-                            radius+2.*cm,
-                            radius+2.*cm,
-                            (shamferrad+gelthickness+0.01*cm)/2.);
+                            radius+1.*cm,
+                            radius+1.*cm,
+                            expose/2.);
 
 G4LogicalVolume* logicWCPMT = new G4LogicalVolume(PMTgelbox,
                             G4Material::GetMaterial("Silicone"),
-                            "WCPMT",
+                            "FFPMT",
                             0,0,0);
 
 if (Vis_Choice == "RayTracer"){
@@ -105,7 +91,7 @@ else{
 // now make up the PMT glass face from a series of parts
 // first a torus to make up the chamfered edge
 G4Torus* tmptorus = new G4Torus("tmptorus",
-                            shamferrad-glassThickness,
+                            0,
                             shamferrad,
                             radius-shamferrad,
                             0,
@@ -114,93 +100,86 @@ G4Torus* tmptorus = new G4Torus("tmptorus",
 // a solid disk to make up the main face of the PMT
 G4Tubs* PMTface = new G4Tubs("PMTface",
                           0,
-                          radius-shamferrad+0.2*cm,
-                          (glassThickness/2.),
+                          radius-shamferrad,
+                          shamferrad+0.1*cm,
                           0,
                           2.0*pi);
 
-// a solid disk to subtract the unwanted lower half of the torus
-// note that subtraction solids should avoid aligned edges/faces, as precision loss could produce undefined results
-G4Tubs* tmpsubtorusbottom = new G4Tubs("tmpsubtorusbottom",
+// generate a union between the disk face and the remaining quarter torus acting as the chamfered edge
+G4UnionSolid* roundedPMTface = new G4UnionSolid(CollectionName, 
+                    tmptorus,
+                    PMTface);
+
+// generate a disk to remove the lower half
+G4Tubs* tmpbottomhalf = new G4Tubs("tmpbottomhalf",
                           0,
                           radius+1.*cm,
                           shamferrad,
                           0,
                           2.0*pi);
 
-// one more solid disk to subtract the remaining unwanted inner quarter of the torus
-G4Tubs* tmpsubtorusinner = new G4Tubs("tmpsubtorusinner",
-                          0,
-                          radius-shamferrad,
-                          shamferrad+1.*cm,
-                          0,
-                          2.0*pi);
-
-// now build up the PMT face from the components
-G4ThreeVector zTrans = G4ThreeVector(0, 0, -shamferrad);
-//G4RotationMatrix Rot = 0;
-G4Transform3D transform = G4Transform3D(G4RotationMatrix(), zTrans);
+G4Transform3D transform = G4Transform3D(G4RotationMatrix(), G4ThreeVector(0,0,-shamferrad));
 
 // subtract the lower half of the torus
-G4SubtractionSolid* tmpsub1 = new G4SubtractionSolid("tmpsub1",
-                    tmptorus,
-                    tmpsubtorusbottom,
-                    transform);
-
-// subtract the inner quarter of the torus
-G4SubtractionSolid* PMTedge = new G4SubtractionSolid("PMTedge",
-                    tmpsub1,
-                    tmpsubtorusinner);
-
-transform = G4Transform3D(G4RotationMatrix(), G4ThreeVector(0,0,shamferrad-(glassThickness/2.)+0.02*cm));
-
-// generate a union between the disk face and the remaining quarter torus acting as the chamfered edge
-G4UnionSolid* roundedPMTface = new G4UnionSolid(CollectionName, 
-                    PMTedge,
-                    PMTface,
+G4SubtractionSolid* roundedPMTfacelowerhalf = new G4SubtractionSolid("roundedPMTfacelowerhalf",
+                    roundedPMTface,
+                    tmpbottomhalf,
                     transform);
 
 // make the logical volume to turn this PMT glass face into glass...
-G4LogicalVolume* logicGlassFaceWCPMT = new G4LogicalVolume(roundedPMTface,
+G4LogicalVolume* logicGlassFaceWCPMT = new G4LogicalVolume(roundedPMTfacelowerhalf,
                     G4Material::GetMaterial("Glass"),
                     CollectionName,
                     0,0,0);
 
-//// ... and give it suitable visualization properties
-//G4VisAttributes* WCPMTVisAtt;
-//if (1){//Vis_Choice == "RayTracer"){
-//	WCPMTVisAtt = new G4VisAttributes(G4Colour(0,0.5,1.));
-//	WCPMTVisAtt->SetForceSolid(true); 					// force the object to be visualized with a surface
-//	WCPMTVisAtt->SetForceAuxEdgeVisible(true); 	// force auxiliary edges to be shown
-//} else { // Gray wireframe visual style used in OGLSX visualizer
-//	WCPMTVisAtt = new G4VisAttributes(G4Colour(0.2,0.2,0.2));
-//	WCPMTVisAtt->SetForceWireframe(true);
-//}
+// this is a solid 'frisbee' of glass. We need to place a physical daughter volume of air into the logical glass to 
+// displace it's internal cavity. So the same process again, this time for a slightly smaller 'frisbee' of air.
 
+// make 'air' to go behind the glass cathode surface, as per other PMTs... dunno why it's not a vacuum.
+G4Torus* airtorus = new G4Torus("airtorus",
+                            0,
+                            shamferrad-glassThickness,
+                            radius-shamferrad,
+                            0,
+                            2.0*pi);
 
-// For either visualization type, logicGlassFaceWCPMT will either be visible or invisible depending on which
-// line is commented at the end of the respective if statements
+// define the air disk
+G4Tubs* airdisk = new G4Tubs("airdisk",
+                          0,
+                          radius-shamferrad,
+                          shamferrad-glassThickness+0.1*cm,
+                          0,
+                          2.0*pi);
 
-  if (Vis_Choice == "OGLSX")
-   { // Gray wireframe visual style
-    // used in OGLSX visualizer
-  G4VisAttributes* WCPMTVisAtt = new G4VisAttributes(G4Colour(0.2,0.2,0.2));
-  WCPMTVisAtt->SetForceWireframe(true);
-  //logicGlassFaceWCPMT->SetVisAttributes(G4VisAttributes::Invisible);
-  logicGlassFaceWCPMT->SetVisAttributes(WCPMTVisAtt);}
+// combine with the air torus
+G4UnionSolid* aircavity = new G4UnionSolid("aircavity",
+                          airtorus,
+                          airdisk);
 
-  if (Vis_Choice == "RayTracer"){
-    // Blue wireframe visual style
-    // Used in the RayTracer visualizer
-  G4VisAttributes* WCPMTVisAtt = new G4VisAttributes(G4Colour(0.0,0.0,1.0));
-  WCPMTVisAtt->SetForceSolid(true); // force the object to be visualized with a surface
-  WCPMTVisAtt->SetForceAuxEdgeVisible(true); // force auxiliary edges to be shown 
-  //logicGlassFaceWCPMT->SetVisAttributes(G4VisAttributes::Invisible);
-  logicGlassFaceWCPMT->SetVisAttributes(WCPMTVisAtt);}
+// subtract the lower half
+G4SubtractionSolid* aircavitylowerhalf = new G4SubtractionSolid("aircavitylowerhalf",
+                    aircavity,
+                    tmpbottomhalf,
+                    transform);
 
-// place this glass face into the box of optical grease
+G4LogicalVolume* aircavity_log = new G4LogicalVolume(aircavitylowerhalf,
+                    G4Material::GetMaterial("Air"),
+                    "aircavity_log",
+                    0,0,0);
+
+// place the half air torus into half glass-face, displacing the internal cavity with air
+G4VPhysicalVolume* aircavity_phys = new G4PVPlacement(0,
+                        G4ThreeVector(0, 0, 0.),
+                        aircavity_log,
+                        "aircavity_phys",
+                        logicGlassFaceWCPMT,
+                        false,
+                        0,
+                        false);
+
+// place the glass face logical volume into the box of optical grease
 G4VPhysicalVolume* physiGlassFaceWCPMT = new G4PVPlacement(0,
-                        G4ThreeVector(0, 0, -(shamferrad+gelthickness+0.01*cm)/2.),
+                        G4ThreeVector(0, 0, -((shamferrad+0.1*cm)/2)),
                         logicGlassFaceWCPMT,
                         CollectionName,
                         logicWCPMT,
@@ -211,79 +190,37 @@ G4VPhysicalVolume* physiGlassFaceWCPMT = new G4PVPlacement(0,
 /* ###### note: the solid, logical and physical volumes corresponding to the glass PMT face are all 
 given the name CollectionName, which is passed in when ConstructPMT is called! ########### */
 
-// make 'air' to go behind the glass cathode surface, as per other PMTs... dunno why it's not a vacuum.
-G4Torus* tmpairtorus = new G4Torus("tmpairtorus",
-                            0,
-                            shamferrad-glassThickness,
-                            radius-shamferrad,
-                            0,
-                            2.0*pi);
-
-// subtract the bottom half of this torus
-G4Tubs* tmpdisk = new G4Tubs("tmpdisk",
-                          0,
-                          radius+1.*cm,
-                          shamferrad/2.,
-                          0,
-                          2.0*pi);
-
-transform = G4Transform3D(G4RotationMatrix(), G4ThreeVector(0,0,(-shamferrad/2.)));
-
-G4SubtractionSolid* airtorus = new G4SubtractionSolid("airtorus",
-                          tmpairtorus,
-                          tmpdisk,
-                          transform);
-
-G4Tubs* airdisk = new G4Tubs("airdisk",
-                          0,
-                          radius-shamferrad,
-                          shamferrad-glassThickness+0.005*cm,
-                          0,
-                          2.0*pi);
-
-G4LogicalVolume* airtorus_log = new G4LogicalVolume(airtorus,
-                    G4Material::GetMaterial("Air"),
-                    "airtorus_log",
-                    0,0,0);
-
-G4LogicalVolume* airdisk_log = new G4LogicalVolume(airdisk,
-                    G4Material::GetMaterial("Air"),
-                    "airdisk_log",
-                    0,0,0);
-
+// give visualization properties to the glass face
+G4VisAttributes* WCPMTVisAtt;
 if (Vis_Choice == "RayTracer"){
-// Adding color and forcing the inner portion of the PMT's to be viewed
-  G4VisAttributes* WCPMTVisAtt = new G4VisAttributes(G4Colour(0.0,0.0,1.0));
-  WCPMTVisAtt->SetForceSolid(true); // force the object to be visualized with a surface
-  WCPMTVisAtt->SetForceAuxEdgeVisible(true); // force auxiliary edges to be shown 
+	WCPMTVisAtt = new G4VisAttributes(G4Colour(0,0.5,1.));
+	WCPMTVisAtt->SetForceSolid(true); 					// force the object to be visualized with a surface
+	WCPMTVisAtt->SetForceAuxEdgeVisible(true); 	// force auxiliary edges to be shown
+} else { // Gray wireframe visual style used in OGLSX visualizer
+	WCPMTVisAtt = new G4VisAttributes(G4Colour(0.2,0.2,0.2));
+	WCPMTVisAtt->SetForceWireframe(true);
+}
+logicGlassFaceWCPMT->SetVisAttributes(WCPMTVisAtt);
 
-  airtorus_log->SetVisAttributes(WCPMTVisAtt);
-  airdisk_log->SetVisAttributes(WCPMTVisAtt);}
+// For either visualization type, logicGlassFaceWCPMT will either be visible or invisible depending on which
+// line is commented at the end of the respective if statements
 
-else {
-// Making the inner portion of the detector invisible for OGLSX visualization
-  airtorus_log->SetVisAttributes(G4VisAttributes::Invisible);
-  airdisk_log->SetVisAttributes(G4VisAttributes::Invisible);}
+////////  if (Vis_Choice == "OGLSX")
+////////   { // Gray wireframe visual style
+////////    // used in OGLSX visualizer
+////////  G4VisAttributes* WCPMTVisAtt = new G4VisAttributes(G4Colour(0.2,0.2,0.2));
+////////  WCPMTVisAtt->SetForceWireframe(true);
+////////  //logicGlassFaceWCPMT->SetVisAttributes(G4VisAttributes::Invisible);
+////////  logicGlassFaceWCPMT->SetVisAttributes(WCPMTVisAtt);}
 
-// place the air torus into the box of optical grease
-G4VPhysicalVolume* airtorus_phys = new G4PVPlacement(0,
-                        G4ThreeVector(0, 0, -(shamferrad+gelthickness+0.01*cm)/2.),
-                        airtorus_log,
-                        "airtorus_phys",
-                        logicWCPMT,
-                        false,
-                        0,
-                        false);
-
-// place the air disk into the box of optical grease
-G4VPhysicalVolume* airdisk_phys = new G4PVPlacement(0,
-                        G4ThreeVector(0, 0, -(shamferrad+gelthickness+0.01*cm)/2.),
-                        airdisk_log,
-                        "airdisk_phys",
-                        logicWCPMT,
-                        false,
-                        0,
-                        false);
+////////  if (Vis_Choice == "RayTracer"){
+////////    // Blue wireframe visual style
+////////    // Used in the RayTracer visualizer
+////////  G4VisAttributes* WCPMTVisAtt = new G4VisAttributes(G4Colour(0.0,0.0,1.0));
+////////  WCPMTVisAtt->SetForceSolid(true); // force the object to be visualized with a surface
+////////  WCPMTVisAtt->SetForceAuxEdgeVisible(true); // force auxiliary edges to be shown 
+////////  //logicGlassFaceWCPMT->SetVisAttributes(G4VisAttributes::Invisible);
+////////  logicGlassFaceWCPMT->SetVisAttributes(WCPMTVisAtt);}
 
 #ifdef __CONSTRUCT_MRD_PMT_VERBOSE__
   G4cout<<"Finished making the geometry"<<G4endl;
@@ -321,13 +258,7 @@ G4VPhysicalVolume* airdisk_phys = new G4PVPlacement(0,
   //Add Logical Border Surface
   new G4LogicalBorderSurface("GlassCathodeSurface",
                              physiGlassFaceWCPMT,
-                             airdisk_phys,
-                             OpGlassCathodeSurface);
-
-  //Add Logical Border Surface
-  new G4LogicalBorderSurface("GlassCathodeSurface",
-                             physiGlassFaceWCPMT,
-                             airtorus_phys,
+                             aircavity_phys,
                              OpGlassCathodeSurface);
 
 #ifdef __CONSTRUCT_MRD_PMT_VERBOSE__

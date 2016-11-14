@@ -15,6 +15,7 @@
 #include "G4RunManager.hh"
 #include "G4PhysicalVolumeStore.hh"
 #include "G4LogicalVolumeStore.hh"
+#include "WCSimDarkRateMessenger.hh"
 #include "G4SolidStore.hh"
 
 std::map<int, G4Transform3D> WCSimDetectorConstruction::tubeIDMap;
@@ -55,6 +56,8 @@ WCSimDetectorConstruction::WCSimDetectorConstruction(G4int DetConfig,WCSimTuning
   WCSimDetectorConstruction::facctubeLocationMap.clear();
   WCSimDetectorConstruction::PMTLogicalVolumes.clear();
   totalNumPMTs = 0;
+  totalNumMrdPMTs = 0;
+  totalNumFaccPMTs = 0;
   WCPMTExposeHeight= 0.;
   //-----------------------------------------------------
   // Set the default WC geometry.  This can be changed later.
@@ -178,7 +181,6 @@ G4VPhysicalVolume* WCSimDetectorConstruction::Construct()
   //-----------------------------------------------------
   // Create and place the physical Volumes
   //-----------------------------------------------------
-
   // Experimental Hall
   G4VPhysicalVolume* physiExpHall = 
     new G4PVPlacement(0,G4ThreeVector(),
@@ -217,20 +219,16 @@ G4VPhysicalVolume* WCSimDetectorConstruction::Construct()
   //  TraverseReplicas(physiWCBox, 0, G4Transform3D(), 
   //	   &WCSimDetectorConstruction::PrintGeometryTree) ;
   
-  G4cout<<"Beginning the perverse traverse"<<G4endl;
   TraverseReplicas(physiWCBox, 0, G4Transform3D(), 
 	           &WCSimDetectorConstruction::DescribeAndRegisterPMT) ;
   
-  G4cout<<"That was fun, let's go round again"<<G4endl;
   TraverseReplicas(physiWCBox, 0, G4Transform3D(), 
 		   &WCSimDetectorConstruction::GetWCGeom) ;
-  G4cout<<"OK enough"<<G4endl;
-  G4cout<<"Dumping map to disk"<<G4endl;
   DumpGeometryTableToFile();
-  G4cout<<"Done. Let's get out of here."<<G4endl;
   
   // Return the pointer to the physical experimental hall
   return physiExpHall;
+  
 }
 
 WCSimPMTObject *WCSimDetectorConstruction::CreatePMTObject(G4String PMTType, G4String CollectionName)
@@ -280,8 +278,13 @@ WCSimPMTObject *WCSimDetectorConstruction::CreatePMTObject(G4String PMTType, G4S
     WCSimDetectorConstruction::SetPMTPointer(PMT, CollectionName);
     return PMT;
   }
-  else if (PMTType == "FlatFacedPMT8inch"){
-    WCSimPMTObject* PMT = new FlatFacedPMT8inch;
+  else if (PMTType == "FlatFacedPMT2inch"){
+    WCSimPMTObject* PMT = new FlatFacedPMT2inch;
+    WCSimDetectorConstruction::SetPMTPointer(PMT, CollectionName);
+    return PMT;
+  }
+  else if (PMTType == "FlatFacedPMT4inch"){
+    WCSimPMTObject* PMT = new FlatFacedPMT4inch;
     WCSimDetectorConstruction::SetPMTPointer(PMT, CollectionName);
     return PMT;
   }

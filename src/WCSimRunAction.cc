@@ -116,6 +116,8 @@ void WCSimRunAction::EndOfRunAction(const G4Run*)
   // is taken care of by the file close
 
   delete wcsimrootsuperevent; wcsimrootsuperevent=0;
+  delete wcsimrootsuperevent_mrd; wcsimrootsuperevent_mrd=0;
+  delete wcsimrootsuperevent_facc; wcsimrootsuperevent_facc=0;
   delete wcsimrootgeom; wcsimrootgeom=0;
 
 }

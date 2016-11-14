@@ -15,6 +15,8 @@
 #include "WCSimPmtInfo.hh"
 #include "WCSimDarkRateMessenger.hh"
 
+#include "WCSimWCTrigger.hh"
+
 #include <vector>
 #include <utility>
 // for memset
@@ -25,7 +27,7 @@
 #endif
 
 #ifndef NPMTS_VERBOSE
-#define NPMTS_VERBOSE 10
+//#define NPMTS_VERBOSE 10
 #endif
 
 WCSimWCAddDarkNoise::WCSimWCAddDarkNoise(G4String name,
@@ -37,12 +39,16 @@ WCSimWCAddDarkNoise::WCSimWCAddDarkNoise(G4String name,
   ConvRate    = -99;
 
   //Get the user options
-  DarkRateMessenger = new WCSimDarkRateMessenger(this);
+  //DarkRateMessenger = new WCSimDarkRateMessenger(this);
+  DarkRateMessenger = WCSimDarkRateMessenger::GetInstance();
+  DarkRateMessenger->AddDarkRateInstance(this, detectorElement);
+  DarkRateMessenger->Initialize();
   ReInitialize();
 }
 
 WCSimWCAddDarkNoise::~WCSimWCAddDarkNoise(){
-  delete DarkRateMessenger;
+  //delete DarkRateMessenger;
+  DarkRateMessenger->RemoveDarkRateInstance(detectorElement);	// DarkRateMessenger singleton calls it's destructor when map is empty
   DarkRateMessenger = 0;
 }
 
@@ -90,14 +96,38 @@ void WCSimWCAddDarkNoise::AddDarkNoise(){
   } else if(detectorElement=="facc"){
     WCHCID = DigiMan->GetDigiCollectionID("WCRawFACCSignalCollection");
   }
+  
   // Get the PMT Digits collection
   WCSimWCDigitsCollection* WCHCPMT =
     (WCSimWCDigitsCollection*)(DigiMan->GetDigiCollection(WCHCID));
+
+  G4String thetriggertype="";	//"TankDigits"
+  if(detectorElement=="mrd"){	// check to see if this detector element uses the tank for triggering
+    WCSimWCTriggerBase* WCTM = (WCSimWCTriggerBase*)DigiMan->FindDigitizerModule("WCReadout_MRD");
+    thetriggertype = WCTM->GetTriggerClassName();
+  } else if(detectorElement=="facc"){
+    WCSimWCTriggerBase* WCTM = (WCSimWCTriggerBase*)DigiMan->FindDigitizerModule("WCReadout_MRD");
+    thetriggertype = WCTM->GetTriggerClassName();
+  }
+  WCSimWCDigitsCollection* WCHCPMT_tank=NULL;
+  if(thetriggertype=="TankDigits"){
+    //if triggertype is triggerontankdigits, then we should add noise in the windows around the *tank* digits, not this
+    //collection's digits, because those are the windows that will be relevant when reading out triggers.
+    int WCHCID_tank = DigiMan->GetDigiCollectionID("WCRawPMTSignalCollection");
+    WCHCPMT_tank = (WCSimWCDigitsCollection*)(DigiMan->GetDigiCollection(WCHCID_tank));
+  }
   
-  if ((WCHCPMT != NULL) && (this->PMTDarkRate > 1E-307)) {
+  if (((WCHCPMT != NULL)||(thetriggertype=="TankDigits"&&WCHCPMT_tank!=NULL)) && (this->PMTDarkRate > 1E-307)) {
     //Determine ranges for adding noise
-    if(DarkMode == 1)
-      FindDarkNoiseRanges(WCHCPMT,this->DarkWindow);
+    if(DarkMode == 1){
+      if(thetriggertype=="TankDigits"){
+        WCSimWCAddDarkNoise* WCDNM_tank = (WCSimWCAddDarkNoise*)DigiMan->FindDigitizerModule("WCDarkNoise");
+        int DarkWindow_tank = WCDNM_tank->GetDarkWindow();
+        FindDarkNoiseRanges(WCHCPMT_tank,DarkWindow_tank);
+      } else {
+        FindDarkNoiseRanges(WCHCPMT,this->DarkWindow);
+      }
+    }
     else if(DarkMode == 0) {
       result.push_back(std::pair<float,float>(DarkLow,DarkHigh));
     }

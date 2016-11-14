@@ -1,6 +1,6 @@
-#ifndef __CONSTRUCT_PMT_VERBOSE__
-#define __CONSTRUCT_PMT_VERBOSE__ 1
-#endif
+//#ifndef __CONSTRUCT_PMT_VERBOSE__
+//#define __CONSTRUCT_PMT_VERBOSE__ 1
+//#endif
 
 #include "WCSimDetectorConstruction.hh"
 

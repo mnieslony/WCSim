@@ -52,7 +52,7 @@
 #endif
 
 #ifndef NPMTS_VERBOSE
-#define NPMTS_VERBOSE 10
+//#define NPMTS_VERBOSE 10
 #endif
 
 WCSimEventAction::WCSimEventAction(WCSimRunAction* myRun, 
@@ -77,10 +77,10 @@ WCSimEventAction::WCSimEventAction(WCSimRunAction* myRun,
   //create dark noise module
   WCSimWCAddDarkNoise* WCDNM = new WCSimWCAddDarkNoise("WCDarkNoise", detectorConstructor, "tank");
   DMman->AddNewModule(WCDNM);
-  WCSimWCAddDarkNoise* WCNM_MRD = new WCSimWCAddDarkNoise("WCDarkNoise_MRD", detectorConstructor, "mrd");
-  DMman->AddNewModule(WCNM_MRD);
-  WCSimWCAddDarkNoise* WCNM_FACC = new WCSimWCAddDarkNoise("WCDarkNoise_FACC", detectorConstructor, "facc");
-  DMman->AddNewModule(WCNM_FACC);
+  WCSimWCAddDarkNoise* WCDNM_MRD = new WCSimWCAddDarkNoise("WCDarkNoise_MRD", detectorConstructor, "mrd");
+  DMman->AddNewModule(WCDNM_MRD);
+  WCSimWCAddDarkNoise* WCDNM_FACC = new WCSimWCAddDarkNoise("WCDarkNoise_FACC", detectorConstructor, "facc");
+  DMman->AddNewModule(WCDNM_FACC);
 }
 
 WCSimEventAction::~WCSimEventAction()
@@ -117,24 +117,29 @@ void WCSimEventAction::CreateDAQInstances()
   if(TriggerChoice == "NDigits") {
     WCSimWCTriggerNDigits* WCTM = new WCSimWCTriggerNDigits("WCReadout", detectorConstructor, DAQMessenger, "tank");
     DMman->AddNewModule(WCTM);
-    WCSimWCTriggerNDigits* WCTM_MRD = new WCSimWCTriggerNDigits("WCReadout_MRD", detectorConstructor, DAQMessenger, "mrd");
-    DMman->AddNewModule(WCTM_MRD);
-    WCSimWCTriggerNDigits* WCTM_FACC = new WCSimWCTriggerNDigits("WCReadout_FACC", detectorConstructor, DAQMessenger, "facc");
-    DMman->AddNewModule(WCTM_FACC);
+//    WCSimWCTriggerNDigits* WCTM_MRD = new WCSimWCTriggerNDigits("WCReadout_MRD", detectorConstructor, DAQMessenger, "mrd");
+//    DMman->AddNewModule(WCTM_MRD);
+//    WCSimWCTriggerNDigits* WCTM_FACC = new WCSimWCTriggerNDigits("WCReadout_FACC", detectorConstructor, DAQMessenger, "facc");
+//    DMman->AddNewModule(WCTM_FACC);
     
   }
   else if(TriggerChoice == "NDigits2") {
     WCSimWCTriggerNDigits2* WCTM = new WCSimWCTriggerNDigits2("WCReadout", detectorConstructor, DAQMessenger, "tank");
     DMman->AddNewModule(WCTM);
-    WCSimWCTriggerNDigits2* WCTM_MRD = new WCSimWCTriggerNDigits2("WCReadout_MRD", detectorConstructor, DAQMessenger, "mrd");
-    DMman->AddNewModule(WCTM_MRD);
-    WCSimWCTriggerNDigits2* WCTM_FACC = new WCSimWCTriggerNDigits2("WCReadout_FACC", detectorConstructor, DAQMessenger, "facc");
-    DMman->AddNewModule(WCTM_FACC);
+//    WCSimWCTriggerNDigits2* WCTM_MRD = new WCSimWCTriggerNDigits2("WCReadout_MRD", detectorConstructor, DAQMessenger, "mrd");
+//    DMman->AddNewModule(WCTM_MRD);
+//    WCSimWCTriggerNDigits2* WCTM_FACC = new WCSimWCTriggerNDigits2("WCReadout_FACC", detectorConstructor, DAQMessenger, "facc");
+//    DMman->AddNewModule(WCTM_FACC);
   }
   else {
     G4cerr << "Unknown TriggerChoice " << TriggerChoice << G4endl;
     exit(-1);
   }
+  // whatever the choice of tank trigger style is, MRD and FACC read out whatever digits are within tank trigger windows
+  WCSimWCTriggerOnTankDigits* WCTM_MRD = new WCSimWCTriggerOnTankDigits("WCReadout_MRD", detectorConstructor, DAQMessenger, "mrd");
+  DMman->AddNewModule(WCTM_MRD);
+  WCSimWCTriggerOnTankDigits* WCTM_FACC = new WCSimWCTriggerOnTankDigits("WCReadout_FACC", detectorConstructor, DAQMessenger, "facc");
+  DMman->AddNewModule(WCTM_FACC);
 
   ConstructedDAQClasses = true;
 }
@@ -184,12 +189,23 @@ void WCSimEventAction::EndOfEventAction(const G4Event* evt)
   WCSimWCHitsCollection* WCHC = 0;
 
   G4String WCIDCollectionName = detectorConstructor->GetIDCollectionName();
+  G4String WCMRDCollectionName = detectorConstructor->GetMRDCollectionName();
+  G4String WCFACCCollectionName = detectorConstructor->GetFACCCollectionName();
   if (HCE)
   { 
     G4String name =   WCIDCollectionName;
     G4int collectionID = SDman->GetCollectionID(name);
     WCHC = (WCSimWCHitsCollection*)HCE->GetHC(collectionID);
-  }
+    G4cout<<WCIDCollectionName<<" has "<<WCHC->entries()<<" entries"<<G4endl;
+    collectionID = SDman->GetCollectionID(WCMRDCollectionName);
+    WCSimWCHitsCollection* WCHC_MRD = (WCSimWCHitsCollection*)HCE->GetHC(collectionID);
+    G4cout<<WCMRDCollectionName<<" has "<<WCHC_MRD->entries()<<" entries"<<G4endl;
+    collectionID = SDman->GetCollectionID(WCFACCCollectionName);
+    WCSimWCHitsCollection* WCHC_FACC = (WCSimWCHitsCollection*)HCE->GetHC(collectionID);
+    G4cout<<WCFACCCollectionName<<" has "<<WCHC_FACC->entries()<<" entries"<<G4endl;
+  } else {G4cout<<"Could not find hit colletion of event!"<<G4endl;}
+  /** just for info, or used if save raw hits is enabled in preprocessor - WCHC is a member variable used in FillRootEvent() */
+  
   
   // To use Do like This:
   // --------------------
@@ -466,6 +482,7 @@ G4cout<<"Filling FACC Root Event"<<G4endl;
 		"facc");
   
   TTree* tree = GetRunAction()->GetTree();
+  tree->SetEntries(GetRunAction()->GetNumberOfEventsGenerated());
   TFile* hfile = tree->GetCurrentFile();
   // MF : overwrite the trees -- otherwise we have as many copies of the tree
   // as we have events. All the intermediate copies are incomplete, only the
@@ -782,7 +799,6 @@ void WCSimEventAction::FillRootEvent(G4int event_id,
 
 	if (ngates)
 	{
-
 	  if ( ttime > WCTM->GetTriggerTime(0)+950. && WCTM->GetTriggerTime(1)+950. > ttime ) choose_event=1; 
 	  if ( ttime > WCTM->GetTriggerTime(1)+950. && WCTM->GetTriggerTime(2)+950. > ttime ) choose_event=2; 
 	  if (choose_event >= ngates) choose_event = ngates-1; // do not overflow the number of events
@@ -832,12 +848,9 @@ void WCSimEventAction::FillRootEvent(G4int event_id,
       }
     }
   }
-
   // Add the Cherenkov hits
   wcsimrootevent = wcsimrootsuperevent->GetTrigger(0);
-
   wcsimrootevent->SetNumTubesHit(jhfNtuple.numTubesHit);
-
 #ifdef _SAVE_RAW_HITS
 
   if (WCDC_hits) 

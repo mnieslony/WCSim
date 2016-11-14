@@ -86,7 +86,6 @@ void WCSimWCDigitizerBase::Digitize()
 
   //Clear the DigiStoreHitMap
   ReInitialize();
-
   //Temporary Storage of Digitized hits which is passed to the trigger
   DigiStore = new WCSimWCDigitsCollection(collectionName[0],collectionName[0]);
 
@@ -109,7 +108,7 @@ void WCSimWCDigitizerBase::Digitize()
   
   if (WCHCPMT) {
     DigitizeHits(WCHCPMT);
-  }
+  } else {G4cout<<"WCSimWCDigitizerBase::Digitize didn't find hit collection for "<<detectorElement<<G4endl;}
   
   StoreDigiCollection(DigiStore);
 
@@ -183,7 +182,12 @@ WCSimWCDigitizerSKI::~WCSimWCDigitizerSKI(){
 }
 
 void WCSimWCDigitizerSKI::DigitizeHits(WCSimWCDigitsCollection* WCHCPMT) {
-  G4cout << "WCSimWCDigitizerSKI::DigitizeHits START WCHCPMT->entries() = " << WCHCPMT->entries() << G4endl;
+
+  G4cout << "WCSimWCDigitizerSKI::DigitizeHits START ";
+  if(detectorElement=="tank"){ G4cout<<"WCHCPMT->entries() = ";}
+  if(detectorElement=="mrd"){  G4cout<<"HCMRD  ->entries() = ";}
+  if(detectorElement=="facc"){ G4cout<<"HCFACC ->entries() = ";}
+  G4cout<< WCHCPMT->entries() << G4endl;
   
   //loop over entires in WCHCPMT, each entry corresponds to
   //the photons on one PMT

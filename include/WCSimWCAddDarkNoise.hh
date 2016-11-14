@@ -32,6 +32,7 @@ public:
   void SetDarkHigh(int idarkhigh){DarkHigh = idarkhigh;}
   void SetDarkLow(int idarklow){DarkLow = idarklow;}
   void SetDarkWindow(int idarkwindow){DarkWindow = idarkwindow;}
+  int GetDarkWindow(){return DarkWindow;}
 
 private:
   void ReInitialize() { ranges.clear(); result.clear();}

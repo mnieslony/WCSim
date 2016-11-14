@@ -1052,7 +1052,7 @@ void WCSimDetectorConstruction::ConstructMaterials()
    //  Polystyrene
    //--------------------------------------------------
    // arrays from /optical/wls example
-   G4double photonEnergyArr[] =
+/*   G4double photonEnergyArr[] =
    {2.00*eV,2.03*eV,2.06*eV,2.09*eV,2.12*eV,
     2.15*eV,2.18*eV,2.21*eV,2.24*eV,2.27*eV,
     2.30*eV,2.33*eV,2.36*eV,2.39*eV,2.42*eV,
@@ -1064,6 +1064,7 @@ void WCSimDetectorConstruction::ConstructMaterials()
     3.20*eV,3.23*eV,3.26*eV,3.29*eV,3.32*eV,
     3.35*eV,3.38*eV,3.41*eV,3.44*eV,3.47*eV};
    const G4int nEntriesPhot = sizeof(photonEnergyArr)/sizeof(G4double);
+   
   
    G4double refractiveIndexPS[] =
    { 1.50, 1.50, 1.50, 1.50, 1.50, 1.50, 1.50, 1.50, 1.50, 1.50,
@@ -1097,23 +1098,20 @@ void WCSimDetectorConstruction::ConstructMaterials()
     1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0,
     1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0};
    assert(sizeof(scintilFast) == sizeof(photonEnergyArr));
-  
+
+*/
+
+  //alternative arrays of properties from LXe example
+  const G4int nEntriesPhot = 4;
+  G4double photonEnergyArr[] = {2.00*eV,2.87*eV,2.90*eV,3.47*eV}; 
+  G4double refractiveIndexPS[] = { 1.5, 1.5, 1.5, 1.5};
+  G4double absPS[] = {2.*cm, 2.*cm, 2.*cm, 2.*cm};
+  G4double scintilFast[] = {0.00, 0.00, 1.00, 1.00};
+
    G4MaterialPropertiesTable* MPTPStyrene = new G4MaterialPropertiesTable();
-   
    MPTPStyrene->AddProperty("RINDEX",photonEnergyArr,refractiveIndexPS,nEntriesPhot);
    MPTPStyrene->AddProperty("ABSLENGTH",photonEnergyArr,absPS,nEntriesPhot);
    MPTPStyrene->AddProperty("FASTCOMPONENT",photonEnergyArr, scintilFast,nEntriesPhot);
-
-//  //alternative arrays of properties from LXe example
-//  const G4int SCINT_NUMENTRIES = 4;
-//  G4double SCINT_Energy[] = {2.00*eV,2.87*eV,2.90*eV,3.47*eV}; 
-//  G4double RIndexPstyrene[SCINT_NUMENTRIES]={ 1.5, 1.5, 1.5, 1.5};
-//  G4double Absorption1[SCINT_NUMENTRIES]={2.*cm, 2.*cm, 2.*cm, 2.*cm};
-//  G4double ScintilFast[SCINT_NUMENTRIES]={0.00, 0.00, 1.00, 1.00};
-//  MPTPStyrene->AddProperty("RINDEX",SCINT_Energy,RIndexPstyrene,SCINT_NUMENTRIES);
-//  MPTPStyrene->AddProperty("ABSLENGTH",SCINT_Energy,Absorption1,SCINT_NUMENTRIES);
-//  MPTPStyrene->AddProperty("FASTCOMPONENT",SCINT_Energy, ScintilFast, SCINT_NUMENTRIES);
-
   // also available: slow component. not needed? Organic scintillators tend to have fast response. Need to also specify YIELDRATIO if
   // specifying both FAST and SLOW components. 
   MPTPStyrene->AddConstProperty("SCINTILLATIONYIELD",10./keV);
@@ -1127,12 +1125,26 @@ void WCSimDetectorConstruction::ConstructMaterials()
   //--------------------------------------------------
   // Silicone (optical grease)
   //--------------------------------------------------
+   G4double photonEnergyArrSil[] =
+   {2.00*eV,2.03*eV,2.06*eV,2.09*eV,2.12*eV,
+    2.15*eV,2.18*eV,2.21*eV,2.24*eV,2.27*eV,
+    2.30*eV,2.33*eV,2.36*eV,2.39*eV,2.42*eV,
+    2.45*eV,2.48*eV,2.51*eV,2.54*eV,2.57*eV,
+    2.60*eV,2.63*eV,2.66*eV,2.69*eV,2.72*eV,
+    2.75*eV,2.78*eV,2.81*eV,2.84*eV,2.87*eV,
+    2.90*eV,2.93*eV,2.96*eV,2.99*eV,3.02*eV,
+    3.05*eV,3.08*eV,3.11*eV,3.14*eV,3.17*eV,
+    3.20*eV,3.23*eV,3.26*eV,3.29*eV,3.32*eV,
+    3.35*eV,3.38*eV,3.41*eV,3.44*eV,3.47*eV};
+   const G4int nEntriesPhotSil = sizeof(photonEnergyArrSil)/sizeof(G4double);
+  
   G4double refractiveIndexSilicone[] =
   { 1.46, 1.46, 1.46, 1.46, 1.46, 1.46, 1.46, 1.46, 1.46, 1.46,
      1.46, 1.46, 1.46, 1.46, 1.46, 1.46, 1.46, 1.46, 1.46, 1.46,
      1.46, 1.46, 1.46, 1.46, 1.46, 1.46, 1.46, 1.46, 1.46, 1.46,
      1.46, 1.46, 1.46, 1.46, 1.46, 1.46, 1.46, 1.46, 1.46, 1.46,
      1.46, 1.46, 1.46, 1.46, 1.46, 1.46, 1.46, 1.46, 1.46, 1.46};
+  assert(sizeof(refractiveIndexSilicone) == sizeof(photonEnergyArrSil));
      
   G4double absSil[] =
   {20.0*m,20.0*m,20.0*m,20.0*m,20.0*m,20.0*m,20.0*m,20.0*m,20.0*m,20.0*m,
@@ -1140,13 +1152,13 @@ void WCSimDetectorConstruction::ConstructMaterials()
    20.0*m,20.0*m,20.0*m,20.0*m,20.0*m,20.0*m,20.0*m,20.0*m,20.0*m,20.0*m,
    20.0*m,20.0*m,20.0*m,20.0*m,20.0*m,20.0*m,20.0*m,20.0*m,20.0*m,20.0*m,
    20.0*m,20.0*m,20.0*m,20.0*m,20.0*m,20.0*m,20.0*m,20.0*m,20.0*m,20.0*m};
+  assert(sizeof(absSil) == sizeof(photonEnergyArrSil));
   
-  assert(sizeof(refractiveIndexSilicone) == sizeof(photonEnergyArr));
   
   // Add entries into properties table
   G4MaterialPropertiesTable* mptSilicone = new G4MaterialPropertiesTable();
-  mptSilicone->AddProperty("RINDEX",photonEnergyArr,refractiveIndexSilicone,nEntriesPhot);
-  mptSilicone->AddProperty("ABSLENGTH",photonEnergyArr,absSil,nEntriesPhot);
+  mptSilicone->AddProperty("RINDEX",photonEnergyArrSil,refractiveIndexSilicone,nEntriesPhotSil);
+  mptSilicone->AddProperty("ABSLENGTH",photonEnergyArrSil,absSil,nEntriesPhotSil);
   
   Silicone->SetMaterialPropertiesTable(mptSilicone);
 

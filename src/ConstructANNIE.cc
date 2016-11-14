@@ -141,16 +141,23 @@ G4LogicalVolume* WCSimDetectorConstruction::ConstructANNIE()
   // set all the paddle dimensions etc and create solids, logical volumes etc. for the MRD & VETO
   DefineANNIEdimensions();												// part of MRDDetectorConstruction.cc
   // Create MRD																		// part of MRDDetectorConstruction.cc
+  useadditionaloffset=false;
   ConstructMRD(expHall_log, expHall_phys);				// marcus' MRD construction
+  // if desired, enable true 'hit' sensitive detector in MRDDetectorConstruction::ConstructMRD
   
   // ===== SciBooNE integration
+  //totMRD_log=expHall->GetLogicalVolume(); 
+  //startindex=numpaddlesperpanelv+1;								// can't remember why  this is needed....
   //DefineMRD((G4PVPlacement*)expHall_phys);				// Subroutine below - combines FACC from MRDDetectorConstruction
   																									// with MRD from DefineMRD.icc
+  //useadditionaloffset=true;												// positioning is different based on if MRD is built in hall or in totMRD
   //  ===== /SciBooNE integration
   
   // Create FACC
   //G4cout<<"Calling construction for the VETO"<<G4endl;
   ConstructVETO(expHall_log, expHall_phys);				// part of MRDDetectorConstruction.cc
+  // enable 'true hits' sensitive detector in MRDDetectorConstruction::ConstructVETO if desired.
+  
   if (isNCV){
     G4ThreeVector NCVposition;
     NCVposition.setX(0.*m); // Position of the NCV
@@ -161,6 +168,19 @@ G4LogicalVolume* WCSimDetectorConstruction::ConstructANNIE()
   } else{
     G4cout << "************ Neutron Capture Volume will NOT be included in the simulation ! ********\n";
   }
+  
+  /* code that just puts a flat faced pmt in the hall for geometry inspection
+  logicMRDPMT = ConstructFlatFacedPMT(MRDPMTName, WCMRDCollectionName, "mrd");
+	G4VPhysicalVolume* mrdpmt_phys=
+		new G4PVPlacement(	0,						// no rotation
+							G4ThreeVector(),				// its position
+							logicMRDPMT,						// its logical volume
+							"MRDPMT",								// its name
+							expHall_log,						// its mother volume
+							false,									// no boolean os
+							0,											// every PMT need a unique id.
+							true);									// check for overlaps
+	*/
   
   expHall_log->SetVisAttributes (G4VisAttributes::Invisible);	// set hall volume invisible
   
@@ -240,75 +260,27 @@ void WCSimDetectorConstruction::DefineMRD(G4PVPlacement* expHall)
 {
   #include "DefineMRD.icc"		// calls in the sciboone code to define MRD geometry
   
-  // add little boxes for surface crossing photon detection:
-  G4cout<<"Placing MRD PMT SDs"<<G4endl; 			// PlaceMRDSDSurfs(0, expHall); // not compatible with sciboone MRD due to positioning
-  G4cout<<"done placing mrd pmts"<<G4endl;
-  
   // ======================================================================================================
   // Below are extensions to SciBooNE code that add paddle cladding and SDs for PMTs at paddle ends
   // ======================================================================================================
+
+  G4cout<<"Placing Mylar on MRD paddles"<<G4endl; 			PlaceMylarOnMRDPaddles(expHall);
   
+  // if desired, enable true 'hit' sensitive detector on MRD in DefineMRD.icc
+
   /* sciboone MRD not compatible with PMT SDs due to incorrect positioning of SD sensitive boxes @ ends of paddles!
+  G4cout<<"Placing MRD PMT SDs"<<G4endl; 			PlaceMRDSDSurfs(0, expHall);
   // Create sensitive detector for pmts that will detect photon hits at the ends of the paddles
   G4VSensitiveDetector* mrdpmtSD = new mrdPMTSD("MRDPMTSD"); 
   // Register detector with manager
+  G4SDManager* SDman = G4SDManager::GetSDMpointer();
   SDman->AddNewDetector(mrdpmtSD);
   // gets called manually and tracks get killed before they enter it; don't need to associate with any logical volumes
-  */
   
-  // Define Paddle Boundaries for MRD PMT photon detection
-  // =====================================================
-  G4int numpaddlesperpanelh=13;
-  G4int numpaddlesperpanelv=15;
-  G4int numpanels = mrdmod->NLayer+1;
-  
-  // Define Mylar cladding
-  // =====================
-  G4OpticalSurface* scintSurface_op = new G4OpticalSurface("mylarSurface",glisur, ground, dielectric_metal);
-  const G4int mylarmptentries = 2;
-  G4double mylar_Energy[mylarmptentries] = {2.0*eV, 3.6*eV};
-  G4double mylar_REFL[mylarmptentries] = {0.9,0.9};
-  G4double mylar_EFFI[mylarmptentries] = {0.0, 0.0};
-  G4MaterialPropertiesTable* MPTmylarSurface = new G4MaterialPropertiesTable();
-  MPTmylarSurface->AddProperty("REFLECTIVITY",mylar_Energy,mylar_REFL,mylarmptentries);
-  MPTmylarSurface->AddProperty("EFFICIENCY",mylar_Energy,mylar_EFFI,mylarmptentries);
-  scintSurface_op->SetMaterialPropertiesTable(MPTmylarSurface);
-  
-  // Place cladding on MRD paddles
-  for(G4int i=0;i<((numpaddlesperpanelv+numpaddlesperpanelh)*(numpanels/2));i++){
-    G4LogicalBorderSurface* scintSurface_log
-      = new G4LogicalBorderSurface("scintcladdinglog",paddles_phys.at(i),expHall,scintSurface_op);
-    scintSurface_log
-      = new G4LogicalBorderSurface("scintcladdinglog",tapers_phys.at(i),expHall,scintSurface_op);
-  }
-  
-  // Place cladding on Light guides
-  for(G4int i=0;i<((numpaddlesperpanelv+numpaddlesperpanelh)*(numpanels/2));i++){
-    G4LogicalBorderSurface* scintSurface_log
-      = new G4LogicalBorderSurface("scintcladdinglog",lgs_phys.at(i),expHall,scintSurface_op);
-  }
-    
-  // Define efficiency for reflection & detection between LGs and "PMTs" at their ends
-  // ===================================================================================
-  G4OpticalSurface* lgSurface_op = new G4OpticalSurface("lgopsurface",glisur, polished, dielectric_metal);  
-  const G4int lgmptentries = 2;
-  G4double ELGphoton[lgmptentries] = {2.038*eV, 4.144*eV};
-  G4double lgsurf_EFF[lgmptentries]={0.95,0.95};
-  G4double lgsurf_REFL[lgmptentries]={0.,0.};
-  G4MaterialPropertiesTable* lgsurf_MPT = new G4MaterialPropertiesTable();
-  lgsurf_MPT->AddProperty("EFFICIENCY",  ELGphoton, lgsurf_EFF,  lgmptentries);
-  lgsurf_MPT->AddProperty("REFLECTIVITY",ELGphoton, lgsurf_REFL, lgmptentries);
-  lgSurface_op->SetMaterialPropertiesTable(lgsurf_MPT);
-  
-  // must be dielectric_metal to invoke absorption/detection process - but is this overridden if both volumes have a ref index?
-  // for dielectric_metal transmittance isn't possible, so either reflection or absorption with probability from mat. properties. 
-  for(G4int i=0;i<((numpaddlesperpanelv+numpaddlesperpanelh)*(numpanels/2));i++){
-      G4LogicalBorderSurface* lgSurface_log = new G4LogicalBorderSurface("lgborderlog",lgs_phys.at(i),mrdsdsurfs_phys.at(i),lgSurface_op);
-  }
-  
-  // add MRD PMTs:
+  // alternatively use WCSim style PMTs
   //G4cout<<"Placing MRD PMTs"<<G4endl; 			PlaceMRDPMTs(0, expHall);
-  //G4cout<<"done placing mrd pmts"<<G4endl;
+  G4cout<<"done placing mrd pmts"<<G4endl;  
+  */
   
 }
 // *******************/End SciBooNE integration****************

@@ -77,12 +77,12 @@ void WCSimDetectorConstruction::SetANNIEPhase2Geometry()
   expHall_y = expHall_z = 500*m;
   GDMLFilename = "../../../../WChSandBox_v1/src/annie_v01.gdml";
   
-  WCSimPMTObject* MRDPMT = CreatePMTObject("FlatFacedPMT8inch",WCMRDCollectionName);
+  WCSimPMTObject* MRDPMT = CreatePMTObject("FlatFacedPMT2inch",WCMRDCollectionName);
   MRDPMTName = MRDPMT->GetPMTName();
   MRDPMTExposeHeight = MRDPMT->GetExposeHeight();
   MRDPMTRadius = MRDPMT->GetRadius();
   
-  WCSimPMTObject* FACCPMT = CreatePMTObject("PMT10inch",WCFACCCollectionName);
+  WCSimPMTObject* FACCPMT = CreatePMTObject("FlatFacedPMT2inch",WCFACCCollectionName);
   FACCPMTName = FACCPMT->GetPMTName();
   FACCPMTExposeHeight = FACCPMT->GetExposeHeight();
   FACCPMTRadius = FACCPMT->GetRadius();
