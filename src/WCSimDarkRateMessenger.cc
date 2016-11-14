@@ -9,15 +9,20 @@
 #include "G4UIcmdWithAString.hh"
 
 WCSimDarkRateMessenger::WCSimDarkRateMessenger(WCSimWCAddDarkNoise* darkratepoint)
-  : WCSimAddDarkNoise(darkratepoint)
+  : WCSimAddDarkNoise(darkratepoint), WCSimDir(0), SetFrequency(0), SetConversionRate(0), SetDarkMode(0), SetDarkLow(0), SetDarkHigh(0), SetDarkWindow(0), SetDetectorElement(0)
 {
     //G4cout<<"constructing an instance"<<G4endl;
     //Initialize();
 }
 
+WCSimDarkRateMessenger* WCSimDarkRateMessenger::iInstance = NULL;
+
 WCSimDarkRateMessenger* WCSimDarkRateMessenger::GetInstance(){
   //G4cout<<"making the static instance"<<G4endl;
-  static WCSimDarkRateMessenger* iInstance = new WCSimDarkRateMessenger(0);
+  //static WCSimDarkRateMessenger* iInstance = new WCSimDarkRateMessenger(0);
+  if(iInstance==NULL){
+    iInstance = new WCSimDarkRateMessenger(0);
+  }
   //G4cout<<"returning static instance at "<<iInstance<<G4endl;
   return iInstance;
 }
