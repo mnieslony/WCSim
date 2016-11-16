@@ -353,8 +353,8 @@ private:
   bool GetDefaultMultiDigitsPerTrigger()    { return false; } ///< SKI saves only earliest digit on a PMT in the trigger window
   int  GetDefaultNDigitsWindow()            { return 200;   } ///< SK max light travel time ~200 ns
   int  GetDefaultNDigitsThreshold()         { return 25;    } ///< SK NDigits threshold ~25
-  int  GetDefaultNDigitsPreTriggerWindow()  { return -400;  } ///< SK SLE trigger window ~-400
-  int  GetDefaultNDigitsPostTriggerWindow() { return 950;   } ///< SK SLE trigger window ~+950
+  int  GetDefaultNDigitsPreTriggerWindow()  { return -1000;  } ///< Scintillator elements have much longer timescales
+  int  GetDefaultNDigitsPostTriggerWindow() { return 2000;   } ///< Scintillator elements have much longer timescales
 };
 
 #endif //WCSimWCTrigger_h

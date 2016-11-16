@@ -64,7 +64,6 @@ void WCSimWCSD::Initialize(G4HCofThisEvent* HCE)
 G4bool WCSimWCSD::ProcessHits(G4Step* aStep, G4TouchableHistory*)
 { 
 
-  //if(detectorElement!="tank"){G4cout<<"Processing hit on detectorElement="<<detectorElement<<"!!!!!!!!!!!!!!"<<G4endl;}
   G4StepPoint*       preStepPoint = aStep->GetPreStepPoint();
   G4TouchableHandle  theTouchable = preStepPoint->GetTouchableHandle();
   G4VPhysicalVolume* thePhysical  = theTouchable->GetVolume();
@@ -89,6 +88,7 @@ G4bool WCSimWCSD::ProcessHits(G4Step* aStep, G4TouchableHistory*)
   G4int    trackID           = aStep->GetTrack()->GetTrackID();
   G4String volumeName        = aStep->GetTrack()->GetVolume()->GetName();
   
+  
   //XQ Add the wavelength there
   G4float stepEnergy =aStep->GetTrack()->GetTotalEnergy()/CLHEP::eV;
   G4float  wavelength = (stepEnergy!=0) ? (2.0*M_PI*197.3)/(stepEnergy) : 0;
@@ -105,8 +105,9 @@ G4bool WCSimWCSD::ProcessHits(G4Step* aStep, G4TouchableHistory*)
     return false;
   // MF : I don't see why other particles should register hits
   // they don't in skdetsim. 
-  if ( particleDefinition != G4OpticalPhoton::OpticalPhotonDefinition())
+  if ( particleDefinition != G4OpticalPhoton::OpticalPhotonDefinition()){
     return false;
+  }
   G4String WCCollectionName;
   if(detectorElement=="tank"){
   	WCCollectionName = fdet->GetIDCollectionName();
@@ -118,11 +119,10 @@ G4bool WCSimWCSD::ProcessHits(G4Step* aStep, G4TouchableHistory*)
   // M Fechner : too verbose
   //  if (aStep->GetTrack()->GetTrackStatus() == fAlive)G4cout << "status is fAlive\n";
   if ((aStep->GetTrack()->GetTrackStatus() == fAlive )
-      &&(particleDefinition == G4OpticalPhoton::OpticalPhotonDefinition()))
-    return false;
+      &&(particleDefinition == G4OpticalPhoton::OpticalPhotonDefinition())){
+      return false;
+  }
 
-  //  if ( particleDefinition ==  G4OpticalPhoton::OpticalPhotonDefinition() ) 
-  // G4cout << volumeName << " hit by optical Photon! " << G4endl;
     
   // Make the tubeTag string based on the replica numbers
   // See WCSimDetectorConstruction::DescribeAndRegisterPMT() for matching
@@ -158,7 +158,6 @@ G4bool WCSimWCSD::ProcessHits(G4Step* aStep, G4TouchableHistory*)
   G4float theta_angle;
   G4float effectiveAngularEfficiency;
 
-
   
   G4float ratio = 1.;
   G4float maxQE;
@@ -173,7 +172,6 @@ G4bool WCSimWCSD::ProcessHits(G4Step* aStep, G4TouchableHistory*)
     ratio = 1./(1.-0.25);
     photonQE = fdet->GetPMTQE(volumeName, wavelength,1,240,660,ratio);
   }
-  
   
   if (G4UniformRand() <= photonQE){
     
@@ -195,7 +193,6 @@ G4bool WCSimWCSD::ProcessHits(G4Step* aStep, G4TouchableHistory*)
        if (PMTHitMap[replicaNumber] == 0)
 	 {
 	   WCSimWCHit* newHit = new WCSimWCHit();
-	   //if(detectorElement!="tank"){G4cout<<"new hit for "<<detectorElement<<G4endl;}
 	   newHit->SetTubeID(replicaNumber);
 	   newHit->SetTrackID(trackID);
 	   newHit->SetEdep(energyDeposition); 
@@ -216,7 +213,6 @@ G4bool WCSimWCSD::ProcessHits(G4Step* aStep, G4TouchableHistory*)
 	   //       newHit->Print();
 	 }
        else {
-   //if(detectorElement!="tank"){G4cout<<"Adding to hit on tube in "<<detectorElement<<G4endl;}
 	 (*hitsCollection)[PMTHitMap[replicaNumber]-1]->AddPe(hitTime);
 	 (*hitsCollection)[PMTHitMap[replicaNumber]-1]->AddParentID(primParentID);
 	 
@@ -233,7 +229,7 @@ void WCSimWCSD::EndOfEvent(G4HCofThisEvent*)
   { 
     G4int numHits = hitsCollection->entries();
 
-    G4cout << "There are " << numHits << " hits in the WC: " << G4endl;
+    G4cout << "There are " << numHits << " hits in the "<<detectorElement<<" : "<< G4endl;
     for (G4int i=0; i < numHits; i++) 
       (*hitsCollection)[i]->Print();
   } 

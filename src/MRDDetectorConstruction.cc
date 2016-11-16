@@ -180,10 +180,10 @@ void WCSimDetectorConstruction::DefineANNIEdimensions(){
 	
   // Define Mylar cladding
   // =====================
-  scintSurface_op = new G4OpticalSurface("mylarSurface",glisur, ground, dielectric_metal);
+  scintSurface_op = new G4OpticalSurface("mylarSurface",glisur, polished, dielectric_metal);	//ground
   const G4int mylarmptentries = 2;
   G4double mylar_Energy[mylarmptentries] = {2.0*eV, 3.6*eV};
-  G4double mylar_REFL[mylarmptentries] = {0.9,0.9};
+  G4double mylar_REFL[mylarmptentries] = {1.0,1.0};
   G4double mylar_EFFI[mylarmptentries] = {0.0, 0.0};
   G4MaterialPropertiesTable* MPTmylarSurface = new G4MaterialPropertiesTable();
   MPTmylarSurface->AddProperty("REFLECTIVITY",mylar_Energy,mylar_REFL,mylarmptentries);
@@ -230,7 +230,7 @@ void WCSimDetectorConstruction::ConstructMRD(G4LogicalVolume* expHall_log, G4VPh
   G4cout<<"Placing steel plates"<<G4endl; 								PlaceSteels(totMRD_log);
   //G4cout<<"Placing sensitive detector sufaces"<<G4endl; 	//PlaceMRDSDSurfs(totMRD_log);
   G4cout<<"Placing MRD PMTs"<<G4endl; 										PlaceMRDPMTs(totMRD_log);
-  G4cout<<"Placing Mylar on MRD paddles"<<G4endl;					PlaceMylarOnMRDPaddles(expHall_phys);
+  G4cout<<"Placing Mylar on MRD paddles"<<G4endl;					PlaceMylarOnMRDPaddles(expHall_phys, totMRD_phys);
 
   // ADD ALU STRUCTURE
   // =================
@@ -289,7 +289,7 @@ void WCSimDetectorConstruction::ConstructMRD(G4LogicalVolume* expHall_log, G4VPh
   G4cout<<"Placing veto light guides"<<G4endl; 	PlaceVetoLGs(totVeto_log);
   //G4cout<<"Placing veto SD surfaces"<<G4endl; 	PlaceVetoSDsurfs(totVeto_log);
   G4cout<<"Placing veto PMTs"<<G4endl; 					PlaceVetoPMTs(totVeto_log);
-  G4cout<<"Placing Mylar on paddles"<<G4endl;		PlaceMylarOnFACCPaddles(expHall_phys);
+  G4cout<<"Placing Mylar on paddles"<<G4endl;		PlaceMylarOnFACCPaddles(expHall_phys, totVeto_phys);
   
   // ADD VIS ATTRIBS
   //================
@@ -322,34 +322,49 @@ void WCSimDetectorConstruction::ConstructMRD(G4LogicalVolume* expHall_log, G4VPh
 // ====================================
 
 // Place Mylar on paddles and light guides
-void WCSimDetectorConstruction::PlaceMylarOnMRDPaddles(G4VPhysicalVolume* expHall_phys){
+void WCSimDetectorConstruction::PlaceMylarOnMRDPaddles(G4VPhysicalVolume* expHall_phys, G4VPhysicalVolume* totMRD_phys){
   // Place cladding on MRD paddles
   for(G4int i=0;i<((numpaddlesperpanelv+numpaddlesperpanelh)*(numpanels/2));i++){
   		G4LogicalBorderSurface* scintSurface_log
   		 = new G4LogicalBorderSurface("scintcladdinglog",paddles_phys.at(i),expHall_phys,scintSurface_op);
   		 scintSurface_log
   		 = new G4LogicalBorderSurface("scintcladdinglog",tapers_phys.at(i),expHall_phys,scintSurface_op);
+  		 
+  		 if(totMRD_phys){
+  	   scintSurface_log
+  		 = new G4LogicalBorderSurface("scintcladdinglog",paddles_phys.at(i),totMRD_phys,scintSurface_op);
+  		 scintSurface_log
+  		 = new G4LogicalBorderSurface("scintcladdinglog",tapers_phys.at(i),totMRD_phys,scintSurface_op);
+  		 }
   }
   
 	// Place cladding on Light guides
   for(G4int i=0;i<((numpaddlesperpanelv+numpaddlesperpanelh)*(numpanels/2));i++){
   		G4LogicalBorderSurface* scintSurface_log
   		 = new G4LogicalBorderSurface("scintcladdinglog",lgs_phys.at(i),expHall_phys,scintSurface_op);
+  		 if(totMRD_phys){
+  		 scintSurface_log
+  		 = new G4LogicalBorderSurface("scintcladdinglog",lgs_phys.at(i),totMRD_phys,scintSurface_op);
+  		 }
   }
 }
 
 // Place Mylar on Veto paddles and light guides
-void WCSimDetectorConstruction::PlaceMylarOnFACCPaddles(G4VPhysicalVolume* expHall_phys){
+void WCSimDetectorConstruction::PlaceMylarOnFACCPaddles(G4VPhysicalVolume* expHall_phys, G4VPhysicalVolume* totVeto_phys){
   // Place cladding on Veto paddles
   for(G4int i=0;i<(numvetopaddles);i++){
   		G4LogicalBorderSurface* vetoSurface_log
   		 = new G4LogicalBorderSurface("vetocladdinglog",vetopaddles_phys.at(i),expHall_phys,scintSurface_op);
+  		 vetoSurface_log
+  		 = new G4LogicalBorderSurface("vetocladdinglog",vetopaddles_phys.at(i),totVeto_phys,scintSurface_op);
   }
   
   // Place cladding on Veto Light guides
   for(G4int i=0;i<(numvetopaddles);i++){
   		G4LogicalBorderSurface* vetoSurface_log
   		 = new G4LogicalBorderSurface("vetocladdinglog",vetolgs_phys.at(i),expHall_phys,scintSurface_op);
+  		 vetoSurface_log
+  		 = new G4LogicalBorderSurface("vetocladdinglog",vetolgs_phys.at(i),totVeto_phys,scintSurface_op);
   }
 }
 
@@ -579,7 +594,7 @@ void WCSimDetectorConstruction::ComputeVetoPaddleTransformation (const G4int cop
 				rotmtx=leftmtx;
 			}
 		} else if(selector==3){	// pmts at ends of lgs
-			Xposition = Xposition + (vetopaddlefullxlen/2.) + vetolgfullxlen + (vetopmtfullheight);
+			Xposition = Xposition + (vetopaddlefullxlen/2.) + vetolgfullxlen + (vetopmtfullheight/2);
 			if(copyNo>(vetopaddlesperpanel-1)){
 				rotmtx=leftmtx;
 			} else {

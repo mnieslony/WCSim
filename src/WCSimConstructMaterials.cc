@@ -1105,7 +1105,8 @@ void WCSimDetectorConstruction::ConstructMaterials()
   const G4int nEntriesPhot = 4;
   G4double photonEnergyArr[] = {2.00*eV,2.87*eV,2.90*eV,3.47*eV}; 
   G4double refractiveIndexPS[] = { 1.5, 1.5, 1.5, 1.5};
-  G4double absPS[] = {2.*cm, 2.*cm, 2.*cm, 2.*cm};
+  //G4double absPS[] = {124.*cm, 124.*cm, 124.*cm, 124.*cm};
+  G4double absPS[] = {124.*cm, 124.*cm, 124.*cm, 124.*cm};
   G4double scintilFast[] = {0.00, 0.00, 1.00, 1.00};
 
    G4MaterialPropertiesTable* MPTPStyrene = new G4MaterialPropertiesTable();
@@ -1161,5 +1162,6 @@ void WCSimDetectorConstruction::ConstructMaterials()
   mptSilicone->AddProperty("ABSLENGTH",photonEnergyArrSil,absSil,nEntriesPhotSil);
   
   Silicone->SetMaterialPropertiesTable(mptSilicone);
+  
 
 }

@@ -6,6 +6,9 @@
 #include "G4ios.hh"
 #include "G4VProcess.hh"
 #include "WCSimTrackInformation.hh"
+#include "G4TransportationManager.hh"
+#include "G4SystemOfUnits.hh"
+#include <algorithm>
 
 WCSimTrackingAction::WCSimTrackingAction()
 {
@@ -28,7 +31,7 @@ void WCSimTrackingAction::PreUserTrackingAction(const G4Track* aTrack)
 {
   G4float percentageOfCherenkovPhotonsToDraw = 0.0;
 
-  if ( aTrack->GetDefinition() != G4OpticalPhoton::OpticalPhotonDefinition()
+  if (aTrack->GetDefinition() != G4OpticalPhoton::OpticalPhotonDefinition()
        || G4UniformRand() < percentageOfCherenkovPhotonsToDraw )
     {
       WCSimTrajectory* thisTrajectory = new WCSimTrajectory(aTrack);
@@ -41,11 +44,11 @@ void WCSimTrackingAction::PreUserTrackingAction(const G4Track* aTrack)
 
 void WCSimTrackingAction::PostUserTrackingAction(const G4Track* aTrack)
 {
+  
   // added by M Fechner
   const G4VProcess* creatorProcess = aTrack->GetCreatorProcess();
   //  if ( creatorProcess )
   //    G4cout << "process name " << creatorProcess->GetProcessName() << G4endl;
-
 
   WCSimTrackInformation* anInfo;
   if (aTrack->GetUserInformation())
@@ -99,12 +102,11 @@ void WCSimTrackingAction::PostUserTrackingAction(const G4Track* aTrack)
     } 
   }
 
-  if ( aTrack->GetDefinition() != G4OpticalPhoton::OpticalPhotonDefinition() )
+  if ( aTrack->GetDefinition() != G4OpticalPhoton::OpticalPhotonDefinition())
     //   if (aTrack->GetDefinition()->GetPDGCharge() == 0) 
   {
-    WCSimTrajectory *currentTrajectory = 
-      (WCSimTrajectory*)fpTrackingManager->GimmeTrajectory();
-
+    WCSimTrajectory *currentTrajectory = (WCSimTrajectory*)fpTrackingManager->GimmeTrajectory();
+  
     G4ThreeVector currentPosition      = aTrack->GetPosition();
     G4VPhysicalVolume* currentVolume   = aTrack->GetVolume();
 
@@ -114,7 +116,37 @@ void WCSimTrackingAction::PostUserTrackingAction(const G4Track* aTrack)
     if (anInfo->isSaved())
       currentTrajectory->SetSaveFlag(true);// mark it for WCSimEventAction ;
     else currentTrajectory->SetSaveFlag(false);// mark it for WCSimEventAction ;
+  } 
+  else {
+      // debug code for looking at single photons. Maybe also override condition for storing trajectory in PreUserTrackingAction
+      WCSimTrajectory *currentTrajectory = (WCSimTrajectory*)fpTrackingManager->GimmeTrajectory();
+      if(currentTrajectory){
+		    if(aTrack->GetVolume()->GetName()=="paddle_phys"){
+		    G4TrajectoryPoint* startingpoint = (G4TrajectoryPoint*)(currentTrajectory->GetPoint(0)); //thepoints[0];
+		    G4ThreeVector startingposition = startingpoint->GetPosition();
+		  
+		    G4Navigator* tmpNavigator = G4TransportationManager::GetTransportationManager()->GetNavigatorForTracking();
+		    G4VPhysicalVolume* tmpVolume = tmpNavigator->LocateGlobalPointAndSetup(startingposition);
+		    G4String vtxVolumeName = tmpVolume->GetName();
+		    
+		    //not sure this actually works.
+		    G4cout<<"photon in paddle travelled from ("<<startingposition.X/mm<<","<<startingposition.Y/mm<<","<<startingposition.Z/mm
+		          <<") to ("<<((aTrack->GetPosition()).X/mm)<<","<<((aTrack->GetPosition()).Y/mm)<<","<<((aTrack->GetPosition()).Z/mm)
+		          <<") before stopping"<<G4endl;
+		    //currentTrajectory->SetSaveFlag(false);
+		    //fpTrackingManager->SetTrajectory(currentTrajectory);
+        //fpTrackingManager->SetStoreTrajectory(false);
+		  }
+    }
+  } 
+  
+  static int line=0;
+  if(line%100==0){ //100000
+    G4cout<<"  PostUserTrackingAction call number: "<<line<<", "<<aTrack->GetDefinition()->GetParticleName();
+    if(creatorProcess){G4cout<<" from "<<creatorProcess->GetProcessName();} else {G4cout<<" primary";}
+    G4cout<<" in "<<aTrack->GetVolume()->GetName()<<G4endl; 
   }
+  line++;
 }
 
 

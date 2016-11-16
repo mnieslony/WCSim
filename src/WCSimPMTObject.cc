@@ -1779,13 +1779,20 @@ G4float* FlatFacedPMT2inch::Getqpe() //currently uses the same as 20inch
 //Currenly the PMT QE info is the same as 20 inch.
 G4float* FlatFacedPMT2inch::GetQE(){
   static G4float QE[20] = { 0.00, .0139, .0854, .169, .203, .206, .211, .202,.188, .167, .140, .116, .0806, .0432, .0265, .0146, .00756, .00508, .00158, 0.00};
+  static G4float FullEfficiency[2] = {1.00, 1.00};
+  //return FullEfficiency;
   return QE;
 }
 G4float* FlatFacedPMT2inch::GetQEWavelength(){static G4float wavelength[20] = { 280., 300., 320., 340., 360., 380., 400., 420., 440., 460., 480., 500., 520., 540., 560., 580., 600., 620., 640., 660.};
-  return wavelength;}
+  static G4float fullrange[2] = {280, 660};
+  //return fullrange;
+  return wavelength;
+}
 
 G4float  FlatFacedPMT2inch::GetmaxQE(){
-    const G4float maxQE = 0.211;
+  const G4float maxQE = 0.211;
+  const G4float fullQE = 1.00;
+  //return fullQE;
   return maxQE;
 }
 

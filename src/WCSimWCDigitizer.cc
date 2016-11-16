@@ -22,6 +22,10 @@
 #define NPMTS_VERBOSE 10
 #endif
 
+#ifndef HYPER_VERBOSITY
+//#define HYPER_VERBOSITY
+#endif
+
 
 // *******************************************
 // BASE CLASS
@@ -39,15 +43,18 @@ WCSimWCDigitizerBase::WCSimWCDigitizerBase(G4String name,
 {
   G4String colName;
   if(detectorElement=="tank"){
-  	colName = "WCDigitizedStoreCollection"; //☆
+  	colName = "WCDigitizedStoreCollection";
   } else if(detectorElement=="mrd"){
-  	colName = "MRDDigitizedStoreCollection";
+  	colName = "WCDigitizedStoreCollection_MRD";
   } else if(detectorElement=="facc"){
-  	colName = "FACCDigitizedStoreCollection";
+  	colName = "WCDigitizedStoreCollection_FACC";
   }
   collectionName.push_back(colName);
   ReInitialize();
-
+#ifdef HYPER_VERBOSITY
+  if(detectorElement=="mrd"){
+  G4cout<<"WCSimWCDigitizerBase::WCSimWCDigitizerBase ☆ recording collection name "<<colName<<" for "<<detectorElement<<G4endl;}
+#endif
   if(DAQMessenger == NULL) {
     G4cerr << "WCSimWCDAQMessenger pointer is NULL when passed to WCSimWCDigitizerBase constructor. Exiting..." 
 	   << G4endl;
@@ -94,17 +101,22 @@ void WCSimWCDigitizerBase::Digitize()
   // Get the PMT collection ID
   G4String rawcollectionName;
   if(detectorElement=="tank"){
-  	rawcollectionName = "WCRawPMTSignalCollection";	//☆
+  	rawcollectionName = "WCRawPMTSignalCollection";
   } else if(detectorElement=="mrd"){
-  	rawcollectionName = "WCRawMRDSignalCollection";
+  	rawcollectionName = "WCRawPMTSignalCollection_MRD";
   } else if(detectorElement=="facc"){
-  	rawcollectionName = "WCRawFACCSignalCollection";
+  	rawcollectionName = "WCRawPMTSignalCollection_FACC";
   }
   G4int WCHCID = DigiMan->GetDigiCollectionID(rawcollectionName);
 
   // Get the PMT Digits collection
-  WCSimWCDigitsCollection* WCHCPMT = 
-    (WCSimWCDigitsCollection*)(DigiMan->GetDigiCollection(WCHCID));
+  WCSimWCDigitsCollection* WCHCPMT = (WCSimWCDigitsCollection*)(DigiMan->GetDigiCollection(WCHCID));
+  
+#ifdef HYPER_VERBOSITY
+  if(detectorElement=="mrd"){
+  G4cout<<"WCSimWCDigitizerBase::Digitize ☆ making digits collection (WCSimWCDigitsCollection*)"<<collectionName[0]
+  <<" for "<<detectorElement<<" and calling DigitizeHits on "<<rawcollectionName<<" to fill it"<<G4endl;}
+#endif
   
   if (WCHCPMT) {
     DigitizeHits(WCHCPMT);
@@ -116,6 +128,7 @@ void WCSimWCDigitizerBase::Digitize()
 
 bool WCSimWCDigitizerBase::AddNewDigit(int tube, int gate, float digihittime, float peSmeared, std::vector<int> digi_comp)
 {
+
   //gate is not a trigger, but just the position of the digit in the array
   //inside the WCSimWCDigi object
 #ifdef WCSIMWCDIGITIZER_VERBOSE
@@ -183,6 +196,9 @@ WCSimWCDigitizerSKI::~WCSimWCDigitizerSKI(){
 
 void WCSimWCDigitizerSKI::DigitizeHits(WCSimWCDigitsCollection* WCHCPMT) {
 
+#ifdef HYPER_VERBOSITY
+  if(detectorElement=="mrd"){G4cout<<"WCSimWCDigitizerBase::DigitizeHits ☆ digitizing "<<WCHCPMT->entries()<<" entries"<<G4endl;}
+#endif
   G4cout << "WCSimWCDigitizerSKI::DigitizeHits START ";
   if(detectorElement=="tank"){ G4cout<<"WCHCPMT->entries() = ";}
   if(detectorElement=="mrd"){  G4cout<<"HCMRD  ->entries() = ";}

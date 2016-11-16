@@ -264,7 +264,7 @@ void WCSimDetectorConstruction::DefineMRD(G4PVPlacement* expHall)
   // Below are extensions to SciBooNE code that add paddle cladding and SDs for PMTs at paddle ends
   // ======================================================================================================
 
-  G4cout<<"Placing Mylar on MRD paddles"<<G4endl; 			PlaceMylarOnMRDPaddles(expHall);
+  G4cout<<"Placing Mylar on MRD paddles"<<G4endl; 			PlaceMylarOnMRDPaddles(expHall, 0);
   
   // if desired, enable true 'hit' sensitive detector on MRD in DefineMRD.icc
 

@@ -104,7 +104,7 @@ WCSimPrimaryGeneratorAction::WCSimPrimaryGeneratorAction(
 		G4cout<<"BRANCHES ARE ZOMBIES ARGH!"<<G4endl;
 	}
 	
-	inputEntry=0;
+	inputEntry=3;
 	runBranch->GetEntry(inputEntry);
 	G4cout<<"first run: "<<runbranchval<<G4endl;
 	treeNumber=inputdata->GetTreeNumber();
