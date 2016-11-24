@@ -477,7 +477,8 @@ void WCSimEventAction::EndOfEventAction(const G4Event* evt)
 
   npar++;
 
-  // Draw Charged Tracks
+  // Draw Charged Tracks 
+  
 
   for (G4int i=0; i < n_trajectories; i++) 
     {
@@ -485,8 +486,9 @@ void WCSimEventAction::EndOfEventAction(const G4Event* evt)
 	(WCSimTrajectory*)((*(evt->GetTrajectoryContainer()))[i]);
 
       if (trj->GetCharge() != 0.)
+      //if(trj->GetParticleName()=="opticalphoton")
  	trj->DrawTrajectory(50);
-    }
+    } 
 
    G4cout << G4endl << " Filling Root Event " << G4endl;
 

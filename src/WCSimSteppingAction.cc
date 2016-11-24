@@ -14,6 +14,8 @@
 #include "G4SDManager.hh"
 #include "G4RunManager.hh"
 
+#include "WCSimTrackInformation.hh"
+
 
 void WCSimSteppingAction::UserSteppingAction(const G4Step* aStep)
 {
@@ -52,6 +54,13 @@ void WCSimSteppingAction::UserSteppingAction(const G4Step* aStep)
 //    G4cout << " PROBLEM! " << theTrack->GetCreatorProcess()->GetProcessName() <<
 //  std::flush << G4endl;
 //  }
+
+/*
+  const G4Track* track       = aStep->GetTrack();
+  if(track->GetDefinition()==G4OpticalPhoton::OpticalPhotonDefinition()&&aStep->GetPostStepPoint()->GetStepStatus()==fGeomBoundary&&aStep->GetPostStepPoint()->GetPhysicalVolume()->GetName()=="paddle_phys"){
+    WCSimTrackInformation* aninfo = (WCSimTrackInformation*)track->GetUserInformation();
+    aninfo->IncrementNumReflections();
+  }*/
   
 }
 

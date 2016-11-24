@@ -21,9 +21,12 @@ WCSimStackingAction::~WCSimStackingAction(){;}
 G4ClassificationOfNewTrack WCSimStackingAction::ClassifyNewTrack
 (const G4Track* aTrack) 
 {
+  
   G4String WCIDCollectionName = DetConstruct->GetIDCollectionName();
   G4ClassificationOfNewTrack classification    = fWaiting;
   G4ParticleDefinition*      particleType      = aTrack->GetDefinition();
+
+  //return classification;	//bypass QE photon check
   
   
   // Make sure it is an optical photon

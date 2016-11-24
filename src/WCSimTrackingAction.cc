@@ -30,9 +30,11 @@ WCSimTrackingAction::~WCSimTrackingAction(){;}
 void WCSimTrackingAction::PreUserTrackingAction(const G4Track* aTrack)
 {
   G4float percentageOfCherenkovPhotonsToDraw = 0.0;
-
+  
+//  static int line=0; line++;
+  
   if (aTrack->GetDefinition() != G4OpticalPhoton::OpticalPhotonDefinition()
-       || G4UniformRand() < percentageOfCherenkovPhotonsToDraw )
+       || G4UniformRand() < percentageOfCherenkovPhotonsToDraw)
     {
       WCSimTrajectory* thisTrajectory = new WCSimTrajectory(aTrack);
       fpTrackingManager->SetTrajectory(thisTrajectory);
@@ -40,6 +42,10 @@ void WCSimTrackingAction::PreUserTrackingAction(const G4Track* aTrack)
     }
   else 
     fpTrackingManager->SetStoreTrajectory(false);
+  
+  WCSimTrackInformation* anInfo = new WCSimTrackInformation();
+  G4Track* theTrack = (G4Track*)aTrack;
+  theTrack->SetUserInformation(anInfo);
 }
 
 void WCSimTrackingAction::PostUserTrackingAction(const G4Track* aTrack)
@@ -117,36 +123,23 @@ void WCSimTrackingAction::PostUserTrackingAction(const G4Track* aTrack)
       currentTrajectory->SetSaveFlag(true);// mark it for WCSimEventAction ;
     else currentTrajectory->SetSaveFlag(false);// mark it for WCSimEventAction ;
   } 
-  else {
-      // debug code for looking at single photons. Maybe also override condition for storing trajectory in PreUserTrackingAction
-      WCSimTrajectory *currentTrajectory = (WCSimTrajectory*)fpTrackingManager->GimmeTrajectory();
-      if(currentTrajectory){
-		    if(aTrack->GetVolume()->GetName()=="paddle_phys"){
-		    G4TrajectoryPoint* startingpoint = (G4TrajectoryPoint*)(currentTrajectory->GetPoint(0)); //thepoints[0];
-		    G4ThreeVector startingposition = startingpoint->GetPosition();
-		  
-		    G4Navigator* tmpNavigator = G4TransportationManager::GetTransportationManager()->GetNavigatorForTracking();
-		    G4VPhysicalVolume* tmpVolume = tmpNavigator->LocateGlobalPointAndSetup(startingposition);
-		    G4String vtxVolumeName = tmpVolume->GetName();
-		    
-		    //not sure this actually works.
-		    G4cout<<"photon in paddle travelled from ("<<startingposition.X/mm<<","<<startingposition.Y/mm<<","<<startingposition.Z/mm
-		          <<") to ("<<((aTrack->GetPosition()).X/mm)<<","<<((aTrack->GetPosition()).Y/mm)<<","<<((aTrack->GetPosition()).Z/mm)
-		          <<") before stopping"<<G4endl;
-		    //currentTrajectory->SetSaveFlag(false);
-		    //fpTrackingManager->SetTrajectory(currentTrajectory);
-        //fpTrackingManager->SetStoreTrajectory(false);
-		  }
-    }
-  } 
   
+/*
   static int line=0;
-  if(line%100==0){ //100000
+  if(line%10000==0){ //100000
     G4cout<<"  PostUserTrackingAction call number: "<<line<<", "<<aTrack->GetDefinition()->GetParticleName();
     if(creatorProcess){G4cout<<" from "<<creatorProcess->GetProcessName();} else {G4cout<<" primary";}
     G4cout<<" in "<<aTrack->GetVolume()->GetName()<<G4endl; 
+    if(aTrack->GetDefinition()==G4OpticalPhoton::OpticalPhotonDefinition()){
+      G4cout<<"          underwent "<<anInfo->GetNumReflections()<<" scatterings, with a total track length of "
+      <<aTrack->GetTrackLength()/mm<<"mm"<<G4endl;}
   }
   line++;
+  if(aTrack->GetDefinition()==G4OpticalPhoton::OpticalPhotonDefinition()&&anInfo->GetNumReflections()<577887821){
+  	fpTrackingManager->SetTrajectory((WCSimTrajectory*)fpTrackingManager->GimmeTrajectory());
+  	fpTrackingManager->SetStoreTrajectory(false);
+  }
+*/
 }
 
 

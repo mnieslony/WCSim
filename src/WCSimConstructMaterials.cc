@@ -1115,7 +1115,7 @@ void WCSimDetectorConstruction::ConstructMaterials()
    MPTPStyrene->AddProperty("FASTCOMPONENT",photonEnergyArr, scintilFast,nEntriesPhot);
   // also available: slow component. not needed? Organic scintillators tend to have fast response. Need to also specify YIELDRATIO if
   // specifying both FAST and SLOW components. 
-  MPTPStyrene->AddConstProperty("SCINTILLATIONYIELD",10./keV);
+  MPTPStyrene->AddConstProperty("SCINTILLATIONYIELD", 10./keV);
   MPTPStyrene->AddConstProperty("RESOLUTIONSCALE",1.0);
   MPTPStyrene->AddConstProperty("FASTTIMECONSTANT", 10.*ns);
   Scinti->SetMaterialPropertiesTable(MPTPStyrene);
@@ -1162,6 +1162,39 @@ void WCSimDetectorConstruction::ConstructMaterials()
   mptSilicone->AddProperty("ABSLENGTH",photonEnergyArrSil,absSil,nEntriesPhotSil);
   
   Silicone->SetMaterialPropertiesTable(mptSilicone);
+  
+  // =============================
+  // DEFINE NCV liquid properties (from discussion with Eljen)
+   
+   const G4int NumEntriesNCV = 35;
+   // Energy table
+    G4double ScintNCV_Energy[NumEntriesNCV] = {1.2398E-6/380*GeV,1.2398E-6/385*GeV,1.2398E-6/390*GeV,1.2398E-6/395*GeV,1.2398E-6/400*GeV,1.2398E-6/405*GeV,1.2398E-6/410*GeV,1.2398E-6/415*GeV,1.2398E-6/420*GeV,1.2398E-6/425*GeV,1.2398E-6/430*GeV,1.2398E-6/435*GeV,1.2398E-6/440*GeV,1.2398E-6/445*GeV,1.2398E-6/450*GeV,1.2398E-6/455*GeV,1.2398E-6/460*GeV,1.2398E-6/465*GeV,1.2398E-6/470*GeV,1.2398E-6/475*GeV,1.2398E-6/480*GeV,1.2398E-6/485*GeV,1.2398E-6/490*GeV,1.2398E-6/495*GeV,1.2398E-6/500*GeV,1.2398E-6/505*GeV,1.2398E-6/510*GeV,1.2398E-6/515*GeV,1.2398E-6/520*GeV,1.2398E-6/525*GeV,1.2398E-6/530*GeV,1.2398E-6/535*GeV,1.2398E-6/540*GeV,1.2398E-6/545*GeV,1.2398E-6/550*GeV};
+    
+   // Reflexion index
+   G4double RI_ScintNCV[NumEntriesNCV] =  {1.49,1.49,1.49,1.49,1.49,1.49,1.49,1.49,1.49,1.49,1.49,1.49,1.49,1.49,1.49,1.49,1.49,1.49,1.49,1.49,1.49,1.49,1.49,1.49,1.49,1.49,1.49,1.49,1.49,1.49,1.49,1.49,1.49,1.49,1.49};
+   
+   // Emission spectrum
+   G4double ScintNCV_WB_LS[NumEntriesNCV] = {0.000,0.105,0.410,0.820,0.990,0.950,0.820,0.810,0.920,0.940,0.880,0.750,0.610,0.550,0.510,0.485,0.435,0.270,0.210,0.175,0.150,0.130,0.111,0.096,0.083,0.070,0.060,0.050,0.043,0.038,0.030,0.025,0.020,0.015,0.010};
+   
+   
+   G4MaterialPropertiesTable* myMPT8 = new G4MaterialPropertiesTable();
+ 
+
+   myMPT8->AddProperty("RINDEX", ENERGY_water, RINDEX1, NUMENTRIES_water);
+   myMPT8->AddProperty("ABSLENGTH",ENERGY_water, ABSORPTION_water, NUMENTRIES_water);
+   myMPT8->AddProperty("RAYLEIGH",ENERGY_water,RAYLEIGH_water,NUMENTRIES_water);
+
+   myMPT8->AddProperty("FASTCOMPONENT",ScintNCV_Energy, ScintNCV_WB_LS,NumEntriesNCV);
+   myMPT8->AddProperty("SLOWCOMPONENT",ScintNCV_Energy, ScintNCV_WB_LS,NumEntriesNCV);
+   
+   myMPT8->AddConstProperty("SCINTILLATIONYIELD",9570./MeV); // EJ335 is 55% of anthracene (which is 17400 per MeV)
+   myMPT8->AddConstProperty("RESOLUTIONSCALE",.01);
+   myMPT8->AddConstProperty("FASTTIMECONSTANT", 1.23*ns);
+   myMPT8->AddConstProperty("SLOWTIMECONSTANT",9.26*ns);
+   myMPT8->AddConstProperty("YIELDRATIO",1.0);
+   
+   NCVliquid->SetMaterialPropertiesTable(myMPT8);
+   NCVliquid->GetIonisation()->SetBirksConstant(0.126*mm/MeV);
   
 
 }

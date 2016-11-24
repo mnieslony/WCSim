@@ -183,7 +183,7 @@ void WCSimDetectorConstruction::DefineANNIEdimensions(){
   scintSurface_op = new G4OpticalSurface("mylarSurface",glisur, polished, dielectric_metal);	//ground
   const G4int mylarmptentries = 2;
   G4double mylar_Energy[mylarmptentries] = {2.0*eV, 3.6*eV};
-  G4double mylar_REFL[mylarmptentries] = {1.0,1.0};
+  G4double mylar_REFL[mylarmptentries] = {0.9,0.9};
   G4double mylar_EFFI[mylarmptentries] = {0.0, 0.0};
   G4MaterialPropertiesTable* MPTmylarSurface = new G4MaterialPropertiesTable();
   MPTmylarSurface->AddProperty("REFLECTIVITY",mylar_Energy,mylar_REFL,mylarmptentries);
