@@ -124,22 +124,13 @@ void WCSimTrackingAction::PostUserTrackingAction(const G4Track* aTrack)
     else currentTrajectory->SetSaveFlag(false);// mark it for WCSimEventAction ;
   } 
   
-/*
   static int line=0;
-  if(line%10000==0){ //100000
+  if(line%100000==0){ //100000
     G4cout<<"  PostUserTrackingAction call number: "<<line<<", "<<aTrack->GetDefinition()->GetParticleName();
     if(creatorProcess){G4cout<<" from "<<creatorProcess->GetProcessName();} else {G4cout<<" primary";}
     G4cout<<" in "<<aTrack->GetVolume()->GetName()<<G4endl; 
-    if(aTrack->GetDefinition()==G4OpticalPhoton::OpticalPhotonDefinition()){
-      G4cout<<"          underwent "<<anInfo->GetNumReflections()<<" scatterings, with a total track length of "
-      <<aTrack->GetTrackLength()/mm<<"mm"<<G4endl;}
   }
   line++;
-  if(aTrack->GetDefinition()==G4OpticalPhoton::OpticalPhotonDefinition()&&anInfo->GetNumReflections()<577887821){
-  	fpTrackingManager->SetTrajectory((WCSimTrajectory*)fpTrackingManager->GimmeTrajectory());
-  	fpTrackingManager->SetStoreTrajectory(false);
-  }
-*/
 }
 
 

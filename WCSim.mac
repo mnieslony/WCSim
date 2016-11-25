@@ -162,8 +162,17 @@
 #/gun/direction 0 0 1
 #/gun/position 50 50 -500 mm
 
-## change the name of the output root file, default = wcsim.root
+# set up visualization view for debugging photons - 
+# should be associated with changes store in branch photonbouncedebug
+#/vis/viewer/set/viewpointThetaPhi 0 0
+#/vis/viewer/zoom 2
+# this has no discernable effect - being overridden by PreUserTrackingAction
+#/tracking/storeTrajectory 0
+## disable automatic drawing of some trajectories at end of event
+#/vis/scene/activateModel G4TrajectoriesModel false 
+## now only tracks explicitly drawn in the EndOfEventAction will be shown
 
+## change the name of the output root file, default = wcsim.root
 /WCSimIO/RootFile wcsim.root
 
 #/run/beamOn 1

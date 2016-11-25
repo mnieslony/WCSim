@@ -30,21 +30,8 @@ void WCSimSteppingAction::UserSteppingAction(const G4Step* aStep)
 //  G4SDManager* SDman   = G4SDManager::GetSDMpointer();
 //  G4HCofThisEvent* HCE = evt->GetHCofThisEvent();
 //  G4String processname = aStep->GetPostStepPoint()->GetProcessDefinedStep()->GetProcessName();
-  
-  /*if( ((volumeName=="MRDPMT")||(volumeName=="lg_phys")||(volumeName=="taper_phys")||(volumeName=="paddle_phys"))&&(track->GetDefinition()==G4OpticalPhoton::OpticalPhotonDefinition())) {
-    G4cout<<"optical photon step in "<<volumeName<<"!!!"<<G4endl;
-    if(processname=="OpAbsorption"){G4cout<<"OpAbsorption in "<<volumeName<<"!!!"<<G4endl;}
-  }
-  
-  if(aStep->GetPostStepPoint()->GetStepStatus()==fGeomBoundary&&aStep->GetPostStepPoint()->GetPhysicalVolume()->GetName()=="taper_phys")
-  { G4cout<<"photon on boundary going into taper_phys!"<<G4endl; }
-  if(aStep->GetPostStepPoint()->GetStepStatus()==fGeomBoundary&&aStep->GetPostStepPoint()->GetPhysicalVolume()->GetName()=="lg_phys")
-  { G4cout<<"photon on boundary going into lg_phys!"<<G4endl; }
-  if(aStep->GetPostStepPoint()->GetStepStatus()==fGeomBoundary&&aStep->GetPostStepPoint()->GetPhysicalVolume()->GetName()=="MRDPMT")
-  { G4cout<<"photon on boundary going into MRDPMT!"<<G4endl; }
-  */
 
-  //debugging 
+//  debugging 
 //  G4Track* theTrack = aStep->GetTrack();
 //  const G4DynamicParticle* aParticle = theTrack->GetDynamicParticle();
 //  G4ThreeVector aMomentum = aParticle->GetMomentumDirection();
@@ -54,13 +41,6 @@ void WCSimSteppingAction::UserSteppingAction(const G4Step* aStep)
 //    G4cout << " PROBLEM! " << theTrack->GetCreatorProcess()->GetProcessName() <<
 //  std::flush << G4endl;
 //  }
-
-/*
-  const G4Track* track       = aStep->GetTrack();
-  if(track->GetDefinition()==G4OpticalPhoton::OpticalPhotonDefinition()&&aStep->GetPostStepPoint()->GetStepStatus()==fGeomBoundary&&aStep->GetPostStepPoint()->GetPhysicalVolume()->GetName()=="paddle_phys"){
-    WCSimTrackInformation* aninfo = (WCSimTrackInformation*)track->GetUserInformation();
-    aninfo->IncrementNumReflections();
-  }*/
   
 }
 
