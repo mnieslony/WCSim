@@ -14,7 +14,7 @@ wcsim.root
 #ignore geometry???????????????????
 geofile.txt
 
-#ignore root dictionary files? depend on the installed ROOT version?
+#ignore root dictionary files. automatically generated.
 src/WCSimRootDict.cxx
 src/WCSimRootDict_rdict.pcm
 

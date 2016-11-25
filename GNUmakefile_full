@@ -11,7 +11,7 @@ G4EXLIB := true
 
 ifndef G4INSTALL
   #G4INSTALL = ../../..
-  G4INSTALL = /home/marc/LinuxSystemFiles/GEANT4/geant4-10.02/sauce
+  G4INSTALL = $GEANT4_MAKEFULL_PATH
 endif
 
 G4SYSTEM=Linux-g++

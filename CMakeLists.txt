@@ -107,6 +107,7 @@ set(WCSIM_SCRIPTS
   visOGLSX.mac
   visRayTracer.mac
   tuning_parameters.mac
+  primaries_directory.mac
   )
 
 foreach(_script ${WCSIM_SCRIPTS})
