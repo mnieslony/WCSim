@@ -18,6 +18,7 @@
 #include "WCSimSteppingAction.hh"
 #include "WCSimVisManager.hh"
 #include "WCSimRandomParameters.hh"
+#include <unistd.h>
 
 void file_exists(const char * filename) {
   bool exists = access(filename, F_OK) != -1;
@@ -86,10 +87,12 @@ int main(int argc,char** argv)
   G4cout<<"Creating Primary Generator Action"<<G4endl;
   // Set user action classes
   WCSimPrimaryGeneratorAction* myGeneratorAction = new 
-    WCSimPrimaryGeneratorAction(WCSimdetector, "../../../WChSandBox/build/fluxesandtables/annie_tank_flux.*.root");
-    //"../../../../WChSandBox/build/fluxesandtables/annie_tank_flux.*.root"
-    //"/pnfs/annie/persistent/users/moflaher/g4dirt/annie_tank_flux.*.root"
+    WCSimPrimaryGeneratorAction(WCSimdetector);
   runManager->SetUserAction(myGeneratorAction);
+  // read primaries from the mac file - proper way to do it
+  if(access("primaries_directory.mac", F_OK)!=-1){
+  UI->ApplyCommand("/control/execute primaries_directory.mac");
+  }
   G4cout<<"Creating Run Action"<<G4endl;
   WCSimRunAction* myRunAction = new WCSimRunAction(WCSimdetector);
   runManager->SetUserAction(myRunAction);

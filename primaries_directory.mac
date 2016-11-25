@@ -1,0 +1,2 @@
+# set the list of root files containing primaries to import into the primary generator TChain
+#/mygen/primariesdirectory ../../../WChSandBox/build/fluxesandtables/annie_tank_flux.*.root

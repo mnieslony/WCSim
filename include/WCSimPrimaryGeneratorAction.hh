@@ -18,7 +18,7 @@ class WCSimPrimaryGeneratorMessenger;
 class WCSimPrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
 {
 public:
-  WCSimPrimaryGeneratorAction(WCSimDetectorConstruction*, G4String infile);
+  WCSimPrimaryGeneratorAction(WCSimDetectorConstruction*);
   ~WCSimPrimaryGeneratorAction();
   
 public:
@@ -58,7 +58,6 @@ private:
   G4ParticleGun*                  particleGun;
   G4GeneralParticleSource*        MyGPS;  //T. Akiri: GPS to run Laser
   WCSimPrimaryGeneratorMessenger* messenger;
-  G4String                        fInputFileName;
   
   // Variables set by the messenger
   G4bool   useMulineEvt;
@@ -101,6 +100,9 @@ private:
 	Char_t nupvval[100];
 	Char_t numatval[100];
 	
+	G4String primariesDirectory;
+	G4bool loadNewPrimaries;
+	
 public:
 
   inline void SetMulineEvtGenerator(G4bool choice) { useMulineEvt = choice; }
@@ -129,6 +131,10 @@ public:
       exit(-1);
     }
   }
+  
+  inline void SetPrimaryFilesDirectory(G4String directoryName) { primariesDirectory = directoryName; }
+  inline void SetNewPrimariesFlag(G4bool flagin){ loadNewPrimaries=flagin; }
+  void LoadNewPrimaries();
   inline G4bool IsGeneratingVertexInRock() { return GenerateVertexInRock; }
   inline void SetGenerateVertexInRock(G4bool choice) { GenerateVertexInRock = choice; }
 

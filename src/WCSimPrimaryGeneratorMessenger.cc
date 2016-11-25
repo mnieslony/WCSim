@@ -24,11 +24,19 @@ WCSimPrimaryGeneratorMessenger::WCSimPrimaryGeneratorMessenger(WCSimPrimaryGener
   fileNameCmd->SetGuidance(" Enter the file name of the vector file");
   fileNameCmd->SetParameterName("fileName",true);
   fileNameCmd->SetDefaultValue("inputvectorfile");
+  
+  fileDirectoryCmd = new G4UIcmdWithAString("/mygen/primariesdirectory", this);
+  fileDirectoryCmd->SetGuidance("Specify the directory containing beam primary root files");
+  fileDirectoryCmd->SetParameterName("directoryName",true);
+  fileDirectoryCmd->SetDefaultValue("");
+  
 }
 
 WCSimPrimaryGeneratorMessenger::~WCSimPrimaryGeneratorMessenger()
 {
   delete genCmd;
+  delete fileNameCmd;
+  delete fileDirectoryCmd;
   delete mydetDirectory;
 }
 
@@ -74,6 +82,13 @@ void WCSimPrimaryGeneratorMessenger::SetNewValue(G4UIcommand * command,G4String 
   {
     myAction->OpenVectorFile(newValue);
     G4cout << "Input vector file set to " << newValue << G4endl;
+  }
+  
+  if( command == fileDirectoryCmd )
+  {
+    myAction->SetPrimaryFilesDirectory(newValue);
+    myAction->SetNewPrimariesFlag(true);
+    G4cout << "Input directory set to " << newValue << G4endl;
   }
 
 }

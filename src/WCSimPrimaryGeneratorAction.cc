@@ -37,9 +37,8 @@ inline float atof( const string& s ) {return std::atof( s.c_str() );}
 inline int   atoi( const string& s ) {return std::atoi( s.c_str() );}
 
 WCSimPrimaryGeneratorAction::WCSimPrimaryGeneratorAction(
-					  WCSimDetectorConstruction* myDC, G4String infile)
-  :myDetector(myDC)
-  , fInputFileName(infile)
+					  WCSimDetectorConstruction* myDC)
+  :myDetector(myDC), loadNewPrimaries(true), inputdata(0), primariesDirectory("")
 {
   //T. Akiri: Initialize GPS to allow for the laser use 
   MyGPS = new G4GeneralParticleSource();
@@ -71,46 +70,7 @@ WCSimPrimaryGeneratorAction::WCSimPrimaryGeneratorAction(
   useMulineEvt = false;
   useNormalEvt = false;
   useBeamEvt = true;
-  
-  if(useBeamEvt){
-	inputdata = new TChain("tankflux");	// input is name of tree in contributing files
-	inputdata->Add(fInputFileName);
-	inputdata->LoadTree(0);
-	
-	inputdata->SetBranchAddress("run",&runbranchval,&runBranch);
-	inputdata->SetBranchAddress("ntank",&ntankbranchval,&nTankBranch);
-	inputdata->SetBranchAddress("nupdg",&nupdgval,&nupdgBranch);
-	inputdata->SetBranchAddress("nuvtxx",&nuvtxxval,&nuvtxxBranch);
-	inputdata->SetBranchAddress("nuvtxy",&nuvtxyval,&nuvtxyBranch);
-	inputdata->SetBranchAddress("nuvtxz",&nuvtxzval,&nuvtxzBranch);
-	inputdata->SetBranchAddress("nuvtxt",&nuvtxtval,&nuvtxtBranch);
-	inputdata->SetBranchAddress("vtxvol",&nupvval,&nuPVBranch);
-	inputdata->SetBranchAddress("vtxmat",&numatval,&nuvtxmatBranch);
-	entriesInThisTree = runBranch->GetEntries();
-	
-	vtxxBranch=inputdata->GetBranch("vx");
-	vtxyBranch=inputdata->GetBranch("vy");
-	vtxzBranch=inputdata->GetBranch("vz");
-	vtxtBranch=inputdata->GetBranch("vt");
-	pxBranch=inputdata->GetBranch("px");
-	pyBranch=inputdata->GetBranch("py");
-	pzBranch=inputdata->GetBranch("pz");
-	EBranch=inputdata->GetBranch("E");
-	KEBranch=inputdata->GetBranch("kE");
-	pdgBranch=inputdata->GetBranch("pdgtank");
-	geniePrimaryBranch=inputdata->GetBranch("primary");
-	
-	if(runBranch==0||nTankBranch==0||vtxxBranch==0||vtxyBranch==0||vtxzBranch==0||vtxtBranch==0||pxBranch==0||pyBranch==0||pzBranch==0||EBranch==0||KEBranch==0||pdgBranch==0||nupdgBranch==0||nuvtxxBranch==0||nuvtxyBranch==0||nuvtxzBranch==0||nuvtxtBranch==0||nuPVBranch==0||nuvtxmatBranch==0||geniePrimaryBranch==0){
-		G4cout<<"BRANCHES ARE ZOMBIES ARGH!"<<G4endl;
-	}
-	
-	inputEntry=3;
-	runBranch->GetEntry(inputEntry);
-	G4cout<<"first run: "<<runbranchval<<G4endl;
-	treeNumber=inputdata->GetTreeNumber();
-	
-  }
-  
+      
 }
 
 WCSimPrimaryGeneratorAction::~WCSimPrimaryGeneratorAction()
@@ -127,8 +87,10 @@ WCSimPrimaryGeneratorAction::~WCSimPrimaryGeneratorAction()
   delete messenger;
   
   if(useBeamEvt){
-    inputdata->ResetBranchAddresses();
-    delete inputdata;
+    if(inputdata){
+      inputdata->ResetBranchAddresses();
+      delete inputdata;
+    }
   }
 
 }
@@ -315,7 +277,9 @@ void WCSimPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
     }
   
   else if (useBeamEvt)
-    {   
+    {
+		if(loadNewPrimaries){ LoadNewPrimaries(); }	// update TChain if a new file is loaded by messenger
+		
 		Long64_t localEntry = inputdata->LoadTree(inputEntry);
 		if(localEntry<0){
 			G4cout<<"@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#"<<G4endl;
@@ -529,5 +493,51 @@ vector<string> tokenize( string separators, string input )
     }
   
   return tokens;
+}
+
+void WCSimPrimaryGeneratorAction::LoadNewPrimaries(){
+	if(primariesDirectory==""){
+		G4cout<<"No primary files specified! Cannot generate beam events!"<<G4endl;
+		assert(false);
+	}
+	//TODO: should also figure out how to check if loading the tchain is successful
+	G4cout<<"loading new primary TChain from: "<<primariesDirectory<<G4endl;
+	if(inputdata){ inputdata->ResetBranchAddresses(); delete inputdata; }
+	inputdata = new TChain("tankflux");	// input is name of tree in contributing files
+	inputdata->Add(primariesDirectory);
+	inputdata->LoadTree(0);
+	
+	inputdata->SetBranchAddress("run",&runbranchval,&runBranch);
+	inputdata->SetBranchAddress("ntank",&ntankbranchval,&nTankBranch);
+	inputdata->SetBranchAddress("nupdg",&nupdgval,&nupdgBranch);
+	inputdata->SetBranchAddress("nuvtxx",&nuvtxxval,&nuvtxxBranch);
+	inputdata->SetBranchAddress("nuvtxy",&nuvtxyval,&nuvtxyBranch);
+	inputdata->SetBranchAddress("nuvtxz",&nuvtxzval,&nuvtxzBranch);
+	inputdata->SetBranchAddress("nuvtxt",&nuvtxtval,&nuvtxtBranch);
+	inputdata->SetBranchAddress("vtxvol",&nupvval,&nuPVBranch);
+	inputdata->SetBranchAddress("vtxmat",&numatval,&nuvtxmatBranch);
+	entriesInThisTree = runBranch->GetEntries();
+	
+	vtxxBranch=inputdata->GetBranch("vx");
+	vtxyBranch=inputdata->GetBranch("vy");
+	vtxzBranch=inputdata->GetBranch("vz");
+	vtxtBranch=inputdata->GetBranch("vt");
+	pxBranch=inputdata->GetBranch("px");
+	pyBranch=inputdata->GetBranch("py");
+	pzBranch=inputdata->GetBranch("pz");
+	EBranch=inputdata->GetBranch("E");
+	KEBranch=inputdata->GetBranch("kE");
+	pdgBranch=inputdata->GetBranch("pdgtank");
+	geniePrimaryBranch=inputdata->GetBranch("primary");
+	
+	if(runBranch==0||nTankBranch==0||vtxxBranch==0||vtxyBranch==0||vtxzBranch==0||vtxtBranch==0||pxBranch==0||pyBranch==0||pzBranch==0||EBranch==0||KEBranch==0||pdgBranch==0||nupdgBranch==0||nuvtxxBranch==0||nuvtxyBranch==0||nuvtxzBranch==0||nuvtxtBranch==0||nuPVBranch==0||nuvtxmatBranch==0||geniePrimaryBranch==0){
+		G4cout<<"BRANCHES ARE ZOMBIES ARGH!"<<G4endl;
+	}
+	
+	inputEntry=3;
+	runBranch->GetEntry(inputEntry);
+	G4cout<<"first run: "<<runbranchval<<G4endl;
+	treeNumber=inputdata->GetTreeNumber();
+	
 }
 
