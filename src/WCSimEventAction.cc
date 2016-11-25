@@ -486,7 +486,6 @@ void WCSimEventAction::EndOfEventAction(const G4Event* evt)
 	(WCSimTrajectory*)((*(evt->GetTrajectoryContainer()))[i]);
 
       if (trj->GetCharge() != 0.)
-      //if(trj->GetParticleName()=="opticalphoton")
  	trj->DrawTrajectory(50);
     } 
 
