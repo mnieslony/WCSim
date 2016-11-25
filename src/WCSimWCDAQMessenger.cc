@@ -8,6 +8,7 @@
 #include "G4UIcmdWithADoubleAndUnit.hh"
 #include "G4UIcmdWithADouble.hh"
 #include "G4UIcmdWithAnInteger.hh"
+#include "G4UIcmdWithAString.hh"
 
 #include <string>
 
@@ -163,7 +164,7 @@ WCSimWCDAQMessenger::WCSimWCDAQMessenger(WCSimEventAction* eventaction) :
   NDigitsPostTriggerWindow->SetDefaultValue(defaultNDigitsPostTriggerWindow);
   StoreNDigitsPostWindow = defaultNDigitsPostTriggerWindow;
   //don't SetNewValue -> defaults class-specific and taken from GetDefault*()
-
+  
   initialiseString = "";
   initialised = true;
 }
@@ -191,6 +192,7 @@ WCSimWCDAQMessenger::~WCSimWCDAQMessenger()
   delete TriggerChoice;
   delete MultiDigitsPerTrigger;
   delete WCSimDAQDir;
+  
 }
 
 void WCSimWCDAQMessenger::SetNewValue(G4UIcommand* command,G4String newValue)

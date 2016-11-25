@@ -13,22 +13,30 @@ WCSimPrimaryGeneratorMessenger::WCSimPrimaryGeneratorMessenger(WCSimPrimaryGener
   genCmd = new G4UIcmdWithAString("/mygen/generator",this);
   genCmd->SetGuidance("Select primary generator.");
   //T. Akiri: Addition of laser
-  genCmd->SetGuidance(" Available generators : muline, normal, laser");
+  genCmd->SetGuidance(" Available generators : muline, normal, laser, beam");
   genCmd->SetParameterName("generator",true);
-  genCmd->SetDefaultValue("muline");
+  genCmd->SetDefaultValue("beam");	// previously muline
   //T. Akiri: Addition of laser
-  genCmd->SetCandidates("muline normal laser");
+  genCmd->SetCandidates("muline normal laser beam");
 
   fileNameCmd = new G4UIcmdWithAString("/mygen/vecfile",this);
   fileNameCmd->SetGuidance("Select the file of vectors.");
   fileNameCmd->SetGuidance(" Enter the file name of the vector file");
   fileNameCmd->SetParameterName("fileName",true);
   fileNameCmd->SetDefaultValue("inputvectorfile");
+  
+  fileDirectoryCmd = new G4UIcmdWithAString("/mygen/primariesdirectory", this);
+  fileDirectoryCmd->SetGuidance("Specify the directory containing beam primary root files");
+  fileDirectoryCmd->SetParameterName("directoryName",true);
+  fileDirectoryCmd->SetDefaultValue("");
+  
 }
 
 WCSimPrimaryGeneratorMessenger::~WCSimPrimaryGeneratorMessenger()
 {
   delete genCmd;
+  delete fileNameCmd;
+  delete fileDirectoryCmd;
   delete mydetDirectory;
 }
 
@@ -38,21 +46,35 @@ void WCSimPrimaryGeneratorMessenger::SetNewValue(G4UIcommand * command,G4String 
   {
     if (newValue == "muline")
     {
+      G4cout<<"Setting generator source to muline"<<G4endl;
       myAction->SetMulineEvtGenerator(true);
       myAction->SetNormalEvtGenerator(false);
       myAction->SetLaserEvtGenerator(false);
+      myAction->SetBeamEvtGenerator(false);
     }
     else if ( newValue == "normal")
     {
+      G4cout<<"Setting generator source to normal"<<G4endl;
       myAction->SetMulineEvtGenerator(false);
       myAction->SetNormalEvtGenerator(true);
       myAction->SetLaserEvtGenerator(false);
+      myAction->SetBeamEvtGenerator(false);
     }
     else if ( newValue == "laser")   //T. Akiri: Addition of laser
     {
+      G4cout<<"Setting generator source to laser"<<G4endl;
       myAction->SetMulineEvtGenerator(false);
       myAction->SetNormalEvtGenerator(false);
       myAction->SetLaserEvtGenerator(true);
+      myAction->SetBeamEvtGenerator(false);
+    }
+    else if ( newValue == "beam")
+    {
+      G4cout<<"Setting generator source to beam"<<G4endl;
+      myAction->SetMulineEvtGenerator(false);
+      myAction->SetNormalEvtGenerator(false);
+      myAction->SetLaserEvtGenerator(false);
+      myAction->SetBeamEvtGenerator(true);
     }
   }
 
@@ -60,6 +82,13 @@ void WCSimPrimaryGeneratorMessenger::SetNewValue(G4UIcommand * command,G4String 
   {
     myAction->OpenVectorFile(newValue);
     G4cout << "Input vector file set to " << newValue << G4endl;
+  }
+  
+  if( command == fileDirectoryCmd )
+  {
+    myAction->SetPrimaryFilesDirectory(newValue);
+    myAction->SetNewPrimariesFlag(true);
+    G4cout << "Input directory set to " << newValue << G4endl;
   }
 
 }
@@ -76,8 +105,11 @@ G4String WCSimPrimaryGeneratorMessenger::GetCurrentValue(G4UIcommand* command)
       { cv = "normal"; }
     else if(myAction->IsUsingLaserEvtGenerator())
       { cv = "laser"; }   //T. Akiri: Addition of laser
+    else if(myAction->IsUsingBeamEvtGenerator())
+      { cv = "beam"; }
   }
   
   return cv;
+  G4cout<<"generator is currently "<<cv<<G4endl;
 }
 

@@ -4,7 +4,9 @@
 #include "G4VUserPrimaryGeneratorAction.hh"
 #include "G4ThreeVector.hh"
 #include "globals.hh"
-
+#include "TTree.h"
+#include "TChain.h"
+#include "TRandom3.h"
 #include <fstream>
 
 class WCSimDetectorConstruction;
@@ -56,11 +58,12 @@ private:
   G4ParticleGun*                  particleGun;
   G4GeneralParticleSource*        MyGPS;  //T. Akiri: GPS to run Laser
   WCSimPrimaryGeneratorMessenger* messenger;
-
+  
   // Variables set by the messenger
   G4bool   useMulineEvt;
   G4bool   useNormalEvt;
   G4bool   useLaserEvt;  //T. Akiri: Laser flag
+  G4bool   useBeamEvt;
   std::fstream inputFile;
   G4String vectorFileName;
   G4bool   GenerateVertexInRock;
@@ -82,6 +85,24 @@ private:
 
   G4int    _counterRock; 
   G4int    _counterCublic; 
+  
+  TChain* inputdata;
+	
+	Int_t inputEntry;
+	Int_t entriesInThisTree;
+	Int_t treeNumber;
+	TBranch* runBranch=0, *vtxxBranch=0, *vtxyBranch=0, *vtxzBranch=0, *vtxtBranch=0, *pxBranch=0, *pyBranch=0, *pzBranch=0, *EBranch=0, *KEBranch=0, *pdgBranch=0, *nTankBranch=0, *nupdgBranch=0, *nuvtxxBranch=0, *nuvtxyBranch=0, *nuvtxzBranch=0, *nuvtxtBranch=0, *nuPVBranch=0, *nuvtxmatBranch=0, *geniePrimaryBranch=0;
+	Int_t runbranchval, entrybranchval, ntankbranchval, nupdgval;
+	Int_t* pdgbranchval=0, *genieprimarybranchval=0;
+	Int_t pdgval, genieprimaryval;
+	Double_t *vtxxbranchval=0, *vtxybranchval=0, *vtxzbranchval=0, *vtxtbranchval=0, *pxbranchval=0, *pybranchval=0, *pzbranchval=0, *ebranchval=0, *kebranchval=0;
+	Double_t vtxxval, vtxyval, vtxzval, vtxtval, pxval, pyval, pzval, eval, keval, nuvtxxval, nuvtxyval, nuvtxzval, nuvtxtval;
+	Char_t nupvval[100];
+	Char_t numatval[100];
+	
+	G4String primariesDirectory;
+	G4bool loadNewPrimaries;
+	
 public:
 
   inline void SetMulineEvtGenerator(G4bool choice) { useMulineEvt = choice; }
@@ -93,6 +114,9 @@ public:
   //T. Akiri: Addition of function for the laser flag
   inline void SetLaserEvtGenerator(G4bool choice) { useLaserEvt = choice; }
   inline G4bool IsUsingLaserEvtGenerator()  { return useLaserEvt; }
+  
+  inline void SetBeamEvtGenerator(G4bool choice) { useBeamEvt = choice; }
+  inline G4bool IsUsingBeamEvtGenerator()  { return useBeamEvt; }
 
   inline void OpenVectorFile(G4String fileName) 
   {
@@ -107,6 +131,10 @@ public:
       exit(-1);
     }
   }
+  
+  inline void SetPrimaryFilesDirectory(G4String directoryName) { primariesDirectory = directoryName; }
+  inline void SetNewPrimariesFlag(G4bool flagin){ loadNewPrimaries=flagin; }
+  void LoadNewPrimaries();
   inline G4bool IsGeneratingVertexInRock() { return GenerateVertexInRock; }
   inline void SetGenerateVertexInRock(G4bool choice) { GenerateVertexInRock = choice; }
 

@@ -6,6 +6,7 @@ G4Allocator<WCSimTrackInformation> aWCSimTrackInfoAllocator;
 WCSimTrackInformation::WCSimTrackInformation(const G4Track* /*atrack*/)
 {
   saveit = true;
+  numreflections=0;
 }
 
 void WCSimTrackInformation::Print() const

@@ -40,6 +40,8 @@
 #/WCSim/EggShapedHyperK/waterTank_Length 123750. mm # Equivalent length for 2 partitions
 #/WCSim/EggShapedHyperK/waterTank_Length 247500. mm # Equivalent length for 1 partition
 
+# switch geometry to ANNIE
+/WCSim/WCgeom ANNIEp2
 
 #/WCSim/Construct # This must be uncommented in order to construct a new detector configuration. 
 
@@ -98,6 +100,19 @@
 #/DarkRate/SetDarkMode 1 adds dark noise hits to a window of
 #width /DarkRate/SetDarkWindow [time in ns] around each hit
 #i.e. hit time ± (/DarkRate/SetDarkWindow) / 2
+/DarkRate/SetDetectorElement tank
+/DarkRate/SetDarkMode 1
+/DarkRate/SetDarkHigh 100000
+/DarkRate/SetDarkLow 0
+/DarkRate/SetDarkWindow 4000
+
+/DarkRate/SetDetectorElement mrd
+/DarkRate/SetDarkMode 1
+/DarkRate/SetDarkHigh 100000
+/DarkRate/SetDarkLow 0
+/DarkRate/SetDarkWindow 4000
+
+/DarkRate/SetDetectorElement facc
 /DarkRate/SetDarkMode 1
 /DarkRate/SetDarkHigh 100000
 /DarkRate/SetDarkLow 0
@@ -107,18 +122,49 @@
 #/control/execute visOGLSX.mac
 #/control/execute visRayTracer.mac
 
+/mygen/generator beam	# retrieve input primaries from GENIE output files
 
 # Or you can use the G4 Particle Gun
-/mygen/generator normal
-/gun/particle e-
-#/gun/particle pi0
-/gun/energy 500 MeV
-/gun/direction 1 0 0 
-/gun/position 0 0 0  
+#/mygen/generator normal
+#/gun/particle e-
+##/gun/particle pi0
+#/gun/energy 500 MeV
+#/gun/direction 1 0 0 
+#/gun/position 0 0 0  
+
+#/mygen/generator normal
+#/gun/particle opticalphoton
+#/gun/energy 3 eV
+#/gun/polarization 0.7 0.4 0.2
+#/gun/direction 0.3782 0.02 0.2
+##in an mrd scintillator paddle
+##/gun/position 10 10 4695 mm
+##in a veto scintillator paddle
+#/gun/position 50 50 30 mm
+##/tracking/verbose 13
+#/vis/scene/add/trajectories smooth
+#/vis/scene/endOfEventAction accumulate
+#/vis/viewer/set/viewpointThetaPhi 0 0
+#/vis/viewer/zoom 2
+#/vis/modeling/trajectories/create/drawByParticleID
+#/vis/modeling/trajectories/drawByParticleID-0/set opticalphoton red
+##note that the trajectory must be created and stored by creating a new trajectory,
+##then invoking 
+##  currentTrajectory->SetSaveFlag(false);
+##  fpTrackingManager->SetTrajectory(currentTrajectory);
+##  fpTrackingManager->SetStoreTrajectory(false);
+##in WCSimTrackingAction
+
+# Use a muon gun for testing scintillator elements
+#/mygen/generator normal
+#/gun/particle mu-
+#/gun/energy 5 GeV
+#/gun/direction 0 0 1
+#/gun/position 50 50 -500 mm
 
 ## change the name of the output root file, default = wcsim.root
 
 /WCSimIO/RootFile wcsim.root
 
-/run/beamOn 10
+#/run/beamOn 1
 #exit

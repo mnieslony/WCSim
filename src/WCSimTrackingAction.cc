@@ -6,6 +6,9 @@
 #include "G4ios.hh"
 #include "G4VProcess.hh"
 #include "WCSimTrackInformation.hh"
+#include "G4TransportationManager.hh"
+#include "G4SystemOfUnits.hh"
+#include <algorithm>
 
 WCSimTrackingAction::WCSimTrackingAction()
 {
@@ -27,9 +30,11 @@ WCSimTrackingAction::~WCSimTrackingAction(){;}
 void WCSimTrackingAction::PreUserTrackingAction(const G4Track* aTrack)
 {
   G4float percentageOfCherenkovPhotonsToDraw = 0.0;
-
-  if ( aTrack->GetDefinition() != G4OpticalPhoton::OpticalPhotonDefinition()
-       || G4UniformRand() < percentageOfCherenkovPhotonsToDraw )
+  
+//  static int line=0; line++;
+  
+  if (aTrack->GetDefinition() != G4OpticalPhoton::OpticalPhotonDefinition()
+       || G4UniformRand() < percentageOfCherenkovPhotonsToDraw)
     {
       WCSimTrajectory* thisTrajectory = new WCSimTrajectory(aTrack);
       fpTrackingManager->SetTrajectory(thisTrajectory);
@@ -37,15 +42,19 @@ void WCSimTrackingAction::PreUserTrackingAction(const G4Track* aTrack)
     }
   else 
     fpTrackingManager->SetStoreTrajectory(false);
+  
+  WCSimTrackInformation* anInfo = new WCSimTrackInformation();
+  G4Track* theTrack = (G4Track*)aTrack;
+  theTrack->SetUserInformation(anInfo);
 }
 
 void WCSimTrackingAction::PostUserTrackingAction(const G4Track* aTrack)
 {
+  
   // added by M Fechner
   const G4VProcess* creatorProcess = aTrack->GetCreatorProcess();
   //  if ( creatorProcess )
   //    G4cout << "process name " << creatorProcess->GetProcessName() << G4endl;
-
 
   WCSimTrackInformation* anInfo;
   if (aTrack->GetUserInformation())
@@ -60,7 +69,7 @@ void WCSimTrackingAction::PostUserTrackingAction(const G4Track* aTrack)
   if( aTrack->GetParentID()==0 || 
       ((creatorProcess!=0) && ProcessList.count(creatorProcess->GetProcessName()) ) || 
       (ParticleList.count(aTrack->GetDefinition()->GetPDGEncoding()) )
-      || (aTrack->GetDefinition()->GetPDGEncoding()==22 && aTrack->GetTotalEnergy() > 50.0*MeV)
+      || (aTrack->GetDefinition()->GetPDGEncoding()==22 && aTrack->GetTotalEnergy() > 50.0*CLHEP::MeV)
       )
   {
     // if so the track is worth saving
@@ -99,12 +108,11 @@ void WCSimTrackingAction::PostUserTrackingAction(const G4Track* aTrack)
     } 
   }
 
-  if ( aTrack->GetDefinition() != G4OpticalPhoton::OpticalPhotonDefinition() )
+  if ( aTrack->GetDefinition() != G4OpticalPhoton::OpticalPhotonDefinition())
     //   if (aTrack->GetDefinition()->GetPDGCharge() == 0) 
   {
-    WCSimTrajectory *currentTrajectory = 
-      (WCSimTrajectory*)fpTrackingManager->GimmeTrajectory();
-
+    WCSimTrajectory *currentTrajectory = (WCSimTrajectory*)fpTrackingManager->GimmeTrajectory();
+  
     G4ThreeVector currentPosition      = aTrack->GetPosition();
     G4VPhysicalVolume* currentVolume   = aTrack->GetVolume();
 
@@ -114,7 +122,24 @@ void WCSimTrackingAction::PostUserTrackingAction(const G4Track* aTrack)
     if (anInfo->isSaved())
       currentTrajectory->SetSaveFlag(true);// mark it for WCSimEventAction ;
     else currentTrajectory->SetSaveFlag(false);// mark it for WCSimEventAction ;
+  } 
+  
+/*
+  static int line=0;
+  if(line%10000==0){ //100000
+    G4cout<<"  PostUserTrackingAction call number: "<<line<<", "<<aTrack->GetDefinition()->GetParticleName();
+    if(creatorProcess){G4cout<<" from "<<creatorProcess->GetProcessName();} else {G4cout<<" primary";}
+    G4cout<<" in "<<aTrack->GetVolume()->GetName()<<G4endl; 
+    if(aTrack->GetDefinition()==G4OpticalPhoton::OpticalPhotonDefinition()){
+      G4cout<<"          underwent "<<anInfo->GetNumReflections()<<" scatterings, with a total track length of "
+      <<aTrack->GetTrackLength()/mm<<"mm"<<G4endl;}
   }
+  line++;
+  if(aTrack->GetDefinition()==G4OpticalPhoton::OpticalPhotonDefinition()&&anInfo->GetNumReflections()<577887821){
+  	fpTrackingManager->SetTrajectory((WCSimTrajectory*)fpTrackingManager->GimmeTrajectory());
+  	fpTrackingManager->SetStoreTrajectory(false);
+  }
+*/
 }
 
 

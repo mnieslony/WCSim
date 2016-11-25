@@ -15,6 +15,7 @@ class WCSimTrackInformation : public G4VUserTrackInformation {
 private:
   G4bool saveit; 
   G4int  primaryParentID;
+  long long int numreflections;
 
 public:
   WCSimTrackInformation() : saveit(false), primaryParentID(-1) {}
@@ -28,6 +29,9 @@ public:
 
   void SetPrimaryParentID(G4int i) { primaryParentID = i;}
   G4int GetPrimaryParentID() {return primaryParentID;}
+  
+  void IncrementNumReflections() {numreflections++;}
+  long long int GetNumReflections() {return numreflections;}
 
   inline void *operator new(size_t);
   inline void operator delete(void *aTrackInfo);
