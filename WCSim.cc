@@ -81,9 +81,11 @@ int main(int argc,char** argv)
   file_exists("jobOptions2.mac");
   UI->ApplyCommand("/control/execute jobOptions2.mac");
   G4cout<<"Creating visualisation manager"<<G4endl;
+#ifdef G4VIS_USE
   // Visualization
   G4VisManager* visManager = new WCSimVisManager;
   visManager->Initialize();
+#endif
   G4cout<<"Creating Primary Generator Action"<<G4endl;
   // Set user action classes
   WCSimPrimaryGeneratorAction* myGeneratorAction = new 
@@ -134,8 +136,9 @@ int main(int argc,char** argv)
     UI->ApplyCommand(command+fileName);
   }
 
+#ifdef G4VIS_USE
   delete visManager;
-
+#endif
   delete runManager;
   return 0;
 }

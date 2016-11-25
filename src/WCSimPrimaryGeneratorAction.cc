@@ -539,5 +539,6 @@ void WCSimPrimaryGeneratorAction::LoadNewPrimaries(){
 	G4cout<<"first run: "<<runbranchval<<G4endl;
 	treeNumber=inputdata->GetTreeNumber();
 	
+	loadNewPrimaries=false;
 }
 
