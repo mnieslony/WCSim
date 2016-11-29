@@ -479,17 +479,17 @@ void WCSimEventAction::EndOfEventAction(const G4Event* evt)
 
   // Draw Charged Tracks 
   
+  G4VVisManager* pVVisManager = G4VVisManager::GetConcreteInstance();
+  if(pVVisManager){
+    for (G4int i=0; i < n_trajectories; i++) {
+      WCSimTrajectory* trj = (WCSimTrajectory*)((*(evt->GetTrajectoryContainer()))[i]);
+      if (trj->GetCharge() != 0.){
+         trj->DrawTrajectory(50);
+      }
+    }
+  }
 
-  for (G4int i=0; i < n_trajectories; i++) 
-    {
-      WCSimTrajectory* trj = 
-	(WCSimTrajectory*)((*(evt->GetTrajectoryContainer()))[i]);
-
-      if (trj->GetCharge() != 0.)
- 	trj->DrawTrajectory(50);
-    } 
-
-   G4cout << G4endl << " Filling Root Event " << G4endl;
+   G4cout << G4endl << " Filling Root Event " << event_id<<G4endl;
 
    //   G4cout << "event_id: " << &event_id << G4endl;
    // G4cout << "jhfNtuple: " << &jhfNtuple << G4endl;
@@ -526,6 +526,8 @@ G4cout<<"Filling FACC Root Event"<<G4endl;
 		"facc");
   
   TTree* tree = GetRunAction()->GetTree();
+  //TBranch* tankeventbranch = tree->GetBranch("wcsimrootevent");
+  //tree->SetEntries(tankeventbranch->GetEntries());
   tree->SetEntries(GetRunAction()->GetNumberOfEventsGenerated());
   TFile* hfile = tree->GetCurrentFile();
   // MF : overwrite the trees -- otherwise we have as many copies of the tree
@@ -583,7 +585,7 @@ G4int WCSimEventAction::WCSimEventFindStartingVolume(G4ThreeVector vtx)
     vtxvol = 40;
   
   if(vtxvol<0){
-    G4cout<<"############# unkown vertex volume: "<<vtxVolumeName<<" ################"<<G4endl;
+    //G4cout<<"############# unkown vertex volume: "<<vtxVolumeName<<" ################"<<G4endl;
   }
   return vtxvol;
 }
@@ -632,7 +634,7 @@ G4int WCSimEventAction::WCSimEventFindStoppingVolume(G4String stopVolumeName)
     stopvol = 40;
 
   if(stopvol<0){
-    G4cout<<"############# unkown vertex volume: "<<stopVolumeName<<" ################"<<G4endl;
+    //G4cout<<"############# unkown vertex volume: "<<stopVolumeName<<" ################"<<G4endl;
   }
   return stopvol;
 }
@@ -717,7 +719,7 @@ void WCSimEventAction::FillRootEvent(G4int event_id,
       pdir[l]=jhfNtuple.pdir[k][l];
       stop[l]=jhfNtuple.stop[k][l];
       start[l]=jhfNtuple.start[k][l];
-	G4cout<< "start[" << k << "][" << l <<"]: "<< jhfNtuple.start[k][l] <<G4endl;
+	//G4cout<< "start[" << k << "][" << l <<"]: "<< jhfNtuple.start[k][l] <<G4endl;
     }
 
     // Add the track to the TClonesArray
@@ -836,7 +838,7 @@ void WCSimEventAction::FillRootEvent(G4int event_id,
 	pdir[l]=mom[l];        // momentum-vector 
 	stop[l]=Stop[l]/CLHEP::cm; // stopping point 
 	start[l]=Start[l]/CLHEP::cm; // starting point 
-	G4cout<<"part 2 start["<<l<<"]: "<< start[l] <<G4endl;
+	//G4cout<<"part 2 start["<<l<<"]: "<< start[l] <<G4endl;
       }
 
       // Add the track to the TClonesArray, watching out for times

@@ -26,6 +26,7 @@ WCSimTrajectory::WCSimTrajectory(const G4Track* aTrack)
   ParticleName = fpParticleDefinition->GetParticleName();
   PDGCharge = fpParticleDefinition->GetPDGCharge();
   PDGEncoding = fpParticleDefinition->GetPDGEncoding();
+  if(fpParticleDefinition==G4OpticalPhoton::OpticalPhotonDefinition()){PDGEncoding=100;}
   fTrackID = aTrack->GetTrackID();
   fParentID = aTrack->GetParentID();
   initialMomentum = aTrack->GetMomentum();
