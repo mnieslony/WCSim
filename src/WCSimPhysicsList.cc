@@ -432,6 +432,7 @@ void WCSimPhysicsList::ConstructGeneral()
 #include "G4PreCompoundModel.hh"
 #include "G4GeneratorPrecompoundInterface.hh"
 #include "G4TheoFSGenerator.hh"
+#include "G4BinaryLightIonReaction.hh"
 
 void WCSimPhysicsList::ConstructHad()
 {
@@ -857,12 +858,13 @@ else if (particleName == "deuteron")
 	  //  new G4LEAlphaInelastic;
 	  //theInelasticProcess->RegisterMe(theLEInelasticModel);
 	  // Use Binary for low energy and FTFP for high energy - SS
-	  G4BinaryCascade* theBinaryModel = new G4BinaryCascade();
+	  // mo: G4BinaryCascade is not valid for incident alpha! results in an exception!
+	  // replace with BinaryLightIonReaction:
+	  G4BinaryLightIonReaction* theBinaryModel = new G4BinaryLightIonReaction();
 	  theBinaryModel->SetMaxEnergy(4.0*CLHEP::GeV);
 	  theInelasticProcess->RegisterMe(theBinaryModel);
 	  FTFP_model->SetMinEnergy(2.0*CLHEP::GeV);
 	  theInelasticProcess->RegisterMe(FTFP_model);
-
  	  pmanager->AddDiscreteProcess(theInelasticProcess);
  	}
     }
