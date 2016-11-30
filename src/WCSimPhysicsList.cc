@@ -404,7 +404,7 @@ void WCSimPhysicsList::ConstructGeneral()
 #include "G4NeutronHPCaptureData.hh"
 #include "G4NeutronHPInelastic.hh"
 #include "G4NeutronHPInelasticData.hh"
-#include "G4LCapture.hh"
+#include "G4NeutronRadCapture.hh"	// >20MeV
 
 //=================================
 // Added by JLR 2005-07-05
@@ -777,15 +777,12 @@ void WCSimPhysicsList::ConstructHad()
 	  pmanager->AddDiscreteProcess(theInelasticProcess);
 
 	  // capture
-	  G4HadronCaptureProcess* theCaptureProcess =
-	    new G4HadronCaptureProcess;
-	  
+	  G4HadronCaptureProcess* theCaptureProcess = new G4HadronCaptureProcess;
 	  // Comment out next 4 lines we only need the HPCapture model -FDL
-	  // marcus: so he says. not for ANNIE. exceptions generated for no model > 20MeV
-	  G4LCapture* theCaptureModel = new G4LCapture;
+	  // Instead HE ncapture replacement made for ANNIE. exceptions generated with no model > 20MeV
+	  G4NeutronRadCapture* theCaptureModel = new G4NeutronRadCapture;
 	  theCaptureModel->SetMinEnergy(19*MeV);
 	  theCaptureProcess->RegisterMe(theCaptureModel);
-    pmanager->AddDiscreteProcess(capProcess);
 	  G4NeutronHPCapture* theCaptureModelHP = new G4NeutronHPCapture();
 	  theCaptureProcess->RegisterMe(theCaptureModelHP);
 	  G4NeutronHPCaptureData* theNeutronCaptureData = new G4NeutronHPCaptureData;
