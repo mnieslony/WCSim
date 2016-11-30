@@ -2,6 +2,7 @@
 
 #include "G4TrajectoryPoint.hh"
 #include "G4ParticleTable.hh"
+#include "G4ParticleTypes.hh"
 #include "G4AttDefStore.hh"
 #include "G4AttDef.hh"
 #include "G4AttValue.hh"

@@ -404,7 +404,7 @@ void WCSimPhysicsList::ConstructGeneral()
 #include "G4NeutronHPCaptureData.hh"
 #include "G4NeutronHPInelastic.hh"
 #include "G4NeutronHPInelasticData.hh"
-// #include "G4LCapture.hh"
+#include "G4LCapture.hh"
 
 //=================================
 // Added by JLR 2005-07-05
@@ -447,19 +447,6 @@ void WCSimPhysicsList::ConstructHad()
 // examples/advanced/underground_physics/src/DMXPhysicsList.cc
 // CWW 2/23/05
 //
-
-  // Add the FRITIOF model - FDL
-  G4TheoFSGenerator* FTFP_model = new G4TheoFSGenerator();
-  G4GeneratorPrecompoundInterface* theCascade = new G4GeneratorPrecompoundInterface();
-  G4ExcitationHandler* theHandler = new G4ExcitationHandler();
-  G4PreCompoundModel* thePreEquilib = new G4PreCompoundModel(theHandler);
-  theCascade->SetDeExcitation(thePreEquilib);
-  FTFP_model->SetTransport(theCascade);
-  G4LundStringFragmentation* theFragmentation = new G4LundStringFragmentation();
-  G4ExcitedStringDecay* theStringDecay = new G4ExcitedStringDecay(theFragmentation);    
-  G4FTFModel* theStringModel = new G4FTFModel;
-  theStringModel->SetFragmentationModel(theStringDecay);
-  FTFP_model->SetHighEnergyGenerator(theStringModel);
 
   G4HadronElasticProcess* theElasticProcess = new G4HadronElasticProcess;
   G4HadronElastic* theElasticModel = new G4HadronElastic;
@@ -794,10 +781,11 @@ void WCSimPhysicsList::ConstructHad()
 	    new G4HadronCaptureProcess;
 	  
 	  // Comment out next 4 lines we only need the HPCapture model -FDL
-	  //G4LCapture* theCaptureModel = new G4LCapture;
-	  //theCaptureModel->SetMinEnergy(19*MeV);
-	  //theCaptureProcess->RegisterMe(theCaptureModel);
-    //pmanager->AddDiscreteProcess(capProcess);
+	  // marcus: so he says. not for ANNIE. exceptions generated for no model > 20MeV
+	  G4LCapture* theCaptureModel = new G4LCapture;
+	  theCaptureModel->SetMinEnergy(19*MeV);
+	  theCaptureProcess->RegisterMe(theCaptureModel);
+    pmanager->AddDiscreteProcess(capProcess);
 	  G4NeutronHPCapture* theCaptureModelHP = new G4NeutronHPCapture();
 	  theCaptureProcess->RegisterMe(theCaptureModelHP);
 	  G4NeutronHPCaptureData* theNeutronCaptureData = new G4NeutronHPCaptureData;

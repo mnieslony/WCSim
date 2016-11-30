@@ -43,8 +43,10 @@ void sample_readfile(char *filename=NULL, bool verbose=false)
   wcsimdirenv = getenv ("WCSIMDIR");
   if(wcsimdirenv !=  NULL){
     gSystem->Load("${WCSIMDIR}/libWCSimRoot.so");
+    gSystem->AddIncludePath("${WCSIMDIR}../wcsim");
   }else{
     gSystem->Load("../libWCSimRoot.so");
+    gSystem->AddIncludePath("../.");
   }
 
   TFile *file;

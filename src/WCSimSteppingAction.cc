@@ -41,6 +41,7 @@ void WCSimSteppingAction::UserSteppingAction(const G4Step* aStep)
 //    G4cout << " PROBLEM! " << theTrack->GetCreatorProcess()->GetProcessName() <<
 //  std::flush << G4endl;
 //  }
+  static int numbrokenphotons=0;
 
   static G4ThreadLocal G4OpBoundaryProcess* boundary=NULL;
   //find the boundary process only once
@@ -65,8 +66,12 @@ void WCSimSteppingAction::UserSteppingAction(const G4Step* aStep)
     return;
   }
   
-  if(track->GetDefinition()==G4OpticalPhoton::OpticalPhotonDefinition()&&
-     aStep->GetPostStepPoint()->GetStepStatus()==fGeomBoundary){
+  if(track->GetDefinition()==G4OpticalPhoton::OpticalPhotonDefinition()){
+   if ( track->GetCurrentStepNumber() > 50000 ){
+     track->SetTrackStatus(fStopAndKill); 
+     G4cout<<"killing broken photon "<<++numbrokenphotons<<G4endl;
+   }
+   if( aStep->GetPostStepPoint()->GetStepStatus()==fGeomBoundary){
      G4OpBoundaryProcessStatus boundaryStatus=boundary->GetStatus();
      if(fExpectedNextStatus==StepTooSmall){
         if(boundaryStatus!=StepTooSmall){
@@ -98,8 +103,8 @@ void WCSimSteppingAction::UserSteppingAction(const G4Step* aStep)
       default:
         break;
       }
+    }
   }
-  
 }
 
 
