@@ -25,18 +25,23 @@ WCSimPrimaryGeneratorMessenger::WCSimPrimaryGeneratorMessenger(WCSimPrimaryGener
   fileNameCmd->SetParameterName("fileName",true);
   fileNameCmd->SetDefaultValue("inputvectorfile");
   
-  fileDirectoryCmd = new G4UIcmdWithAString("/mygen/primariesdirectory", this);
-  fileDirectoryCmd->SetGuidance("Specify the directory containing beam primary root files");
-  fileDirectoryCmd->SetParameterName("directoryName",true);
-  fileDirectoryCmd->SetDefaultValue("");
+  primariesfileDirectoryCmd = new G4UIcmdWithAString("/mygen/primariesdirectory", this);
+  primariesfileDirectoryCmd->SetGuidance("Specify the directory containing beam primary root files");
+  primariesfileDirectoryCmd->SetParameterName("directoryName",true);
+  primariesfileDirectoryCmd->SetDefaultValue("");
   
+  neutrinosfileDirectoryCmd = new G4UIcmdWithAString("/mygen/neutrinosdirectory", this);
+  neutrinosfileDirectoryCmd->SetGuidance("Specify the directory containing genie neutrino root files. Set this before setting the primariesDirectory. Both should be set at the same time.");
+  neutrinosfileDirectoryCmd->SetParameterName("directoryName",true);
+  neutrinosfileDirectoryCmd->SetDefaultValue("");
 }
 
 WCSimPrimaryGeneratorMessenger::~WCSimPrimaryGeneratorMessenger()
 {
   delete genCmd;
   delete fileNameCmd;
-  delete fileDirectoryCmd;
+  delete primariesfileDirectoryCmd;
+  delete neutrinosfileDirectoryCmd;
   delete mydetDirectory;
 }
 
@@ -84,10 +89,16 @@ void WCSimPrimaryGeneratorMessenger::SetNewValue(G4UIcommand * command,G4String 
     G4cout << "Input vector file set to " << newValue << G4endl;
   }
   
-  if( command == fileDirectoryCmd )
+  if( command == primariesfileDirectoryCmd )
   {
     myAction->SetPrimaryFilesDirectory(newValue);
     myAction->SetNewPrimariesFlag(true);
+    G4cout << "Input directory set to " << newValue << G4endl;
+  }
+  
+  if( command == neutrinosfileDirectoryCmd )
+  {
+    myAction->SetNeutrinoFilesDirectory(newValue);
     G4cout << "Input directory set to " << newValue << G4endl;
   }
 

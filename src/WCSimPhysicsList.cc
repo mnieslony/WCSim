@@ -404,7 +404,7 @@ void WCSimPhysicsList::ConstructGeneral()
 #include "G4NeutronHPCaptureData.hh"
 #include "G4NeutronHPInelastic.hh"
 #include "G4NeutronHPInelasticData.hh"
-// #include "G4LCapture.hh"
+#include "G4NeutronRadCapture.hh"	// >20MeV
 
 //=================================
 // Added by JLR 2005-07-05
@@ -432,6 +432,7 @@ void WCSimPhysicsList::ConstructGeneral()
 #include "G4PreCompoundModel.hh"
 #include "G4GeneratorPrecompoundInterface.hh"
 #include "G4TheoFSGenerator.hh"
+#include "G4BinaryLightIonReaction.hh"
 
 void WCSimPhysicsList::ConstructHad()
 {
@@ -447,19 +448,6 @@ void WCSimPhysicsList::ConstructHad()
 // examples/advanced/underground_physics/src/DMXPhysicsList.cc
 // CWW 2/23/05
 //
-
-  // Add the FRITIOF model - FDL
-  G4TheoFSGenerator* FTFP_model = new G4TheoFSGenerator();
-  G4GeneratorPrecompoundInterface* theCascade = new G4GeneratorPrecompoundInterface();
-  G4ExcitationHandler* theHandler = new G4ExcitationHandler();
-  G4PreCompoundModel* thePreEquilib = new G4PreCompoundModel(theHandler);
-  theCascade->SetDeExcitation(thePreEquilib);
-  FTFP_model->SetTransport(theCascade);
-  G4LundStringFragmentation* theFragmentation = new G4LundStringFragmentation();
-  G4ExcitedStringDecay* theStringDecay = new G4ExcitedStringDecay(theFragmentation);    
-  G4FTFModel* theStringModel = new G4FTFModel;
-  theStringModel->SetFragmentationModel(theStringDecay);
-  FTFP_model->SetHighEnergyGenerator(theStringModel);
 
   G4HadronElasticProcess* theElasticProcess = new G4HadronElasticProcess;
   G4HadronElastic* theElasticModel = new G4HadronElastic;
@@ -790,14 +778,12 @@ void WCSimPhysicsList::ConstructHad()
 	  pmanager->AddDiscreteProcess(theInelasticProcess);
 
 	  // capture
-	  G4HadronCaptureProcess* theCaptureProcess =
-	    new G4HadronCaptureProcess;
-	  
+	  G4HadronCaptureProcess* theCaptureProcess = new G4HadronCaptureProcess;
 	  // Comment out next 4 lines we only need the HPCapture model -FDL
-	  //G4LCapture* theCaptureModel = new G4LCapture;
-	  //theCaptureModel->SetMinEnergy(19*MeV);
-	  //theCaptureProcess->RegisterMe(theCaptureModel);
-    //pmanager->AddDiscreteProcess(capProcess);
+	  // Instead HE ncapture replacement made for ANNIE. exceptions generated with no model > 20MeV
+	  G4NeutronRadCapture* theCaptureModel = new G4NeutronRadCapture;
+	  theCaptureModel->SetMinEnergy(19*MeV);
+	  theCaptureProcess->RegisterMe(theCaptureModel);
 	  G4NeutronHPCapture* theCaptureModelHP = new G4NeutronHPCapture();
 	  theCaptureProcess->RegisterMe(theCaptureModelHP);
 	  G4NeutronHPCaptureData* theNeutronCaptureData = new G4NeutronHPCaptureData;
@@ -872,12 +858,13 @@ else if (particleName == "deuteron")
 	  //  new G4LEAlphaInelastic;
 	  //theInelasticProcess->RegisterMe(theLEInelasticModel);
 	  // Use Binary for low energy and FTFP for high energy - SS
-	  G4BinaryCascade* theBinaryModel = new G4BinaryCascade();
+	  // mo: G4BinaryCascade is not valid for incident alpha! results in an exception!
+	  // replace with BinaryLightIonReaction:
+	  G4BinaryLightIonReaction* theBinaryModel = new G4BinaryLightIonReaction();
 	  theBinaryModel->SetMaxEnergy(4.0*CLHEP::GeV);
 	  theInelasticProcess->RegisterMe(theBinaryModel);
 	  FTFP_model->SetMinEnergy(2.0*CLHEP::GeV);
 	  theInelasticProcess->RegisterMe(FTFP_model);
-
  	  pmanager->AddDiscreteProcess(theInelasticProcess);
  	}
     }

@@ -45,6 +45,7 @@ void WCSimTrackingAction::PreUserTrackingAction(const G4Track* aTrack)
   
   WCSimTrackInformation* anInfo = new WCSimTrackInformation();
   G4Track* theTrack = (G4Track*)aTrack;
+  anInfo->WillBeSaved(false);
   theTrack->SetUserInformation(anInfo);
 }
 

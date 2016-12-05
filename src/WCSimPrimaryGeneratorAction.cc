@@ -20,6 +20,11 @@
 #include "G4Navigator.hh"
 #include "G4TransportationManager.hh"
 
+// GENIE headers
+#include "GHEP/GHepParticle.h"
+#include "Ntuple/NtpMCTreeHeader.h"
+#include "Interaction.h"
+
 using std::vector;
 using std::string;
 using std::fstream;
@@ -38,7 +43,7 @@ inline int   atoi( const string& s ) {return std::atoi( s.c_str() );}
 
 WCSimPrimaryGeneratorAction::WCSimPrimaryGeneratorAction(
 					  WCSimDetectorConstruction* myDC)
-  :myDetector(myDC), loadNewPrimaries(true), inputdata(0), primariesDirectory("")
+  :myDetector(myDC), loadNewPrimaries(true), inputdata(0), primariesDirectory(""), neutrinosDirectory("")
 {
   //T. Akiri: Initialize GPS to allow for the laser use 
   MyGPS = new G4GeneralParticleSource();
@@ -71,6 +76,7 @@ WCSimPrimaryGeneratorAction::WCSimPrimaryGeneratorAction(
   useNormalEvt = false;
   useBeamEvt = true;
       
+  genierecordval = new genie::NtpMCEventRecord();
 }
 
 WCSimPrimaryGeneratorAction::~WCSimPrimaryGeneratorAction()
@@ -89,7 +95,12 @@ WCSimPrimaryGeneratorAction::~WCSimPrimaryGeneratorAction()
   if(useBeamEvt){
     if(inputdata){
       inputdata->ResetBranchAddresses();
+      metadata->ResetBranchAddresses();
+      geniedata->ResetBranchAddresses();
       delete inputdata;
+      delete metadata;
+      delete geniedata;
+      delete genierecordval;
     }
   }
 
@@ -281,12 +292,16 @@ void WCSimPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 		if(loadNewPrimaries){ LoadNewPrimaries(); }	// update TChain if a new file is loaded by messenger
 		
 		Long64_t localEntry = inputdata->LoadTree(inputEntry);
+		metadata->LoadTree(inputEntry);
+		geniedata->LoadTree(inputEntry);
 		if(localEntry<0){
 			G4cout<<"@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#"<<G4endl;
 			G4cout<<"@#@#@#@#@#@#@#@#@#@ REACHED END OF INPUT FILE! #@#@#@#@#@#@#@#@#@#@#@#"<<G4endl;
 			G4cout<<"@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#"<<G4endl;
 			inputEntry=0;
 			localEntry = inputdata->LoadTree(inputEntry);
+			metadata->LoadTree(inputEntry);
+			geniedata->LoadTree(inputEntry);
 			// should be done below since this opens a new tree
 //			inputdata->SetBranchAddress("run",&runbranchval,&runBranch);
 //			inputdata->SetBranchAddress("ntank",&ntankbranchval,&nTankBranch);
@@ -307,7 +322,7 @@ void WCSimPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 //			EBranch=inputdata->GetBranch("E");
 //			KEBranch=inputdata->GetBranch("kE");
 //			pdgBranch=inputdata->GetBranch("pdgtank");
-//			geniePrimaryBranch=inputdata->GetBranch("primary");
+//			nuprimaryBranch=inputdata->GetBranch("primary");
 //			entriesInThisTree = runBranch->GetEntries();
 		}
 		
@@ -326,6 +341,8 @@ void WCSimPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 			inputdata->SetBranchAddress("nuvtxt",&nuvtxtval,&nuvtxtBranch);
 			inputdata->SetBranchAddress("vtxvol",&nupvval,&nuPVBranch);
 			inputdata->SetBranchAddress("vtxmat",&numatval,&nuvtxmatBranch);
+			metadata->SetBranchAddress("inputFluxName",&nufluxfilenameval,&nufluxfilenameBranch);
+			geniedata->SetBranchAddress("gmcrec",&genierecordval,&genierecordBranch);
 			vtxxBranch=inputdata->GetBranch("vx");
 			vtxyBranch=inputdata->GetBranch("vy");
 			vtxzBranch=inputdata->GetBranch("vz");
@@ -336,10 +353,10 @@ void WCSimPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 			EBranch=inputdata->GetBranch("E");
 			KEBranch=inputdata->GetBranch("kE");
 			pdgBranch=inputdata->GetBranch("pdgtank");
-			geniePrimaryBranch=inputdata->GetBranch("primary");
+			nuprimaryBranch=inputdata->GetBranch("primary");
 			entriesInThisTree = runBranch->GetEntries();
 		
-			if(runBranch==0||nTankBranch==0||vtxxBranch==0||vtxyBranch==0||vtxzBranch==0||vtxtBranch==0||pxBranch==0||pyBranch==0||pzBranch==0||EBranch==0||KEBranch==0||pdgBranch==0||nupdgBranch==0||nuvtxxBranch==0||nuvtxyBranch==0||nuvtxzBranch==0||nuvtxtBranch==0||nuPVBranch==0||nuvtxmatBranch==0||geniePrimaryBranch==0){
+			if(runBranch==0||nTankBranch==0||vtxxBranch==0||vtxyBranch==0||vtxzBranch==0||vtxtBranch==0||pxBranch==0||pyBranch==0||pzBranch==0||EBranch==0||KEBranch==0||pdgBranch==0||nupdgBranch==0||nuvtxxBranch==0||nuvtxyBranch==0||nuvtxzBranch==0||nuvtxtBranch==0||nuPVBranch==0||nuvtxmatBranch==0||nuprimaryBranch==0||nufluxfilenameBranch==0||genierecordBranch==0){
 				G4cout<<"BRANCHES ARE ZOMBIES ARGH!"<<G4endl;
 			} else { G4cout<<"entries in this tree: "<<vtxxBranch->GetEntries()<<G4endl; }
 			
@@ -358,6 +375,8 @@ void WCSimPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 		nuvtxtBranch->GetEntry(localEntry);
 		nuPVBranch->GetEntry(localEntry);
 		nuvtxmatBranch->GetEntry(localEntry);
+		nufluxfilenameBranch->GetEntry(localEntry);
+		genierecordBranch->GetEntry(localEntry);
 		
 		G4ParticleDefinition* parttype = particleTable->FindParticle(nupdgval);
 		TLorentzVector neutrinovertex(nuvtxtval, nuvtxxval, nuvtxyval, nuvtxzval);
@@ -374,7 +393,7 @@ void WCSimPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 		if(ebranchval){delete[] ebranchval;}
 		if(kebranchval){delete[] kebranchval;}
 		if(pdgbranchval){delete[] pdgbranchval;}
-		if(genieprimarybranchval){delete[] genieprimarybranchval;}
+		if(nuprimaryBranchval){delete[] nuprimaryBranchval;}
 		
 		vtxxbranchval = new Double_t[ntankbranchval];
 		vtxybranchval = new Double_t[ntankbranchval];
@@ -386,9 +405,9 @@ void WCSimPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 		ebranchval = new Double_t[ntankbranchval];
 		kebranchval = new Double_t[ntankbranchval];
 		pdgbranchval = new Int_t[ntankbranchval];
-		genieprimarybranchval = new Int_t[ntankbranchval];
+		nuprimaryBranchval = new Int_t[ntankbranchval];
 		
-		if(vtxxbranchval==0||vtxybranchval==0||vtxzbranchval==0||vtxtbranchval==0||pxbranchval==0||pybranchval==0||pzbranchval==0||ebranchval==0||kebranchval==0||pdgbranchval==0||genieprimarybranchval==0){
+		if(vtxxbranchval==0||vtxybranchval==0||vtxzbranchval==0||vtxtbranchval==0||pxbranchval==0||pybranchval==0||pzbranchval==0||ebranchval==0||kebranchval==0||pdgbranchval==0||nuprimaryBranchval==0){
 			G4cout<<"Arrays are zombies!"<<G4endl;
 		}
 		
@@ -403,7 +422,7 @@ void WCSimPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 		EBranch->SetAddress(ebranchval);
 		KEBranch->SetAddress(kebranchval);
 		pdgBranch->SetAddress(pdgbranchval);
-		geniePrimaryBranch->SetAddress(genieprimarybranchval);
+		nuprimaryBranch->SetAddress(nuprimaryBranchval);
 		
 		//G4cout<<"Getting primary arrays"<<G4endl;
 		vtxxBranch->GetEntry(localEntry);
@@ -416,7 +435,7 @@ void WCSimPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 		EBranch->GetEntry(localEntry);
 		KEBranch->GetEntry(localEntry);
 		pdgBranch->GetEntry(localEntry);
-		geniePrimaryBranch->GetEntry(localEntry);
+		nuprimaryBranch->GetEntry(localEntry);
 		
 		//G4cout<<"Looping over primaries"<<G4endl;
 		for(int i=0;i<ntankbranchval;i++){
@@ -431,14 +450,14 @@ void WCSimPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 			eval=ebranchval[i]*GeV;
 			keval=kebranchval[i]*GeV;
 			pdgval=pdgbranchval[i];
-			genieprimaryval=genieprimarybranchval[i];
+			nuprimaryval=nuprimaryBranchval[i];
 			G4ThreeVector thevtx = G4ThreeVector(vtxxval, vtxyval, vtxzval);
 			G4ThreeVector thepdir = G4ThreeVector(pxval, pyval, pzval);
 			thepdir.unit();		// normalise to unit vector
 			
 			if(keval==0){keval+=(pow(1.,-6.))*eV; eval+=(pow(1.,-6.))*eV; thepdir=G4ThreeVector(0.,0.,1.);}
 			parttype = particleTable->FindParticle(pdgval);
-			if(genieprimaryval==1){G4cout<<"genie primary ";} else {G4cout<<"genie secondary ";}
+			if(nuprimaryval==1){G4cout<<"genie primary ";} else {G4cout<<"genie secondary ";}
 			G4cout<<eval/GeV<<" GeV ";
 			if(parttype==0){G4cout<<"PDG: "<<pdgval;} else {G4cout<<parttype->GetParticleName();}
 			G4Navigator* theNavigator = G4TransportationManager::GetTransportationManager()->GetNavigatorForTracking();
@@ -455,6 +474,25 @@ void WCSimPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 		}
 		
 		inputEntry++;
+		
+		//store information about the primary neutrino interaction
+		nupdg
+		nuvtxval (TLorentzVector)
+		nuvtx volumeName
+		nuvtx material
+		target pdg
+		target nucleon
+		nuEnergy
+		target energy
+		interaction types (many bools)
+		Q^2
+		x
+		y
+		W^2
+		primary fs lepton E
+		or interaction retrieved from genierecordval (genie::NtpMCEventRecord)
+		
+		
 		
 	}
 
@@ -506,6 +544,14 @@ void WCSimPrimaryGeneratorAction::LoadNewPrimaries(){
 	inputdata = new TChain("tankflux");	// input is name of tree in contributing files
 	inputdata->Add(primariesDirectory);
 	inputdata->LoadTree(0);
+	if(metadata){ metadata->ResetBranchAddresses(); delete metadata; }
+	metadata = new TChain("tankmeta");
+	metadata->Add(primariesDirectory);
+	metadata->LoadTree(0);
+	if(geniedata){ geniedata->ResetBranchAddresses(); delete geniedata; }
+	geniedata = new TChain("gtree");
+	geniedata->Add(neutrinosDirectory);
+	geniedata->LoadTree(0);
 	
 	inputdata->SetBranchAddress("run",&runbranchval,&runBranch);
 	inputdata->SetBranchAddress("ntank",&ntankbranchval,&nTankBranch);
@@ -516,6 +562,8 @@ void WCSimPrimaryGeneratorAction::LoadNewPrimaries(){
 	inputdata->SetBranchAddress("nuvtxt",&nuvtxtval,&nuvtxtBranch);
 	inputdata->SetBranchAddress("vtxvol",&nupvval,&nuPVBranch);
 	inputdata->SetBranchAddress("vtxmat",&numatval,&nuvtxmatBranch);
+	metadata->SetBranchAddress("inputFluxName",&nufluxfilenameval,&nufluxfilenameBranch);
+	geniedata->SetBranchAddress("gmcrec",&genierecordval,&genierecordBranch);
 	entriesInThisTree = runBranch->GetEntries();
 	
 	vtxxBranch=inputdata->GetBranch("vx");
@@ -528,13 +576,13 @@ void WCSimPrimaryGeneratorAction::LoadNewPrimaries(){
 	EBranch=inputdata->GetBranch("E");
 	KEBranch=inputdata->GetBranch("kE");
 	pdgBranch=inputdata->GetBranch("pdgtank");
-	geniePrimaryBranch=inputdata->GetBranch("primary");
+	nuprimaryBranch=inputdata->GetBranch("primary");
 	
-	if(runBranch==0||nTankBranch==0||vtxxBranch==0||vtxyBranch==0||vtxzBranch==0||vtxtBranch==0||pxBranch==0||pyBranch==0||pzBranch==0||EBranch==0||KEBranch==0||pdgBranch==0||nupdgBranch==0||nuvtxxBranch==0||nuvtxyBranch==0||nuvtxzBranch==0||nuvtxtBranch==0||nuPVBranch==0||nuvtxmatBranch==0||geniePrimaryBranch==0){
+	if(runBranch==0||nTankBranch==0||vtxxBranch==0||vtxyBranch==0||vtxzBranch==0||vtxtBranch==0||pxBranch==0||pyBranch==0||pzBranch==0||EBranch==0||KEBranch==0||pdgBranch==0||nupdgBranch==0||nuvtxxBranch==0||nuvtxyBranch==0||nuvtxzBranch==0||nuvtxtBranch==0||nuPVBranch==0||nuvtxmatBranch==0||nuprimaryBranch==0 || nufluxfilenameBranch==0||genierecordBranch==0){
 		G4cout<<"BRANCHES ARE ZOMBIES ARGH!"<<G4endl;
 	}
 	
-	inputEntry=3;
+	inputEntry=0;
 	runBranch->GetEntry(inputEntry);
 	G4cout<<"first run: "<<runbranchval<<G4endl;
 	treeNumber=inputdata->GetTreeNumber();
