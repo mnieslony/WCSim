@@ -9,6 +9,11 @@
 #include "TRandom3.h"
 #include <fstream>
 
+// GENIE headers
+#include "GHEP/GHepParticle.h"
+#include "Ntuple/NtpMCTreeHeader.h"
+#include "Interaction.h"
+
 class WCSimDetectorConstruction;
 class G4ParticleGun;
 class G4GeneralParticleSource;
@@ -87,20 +92,25 @@ private:
   G4int    _counterCublic; 
   
   TChain* inputdata;
+  TChain* metadata;
+  TChain* geniedata;
 	
 	Int_t inputEntry;
 	Int_t entriesInThisTree;
 	Int_t treeNumber;
-	TBranch* runBranch=0, *vtxxBranch=0, *vtxyBranch=0, *vtxzBranch=0, *vtxtBranch=0, *pxBranch=0, *pyBranch=0, *pzBranch=0, *EBranch=0, *KEBranch=0, *pdgBranch=0, *nTankBranch=0, *nupdgBranch=0, *nuvtxxBranch=0, *nuvtxyBranch=0, *nuvtxzBranch=0, *nuvtxtBranch=0, *nuPVBranch=0, *nuvtxmatBranch=0, *geniePrimaryBranch=0;
+	TBranch* runBranch=0, *vtxxBranch=0, *vtxyBranch=0, *vtxzBranch=0, *vtxtBranch=0, *pxBranch=0, *pyBranch=0, *pzBranch=0, *EBranch=0, *KEBranch=0, *pdgBranch=0, *nTankBranch=0, *nupdgBranch=0, *nuvtxxBranch=0, *nuvtxyBranch=0, *nuvtxzBranch=0, *nuvtxtBranch=0, *nuPVBranch=0, *nuvtxmatBranch=0, *nuprimaryBranch=0, *nufluxfilenameBranch=0, *genierecordBranch=0;
 	Int_t runbranchval, entrybranchval, ntankbranchval, nupdgval;
-	Int_t* pdgbranchval=0, *genieprimarybranchval=0;
+	Int_t* pdgbranchval=0, *nuprimarybranchval=0;
 	Int_t pdgval, genieprimaryval;
 	Double_t *vtxxbranchval=0, *vtxybranchval=0, *vtxzbranchval=0, *vtxtbranchval=0, *pxbranchval=0, *pybranchval=0, *pzbranchval=0, *ebranchval=0, *kebranchval=0;
 	Double_t vtxxval, vtxyval, vtxzval, vtxtval, pxval, pyval, pzval, eval, keval, nuvtxxval, nuvtxyval, nuvtxzval, nuvtxtval;
 	Char_t nupvval[100];
 	Char_t numatval[100];
+	Char_t nufluxfilenameval[100];
+	genie::NtpMCEventRecord genierecordval;
 	
 	G4String primariesDirectory;
+	G4String neutrinosDirectory;
 	G4bool loadNewPrimaries;
 	
 public:
@@ -133,6 +143,7 @@ public:
   }
   
   inline void SetPrimaryFilesDirectory(G4String directoryName) { primariesDirectory = directoryName; }
+  inline void SetNeutrinoFilesDirectory(G4String directoryName) { neutrinosDirectory = directoryName; }
   inline void SetNewPrimariesFlag(G4bool flagin){ loadNewPrimaries=flagin; }
   void LoadNewPrimaries();
   inline G4bool IsGeneratingVertexInRock() { return GenerateVertexInRock; }

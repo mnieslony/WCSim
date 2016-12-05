@@ -8,6 +8,9 @@ make.result
 bin/
 tmp/
 
+#ignore gedit backups
+*~
+
 #ignore run results
 wcsim.root
 

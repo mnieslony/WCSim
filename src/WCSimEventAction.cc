@@ -38,6 +38,11 @@
 #include "WCSimRootEvent.hh"
 #include "TStopwatch.h"
 
+// GENIE headers
+#include "GHEP/GHepParticle.h"
+#include "Ntuple/NtpMCTreeHeader.h"
+#include "Interaction.h"
+
 #ifndef _SAVE_RAW_HITS
 #define _SAVE_RAW_HITS
 #ifndef _SAVE_RAW_HITS_VERBOSE
@@ -175,32 +180,82 @@ void WCSimEventAction::EndOfEventAction(const G4Event* evt)
   // ----------------------------------------------------------------------
   //  Get Particle Table
   // ----------------------------------------------------------------------
-
+  
   G4ParticleTable* particleTable = G4ParticleTable::GetParticleTable();
-
+  
   // ----------------------------------------------------------------------
   //  Get Trajectory Container
   // ----------------------------------------------------------------------
-
+  
   G4TrajectoryContainer* trajectoryContainer = evt->GetTrajectoryContainer();
-
+  
   G4int n_trajectories = 0;
   if (trajectoryContainer) n_trajectories = trajectoryContainer->entries();
   
   // ----------------------------------------------------------------------
   //  Get Event Information
   // ----------------------------------------------------------------------
-
+  
   G4int         event_id = evt->GetEventID();
   G4int         mode     = generatorAction->GetMode();
   G4ThreeVector vtx      = generatorAction->GetVtx();
   G4int         vtxvol   = WCSimEventFindStartingVolume(vtx);
   G4int         vecRecNumber = generatorAction->GetVecRecNumber();
-
+  genie::NtpMCEventRecord* genierecordntpl = generatorAction->GetGenieRecord();
+  
+  if(genierecordntpl){
+    genie::EventRecord* gevtRec = genierecordntpl->event;
+    genie::Interaction genieint = gevtRec->Summary();
+    G4cout<<"This event was a "<<genieint->ProcInfo->AsString()
+    //genieint.ScatteringTypeAsString()<<", "<<genieint->InteractionTypeAsString()
+          <<" interaction of a "<<genieint->InitState()->ProbeE(kRfLab)<<"GeV "
+          << genieint->InitState()->Probe()->GetName() << " on a ";
+    int nuc_pdgc = genieint->InitState().Tgt->HitNucPdg();
+    if ( pdg::IsNeutronOrProton(nuc_pdgc) ) {
+    TParticlePDG * p = PDGLibrary::Instance()->Find(nuc_pdgc);
+    G4cout<< p->GetName();} else { G4cout<<"PDC-Code = " << nuc_pdgc;}
+    G4cout<<" in ";
+    TParticlePDG * tgt = PDGLibrary::Instance()->Find( genieint.Tgt->Pdg() );
+    if(tgt){G4cout<<tgt->GetName();} else {G4cout<<"[Z="<<genieint.Tgt->Z()<<", A="<<genieint.Tgt->A()<<"]";}
+    //<< ", PDG-Code = " << fTgt->Pdg();
+    G4cout<<" producing a ";
+    int ipos = gevtRec->RemnantNucleusPosition(); 
+    if(ipos>-1){ G4cout<<gevtRec->Particle(ipos).Energy<<"GeV "<<gevtRec->Particle(ipos).Name(); }
+    G4cout<<" and a ";
+    ipos = gevtRec->FinalStatePrimaryLeptonPosition();
+    if(ipos>-1){ G4cout<<gevtRec->Particle(ipos).Energy<<"GeV "<<gevtRec->Particle(ipos).Name(); }
+    G4cout<<G4endl<<"Q^2 was "<<genieint->Kine().Q2()<<"XX, ";
+    TLorentzVector& k1 = *(gevtRec.Probe()->P4());
+    TLorentzVector& k2 = *(gevtRec.FinalStatePrimaryLepton()->P4());
+    double costhl = TMath::Cos( k2.Vect().Angle(k1.Vect()) ); 
+    G4cout<<"with final state lepton ejected at Cos(θ)="<<costhl<<G4endl;
+    G4cout<<"Additional final state particles included "<<G4endl;
+    G4cout<< " N(p) = "       << genieint.XclsTag.NProtons()
+          << " N(n) = "       << genieint.XclsTag.NNeutrons()
+          << G4endl
+          << " N(pi^0) = "    << genieint.XclsTag.NPi0()
+          << " N(pi^+) = "    << genieint.XclsTag.NPiPlus()
+          << " N(pi^-) = "    << genieint.XclsTag.NPiMinus()
+          <<G4endl;
+    
+// use like:
+// if (interaction.ProcInfo().IsQuasiElastic()) { ... }
+// double Q2 = interaction.Kine().Q2();
+// double Ev = interaction.InitState().ProbeE(kRfLab);
+// int Z = interaction.InitState().Tgt().Z();
+// double Ethr = interaction.PhaseSpace().Threshold();
+    
+    
+    /////////////////////////////
+    nupdg
+    nuvtxval (TLorentzVector)
+    nuvtx volumeName
+    nuvtx material
+    
   // ----------------------------------------------------------------------
   //  Get WC Hit Collection
   // ----------------------------------------------------------------------
-
+    
   G4SDManager* SDman = G4SDManager::GetSDMpointer();
 
   // Get Hit collections of this event

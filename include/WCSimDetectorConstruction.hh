@@ -500,6 +500,8 @@ private:
 	G4int numpaddlesperpanelh;									// paddles per h scintillator panel
 	G4int numpaddlesperpanelv;									// paddles per v scintillator panel
 	G4int numpanels;														// scintillator panels
+	G4int numhpanels;														// horizontal scintillator panels
+	G4int numvpanels;														// vertical scintillator panels
 	G4int numrpcs;															// rpc panels
 	G4int numplates;														// steel plates
 	G4int numalustructs;												// number of supporting structs. We may be dropping one as we have fewer scintillators?

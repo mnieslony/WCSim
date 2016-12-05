@@ -43,6 +43,7 @@ $(G4TMPDIR) :
 
 
 libWCSimRoot.so : $(ROOTOBJS) 
+	@echo Compiling libWCSimRoot.so with GNUMakefile_root ...
 	@if [ ! -d $(G4TMPDIR) ] ; then mkdir $(G4TMPDIR) ; echo mkdir $(G4TMPDIR) ;fi
 	@$(CXX) -shared -O $^ -o $(ROOTSO) $(ROOTLIBS)
 
