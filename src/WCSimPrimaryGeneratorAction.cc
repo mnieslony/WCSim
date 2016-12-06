@@ -23,7 +23,7 @@
 // GENIE headers
 #include "GHEP/GHepParticle.h"
 #include "Ntuple/NtpMCTreeHeader.h"
-#include "Interaction.h"
+#include "Interaction/Interaction.h"
 
 using std::vector;
 using std::string;
@@ -76,7 +76,7 @@ WCSimPrimaryGeneratorAction::WCSimPrimaryGeneratorAction(
   useNormalEvt = false;
   useBeamEvt = true;
       
-  genierecordval = new genie::NtpMCEventRecord();
+  genierecordval = new genie::NtpMCEventRecord;
 }
 
 WCSimPrimaryGeneratorAction::~WCSimPrimaryGeneratorAction()
@@ -393,7 +393,7 @@ void WCSimPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 		if(ebranchval){delete[] ebranchval;}
 		if(kebranchval){delete[] kebranchval;}
 		if(pdgbranchval){delete[] pdgbranchval;}
-		if(nuprimaryBranchval){delete[] nuprimaryBranchval;}
+		if(nuprimarybranchval){delete[] nuprimarybranchval;}
 		
 		vtxxbranchval = new Double_t[ntankbranchval];
 		vtxybranchval = new Double_t[ntankbranchval];
@@ -405,9 +405,9 @@ void WCSimPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 		ebranchval = new Double_t[ntankbranchval];
 		kebranchval = new Double_t[ntankbranchval];
 		pdgbranchval = new Int_t[ntankbranchval];
-		nuprimaryBranchval = new Int_t[ntankbranchval];
+		nuprimarybranchval = new Int_t[ntankbranchval];
 		
-		if(vtxxbranchval==0||vtxybranchval==0||vtxzbranchval==0||vtxtbranchval==0||pxbranchval==0||pybranchval==0||pzbranchval==0||ebranchval==0||kebranchval==0||pdgbranchval==0||nuprimaryBranchval==0){
+		if(vtxxbranchval==0||vtxybranchval==0||vtxzbranchval==0||vtxtbranchval==0||pxbranchval==0||pybranchval==0||pzbranchval==0||ebranchval==0||kebranchval==0||pdgbranchval==0||nuprimarybranchval==0){
 			G4cout<<"Arrays are zombies!"<<G4endl;
 		}
 		
@@ -422,7 +422,7 @@ void WCSimPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 		EBranch->SetAddress(ebranchval);
 		KEBranch->SetAddress(kebranchval);
 		pdgBranch->SetAddress(pdgbranchval);
-		nuprimaryBranch->SetAddress(nuprimaryBranchval);
+		nuprimaryBranch->SetAddress(nuprimarybranchval);
 		
 		//G4cout<<"Getting primary arrays"<<G4endl;
 		vtxxBranch->GetEntry(localEntry);
@@ -450,7 +450,7 @@ void WCSimPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 			eval=ebranchval[i]*GeV;
 			keval=kebranchval[i]*GeV;
 			pdgval=pdgbranchval[i];
-			nuprimaryval=nuprimaryBranchval[i];
+			nuprimaryval=nuprimarybranchval[i];
 			G4ThreeVector thevtx = G4ThreeVector(vtxxval, vtxyval, vtxzval);
 			G4ThreeVector thepdir = G4ThreeVector(pxval, pyval, pzval);
 			thepdir.unit();		// normalise to unit vector
@@ -474,25 +474,6 @@ void WCSimPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 		}
 		
 		inputEntry++;
-		
-		//store information about the primary neutrino interaction
-		nupdg
-		nuvtxval (TLorentzVector)
-		nuvtx volumeName
-		nuvtx material
-		target pdg
-		target nucleon
-		nuEnergy
-		target energy
-		interaction types (many bools)
-		Q^2
-		x
-		y
-		W^2
-		primary fs lepton E
-		or interaction retrieved from genierecordval (genie::NtpMCEventRecord)
-		
-		
 		
 	}
 

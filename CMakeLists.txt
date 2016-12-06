@@ -3,6 +3,8 @@
 # Setup the project
 cmake_minimum_required(VERSION 2.8 FATAL_ERROR)
 project(WCSim)
+#set(CC /grid/fermiapp/products/larsoft/gcc/v4_9_3a/Linux64bit+2.6-2.12/bin/g++)
+#set(CXX /grid/fermiapp/products/larsoft/gcc/v4_9_3a/Linux64bit+2.6-2.12/bin/g++)
 #set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -Wall -fdiagnostics-color=always")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -fdiagnostics-color=always")
 # NOTE: Geant4.10.2 changes the way VisualizationManager is instantiated - requires a verbosity argument.  
@@ -31,7 +33,45 @@ endif()
 
 ## Load macros: need to compile ROOT through cmake first and execute bin/thisroot.sh
 include(${ROOT_USE_FILE})
+#----------------------------------------------------------------------------
+# GENIE stuff
+#
 
+find_package(CLHEP REQUIRED)
+
+set(_root_internal_libraries
+    # for GENIE
+    Geom
+    EGPythia6
+)
+set(Root_LIBRARIES ${_root_internal_libraries})
+
+link_directories($ENV{ROOTSYS}/lib)
+
+include_directories($ENV{GENIE}/src)
+link_directories($ENV{GENIE}/lib)
+
+set(_genie_internal_libraries
+    GAlgorithm GBaryonResonance GBase GBodekYang GCharm GCoh GDfrc GDIS GCrossSections GDecay GElas GElFF GHEP GEVGCore GEVGModules GEVGDrivers GGiBUU GHadronTransp GFragmentation GInteraction GLlewellynSmith GMEC GMessenger GNuGamma GNuE GNtuple GNuclear GNumerical GQPM GPDG GPDF GQEL GRES GRegistry GUtils GGeo GFluxDrivers GVLE GMuELoss GReWeight GNucleonDecay
+)
+
+include_directories($ENV{LOG4CPP_FQ_DIR}/include)
+link_directories($ENV{LOG4CPP_FQ_DIR}/lib)
+set(_log4cpp_internal_libraries log4cpp)
+
+include_directories($ENV{XERCESCROOT}/include)
+link_directories($ENV{XERCESCROOT}/lib)
+link_directories($ENV{LIBXML2ROOT}/lib)
+set(_xerces_internal_libraries xerces-c xml2)
+
+#include_directories($ENV{ROOTSYS}/include)
+#include_directories($ENV{GEANT4_FQ_DIR}/include)
+link_directories($ENV{ROOTSYS}/lib)
+
+
+set(Genie_LIBRARIES ${_genie_internal_libraries} ${_log4cpp_internal_libraries} ${_xerces_internal_libraries} )
+
+#----------------------------------------------------------------------------
 #----------------------------------------------------------------------------
 # Locate sources and headers for this project
 # ## NOT NEEDED FOR DICT
@@ -79,6 +119,12 @@ message(STATUS "using Geant4: ${Geant4_USE_FILE}")
 include(${Geant4_USE_FILE})  ## NOT needed for Dict
 
 #----------------------------------------------------------------------------
+#----------------------------------------------------------------------------
+# Setup Geant4 include directories and compile definitions
+# Setup include directory for this project
+#
+# ?????????????????????????????????????????///
+#----------------------------------------------------------------------------
 # Locate sources and headers for this project
 # NB: headers are included so they will show up in IDEs
 #
@@ -90,7 +136,7 @@ file(GLOB headers ${PROJECT_SOURCE_DIR}/include/*.hh)
 # Add the executable, and link it to the Geant4 libraries
 #
 add_executable(WCSim WCSim.cc ${sources} ${headers})
-target_link_libraries(WCSim ${Geant4_LIBRARIES} ${ROOT_LIBRARIES} WCSimRoot Tree)
+target_link_libraries(WCSim ${Geant4_LIBRARIES} ${ROOT_LIBRARIES} ${Genie_LIBRARIES} ${Root_LIBRARIES} WCSimRoot Tree)
 
 
 

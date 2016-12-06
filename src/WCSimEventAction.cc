@@ -41,7 +41,11 @@
 // GENIE headers
 #include "GHEP/GHepParticle.h"
 #include "Ntuple/NtpMCTreeHeader.h"
-#include "Interaction.h"
+#include "Interaction/Interaction.h"
+
+#include "PDG/PDGCodes.h"
+#include "PDG/PDGUtils.h"
+#include "PDG/PDGLibrary.h"
 
 #ifndef _SAVE_RAW_HITS
 #define _SAVE_RAW_HITS
@@ -205,38 +209,40 @@ void WCSimEventAction::EndOfEventAction(const G4Event* evt)
   
   if(genierecordntpl){
     genie::EventRecord* gevtRec = genierecordntpl->event;
-    genie::Interaction genieint = gevtRec->Summary();
-    G4cout<<"This event was a "<<genieint->ProcInfo->AsString()
-    //genieint.ScatteringTypeAsString()<<", "<<genieint->InteractionTypeAsString()
-          <<" interaction of a "<<genieint->InitState()->ProbeE(kRfLab)<<"GeV "
-          << genieint->InitState()->Probe()->GetName() << " on a ";
-    int nuc_pdgc = genieint->InitState().Tgt->HitNucPdg();
-    if ( pdg::IsNeutronOrProton(nuc_pdgc) ) {
-    TParticlePDG * p = PDGLibrary::Instance()->Find(nuc_pdgc);
+    genie::Interaction* genieint = gevtRec->Summary();
+    G4cout<<"This event was a "<<genieint->ProcInfo().AsString()
+    //genieint->ScatteringTypeAsString()<<", "<<genieint->InteractionTypeAsString()
+          <<" interaction of a "<<genieint->InitState().ProbeE(genie::kRfLab)<<"GeV "
+          << genieint->InitState().Probe()->GetName() << " on a ";
+    int nuc_pdgc = genieint->InitState().Tgt().HitNucPdg();
+    if ( genie::pdg::IsNeutronOrProton(nuc_pdgc) ) {
+    TParticlePDG * p = genie::PDGLibrary::Instance()->Find(nuc_pdgc);
     G4cout<< p->GetName();} else { G4cout<<"PDC-Code = " << nuc_pdgc;}
     G4cout<<" in ";
-    TParticlePDG * tgt = PDGLibrary::Instance()->Find( genieint.Tgt->Pdg() );
-    if(tgt){G4cout<<tgt->GetName();} else {G4cout<<"[Z="<<genieint.Tgt->Z()<<", A="<<genieint.Tgt->A()<<"]";}
+    TParticlePDG * tgt = genie::PDGLibrary::Instance()->Find( genieint->InitState().Tgt().Pdg() );
+    if(tgt){G4cout<<tgt->GetName();} 
+    else {G4cout<<"[Z="<<genieint->InitState().Tgt().Z()<<", A="<<genieint->InitState().Tgt().A()<<"]";}
     //<< ", PDG-Code = " << fTgt->Pdg();
     G4cout<<" producing a ";
     int ipos = gevtRec->RemnantNucleusPosition(); 
-    if(ipos>-1){ G4cout<<gevtRec->Particle(ipos).Energy<<"GeV "<<gevtRec->Particle(ipos).Name(); }
+    if(ipos>-1){ G4cout<<gevtRec->Particle(ipos)->Energy()<<"GeV "<<gevtRec->Particle(ipos)->Name(); }
     G4cout<<" and a ";
     ipos = gevtRec->FinalStatePrimaryLeptonPosition();
-    if(ipos>-1){ G4cout<<gevtRec->Particle(ipos).Energy<<"GeV "<<gevtRec->Particle(ipos).Name(); }
+    if(ipos>-1){ G4cout<<gevtRec->Particle(ipos)->Energy()<<"GeV "<<gevtRec->Particle(ipos)->Name(); }
     G4cout<<G4endl<<"Q^2 was "<<genieint->Kine().Q2()<<"XX, ";
-    TLorentzVector& k1 = *(gevtRec.Probe()->P4());
-    TLorentzVector& k2 = *(gevtRec.FinalStatePrimaryLepton()->P4());
+    TLorentzVector& k1 = *(gevtRec->Probe()->P4());
+    TLorentzVector& k2 = *(gevtRec->FinalStatePrimaryLepton()->P4());
     double costhl = TMath::Cos( k2.Vect().Angle(k1.Vect()) ); 
     G4cout<<"with final state lepton ejected at Cos(θ)="<<costhl<<G4endl;
     G4cout<<"Additional final state particles included "<<G4endl;
-    G4cout<< " N(p) = "       << genieint.XclsTag.NProtons()
-          << " N(n) = "       << genieint.XclsTag.NNeutrons()
+    G4cout<< " N(p) = "       << genieint->ExclTag().NProtons()
+          << " N(n) = "       << genieint->ExclTag().NNeutrons()
           << G4endl
-          << " N(pi^0) = "    << genieint.XclsTag.NPi0()
-          << " N(pi^+) = "    << genieint.XclsTag.NPiPlus()
-          << " N(pi^-) = "    << genieint.XclsTag.NPiMinus()
+          << " N(pi^0) = "    << genieint->ExclTag().NPi0()
+          << " N(pi^+) = "    << genieint->ExclTag().NPiPlus()
+          << " N(pi^-) = "    << genieint->ExclTag().NPiMinus()
           <<G4endl;
+    }
     
 // use like:
 // if (interaction.ProcInfo().IsQuasiElastic()) { ... }
@@ -246,11 +252,13 @@ void WCSimEventAction::EndOfEventAction(const G4Event* evt)
 // double Ethr = interaction.PhaseSpace().Threshold();
     
     
-    /////////////////////////////
-    nupdg
-    nuvtxval (TLorentzVector)
-    nuvtx volumeName
-    nuvtx material
+/////////////////////////////
+//    nupdg
+//    nuvtxval (TLorentzVector)
+//    nuvtx volumeName
+//    nuvtx material
+//		target energy
+/////////////////////////////
     
   // ----------------------------------------------------------------------
   //  Get WC Hit Collection
