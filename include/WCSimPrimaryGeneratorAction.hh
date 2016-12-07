@@ -10,11 +10,13 @@
 #include <fstream>
 
 // GENIE headers
+#ifndef NO_GENIE
 #include "GHEP/GHepParticle.h"
 #include "GHEP/GHepRecord.h"
 #include "Ntuple/NtpMCTreeHeader.h"
 #include "Ntuple/NtpMCEventRecord.h"
 #include "Interaction/Interaction.h"
+#endif
 
 class WCSimDetectorConstruction;
 class G4ParticleGun;
@@ -109,7 +111,9 @@ private:
 	Char_t nupvval[100];
 	Char_t numatval[100];
 	Char_t nufluxfilenameval[100];
+#ifndef NO_GENIE
 	genie::NtpMCEventRecord* genierecordval;
+#endif
 	
 	G4String primariesDirectory;
 	G4String neutrinosDirectory;
@@ -150,7 +154,9 @@ public:
   void LoadNewPrimaries();
   inline G4bool IsGeneratingVertexInRock() { return GenerateVertexInRock; }
   inline void SetGenerateVertexInRock(G4bool choice) { GenerateVertexInRock = choice; }
+#ifndef NO_GENIE
   genie::NtpMCEventRecord* GetGenieRecord() { return genierecordval; }
+#endif
 
 };
 

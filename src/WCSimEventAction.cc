@@ -39,13 +39,14 @@
 #include "TStopwatch.h"
 
 // GENIE headers
+#ifndef NO_GENIE
 #include "GHEP/GHepParticle.h"
 #include "Ntuple/NtpMCTreeHeader.h"
 #include "Interaction/Interaction.h"
-
 #include "PDG/PDGCodes.h"
 #include "PDG/PDGUtils.h"
 #include "PDG/PDGLibrary.h"
+#endif
 
 #ifndef _SAVE_RAW_HITS
 #define _SAVE_RAW_HITS
@@ -205,6 +206,7 @@ void WCSimEventAction::EndOfEventAction(const G4Event* evt)
   G4ThreeVector vtx      = generatorAction->GetVtx();
   G4int         vtxvol   = WCSimEventFindStartingVolume(vtx);
   G4int         vecRecNumber = generatorAction->GetVecRecNumber();
+#ifndef NO_GENIE
   genie::NtpMCEventRecord* genierecordntpl = generatorAction->GetGenieRecord();
   
   if(genierecordntpl){
@@ -259,6 +261,7 @@ void WCSimEventAction::EndOfEventAction(const G4Event* evt)
 //    nuvtx material
 //		target energy
 /////////////////////////////
+#endif
     
   // ----------------------------------------------------------------------
   //  Get WC Hit Collection

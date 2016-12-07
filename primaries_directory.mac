@@ -1,4 +1,4 @@
 # set the list of root files containing primaries to import into the primary generator TChain
 # be sure that the neutrinosDirectory is set before setting the primariesDirectory!
-/mygen/neutrinosdirectory /pnfs/annie/persistent/users/rhatcher/genie/gntp.*.ghep.root
-/mygen/primariesdirectory /pnfs/annie/persistent/users/moflaher/g4dirt/annie_tank_flux.*.root
+/mygen/neutrinosdirectory ../../../WChSandBox/build/fluxesandtables/gntp.*.ghep.root
+/mygen/primariesdirectory ../../../WChSandBox/build/fluxesandtables/annie_tank_flux.*.root
