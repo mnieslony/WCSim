@@ -17,6 +17,7 @@
 #include "G4LogicalVolumeStore.hh"
 #include "WCSimDarkRateMessenger.hh"
 #include "G4SolidStore.hh"
+#include "G4GDMLParser.hh"
 
 std::map<int, G4Transform3D> WCSimDetectorConstruction::tubeIDMap;
 std::map<int, G4Transform3D> WCSimDetectorConstruction::mrdtubeIDMap;
@@ -226,8 +227,15 @@ G4VPhysicalVolume* WCSimDetectorConstruction::Construct()
 		   &WCSimDetectorConstruction::GetWCGeom) ;
   DumpGeometryTableToFile();
   
+  //G4cout<<"Writing GDML output file"<<G4endl;
+  //G4String GDMLOutFilename = "anniegeomv3.gdml";
+  //G4GDMLParser parser;  // Write GDML file
+  //parser.Write(GDMLOutFilename, logicExpHall);
+  //G4cout<<"GDML file "<<GDMLOutFilename<<" written"<<G4endl;
+  
   // Return the pointer to the physical experimental hall
   return physiExpHall;
+  
   
 }
 

@@ -3,8 +3,6 @@
 # Setup the project
 cmake_minimum_required(VERSION 2.8 FATAL_ERROR)
 project(WCSim)
-#set(CC /grid/fermiapp/products/larsoft/gcc/v4_9_3a/Linux64bit+2.6-2.12/bin/g++)
-#set(CXX /grid/fermiapp/products/larsoft/gcc/v4_9_3a/Linux64bit+2.6-2.12/bin/g++)
 #set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -Wall -fdiagnostics-color=always")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -fdiagnostics-color=always")
 # NOTE: Geant4.10.2 changes the way VisualizationManager is instantiated - requires a verbosity argument.  
@@ -22,7 +20,7 @@ if(DEFINED ENV{ROOT_PATH})
   set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} $ENV{ROOT_PATH})
   message(STATUS "looking for root in ${CMAKE_MODULE_PATH}")
 endif()
-find_package(ROOT CONFIG REQUIRED)
+find_package(ROOT CONFIG REQUIRED )
 #find_package(ROOT MODULE REQUIRED)
 if(NOT ROOT_FOUND)
   message(STATUS "ROOT package not found.")  
@@ -37,7 +35,7 @@ include(${ROOT_USE_FILE})
 # GENIE stuff
 #
 
-find_package(CLHEP REQUIRED)
+#find_package(CLHEP REQUIRED)
 
 set(_root_internal_libraries
     # for GENIE
@@ -65,8 +63,8 @@ link_directories($ENV{LIBXML2ROOT}/lib)
 set(_xerces_internal_libraries xerces-c xml2)
 
 #include_directories($ENV{ROOTSYS}/include)
-#include_directories($ENV{GEANT4_FQ_DIR}/include)
 link_directories($ENV{ROOTSYS}/lib)
+#include_directories($ENV{GEANT4_FQ_DIR}/include)
 
 
 set(Genie_LIBRARIES ${_genie_internal_libraries} ${_log4cpp_internal_libraries} ${_xerces_internal_libraries} )
@@ -118,12 +116,6 @@ endif()
 message(STATUS "using Geant4: ${Geant4_USE_FILE}")
 include(${Geant4_USE_FILE})  ## NOT needed for Dict
 
-#----------------------------------------------------------------------------
-#----------------------------------------------------------------------------
-# Setup Geant4 include directories and compile definitions
-# Setup include directory for this project
-#
-# ?????????????????????????????????????????///
 #----------------------------------------------------------------------------
 # Locate sources and headers for this project
 # NB: headers are included so they will show up in IDEs

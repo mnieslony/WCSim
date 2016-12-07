@@ -36,9 +36,10 @@ void WCSimDetectorConstruction::SetANNIEPhase1Geometry()
   tankyoffset = 144.64875*mm;
   expHall_x = 50*m;
   expHall_y = expHall_z = 500*m;
-  GDMLFilename = "../../../../WChSandBox_v1/src/annie_v01.gdml";
+  GDMLFilename = "annie_v03.gdml";
   
   WCLength = tankhy;
+  WCRadius = tankouterRadius;
   WCPosition = 0.;	//??
   
 //  WCIDDiameter          = 1.77*m; 				// the shortest distance to the centre of a (hexagonal) cell wall;
@@ -75,7 +76,7 @@ void WCSimDetectorConstruction::SetANNIEPhase2Geometry()
   tankyoffset = 144.64875*mm;
   expHall_x = 50*m;
   expHall_y = expHall_z = 500*m;
-  GDMLFilename = "../../../../WChSandBox_v1/src/annie_v01.gdml";
+  GDMLFilename = "annie_v03.gdml";
   
   WCSimPMTObject* MRDPMT = CreatePMTObject("FlatFacedPMT2inch",WCMRDCollectionName);
   MRDPMTName = MRDPMT->GetPMTName();
@@ -88,8 +89,11 @@ void WCSimDetectorConstruction::SetANNIEPhase2Geometry()
   FACCPMTRadius = FACCPMT->GetRadius();
   
   WCLength = tankhy;
-  WCIDDiameter          = 2.503*m; 				// the shortest distance to the centre of a (hexagonal) cell wall;
-												// from blueprints,  ((1+2/sqrt(2))*40.81)" = or 2.503m
+  WCRadius = tankouterRadius;
+  // from blueprints of inner structure diameter is 106.64", hexagonal side is 40.81", 100.57" from face-to-face
+  // (note: OUTER dimensions, including steel bar width)
+  WCIDDiameter          = 2.554*m; 				// 2x shortest distance to the centre of a (hexagonal) cell wall;
+												// from blueprints, this is 100.57" = 255.4cm
   WCIDHeight            = 3.96*m; 				// full height
   WCBarrelPMTOffset     = 0.0715*m; 			// offset of first barrel ring from tank caps
   WCBarrelNumPMTHorizontal  = 16; 				// 2 PMTs per panel around an octagonal inner structure

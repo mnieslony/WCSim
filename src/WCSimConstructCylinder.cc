@@ -80,9 +80,10 @@ G4LogicalVolume* WCSimDetectorConstruction::ConstructCylinder()
   
   //WCLength    = WCIDHeight + 2*2.3*m;	//jl145 - reflects top veto blueprint, cf. Farshid Feyzi
   //WCRadius    = (WCIDDiameter/2. + WCBlackSheetThickness + 1.5*m)/cos(dPhi/2.) ; // TODO: OD 
-  // modify for ANNIE - much more compact, smaller excess
-  WCLength    = WCIDHeight + 5.*cm;
-  WCRadius    = (WCIDDiameter/2. + WCBlackSheetThickness + 2*cm)/cos(dPhi/2.) ;
+  // modify for ANNIE - much more compact, smaller excess <<< this accounts for extra volume around PMT faces!
+  WCLength    = WCIDHeight + 5.*cm;	// arbitrary additional space?
+  //WCRadius    = (WCIDDiameter/2. + WCBlackSheetThickness + 20*cm)/cos(dPhi/2.); 
+  // this is known - set in DetectorConfigs
   
  
 //  // now we know the extend of the detector and are able to tune the tolerance

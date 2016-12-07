@@ -103,7 +103,8 @@ G4LogicalVolume* WCSimDetectorConstruction::ConstructANNIE()
   else 
     {G4cout<<"Refreshing Water"<<G4endl;}
   
-//  //  ===== Rob Hatcher's integration
+//  //  ===== Rob Hatcher's integration      <--- to use this, also 'return expHall_log' at bottom
+//  //GDMLFilename="usethisgeometry.gdml";
 //  G4GDMLParser parser;  // Read GDML file
 //  parser.SetOverlapCheck(0);
 //  G4cout << "Read " << GDMLFilename << " (overlap check = " << (doOverlapCheck?"true":"false") << ")" << G4endl;
@@ -118,7 +119,7 @@ G4LogicalVolume* WCSimDetectorConstruction::ConstructANNIE()
   G4Box* expHall_box = new G4Box("Hall",5*m,5*m,5*m);		//just..nicer for now.
   G4LogicalVolume* MatryoshkaMother = new G4LogicalVolume(expHall_box,G4Material::GetMaterial("Air"),"MatryoshkaMother",0,0,0);
   G4LogicalVolume* expHall_log = new G4LogicalVolume(expHall_box,G4Material::GetMaterial("Air"),"Hall",0,0,0);
-  G4VPhysicalVolume* expHall_phys = new G4PVPlacement(0,G4ThreeVector(),expHall_log,"Hall",MatryoshkaMother,false,0);
+  G4VPhysicalVolume* expHall_phys = new G4PVPlacement(0, G4ThreeVector(), expHall_log, "Hall", MatryoshkaMother, false, 0);
   
   G4RotationMatrix* rotm = new G4RotationMatrix();
   rotm->rotateX(90*deg); // rotate Y
@@ -186,6 +187,7 @@ G4LogicalVolume* WCSimDetectorConstruction::ConstructANNIE()
   
   //return expHall_phys;
   return MatryoshkaMother;	// return a logical volume not a physical one
+  //return expHall_log;
 }
 
   // =====================================================================
