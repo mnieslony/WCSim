@@ -43,7 +43,14 @@
 # switch geometry to ANNIE
 /WCSim/WCgeom ANNIEp2
 
-#/WCSim/Construct # This must be uncommented in order to construct a new detector configuration. 
+# Surface detector
+#/WCSim/WCgeom Cylinder
+#/WCSim/Cylinder/cylinderTank_Height 14. m
+#/WCSim/Cylinder/cylinderTank_Diameter 8. m
+#/WCSim/Cylinder/cylinderTank_Coverage 30.
+#/WCSim/Cylinder/cylinderTank_PMTType PMT8inch
+
+#/WCSim/Construct # This must be uncommented in order to construct a new detector configuration.
 
 #Added for the PMT QE option 08/17/10 (XQ)
 # 1. Stacking only mean when the photon is generated
@@ -82,7 +89,7 @@
 
 # default dark noise frequency (and conversion factor) is PMT property (NEW), set in the code.
 # Below gives possibility to overwrite nominal values, eg. to switch OFF the Dark Noise.
-#/DarkRate/SetDarkRate 0 kHz   #Turn dark noise off
+/DarkRate/SetDarkRate 0 kHz   #Turn dark noise off
 #/DarkRate/SetDarkRate 4.2 kHz #This is the value for SKI set in SKDETSIM.
 #/DarkRate/SetDarkRate 8.4 kHz #For 20 inch HPDs and Box and Line PMTs, based on High QE 20" R3600 dark rate from EGADS nov 2014
 #/DarkRate/SetDarkRate 3.0 kHz #For 12 inch HPDs and Box and Line PMTs, based on High QE 20" R3600 dark rate from EGADS nov 2014
@@ -118,11 +125,12 @@
 /DarkRate/SetDarkLow 0
 /DarkRate/SetDarkWindow 4000
 
+
 #Uncomment one of the lines below if you want to use the OGLSX or RayTracer visualizer
 #/control/execute visOGLSX.mac
 #/control/execute visRayTracer.mac
 
-/mygen/generator beam	# retrieve input primaries from GENIE output files
+#/mygen/generator beam	# retrieve input primaries from GENIE output files
 
 # Or you can use the G4 Particle Gun
 #/mygen/generator normal
@@ -162,6 +170,20 @@
 #/gun/direction 0 0 1
 #/gun/position 50 50 -500 mm
 
+# use laser for bonsai 
+/mygen/generator laser
+/gps/particle e-
+#/gps/particle pi0
+/gps/pos/type Volume
+/gps/pos/shape Cylinder
+/gps/pos/radius 15 m
+/gps/pos/halfz 15 m
+/gps/ang/type iso
+/gps/energy 10 MeV
+/gps/ene/type Mono
+/gps/ene/gradient 0
+/gps/ene/intercept 1
+
 # set up visualization view for debugging photons - 
 # should be associated with changes store in branch photonbouncedebug
 #/vis/viewer/set/viewpointThetaPhi 0 0
@@ -173,7 +195,9 @@
 ## now only tracks explicitly drawn in the EndOfEventAction will be shown
 
 ## change the name of the output root file, default = wcsim.root
-/WCSimIO/RootFile wcsim.root
+/WCSimIO/RootFile SKtest_10MeV_Uni_Iso.root
 
 #/run/beamOn 1
+# should run 10000 events for bonsai
+
 #exit

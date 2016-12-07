@@ -415,6 +415,21 @@ void WCSimDetectorConstruction::SetEggShapedHyperKGeometry_withHPD()
   MatchWCSimAndEggShapedHyperK();
 }
 
+void WCSimDetectorConstruction::CylinderGeometry()
+{
+  WCDetectorName = "Cylinder";
+  WCIDCollectionName = WCDetectorName +"-glassFaceWCPMT";
+  cylinderTank_PMTType = "HPD12inchHQE";
+  cylinderTank_Diameter          = 8*m;
+  cylinderTank_Height            = 14*m;
+  cylinderTank_Coverage  = 40.;
+  WCPMTperCellHorizontal= 1;
+  WCPMTperCellVertical  = 1;
+  WCBlackSheetThickness = 2.0*cm;
+  WCAddGd               = true;
+  UpdateCylinderGeometry();
+}
+
 
 /**
  * Transfer egg-shaped HK variables needed elsewhere
