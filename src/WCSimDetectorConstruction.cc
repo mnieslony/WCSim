@@ -18,6 +18,7 @@
 #include "WCSimDarkRateMessenger.hh"
 #include "G4SolidStore.hh"
 #include "G4GDMLParser.hh"
+#include "G4PhysicalConstants.hh"
 
 std::map<int, G4Transform3D> WCSimDetectorConstruction::tubeIDMap;
 std::map<int, G4Transform3D> WCSimDetectorConstruction::mrdtubeIDMap;

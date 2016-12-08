@@ -616,7 +616,7 @@ G4int WCSimEventAction::WCSimEventFindStartingVolume(G4ThreeVector vtx)
     GetNavigatorForTracking();
 
   G4VPhysicalVolume* tmpVolume = tmpNavigator->LocateGlobalPointAndSetup(vtx);
-  G4String       vtxVolumeName = tmpVolume->GetName();
+  G4String       vtxVolumeName = tmpVolume!=0 ? tmpVolume->GetName() : "";
 
 
 

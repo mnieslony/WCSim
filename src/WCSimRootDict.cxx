@@ -1,6 +1,6 @@
 // Do NOT change. Changes will be lost next time file is generated
 
-#define R__DICTIONARY_FILENAME dIhomedImarcdILinuxSystemFilesdIWCSimdIWCSim_v0dIgitverdIWCSimdIsrcdIWCSimRootDict
+#define R__DICTIONARY_FILENAME dIhomedImarcdILinuxSystemFilesdIWCSimdIgitverdIwcsimdIsrcdIWCSimRootDict
 
 /*******************************************************************/
 #include <stddef.h>
@@ -38,10 +38,10 @@
 namespace std {} using namespace std;
 
 // Header files passed as explicit arguments
-#include "/home/marc/LinuxSystemFiles/WCSim/WCSim_v0/gitver/WCSim/include/WCSimRootEvent.hh"
-#include "/home/marc/LinuxSystemFiles/WCSim/WCSim_v0/gitver/WCSim/include/WCSimRootGeom.hh"
-#include "/home/marc/LinuxSystemFiles/WCSim/WCSim_v0/gitver/WCSim/include/WCSimPmtInfo.hh"
-#include "/home/marc/LinuxSystemFiles/WCSim/WCSim_v0/gitver/WCSim/include/WCSimEnumerations.hh"
+#include "/home/marc/LinuxSystemFiles/WCSim/gitver/wcsim/include/WCSimRootEvent.hh"
+#include "/home/marc/LinuxSystemFiles/WCSim/gitver/wcsim/include/WCSimRootGeom.hh"
+#include "/home/marc/LinuxSystemFiles/WCSim/gitver/wcsim/include/WCSimPmtInfo.hh"
+#include "/home/marc/LinuxSystemFiles/WCSim/gitver/wcsim/include/WCSimEnumerations.hh"
 
 // Header files passed via #pragma extra_include
 
@@ -412,7 +412,7 @@ namespace ROOT {
       ::WCSimEnumerations *ptr = 0;
       static ::TVirtualIsAProxy* isa_proxy = new ::TIsAProxy(typeid(::WCSimEnumerations));
       static ::ROOT::TGenericClassInfo 
-         instance("WCSimEnumerations", "WCSimEnumerations.hh", 18,
+         instance("WCSimEnumerations", "WCSimEnumerations.hh", 19,
                   typeid(::WCSimEnumerations), ::ROOT::Internal::DefineBehavior(ptr, ptr),
                   &WCSimEnumerations_Dictionary, isa_proxy, 4,
                   sizeof(::WCSimEnumerations) );
@@ -1340,18 +1340,18 @@ namespace ROOT {
 namespace {
   void TriggerDictionaryInitialization_WCSimRootDict_Impl() {
     static const char* headers[] = {
-"/home/marc/LinuxSystemFiles/WCSim/WCSim_v0/gitver/WCSim/include/WCSimRootEvent.hh",
-"/home/marc/LinuxSystemFiles/WCSim/WCSim_v0/gitver/WCSim/include/WCSimRootGeom.hh",
-"/home/marc/LinuxSystemFiles/WCSim/WCSim_v0/gitver/WCSim/include/WCSimPmtInfo.hh",
-"/home/marc/LinuxSystemFiles/WCSim/WCSim_v0/gitver/WCSim/include/WCSimEnumerations.hh",
+"/home/marc/LinuxSystemFiles/WCSim/gitver/wcsim/include/WCSimRootEvent.hh",
+"/home/marc/LinuxSystemFiles/WCSim/gitver/wcsim/include/WCSimRootGeom.hh",
+"/home/marc/LinuxSystemFiles/WCSim/gitver/wcsim/include/WCSimPmtInfo.hh",
+"/home/marc/LinuxSystemFiles/WCSim/gitver/wcsim/include/WCSimEnumerations.hh",
 0
     };
     static const char* includePaths[] = {
 "/home/marc/LinuxSystemFiles/ROOT/root-6.06.04/build/include",
-"/home/marc/LinuxSystemFiles/WCSim/WCSim_v0/gitver/WCSim/include",
-"/home/marc/LinuxSystemFiles/WCSim/WCSim_v0/gitver/WCSim/../shared/include",
+"/home/marc/LinuxSystemFiles/WCSim/gitver/wcsim/include",
+"/home/marc/LinuxSystemFiles/WCSim/gitver/wcsim/../shared/include",
 "/home/marc/LinuxSystemFiles/ROOT/root-6.06.04/build/include",
-"/home/marc/LinuxSystemFiles/WCSim/WCSim_v0/gitver/build/",
+"/home/marc/LinuxSystemFiles/WCSim/gitver/build/",
 0
     };
     static const char* fwdDeclCode = R"DICTFWDDCLS(
@@ -1360,18 +1360,18 @@ namespace {
 #pragma clang diagnostic ignored "-Wignored-attributes"
 #pragma clang diagnostic ignored "-Wreturn-type-c-linkage"
 extern int __Cling_Autoloading_Map;
-class __attribute__((annotate("$clingAutoload$/home/marc/LinuxSystemFiles/WCSim/WCSim_v0/gitver/WCSim/include/WCSimRootEvent.hh")))  WCSimRootCherenkovDigiHit;
-class __attribute__((annotate("$clingAutoload$/home/marc/LinuxSystemFiles/WCSim/WCSim_v0/gitver/WCSim/include/WCSimRootEvent.hh")))  WCSimRootCherenkovHit;
-class __attribute__((annotate("$clingAutoload$/home/marc/LinuxSystemFiles/WCSim/WCSim_v0/gitver/WCSim/include/WCSimRootEvent.hh")))  WCSimRootCherenkovHitTime;
-class __attribute__((annotate("$clingAutoload$/home/marc/LinuxSystemFiles/WCSim/WCSim_v0/gitver/WCSim/include/WCSimRootEvent.hh")))  WCSimRootTrack;
-class __attribute__((annotate(R"ATTRDUMP(WCSimRootEvent Header)ATTRDUMP"))) __attribute__((annotate("$clingAutoload$/home/marc/LinuxSystemFiles/WCSim/WCSim_v0/gitver/WCSim/include/WCSimRootEvent.hh")))  WCSimRootEventHeader;
-class __attribute__((annotate(R"ATTRDUMP(WCSimRootEvent structure)ATTRDUMP"))) __attribute__((annotate("$clingAutoload$/home/marc/LinuxSystemFiles/WCSim/WCSim_v0/gitver/WCSim/include/WCSimRootEvent.hh")))  WCSimRootTrigger;
-class __attribute__((annotate("$clingAutoload$/home/marc/LinuxSystemFiles/WCSim/WCSim_v0/gitver/WCSim/include/WCSimRootEvent.hh")))  WCSimRootEvent;
-class __attribute__((annotate("$clingAutoload$/home/marc/LinuxSystemFiles/WCSim/WCSim_v0/gitver/WCSim/include/WCSimRootEvent.hh")))  WCSimRootPi0;
-class __attribute__((annotate(R"ATTRDUMP(WCSimRootEvent structure)ATTRDUMP"))) __attribute__((annotate("$clingAutoload$/home/marc/LinuxSystemFiles/WCSim/WCSim_v0/gitver/WCSim/include/WCSimRootGeom.hh")))  WCSimRootGeom;
-class __attribute__((annotate(R"ATTRDUMP(WCSimPMT structure)ATTRDUMP"))) __attribute__((annotate("$clingAutoload$/home/marc/LinuxSystemFiles/WCSim/WCSim_v0/gitver/WCSim/include/WCSimRootGeom.hh")))  WCSimRootPMT;
-class __attribute__((annotate("$clingAutoload$/home/marc/LinuxSystemFiles/WCSim/WCSim_v0/gitver/WCSim/include/WCSimPmtInfo.hh")))  WCSimPmtInfo;
-class __attribute__((annotate("$clingAutoload$/home/marc/LinuxSystemFiles/WCSim/WCSim_v0/gitver/WCSim/include/WCSimRootEvent.hh")))  WCSimEnumerations;
+class __attribute__((annotate("$clingAutoload$/home/marc/LinuxSystemFiles/WCSim/gitver/wcsim/include/WCSimRootEvent.hh")))  WCSimRootCherenkovDigiHit;
+class __attribute__((annotate("$clingAutoload$/home/marc/LinuxSystemFiles/WCSim/gitver/wcsim/include/WCSimRootEvent.hh")))  WCSimRootCherenkovHit;
+class __attribute__((annotate("$clingAutoload$/home/marc/LinuxSystemFiles/WCSim/gitver/wcsim/include/WCSimRootEvent.hh")))  WCSimRootCherenkovHitTime;
+class __attribute__((annotate("$clingAutoload$/home/marc/LinuxSystemFiles/WCSim/gitver/wcsim/include/WCSimRootEvent.hh")))  WCSimRootTrack;
+class __attribute__((annotate(R"ATTRDUMP(WCSimRootEvent Header)ATTRDUMP"))) __attribute__((annotate("$clingAutoload$/home/marc/LinuxSystemFiles/WCSim/gitver/wcsim/include/WCSimRootEvent.hh")))  WCSimRootEventHeader;
+class __attribute__((annotate(R"ATTRDUMP(WCSimRootEvent structure)ATTRDUMP"))) __attribute__((annotate("$clingAutoload$/home/marc/LinuxSystemFiles/WCSim/gitver/wcsim/include/WCSimRootEvent.hh")))  WCSimRootTrigger;
+class __attribute__((annotate("$clingAutoload$/home/marc/LinuxSystemFiles/WCSim/gitver/wcsim/include/WCSimRootEvent.hh")))  WCSimRootEvent;
+class __attribute__((annotate("$clingAutoload$/home/marc/LinuxSystemFiles/WCSim/gitver/wcsim/include/WCSimRootEvent.hh")))  WCSimRootPi0;
+class __attribute__((annotate(R"ATTRDUMP(WCSimRootEvent structure)ATTRDUMP"))) __attribute__((annotate("$clingAutoload$/home/marc/LinuxSystemFiles/WCSim/gitver/wcsim/include/WCSimRootGeom.hh")))  WCSimRootGeom;
+class __attribute__((annotate(R"ATTRDUMP(WCSimPMT structure)ATTRDUMP"))) __attribute__((annotate("$clingAutoload$/home/marc/LinuxSystemFiles/WCSim/gitver/wcsim/include/WCSimRootGeom.hh")))  WCSimRootPMT;
+class __attribute__((annotate("$clingAutoload$/home/marc/LinuxSystemFiles/WCSim/gitver/wcsim/include/WCSimPmtInfo.hh")))  WCSimPmtInfo;
+class __attribute__((annotate("$clingAutoload$/home/marc/LinuxSystemFiles/WCSim/gitver/wcsim/include/WCSimRootEvent.hh")))  WCSimEnumerations;
 )DICTFWDDCLS";
     static const char* payloadCode = R"DICTPAYLOAD(
 #line 1 "WCSimRootDict dictionary payload"
@@ -1381,10 +1381,10 @@ class __attribute__((annotate("$clingAutoload$/home/marc/LinuxSystemFiles/WCSim/
 #endif
 
 #define _BACKWARD_BACKWARD_WARNING_H
-#include "/home/marc/LinuxSystemFiles/WCSim/WCSim_v0/gitver/WCSim/include/WCSimRootEvent.hh"
-#include "/home/marc/LinuxSystemFiles/WCSim/WCSim_v0/gitver/WCSim/include/WCSimRootGeom.hh"
-#include "/home/marc/LinuxSystemFiles/WCSim/WCSim_v0/gitver/WCSim/include/WCSimPmtInfo.hh"
-#include "/home/marc/LinuxSystemFiles/WCSim/WCSim_v0/gitver/WCSim/include/WCSimEnumerations.hh"
+#include "/home/marc/LinuxSystemFiles/WCSim/gitver/wcsim/include/WCSimRootEvent.hh"
+#include "/home/marc/LinuxSystemFiles/WCSim/gitver/wcsim/include/WCSimRootGeom.hh"
+#include "/home/marc/LinuxSystemFiles/WCSim/gitver/wcsim/include/WCSimPmtInfo.hh"
+#include "/home/marc/LinuxSystemFiles/WCSim/gitver/wcsim/include/WCSimEnumerations.hh"
 
 #undef  _BACKWARD_BACKWARD_WARNING_H
 )DICTPAYLOAD";

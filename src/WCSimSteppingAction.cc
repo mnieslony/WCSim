@@ -67,6 +67,9 @@ void WCSimSteppingAction::UserSteppingAction(const G4Step* aStep)
   }
   
   if(track->GetDefinition()==G4OpticalPhoton::OpticalPhotonDefinition()){
+   //G4cout<<"optical photon StepStatus is          "<<thePostPoint->GetStepStatus()<<G4endl
+   //      <<"               fExpectedNextStatus is "<<fExpectedNextStatus<<G4endl
+   //      <<"               boundaryStatus is      "<<boundary->GetStatus()<<G4endl;
    if ( track->GetCurrentStepNumber() > 50000 ){
      track->SetTrackStatus(fStopAndKill); 
      G4cout<<"killing broken photon "<<++numbrokenphotons<<G4endl;
