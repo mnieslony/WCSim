@@ -10,7 +10,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -fdiagnostics-color=always")
 if(DEFINED ENV{GEANT4_10_2})
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DGEANT4_10_2")
 endif()
-if(DEFINED ENV{__NO__GENIE__})
+if(DEFINED ENV{NO_GENIE})
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DNO_GENIE")
 endif()
 #----------------------------------------------------------------------------
@@ -34,7 +34,7 @@ endif()
 
 ## Load macros: need to compile ROOT through cmake first and execute bin/thisroot.sh
 include(${ROOT_USE_FILE})
-if(NOT DEFINED ENV{__NO__GENIE__})
+if(NOT DEFINED ENV{NO_GENIE})
 #----------------------------------------------------------------------------
 # GENIE stuff
 #
