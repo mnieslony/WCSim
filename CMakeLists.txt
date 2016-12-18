@@ -1,0 +1,137 @@
+## Based on CMakeLists.txt from AnaEx02 in examples/extended of Geant4.9.6 ##
+#----------------------------------------------------------------------------
+# Setup the project
+cmake_minimum_required(VERSION 2.8 FATAL_ERROR)
+project(WCSim)
+#set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -Wall -fdiagnostics-color=always")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -fdiagnostics-color=always")
+#----------------------------------------------------------------------------
+# Find ROOT (required package) in CONFIG mode. Looking for ROOTConfig.cmake.
+# Crucial for loading the proper definitions!
+#
+#set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} /home/marc/LinuxSystemFiles/ROOT/root-5.34.09/install/etc/cmake)
+# above to try to make it use root5.34: seems to be ignored for some reason. :| maybe an env variable still set?
+list(APPEND CMAKE_PREFIX_PATH $ENV{ROOTSYS})
+#message(STATUS "looking for root in ${CMAKE_MODULE_PATH}")
+#set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} /grid/fermiapp/products/larsoft/root/v6_04_06/source/root-6.04.06/etc/cmake)
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} /grid/fermiapp/products/larsoft/root//v6_06_08/Linux64bit+2.6-2.12-e10-nu-debug/cmake/)
+message(STATUS "looking for root in ${CMAKE_MODULE_PATH}")
+find_package(ROOT CONFIG REQUIRED)
+#find_package(ROOT MODULE REQUIRED)
+if(NOT ROOT_FOUND)
+  message(STATUS "ROOT package not found.")  
+  return()
+else()
+  message(STATUS "found ROOT at: ${ROOT_USE_FILE}")
+endif()
+
+## Load macros: need to compile ROOT through cmake first and execute bin/thisroot.sh
+include(${ROOT_USE_FILE})
+
+#----------------------------------------------------------------------------
+# Locate sources and headers for this project
+# ## NOT NEEDED FOR DICT
+message(STATUS "using Geant4_INCLUDE_DIR: ${Geant4_INCLUDE_DIR}")
+include_directories(${PROJECT_SOURCE_DIR}/include 
+                    ${PROJECT_SOURCE_DIR}/../shared/include 
+                    ${Geant4_INCLUDE_DIR}
+                    ${ROOT_INCLUDE_DIR})
+
+#----------------------------------------------------------------------------
+# Add libraries: need to compile the Dict before linking WCSim !!
+# in standard makefile, need to make rootcint anyway before standard make
+#
+
+## WCSimRootDict.cc regeneration by rootcint
+## Use ROOT 5.34.32 as some issues with PARSE_ARGUMENTS were found in older ROOT versions (ROOT 5.34.11)
+ROOT_GENERATE_DICTIONARY(${CMAKE_CURRENT_SOURCE_DIR}/src/WCSimRootDict
+${CMAKE_CURRENT_SOURCE_DIR}/include/WCSimRootEvent.hh
+${CMAKE_CURRENT_SOURCE_DIR}/include/WCSimRootGeom.hh
+${CMAKE_CURRENT_SOURCE_DIR}/include/WCSimPmtInfo.hh 
+${CMAKE_CURRENT_SOURCE_DIR}/include/WCSimLAPPDInfo.hh
+${CMAKE_CURRENT_SOURCE_DIR}/include/WCSimLAPPDpulse.hh
+${CMAKE_CURRENT_SOURCE_DIR}/include/WCSimLAPPDpulseCluster.hh
+${CMAKE_CURRENT_SOURCE_DIR}/include/WCSimEnumerations.hh LINKDEF
+${CMAKE_CURRENT_SOURCE_DIR}/include/WCSimRootLinkDef.hh)
+
+## Crucial for reading ROOT classes: make shared object library
+add_library(WCSimRoot SHARED ./src/WCSimRootEvent.cc ./src/WCSimRootGeom.cc
+./src/WCSimPmtInfo.cc ./src/WCSimEnumerations.cc ./src/WCSimRootDict.cxx
+./src/WCSimLAPPDInfo.cc ./src/WCSimLAPPDpulse.cc
+./src/WCSimLAPPDpulseCluster.cc
+)
+target_link_libraries(WCSimRoot  ${ROOT_LIBRARIES})
+
+#----------------------------------------------------------------------------
+# Find Geant4 package, activating all available UI and Vis drivers by default
+# You can set WITH_GEANT4_UIVIS to OFF via the command line or ccmake/cmake-gui
+# to build a batch mode only executable
+#
+set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} /grid/fermiapp/products/larsoft/geant4/v4_10_1_p02a/Linux64bit+2.6-2.12-e9-qt-debug/lib64/Geant4-10.1.2)
+message(STATUS "cmake prefix path = ${CMAKE_PREFIX_PATH}")
+option(WITH_GEANT4_UIVIS "Build example with Geant4 UI and Vis drivers" ON)
+if(WITH_GEANT4_UIVIS)
+  find_package(Geant4 REQUIRED ui_all vis_all)
+else()
+  find_package(Geant4 REQUIRED)
+endif()
+
+#----------------------------------------------------------------------------
+# Setup Geant4 include directories and compile definitions
+# Setup include directory for this project
+#
+message(STATUS "using Geant4: ${Geant4_USE_FILE}")
+include(${Geant4_USE_FILE})  ## NOT needed for Dict
+
+
+#----------------------------------------------------------------------------
+# Locate sources and headers for this project
+# NB: headers are included so they will show up in IDEs
+#
+file(GLOB sources ${PROJECT_SOURCE_DIR}/src/*.cc)
+file(GLOB headers ${PROJECT_SOURCE_DIR}/include/*.hh)
+
+
+#----------------------------------------------------------------------------
+# Add the executable, and link it to the Geant4 libraries
+#
+add_executable(WCSim WCSim.cc ${sources} ${headers})
+target_link_libraries(WCSim ${Geant4_LIBRARIES} ${ROOT_LIBRARIES} WCSimRoot Tree)
+
+
+
+#----------------------------------------------------------------------------
+# Copy all scripts to the build directory, i.e. the directory in which we
+# build B1. This is so that we can run the executable directly because it
+# relies on these scripts being in the current working directory.
+#
+set(WCSIM_SCRIPTS
+  jobOptions2.mac
+  jobOptions.mac
+  WCSim.mac
+  daq.mac
+  visOGLSX.mac
+  visRayTracer.mac
+  tuning_parameters.mac
+  )
+
+foreach(_script ${WCSIM_SCRIPTS})
+  configure_file(
+    ${PROJECT_SOURCE_DIR}/${_script}
+    ${PROJECT_BINARY_DIR}/${_script}
+    COPYONLY
+    )
+endforeach()
+
+#----------------------------------------------------------------------------
+# For internal Geant4 use - but has no effect if you build this
+# example standalone
+#
+#add_custom_target(WCSim DEPENDS WCSim)
+
+#----------------------------------------------------------------------------
+# Install the executable to 'bin' directory under CMAKE_INSTALL_PREFIX
+#
+#install(TARGETS WCSim DESTINATION bin)
+
+
