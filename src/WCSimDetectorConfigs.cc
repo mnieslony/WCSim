@@ -1,6 +1,7 @@
 //  -*- mode:c++; tab-width:4;  -*-
 #include "WCSimDetectorConstruction.hh"
 #include "WCSimPMTObject.hh"
+#include "WCSimLAPPDObject.hh"
 #include "globals.hh"
 #include "G4SystemOfUnits.hh"
 #include "G4PhysicalConstants.hh"
@@ -62,12 +63,19 @@ void WCSimDetectorConstruction::SetANNIEPhase2Geometry()
   WCIDCollectionName = WCDetectorName +"-glassFaceWCPMT";
   WCMRDCollectionName = WCDetectorName +"-glassFaceWCPMT_MRD";
   WCFACCCollectionName = WCDetectorName +"-glassFaceWCPMT_FACC";
+  WCIDCollectionName2 = WCDetectorName +"-glassFaceWCONLYLAPPDS";
   //disabling top veto is an option set in tuning_parameters.mac!
  
   WCSimPMTObject * PMT = CreatePMTObject("PMT8inch", WCIDCollectionName);
   WCPMTName = PMT->GetPMTName();
   WCPMTExposeHeight = PMT->GetExposeHeight();
   WCPMTRadius = PMT->GetRadius();
+   
+  WCSimLAPPDObject * lappd = CreateLAPPDObject("lappd", WCIDCollectionName2);
+  WCLAPPDName = lappd->GetLAPPDName();
+  WCLAPPDExposeHeight = lappd->GetExposeHeight();
+  WCLAPPDRadius = lappd->GetRadius();
+
   WCAddGd = false;
   // TODO: conver these with the ones below, and add in other constants from MRD definition etc.
   tankouterRadius= 1.524*m;  	// 120" exactly (TSW blueprint) = 3.048m diameter
@@ -104,6 +112,11 @@ void WCSimDetectorConstruction::SetANNIEPhase2Geometry()
   //WCCapEdgeLimit        = 4.9*WCCapPMTSpacing;	// breaks geometry... 
   WCCapEdgeLimit        = WCIDDiameter/2.0 - WCPMTRadius;
   WCBlackSheetThickness = 1.01*mm;				// liner is 40 mil. which is, of course, 40 milli inches. 
+  //WCBarrelNRingsLAPPD     = 2;
+  WCBarrelLAPPDOffset     = 0.25*m; 			// offset of first barrel ring from tank caps
+  //WCBarrelNumLAPPDHorizontal  = 1;  			// it should result to: 4 rings of 1 LAPPD = 4LAPPDs (?)
+  WCLAPPDperCellHorizontal= 1;					// 
+  WCLAPPDperCellVertical  = 1;					// assume each row corresponds to a cell - significance of cells?
 }
 
 void WCSimDetectorConstruction::SetSuperKGeometry()

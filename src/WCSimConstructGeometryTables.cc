@@ -1,5 +1,6 @@
 #include "WCSimDetectorConstruction.hh"
 #include "WCSimPmtInfo.hh"
+#include "WCSimLAPPDInfo.hh"
 
 #include "G4Material.hh"
 #include "G4Element.hh"
@@ -69,6 +70,18 @@ void WCSimDetectorConstruction::GetWCGeom
         zmin=100000,zmax=-100000.; 
     }
 
+     
+    WCLAPPDSize = WCLAPPDRadius/CLHEP::cm;// I think this is just a variable no if needed
+    // Note WC can be off-center... get both extremities
+    static G4float zmin2=100000,zmax2=-100000.;
+    static G4float xmin2=100000,xmax2=-100000.;
+    static G4float ymin2=100000,ymax2=-100000.;
+    if (aDepth == 0) { // Reset for this traversal
+        xmin2=100000,xmax2=-100000.; 
+        ymin2=100000,ymax2=-100000.; 
+        zmin2=100000,zmax2=-100000.; 
+    }
+    //-----
     if ((aPV->GetName() == "WCCapBlackSheet") || (aPV->GetName().find("glassFaceWCPMT") != std::string::npos)){ 
       G4float x =  aTransform.getTranslation().getX()/CLHEP::cm;
       G4float y =  aTransform.getTranslation().getY()/CLHEP::cm;
@@ -90,6 +103,26 @@ void WCSimDetectorConstruction::GetWCGeom
       WCCylInfo[2] = zmax-zmin;
       //      G4cout << "determin hight: " << zmin << "  " << zmax << " " << aPV->GetName()<<" " << z  << G4endl;
   } 
+    if( (aPV->GetName().find("glassFaceWCONLYLAPPDS") != std::string::npos)){ 
+      G4float x2 =  aTransform.getTranslation().getX()/CLHEP::cm;
+      G4float y2 =  aTransform.getTranslation().getY()/CLHEP::cm;
+      G4float z2 =  aTransform.getTranslation().getZ()/CLHEP::cm;
+      //G4cout<<"x2= "<<x2<<" y2= "<<y2<<" z2= "<<z2<<G4endl;
+      
+      if (x2<xmin2){xmin2=x2;}
+      if (x2>xmax2){xmax2=x2;}
+      
+      if (y2<ymin2){ymin2=y2;}
+      if (y2>ymax2){ymax2=y2;}
+
+      if (z2<zmin2){zmin2=z2;}
+      if (z2>zmax2){zmax2=z2;}
+       
+      WCCylInfo[0] = xmax2-xmin2;
+      WCCylInfo[1] = ymax2-ymin2;
+      WCCylInfo[2] = zmax2-zmin2;
+      // G4cout << "LAPPD WCCylInfo: " << zmin << "  " << zmax << " " << aPV->GetName()<< G4endl;
+    }
 }
 
 void WCSimDetectorConstruction::DescribeAndRegisterPMT(G4VPhysicalVolume* aPV ,int aDepth, int replicaNo,
@@ -99,6 +132,8 @@ void WCSimDetectorConstruction::DescribeAndRegisterPMT(G4VPhysicalVolume* aPV ,i
 
   std::stringstream depth;
   std::stringstream pvname;
+  bool lappd_found=0;   
+  bool fill_map=1;
 
   depth << replicaNo;
   pvname << aPV->GetName();
@@ -106,6 +141,23 @@ void WCSimDetectorConstruction::DescribeAndRegisterPMT(G4VPhysicalVolume* aPV ,i
 
   replicaNoString[aDepth] = pvname.str() + "-" + depth.str();
 
+   if( thepvname== WCIDCollectionName2 ){
+     G4cout<<"____counting all LAPPDs"<<G4endl;
+     totalNumLAPPDs++;
+     lappdIDMap[totalNumLAPPDs] = aTransform;
+      std::string LAPPDTag; 
+      for (int i=0; i <= aDepth; i++)
+	LAPPDTag += ":" + replicaNoString[i];
+      if ( lappdLocationMap.find(LAPPDTag) != lappdLocationMap.end() ) {
+	G4cerr << "Repeated tube tag: " << LAPPDTag << G4endl;
+	G4cerr << "Assigned to both LAPPD #" << lappdLocationMap[LAPPDTag] << " and #" << totalNumLAPPDs << G4endl;
+	G4cerr << "Cannot continue -- hits will not be recorded correctly."  << G4endl;
+	G4cerr << "Please make sure that logical volumes with multiple placements are each given a unique copy number" << G4endl;
+	assert(false);
+      }
+      lappdLocationMap[LAPPDTag] = totalNumLAPPDs;
+   }
+   
   if (thepvname== WCIDCollectionName ||thepvname== WCODCollectionName ||thepvname== WCMRDCollectionName ||thepvname== WCFACCCollectionName) 
     {
 
@@ -206,8 +258,10 @@ void WCSimDetectorConstruction::DumpGeometryTableToFile()
     geoFile << setw(8)<< innerradius;
     geoFile << setw(8)<<WCCylInfo[2];
   }
-  geoFile << setw(10)<<totalNumPMTs;
+  geoFile <<" PMTs:"<< setw(10)<<totalNumPMTs;
   geoFile << setw(8)<<WCPMTSize << setw(4)  <<G4endl;
+  geoFile <<"LAPPDs:"<< setw(10)<<totalNumLAPPDs;
+  geoFile << setw(8)<<WCLAPPDSize << setw(4)  <<G4endl;
 
   geoFile << setw(8)<< WCOffset(0)<< setw(8)<<WCOffset(1)<<
     setw(8) << WCOffset(2)<<G4endl;
@@ -215,13 +269,17 @@ void WCSimDetectorConstruction::DumpGeometryTableToFile()
   //G4double maxZ=0.0;// used to tell if pmt is on the top/bottom cap
   //G4double minZ=0.0;// or the barrel
   G4int cylLocation;
-
+  G4int cylLocation2;
 
   // clear before add new stuff in
   for (unsigned int i=0;i<fpmts.size();i++){
     delete fpmts.at(i);
   }
   fpmts.clear();
+  for (unsigned int i=0;i<flappds.size();i++){
+    delete flappds.at(i);
+  }
+  flappds.clear();
 
   // Grab the tube information from the tubeID Map and dump to file.
   for ( int tubeID = 1; tubeID <= totalNumPMTs; tubeID++){
@@ -244,7 +302,7 @@ void WCSimDetectorConstruction::DumpGeometryTableToFile()
     {cylLocation=1;}
     
     geoFile.precision(9);
-     geoFile << setw(4) << tubeID 
+    geoFile <<"PMTs:"<< setw(4) << tubeID 
  	    << " " << setw(8) << newTransform.getTranslation().getX()/CLHEP::cm
  	    << " " << setw(8) << newTransform.getTranslation().getY()/CLHEP::cm
  	    << " " << setw(8) << newTransform.getTranslation().getZ()/CLHEP::cm
@@ -364,6 +422,48 @@ void WCSimDetectorConstruction::DumpGeometryTableToFile()
 					      tubeID);
      
      ffaccpmts.push_back(new_pmt);
+  }
+
+  // Grab the tube information from the lappdID Map and dump to file.
+  for ( int lappdID = 1; lappdID <= totalNumLAPPDs; lappdID++){
+    G4Transform3D newTransform2 = lappdIDMap[lappdID];
+
+    // Get tube orientation vector
+    G4Vector3D nullOrient2 = G4Vector3D(0,0,1);
+    G4Vector3D lappdOrientation = newTransform2 * nullOrient2;
+    //cyl_location cylLocation = tubeCylLocation[tubeID];
+    // G4cout<<"lappdOrientation= "<<lappdOrientation<<" veto? "<<(lappdOrientation*newTransform2.getTranslation())<<G4endl;
+    // Figure out if pmt is on top/bottom or barrel
+    // print key: 0-top, 1-barrel, 2-bottom
+    if (lappdOrientation*newTransform2.getTranslation() > 0)//veto lappd
+    {cylLocation2=3;}
+    else if (lappdOrientation.z()==1.0)//bottom
+    {cylLocation2=2;}
+    else if (lappdOrientation.z()==-1.0)//top
+    {cylLocation2=0;}
+    else // barrel
+    {cylLocation2=1;}
+    
+    geoFile.precision(9);
+    geoFile <<"LAPPDs:"<< setw(4) << lappdID 
+ 	    << " " << setw(8) << newTransform2.getTranslation().getX()/CLHEP::cm
+ 	    << " " << setw(8) << newTransform2.getTranslation().getY()/CLHEP::cm
+ 	    << " " << setw(8) << newTransform2.getTranslation().getZ()/CLHEP::cm
+	    << " " << setw(7) << lappdOrientation.x()
+	    << " " << setw(7) << lappdOrientation.y()
+	    << " " << setw(7) << lappdOrientation.z()
+ 	    << " " << setw(3) << cylLocation2
+ 	    << G4endl;
+     
+     WCSimLAPPDInfo *new_lappd = new WCSimLAPPDInfo(cylLocation2,
+					      newTransform2.getTranslation().getX()/CLHEP::cm,
+					      newTransform2.getTranslation().getY()/CLHEP::cm,
+					      newTransform2.getTranslation().getZ()/CLHEP::cm,
+					      lappdOrientation.x(),
+					      lappdOrientation.y(),
+					      lappdOrientation.z(),
+					      lappdID);
+     flappds.push_back(new_lappd);
 
   }
   geoFile.close();

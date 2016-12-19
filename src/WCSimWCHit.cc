@@ -13,6 +13,7 @@ G4int WCSimWCHit::maxPe = 0;
 G4Allocator<WCSimWCHit> WCSimWCHitAllocator;
 
 G4double numbpmthit=0.0;
+G4double numblappdhit=0.0;
 G4double avePe=0.0;
 
 WCSimWCHit::WCSimWCHit() 
@@ -58,7 +59,7 @@ void WCSimWCHit::Draw()
     // volumeName should be compared to ID/OD CollectionName of the SensitiveDetector
     // instead of accessing those exactly here, just grab the substring: It should be "a" glassFaceWCPMT. Later optional check for OD?
     if ( volumeName.find("glassFaceWCPMT") != std::string::npos ||
-	 volumeName.find("glassFaceWCPMT_refl") != std::string::npos) //isn't this deprecated??
+	 volumeName.find("glassFaceWCPMT_refl") != std::string::npos || volumeName.find("glassFaceWCONLYLAPPDS") != std::string::npos) //isn't this deprecated??
     { 
 
     	//G4cout << "PE: " << totalPe << " Max Pe " << maxPe << G4endl;
@@ -99,3 +100,24 @@ void WCSimWCHit::Print()
   G4cout << "size: " << time.size() << G4endl;
 }
 
+void WCSimWCHit::PrintLAPPD()
+{
+
+  G4cout.setf(std::ios::fixed);
+  G4cout.precision(1);
+
+  G4cout << " LAPPD:"  << std::setw(4) << tubeID 
+	 << " Track:" << std::setw(6) << trackID 
+	 << " Pelappd:"<< totalPe
+	 << " Pos:"   << pos/CLHEP::cm << G4endl
+	 << "\tTime: "; 
+
+  for (int ii = 0; ii < totalPe; ii++) 
+  {
+    G4cout << time[ii]/CLHEP::ns << " ";
+    if ( ii%10 == 0 && ii != 0) 
+      G4cout << G4endl << "\t";
+  }
+  G4cout << "sizelappd: " << time.size() << G4endl;
+
+}

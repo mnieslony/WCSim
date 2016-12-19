@@ -49,9 +49,12 @@ class WCSimWCHit : public G4VHit
   
   inline void* operator new(size_t);
   inline void  operator delete(void*);
+  //map<double,G4ThreeVector> position;
+  std::vector<G4ThreeVector> position; 
   
   void Draw();
   void Print();
+  void PrintLAPPD();
   
  public:
   
@@ -81,6 +84,9 @@ class WCSimWCHit : public G4VHit
   G4int         GetTubeID()     { return tubeID; };
   G4int         GetTrackID()    { return trackID; };
   G4ThreeVector GetPos()        { return pos; };
+  G4ThreeVector GetStripPosition(int i)  { return position[i];};
+  
+  void AddStripPosition(G4ThreeVector pos) { position.push_back(pos); }
   G4int         GetTotalPe()    { return totalPe;};
   G4float       GetTime(int i)  { return time[i];};
   G4int         GetParentID(int i) { return primaryParentID[i];};
@@ -143,6 +149,7 @@ class WCSimWCHit : public G4VHit
  private:
   
   G4int            tubeID;
+  G4int            lappdID;
   G4int            trackID;
   G4double         edep;
   G4ThreeVector    pos;

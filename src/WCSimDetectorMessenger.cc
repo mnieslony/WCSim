@@ -88,6 +88,19 @@ WCSimDetectorMessenger::WCSimDetectorMessenger(WCSimDetectorConstruction* WCSimD
 			     "Stacking_And_SensitiveDetector "
 			     "SensitiveDetector_Only ");
   PMTQEMethod->AvailableForStates(G4State_PreInit, G4State_Idle);
+  //-------------
+  LAPPDQEMethod = new G4UIcmdWithAString("/WCSim/LAPPDQEMethod", this);
+  LAPPDQEMethod->SetGuidance("Set the LAPPD configuration.");
+  LAPPDQEMethod->SetGuidance("Available options are:\n"
+			     "Stacking_Only\n"
+			     "Stacking_And_SensitiveDetector\n"
+			     "SensitiveDetector_Only\n");
+  LAPPDQEMethod->SetParameterName("LAPPDQEMethod", false);
+  LAPPDQEMethod->SetCandidates("Stacking_Only "
+			       "Stacking_And_SensitiveDetector "
+			       "SensitiveDetector_Only ");
+  LAPPDQEMethod->AvailableForStates(G4State_PreInit, G4State_Idle);
+  //________
 
   PMTCollEff = new G4UIcmdWithAString("/WCSim/PMTCollEff", this);
   PMTCollEff->SetGuidance("Set the PMT configuration.");
@@ -162,6 +175,7 @@ WCSimDetectorMessenger::~WCSimDetectorMessenger()
   delete PMTConfig;
   delete SavePi0;
   delete PMTQEMethod;
+  delete LAPPDQEMethod;
   delete PMTCollEff;
   delete waterTank_Length;
   delete WCVisChoice;
@@ -233,6 +247,22 @@ void WCSimDetectorMessenger::SetNewValue(G4UIcommand* command,G4String newValue)
 	    G4cout << "2";
 	  }else if (newValue == "SensitiveDetector_Only"){
 	    WCSimDetector->SetPMT_QE_Method(3);
+	    G4cout << "3";
+	  }else{
+	    
+	  }
+	  G4cout << G4endl;
+	}
+	if (command == LAPPDQEMethod){
+	  G4cout << "Set LAPPD QE Method " << newValue << " ";
+	  if (newValue == "Stacking_Only"){
+	    WCSimDetector->SetLAPPD_QE_Method(1);
+	    G4cout << "1";
+	  }else if (newValue == "Stacking_And_SensitiveDetector"){
+	    WCSimDetector->SetLAPPD_QE_Method(2);
+	    G4cout << "2";
+	  }else if (newValue == "SensitiveDetector_Only"){
+	    WCSimDetector->SetLAPPD_QE_Method(3);
 	    G4cout << "3";
 	  }else{
 	    

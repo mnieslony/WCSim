@@ -71,6 +71,7 @@ G4LogicalVolume* WCSimDetectorConstruction::ConstructCylinder()
   barrelCellHeight  = (WCIDHeight-2.*WCBarrelPMTOffset)/WCBarrelNRings;
   // the hight of all regular cells together:
   mainAnnulusHeight = WCIDHeight -2.*WCBarrelPMTOffset -2.*barrelCellHeight;
+  G4cout<<"WCBarrelRingNPhi= "<<WCBarrelRingNPhi<<" totalAngle= "<<totalAngle<<" dPhi= "<<dPhi<<" barrelCellHeight= "<<barrelCellHeight<<" mainAnnulusHeight= "<<mainAnnulusHeight<<G4endl;
   
   
   innerAnnulusRadius = WCIDRadius - WCPMTExposeHeight-1.*mm;
@@ -84,6 +85,7 @@ G4LogicalVolume* WCSimDetectorConstruction::ConstructCylinder()
   WCLength    = WCIDHeight + 5.*cm;	// arbitrary additional space?
   //WCRadius    = (WCIDDiameter/2. + WCBlackSheetThickness + 20*cm)/cos(dPhi/2.); 
   // this is known - set in DetectorConfigs
+  G4cout<<"innerAnnulusRadius= "<<innerAnnulusRadius<<" outerAnnulusRadius= "<<outerAnnulusRadius<<G4endl;
   
  
 //  // now we know the extend of the detector and are able to tune the tolerance
@@ -112,6 +114,7 @@ G4LogicalVolume* WCSimDetectorConstruction::ConstructCylinder()
 //			       360.*deg);
 
   G4Tubs* solidWC = new G4Tubs("WC",
+<<<<<<< HEAD
 			       0.0*m,
 			       WCRadius+2.*cm,
 			       .5*WCLength+2.*cm,	// smaller excess for ANNIE
@@ -645,6 +648,7 @@ else {
   // The PMT glass is the sensitive volume in this new configuration.
 
   G4LogicalVolume* logicWCPMT = ConstructPMT(WCPMTName, WCIDCollectionName, "tank");
+  G4LogicalVolume* logicWCLAPPD = ConstructLAPPD(WCLAPPDName, WCIDCollectionName2);//WCIDCollectionName2);
 
   /*These lines of code will give color and volume to the PMTs if it hasn't been set in WCSimConstructPMT.cc.
 I recommend setting them in WCSimConstructPMT.cc. 
@@ -657,6 +661,7 @@ If used here, uncomment the SetVisAttributes(WClogic) line, and comment out the 
 
     //logicWCPMT->SetVisAttributes(WClogic);
 	logicWCPMT->SetVisAttributes(G4VisAttributes::Invisible);
+	logicWCLAPPD->SetVisAttributes(G4VisAttributes::Invisible);
 
   //jl145------------------------------------------------
   // Add top veto PMTs
@@ -697,7 +702,7 @@ If used here, uncomment the SetVisAttributes(WClogic) line, and comment out the 
 
 	  G4double WCTVEfficiency = icopy*WCPMTRadius*WCPMTRadius/((WCIDRadius)*(WCIDRadius));
 	  G4cout << "Total on top veto: " << icopy << "\n";
-	  G4cout << "Coverage was calculated to be: " << WCTVEfficiency << "\n";
+	  G4cout << "PMT Coverage was calculated to be: " << WCTVEfficiency << "\n";
 
   }
 
@@ -734,6 +739,47 @@ If used here, uncomment the SetVisAttributes(WClogic) line, and comment out the 
    // logicWCPMT->GetDaughter(0),physiCapPMT is the glass face. If you add more 
      // daugter volumes to the PMTs (e.g. a acryl cover) you have to check, if
 		// this is still the case.
+    }
+  }
+  G4cout<<"PMT position: "<<WCIDRadius<<","<<-barrelCellWidth/2.+(i+0.5)*horizontalSpacing<<","<<-barrelCellHeight/2.+(j+0.5)*verticalSpacing<<G4endl;
+
+  //////----------- Barrel LAPPD placement --------------
+  G4RotationMatrix* WCLAPPDRotation = new G4RotationMatrix;
+  WCLAPPDRotation->rotateY(90.*deg);
+  //when I define it with the pmt parameters it works fine...Why????
+  G4double barrelCellWidth2 = 2.*WCIDRadius*tan(dPhi/2.);
+  //G4double horizontalSpacingLAPPD   = barrelCellWidth/WCPMTperCellHorizontal;
+  //G4double verticalSpacingLAPPD     = barrelCellHeight/WCPMTperCellVertical;
+  G4double horizontalSpacingLAPPD   = barrelCellWidth/WCLAPPDperCellHorizontal;
+  G4double verticalSpacingLAPPD     = barrelCellHeight/WCLAPPDperCellVertical;
+
+  // G4cout<<"barrelCellWidth2= "<<barrelCellWidth2<<" barrelCellHeight2= "<<barrelCellHeight2<< " horizontalSpacingLAPPD= "<<horizontalSpacingLAPPD<<" verticalSpacingLAPPD= "<<verticalSpacingLAPPD<<G4endl;
+
+  for(G4double i = 0; i < WCLAPPDperCellHorizontal; i++){
+    for(G4double j = 0; j < WCLAPPDperCellVertical; j++){
+  //for(G4double i = 0; i < WCPMTperCellHorizontal; i++){
+  //	for(G4double j = 0; j < WCPMTperCellVertical; j++){
+	  
+      G4ThreeVector LAPPDPosition =  G4ThreeVector(WCIDRadius,
+												   -barrelCellWidth2/2.+(i+0.5)*horizontalSpacingLAPPD,
+												   -barrelCellHeight2/2.+(j+0.5)*verticalSpacingLAPPD);
+												   //-barrelCellWidth2/2.+(i+0.5)*horizontalSpacingLAPPD,
+												   //-barrelCellHeight2/2.+(j+0.5)*verticalSpacingLAPPD);
+	 
+      G4VPhysicalVolume* physiWCBarrelLAPPD =
+		new G4PVPlacement(WCLAPPDRotation,              // its rotation
+						  LAPPDPosition, 
+						  logicWCLAPPD,                // its logical volume
+						  "WCLAPPD",             // its name
+						  logicWCBarrelCell,  // its mother volume
+						  false,                     // no boolean operations
+						  //(int)(i*WCPMTperCellVertical+j),
+						  (int)(i*WCLAPPDperCellVertical+j),
+						  true);                       
+	  
+	  // logicWCPMT->GetDaughter(0),physiCapPMT is the glass face. If you add more 
+	  // daugter volumes to the PMTs (e.g. a acryl cover) you have to check, if
+	  // this is still the case.
     }
   }
   //-------------------------------------------------------------
@@ -778,6 +824,7 @@ If used here, uncomment the SetVisAttributes(WClogic) line, and comment out the 
 
   }
 
+  //---------------------------- CAPS ----------------------------
 
   G4LogicalVolume* logicTopCapAssembly = ConstructCaps(-1);
   G4LogicalVolume* logicBottomCapAssembly = ConstructCaps(1);
@@ -811,6 +858,7 @@ If used here, uncomment the SetVisAttributes(WClogic) line, and comment out the 
 }
 
 
+//------------------------- Construct Caps ---------------------------
 G4LogicalVolume* WCSimDetectorConstruction::ConstructCaps(G4int zflip)
 {
 

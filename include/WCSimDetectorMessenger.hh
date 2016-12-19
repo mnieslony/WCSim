@@ -45,6 +45,9 @@ class WCSimDetectorMessenger: public G4UImessenger
 
 
   G4UIcmdWithAString* tubeCmd;
+  G4UIcmdWithAString* lappdCmd;
+  G4UIcmdWithAString* LAPPDQEMethod;
+  G4UIcmdWithAString* LAPPDCollEff;
   G4UIcmdWithAString* distortionCmd;
   G4UIcmdWithoutParameter* WCConstruct;
 

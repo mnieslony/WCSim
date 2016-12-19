@@ -11,6 +11,10 @@ tmp/
 #ignore gedit backups
 *~
 
+#ignore build products
+*.d
+*.o
+
 #ignore run results
 wcsim.root
 

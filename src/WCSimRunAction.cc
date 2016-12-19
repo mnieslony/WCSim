@@ -19,6 +19,7 @@
 #include "WCSimRootEvent.hh"
 #include "WCSimRootGeom.hh"
 #include "WCSimPmtInfo.hh"
+#include "WCSimLAPPDInfo.hh"
 
 #include <vector>
 
@@ -128,10 +129,13 @@ void WCSimRunAction::FillGeoTree(){
   G4double cylinfo[3];
   G4double pmtradius;
   G4int numpmt;
+  G4double lappdradius;
+  G4int numlappd;
   G4int orientation;
   Float_t offset[3];
   
   Int_t tubeNo;
+  Int_t lappdNo;
   Float_t pos[3];
   Float_t rot[3];
   Int_t cylLoc;
@@ -157,9 +161,12 @@ void WCSimRunAction::FillGeoTree(){
 
   pmtradius = wcsimdetector->GetPMTSize1();
   numpmt = wcsimdetector->GetTotalNumPmts();
+  lappdradius = wcsimdetector->GetLAPPDSize1();
+  numlappd = wcsimdetector->GetTotalNumLAPPDs();
   orientation = 0;
   
   wcsimrootgeom-> SetWCPMTRadius(pmtradius);
+  wcsimrootgeom-> SetWCLAPPDRadius(lappdradius);
   wcsimrootgeom-> SetOrientation(orientation);
   
   G4ThreeVector offset1= wcsimdetector->GetWCOffset();
@@ -186,8 +193,31 @@ void WCSimRunAction::FillGeoTree(){
     G4cout << "Mismatch between number of pmts and pmt list in geofile.txt!!"<<G4endl;
     G4cout << fpmts->size() <<" vs. "<< numpmt <<G4endl;
   }
+   
+  std::vector<WCSimLAPPDInfo*> *flappds = wcsimdetector->Get_LAPPDs();
+  WCSimLAPPDInfo *lappd;
+  for (unsigned int i=0;i!=flappds->size();i++){
+    lappd = ((WCSimLAPPDInfo*)flappds->at(i));
+    pos[0] = lappd->Get_transx();
+    pos[1] = lappd->Get_transy();
+    pos[2] = lappd->Get_transz();
+    rot[0] = lappd->Get_orienx();
+    rot[1] = lappd->Get_orieny();
+    rot[2] = lappd->Get_orienz();
+    lappdNo = lappd->Get_lappdid();
+    cylLoc = lappd->Get_cylocation();
+    wcsimrootgeom-> SetLAPPD(i,lappdNo,cylLoc,rot,pos);
+    G4cout<<"lappd= "<<lappdNo<<" at position: "<<pos[0]<<","<<pos[1]<<","<<pos[2]<<G4endl;
+  }
+  if (flappds->size() != (unsigned int)numlappd) {
+    G4cout << "Mismatch between number of lappds and lappd list in geofile.txt!!"<<G4endl;
+    G4cout << flappds->size() <<" vs. "<< numlappd <<G4endl;
+  }
+
+  // G4cout <<"#lappds: "<<flappds->size() <<" vs. "<< numlappd <<G4endl;
   
   wcsimrootgeom-> SetWCNumPMT(numpmt);
+  wcsimrootgeom-> SetWCNumLAPPD(numlappd);
   
   geoTree->Fill();
   TFile* hfile = geoTree->GetCurrentFile();

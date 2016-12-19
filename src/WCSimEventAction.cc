@@ -8,6 +8,7 @@
 #include "WCSimWCTrigger.hh"
 #include "WCSimWCAddDarkNoise.hh"
 #include "WCSimWCPMT.hh"
+#include "WCSimWCLAPPD.hh"
 #include "WCSimDetectorConstruction.hh"
 
 #include "G4Event.hh"
@@ -47,6 +48,7 @@
 #include "PDG/PDGUtils.h"
 #include "PDG/PDGLibrary.h"
 #endif
+#include "NCVSD.hh"
 
 #ifndef _SAVE_RAW_HITS
 #define _SAVE_RAW_HITS
@@ -81,6 +83,7 @@ WCSimEventAction::WCSimEventAction(WCSimRunAction* myRun,
   G4DigiManager* DMman = G4DigiManager::GetDMpointer();
 
   //create PMT response module
+<<<<<<< HEAD
   WCSimWCPMT* WCDMPMT = new WCSimWCPMT( "WCReadoutPMT", myDetector, "tank");
   DMman->AddNewModule(WCDMPMT);
 
@@ -104,11 +107,79 @@ WCSimEventAction::WCSimEventAction(WCSimRunAction* myRun,
   DMman->AddNewModule(WCDNM_FACC);
   WCSimWCPMT* WCDMPMT_FACC = new WCSimWCPMT( "WCReadoutPMT_FACC", myDetector, "facc");
   DMman->AddNewModule(WCDMPMT_FACC);
+  
+  WCSimWCLAPPD* WCDMLAPPD = new WCSimWCLAPPD( "WCReadoutLAPPD", myDetector);
+  DMman->AddNewModule(WCDMLAPPD);
+  
+ //----------------------
+ // ****************
+ //  LAPPD TRUTH HITS
+ // ****************
+  LAPPDfile = new TFile("LAPPDEvents.root","RECREATE");
+  LAPPDtree = new TTree("LAPPDTree","LAPPDTree");
+
+  lappdhit_x = new G4double[klappdhitnmax]; // where/when was the hit?
+  lappdhit_y = new G4double[klappdhitnmax];	
+  lappdhit_z = new G4double[klappdhitnmax];
+  lappdhit_t = new G4double[klappdhitnmax];
+  lappdhit_process = new G4int[klappdhitnmax];    // what was the interaction process?
+  lappdhit_particleID = new G4int[klappdhitnmax]; // what was the particle type interacting?
+  lappdhit_trackID = new G4int[klappdhitnmax];    // what was the track ID
+  lappdhit_edep = new G4double[klappdhitnmax];    // how much energy was deposited?
+  lappdhit_objnum = new G4int[klappdhitnmax];     // which geometry object was hit?
+  //lappdhit_copynum = new G4int[klappdhitnmax];    // which copy was hit?
+
+  LAPPDtree->Branch("lappdevt",&lappdevt);
+  LAPPDtree->Branch("lappd_numhits",&lappd_numhits, "lappd_numhits/I");
+  LAPPDtree->Branch("lappdhit_totalpes_perevt", &lappdhit_totalpes_perevt, "lappdhit_totalpes_perevt/I");
+  LAPPDtree->Branch("lappdhit_totalpes_perlappd2", &lappdhit_totalpes_perlappd2);
+
+  LAPPDtree->Branch("lappdhit_x",lappdhit_x,"lappdhit_x[lappd_numhits]/D");
+  LAPPDtree->Branch("lappdhit_y",lappdhit_y,"lappdhit_y[lappd_numhits]/D");
+  LAPPDtree->Branch("lappdhit_z",lappdhit_z,"lappdhit_z[lappd_numhits]/D");
+  LAPPDtree->Branch("lappdhit_t",lappdhit_t,"lappdhit_t[lappd_numhits]/D");
+  LAPPDtree->Branch("lappdhit_stripcoorx", &lappdhit_stripcoorx);
+  LAPPDtree->Branch("lappdhit_stripcoory", &lappdhit_stripcoory);
+  LAPPDtree->Branch("lappdhit_stripcoorz", &lappdhit_stripcoorz);
+  LAPPDtree->Branch("lappdhit_process",lappdhit_process,"lappdhit_process[lappd_numhits]/I");
+  LAPPDtree->Branch("lappdhit_particleID",lappdhit_particleID,"lappdhit_particleID[lappd_numhits]/I");
+  LAPPDtree->Branch("lappdhit_trackID",lappdhit_trackID,"lappdhit_trackID[lappd_numhits]/I");
+  LAPPDtree->Branch("lappdhit_edep",lappdhit_edep,"lappdhit_edep[lappd_numhits]/D");
+  LAPPDtree->Branch("lappdhit_objnum",lappdhit_objnum,"lappdhit_objnum[lappd_numhits]/I");
+  //LAPPDtree->Branch("lappdhit_copynum",lappdhit_copynum,"lappdhit_copynum[lappd_numhits]/I");
+  LAPPDtree->Branch("lappdhit_stripnum", &lappdhit_stripnum);
+  LAPPDtree->Branch("lappdhit_truetime2",&lappdhit_truetime2);
+  LAPPDtree->Branch("lappdhit_smeartime2", &lappdhit_smeartime2);
+  LAPPDtree->Branch("lappdhit_primaryParentID2",&lappdhit_primaryParentID2);
+  LAPPDtree->Branch("lappdhit_NoOfneighstripsHit", &lappdhit_NoOfneighstripsHit);
+  LAPPDtree->Branch("lappdhit_neighstripnum", &lappdhit_neighstripnum);
+  LAPPDtree->Branch("lappdhit_neighstrippeak", &lappdhit_neighstrippeak);
+  LAPPDtree->Branch("lappdhit_neighstrip_time", &lappdhit_neighstrip_time);
+  LAPPDtree->Branch("lappdhit_neighstrip_lefttime", &lappdhit_neighstrip_lefttime);
+  LAPPDtree->Branch("lappdhit_neighstrip_righttime", &lappdhit_neighstrip_righttime);
+
 }
 
 WCSimEventAction::~WCSimEventAction()
 {
   delete DAQMessenger;
+  
+  // Actions to cleanup LAPPD truth hits:
+  // ====================================
+   LAPPDfile->cd();	
+   LAPPDtree->Write();
+   LAPPDfile->Close();
+   delete LAPPDfile; 
+   
+   delete[] lappdhit_x;
+   delete[] lappdhit_y;
+   delete[] lappdhit_z;
+   delete[] lappdhit_t;
+   delete[] lappdhit_process;
+   delete[] lappdhit_particleID;
+   delete[] lappdhit_trackID;
+   delete[] lappdhit_edep;
+   delete[] lappdhit_objnum;
 }
 
 void WCSimEventAction::CreateDAQInstances()
@@ -275,11 +346,19 @@ void WCSimEventAction::EndOfEventAction(const G4Event* evt)
 
   G4String WCIDCollectionName = detectorConstructor->GetIDCollectionName();
   G4int collectionID;
+  WCSimWCHitsCollection* WCHClappd = 0;
+  G4String WCIDCollectionName2 = detectorConstructor->GetIDCollectionName2();
+  G4int collectionID2;
+  std::vector<int> objnumv;
+  G4cout<<"-------------------------> I'm in event: event_id: "<<event_id<<G4endl;
   if (HCE)
   { 
     collectionID = SDman->GetCollectionID(WCIDCollectionName);
     WCHC = (WCSimWCHitsCollection*)HCE->GetHC(collectionID);
     G4cout<<WCIDCollectionName<<" has "<<WCHC->entries()<<" entries"<<G4endl;
+    collectionID2 = SDman->GetCollectionID(WCIDCollectionName2);
+    WCHClappd = (WCSimWCHitsCollection*)HCE->GetHC(collectionID2);
+    //G4cout<<"-----------name= "<<name<<" name2= "<<name2<<"--------"<<G4endl;
   } else {G4cout<<"Could not find hit colletion of event!"<<G4endl;}
   /** used if save raw hits is enabled in preprocessor - WCHC is a member variable used in FillRootEvent() */
   
@@ -292,6 +371,76 @@ void WCSimEventAction::EndOfEventAction(const G4Event* evt)
   // ----------------------------------------------------------------------
   //  Get Digitized Hit Collection
   // ----------------------------------------------------------------------
+  G4cout<<"WCIDCollectionName= "<<WCIDCollectionName<<" WCIDCollectionName2= "<<WCIDCollectionName2<<G4endl;
+  G4cout<<"____________ WCHC->entries()= "<<int(WCHC->entries())<<G4endl;
+  G4cout<<"____________ WCHClappd->entries()= "<<int(WCHClappd->entries())<<G4endl;
+  //if(WCHClappd->entries()>0.){ G4cout<<"GOTIT!!!!!!"<<G4endl; }
+  for (G4int ii=0; ii< WCHClappd->entries() ;ii++){
+    G4cout<<"total pe @ LAPPDs: "<< (*WCHClappd)[ii]->GetTotalPe() << G4endl;
+    G4int   lappdID         = (*WCHClappd)[ii]->GetTubeID();
+    objnumv.push_back((*WCHClappd)[ii]->GetTubeID());
+    G4float timelappd           = (*WCHClappd)[ii]->GetTime(ii);
+    G4cout<<"ii= "<<ii<<" @ "<<timelappd<<" lappdID "<<lappdID<<" @ "<<timelappd<<G4endl; 
+  }
+  
+  //--------- STORE lappd HITS -------------
+ //  //=========================================
+  lappdevt=evt->GetEventID();
+  G4double totalEnergy2 = 0.;
+  G4int numberOfHits2 = WCHClappd->GetSize();
+  G4cout << "&&&&  A total of " << numberOfHits2 << " hits on lappd were recorded!" << G4endl;
+  if (WCHClappd!=0) {
+    G4int totalpes_perevt = 0; G4int lappd_numhits0=0;
+    for (G4int hitnum=0; hitnum<numberOfHits2; hitnum++) {
+       lappd_numhits0++;
+       WCSimWCHit* aHit = (*WCHClappd)[hitnum];
+       G4ThreeVector hitPos = aHit->GetPos();
+       hitPosx=hitPos.x();
+       hitPosy=hitPos.y();
+       hitPosz=hitPos.z();
+       hitTime = aHit->GetTime(hitnum);
+       G4cout<<"hitTime= "<<hitTime<<G4endl;
+       //hitParticleName = aHit->GetParticleName();
+       hitTrackID = aHit->GetTrackID();
+       for (G4int ip =0; ip < (*WCHClappd)[hitnum]->GetTotalPe(); ip++){
+       //hitPartCode = aHit->GetParticleID();
+         lappdhit_process[hitnum] = hitProcessCode;
+         double strip_coorx = ((*WCHClappd)[hitnum]->GetStripPosition(ip).x());
+         double strip_coory = ((*WCHClappd)[hitnum]->GetStripPosition(ip).y());
+         double strip_coorz = ((*WCHClappd)[hitnum]->GetStripPosition(ip).z());
+         G4cout<<"totalpes_perevt= "<<totalpes_perevt<<"--->GetStripPosition= "<<(*WCHClappd)[hitnum]->GetStripPosition(ip)<<" strip_coorx= "<<strip_coorx<<" strip_coory= "<<strip_coory<<G4endl;
+         lappdhit_stripcoorx.push_back(strip_coorx);
+         lappdhit_stripcoory.push_back(strip_coory);
+         lappdhit_stripcoorz.push_back(strip_coorz);
+         totalpes_perevt++;
+       }
+       //hitPartCode = ConvertParticleNameToCode(hitParticleName); // or use hitParticleID - from PDGEncoding?
+       //hitProcessName = aHit->GetProcessName();
+       //hitProcessCode = ConvertProcessNameToCode(hitProcessName);
+       //if(hitProcessCode<0){G4cout<<"lappd hit process unaccounted"<<G4endl;}
+       hitEdep = (*WCHClappd)[hitnum]->GetTotalPe();  //aHit->GetEdeposit();
+       //hitCopyNum = aHit->GetCopyNum();
+       //hitPhysical = (std::string)aHit->GetPhysical();
+       // aHit->Print();
+       lappdhit_x[hitnum] = hitPosx;
+       lappdhit_y[hitnum] = hitPosy;
+       lappdhit_z[hitnum] = hitPosz;
+       lappdhit_t[hitnum] = hitTime;
+       lappdhit_particleID[hitnum] = hitPartCode;
+       lappdhit_trackID[hitnum] = hitTrackID;
+       lappdhit_edep[hitnum] = hitEdep;
+       //lappdhit_copynum[hitnum] = hitCopyNum;
+       lappdhit_objnum[hitnum] = (objnumv[hitnum]);
+       G4cout<<"lappdhit_objnum[hitnum] = "<<lappdhit_objnum[hitnum]<<G4endl;
+    }
+    lappd_numhits = lappd_numhits0;
+    lappdhit_totalpes_perevt = totalpes_perevt;
+    G4cout<<"lappd_numhits= "<<lappd_numhits<<" lappdhit_totalpes_perevt= "<<lappdhit_totalpes_perevt<<G4endl;
+    //LAPPDtree ->Fill();
+    /*for(int m=0; m<totalpes_perevt; m++){
+      G4cout<<"tellme: "<<lappdhit_stripcoorx[m]<<","<<lappdhit_stripcoory[m]<<","<<lappdhit_stripcoorz[m]<<G4endl;
+     }*/
+  }
 
   // Get a pointer to the Digitizing Module Manager
   G4DigiManager* DMman = G4DigiManager::GetDMpointer();
@@ -303,6 +452,10 @@ void WCSimEventAction::EndOfEventAction(const G4Event* evt)
   // new MFechner, aug 2006
   // need to clear up the old info inside PMT
   WCDMPMT->ReInitialize();
+ 
+  WCSimWCLAPPD* WCDMLAPPD =
+    (WCSimWCLAPPD*)DMman->FindDigitizerModule("WCReadoutLAPPD");
+  WCDMLAPPD->ReInitialize();
   
 #ifdef TIME_DAQ_STEPS
   TStopwatch* ms = new TStopwatch();
@@ -311,6 +464,7 @@ void WCSimEventAction::EndOfEventAction(const G4Event* evt)
 
   //Convert the hits to PMT pulse
   WCDMPMT->Digitize();
+  WCDMLAPPD->Digitize();
   
   // Do the Dark Noise, then Digitization, then Trigger
   // First, add Dark noise hits before digitizing
@@ -359,6 +513,122 @@ void WCSimEventAction::EndOfEventAction(const G4Event* evt)
    G4int WCDCID = DMman->GetDigiCollectionID("WCDigitizedCollection");
    WCSimWCTriggeredDigitsCollection * WCDC = (WCSimWCTriggeredDigitsCollection*) DMman->GetDigiCollection(WCDCID);
 
+   //----- for lappds -----
+   G4int WCDChitsIDlappd = DMman->GetDigiCollectionID("WCRawLAPPDSignalCollection");
+   WCSimWCDigitsCollection * WCDC_hitslappd = (WCSimWCDigitsCollection*) DMman->GetDigiCollection(WCDChitsIDlappd);
+  
+   // Get the digitized collection for the WC
+   G4int WCDCIDlappd = DMman->GetDigiCollectionID("WCDigitizedCollectionLAPPD");
+   WCSimWCTriggeredDigitsCollection * WCDClappd = (WCSimWCTriggeredDigitsCollection*) DMman->GetDigiCollection(WCDCIDlappd);
+  //-------------
+
+  //--------- LAPPDs -----------
+  if (WCDC_hitslappd)
+  {
+    //add the truth raw hits
+    // Both the pre- and post-PMT smearing hit times are accessible
+    // Choose to save just the pre-smeared times for now
+   #ifdef _SAVE_RAW_HITS_VERBOSE
+    G4cout<<"RAW HITS"<<G4endl;
+   #endif
+   // wcsimrootevent->SetNumTubesHit(WCDC_hitslappd->entries());
+  // std::vector<float> truetime2, smeartime2;
+  // std::vector<int>   primaryParentID2;
+   double hit_time_smear, hit_time_true;
+   int hit_parentid; G4int id0=0;
+   //loop over the DigitsCollection
+   for(int idigi = 0; idigi < WCDC_hitslappd->entries(); idigi++) {
+      int digi_tubeid = (*WCDC_hitslappd)[idigi]->GetTubeID();
+      G4cout<<"digi_lappdid= "<<digi_tubeid<<"/"<<(*WCDC_hitslappd)[idigi]->GetTotalPe()<<G4endl;
+      lappdhit_totalpes_perlappd2.push_back((*WCDC_hitslappd)[idigi]->GetTotalPe());
+
+      for(G4int id = 0; id < (*WCDC_hitslappd)[idigi]->GetTotalPe(); id++){
+        id0++;
+        hit_time_true  = (*WCDC_hitslappd)[idigi]->GetPreSmearTime(id);
+        hit_parentid = (*WCDC_hitslappd)[idigi]->GetParentID(id);
+        G4cout<<"0___LAPPD idigi= "<<idigi<<" id= "<<id<<"/"<<(*WCDC_hitslappd)[idigi]->GetTotalPe()<<G4endl;
+        G4cout<<"id0= "<<id0<<" hit_time_true= "<<hit_time_true<<" hit_parentid= "<<hit_parentid<<G4endl;
+        lappdhit_truetime2.push_back(hit_time_true);
+        lappdhit_primaryParentID2.push_back(hit_parentid);
+        ////---strip number and digitised hits-----
+        int stripno = (*WCDC_hitslappd)[idigi]->GetStripNo(id);
+        lappdhit_stripnum.push_back(stripno);
+        G4cout<<"LAPPD idigi= "<<idigi<<" id= "<<id<<" stripno= "<<stripno<<G4endl;
+        std::map<int,double> stripno_peak=(*WCDC_hitslappd)[idigi]->GetNeighStripNo(id);
+        int stiphit=0;
+        for(std::map<int,double>::iterator m1=stripno_peak.begin(); m1!=stripno_peak.end(); ++m1){
+           G4cout<<"DIGImap____"<<(m1)->first<<","<<(m1)->second<<G4endl;
+           stiphit++;
+           lappdhit_neighstripnum.push_back( (m1)->first );
+           lappdhit_neighstrippeak.push_back( (m1)->second );
+        }
+        stripno_peak.clear();
+        G4cout<<"We had "<<stiphit<<" neighbouring strips hit!"<<G4endl;
+        lappdhit_NoOfneighstripsHit.push_back(stiphit);
+       
+        std::map<int,double> stripno_time=(*WCDC_hitslappd)[idigi]->GetNeighStripTime(id);
+        for(std::map<int,double>::iterator m2=stripno_time.begin(); m2!=stripno_time.end(); ++m2){
+          G4cout<<"DIGItime____"<<(m2)->first<<","<<(m2)->second<<G4endl;
+          lappdhit_neighstrip_time.push_back( (m2)->second );
+        }
+        stripno_time.clear();
+        std::map<int,double> stripno_lefttime=(*WCDC_hitslappd)[idigi]->GetNeighStripLeftTime(id);
+        for(std::map<int,double>::iterator m3=stripno_lefttime.begin(); m3!=stripno_lefttime.end(); ++m3){
+          G4cout<<"DIGIlefttime____"<<(m3)->first<<","<<(m3)->second<<G4endl;
+          lappdhit_neighstrip_lefttime.push_back( (m3)->second );
+        }
+        stripno_lefttime.clear();
+        std::map<int,double> stripno_righttime=(*WCDC_hitslappd)[idigi]->GetNeighStripRightTime(id);
+        for(std::map<int,double>::iterator m4=stripno_righttime.begin(); m4!=stripno_righttime.end(); ++m4){
+          G4cout<<"DIGIrighttime____"<<(m4)->first<<","<<(m4)->second<<G4endl;
+          lappdhit_neighstrip_righttime.push_back( (m4)->second );
+        }
+        stripno_righttime.clear();
+        //-------
+        ////#ifdef _SAVE_RAW_HITS_VERBOSE
+        hit_time_smear = (*WCDC_hitslappd)[idigi]->GetTime(id);
+        lappdhit_smeartime2.push_back(hit_time_smear);
+        G4cout<<"hit_time_smear= "<<hit_time_smear<<G4endl;
+       //#endif
+      }//id
+   #ifdef _SAVE_RAW_HITS_VERBOSE
+      if(digi_tubeid < NPMTS_VERBOSE) {
+        G4cout << "Adding " << truetime2.size()
+               << " Cherenkov hits in tube " << digi_tubeid
+               << " with truetime:smeartime:primaryparentID";
+        for(G4int id = 0; id < truetime2.size(); id++) {
+           G4cout << " " << truetime[id]
+                  << ":" << smeartime[id]
+                  << ":" << primaryParentID[id];
+        }//id
+       G4cout << G4endl;
+      }
+#endif
+     
+      /*smeartime2.clear();
+      truetime2.clear();
+      primaryParentID2.clear();*/
+    }//idigi
+   }
+  LAPPDtree->Fill();
+
+  lappdhit_NoOfneighstripsHit.clear();
+  lappdhit_stripcoorx.clear();
+  lappdhit_stripcoory.clear();
+  lappdhit_stripcoorz.clear();
+  lappdhit_totalpes_perlappd2.clear();
+  objnumv.clear();
+  lappdhit_smeartime2.clear();
+  lappdhit_truetime2.clear();
+  lappdhit_primaryParentID2.clear();
+  lappdhit_stripnum.clear();
+  lappdhit_neighstripnum.clear();
+  lappdhit_neighstrippeak.clear();
+  lappdhit_neighstrip_time.clear();
+  lappdhit_neighstrip_lefttime.clear();
+  lappdhit_neighstrip_righttime.clear();
+  
+   //___________________________
    /*   
    // To use Do like This:
    // --------------------
@@ -555,7 +825,7 @@ void WCSimEventAction::EndOfEventAction(const G4Event* evt)
     }
   }
 
-   G4cout << G4endl << " Filling Root Event " << event_id<<G4endl;
+   G4cout << "end________________ Filling Root Event: "<<event_id<<" lappdevt: "<<lappdevt<< G4endl;
 
    //   G4cout << "event_id: " << &event_id << G4endl;
    // G4cout << "jhfNtuple: " << &jhfNtuple << G4endl;
@@ -634,6 +904,7 @@ G4int WCSimEventAction::WCSimEventFindStartingVolume(G4ThreeVector vtx)
     else if (vtxVolumeName == "WCBox")
       vtxvol = -2;
     else if (vtxVolumeName.contains("PMT") ||
+	     vtxVolumeName.contains("LAPPD") ||
 	     vtxVolumeName.contains("Cap") ||
 	     vtxVolumeName.contains("Cell"))
       vtxvol = 11;
@@ -668,6 +939,7 @@ G4int WCSimEventAction::WCSimEventFindStoppingVolume(G4String stopVolumeName)
     else if (stopVolumeName == "WCBox")
       stopvol = -2;
     else if (stopVolumeName.contains("PMT") ||
+	     stopVolumeName.contains("LAPPD") ||
 	     stopVolumeName.contains("Cap") ||
 	     stopVolumeName.contains("Cell"))
       stopvol = 11;

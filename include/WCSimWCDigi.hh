@@ -44,6 +44,7 @@ private:
 
   //PMT parameters
   G4int   tubeID;
+  G4int   lappdID;
   G4RotationMatrix rot;
   G4ThreeVector    pos;
   G4LogicalVolume* pLogV;
@@ -68,6 +69,11 @@ private:
    */
   std::map<int, std::vector<int> > fDigiComp;
   std::map<int, G4int>    primaryParentID; ///< Primary parent ID of the Hit (do not use for Digits)
+  std::map<int, G4int>    stripno;
+  std::map<int, std::map<int,double>> neigh_strips_peaks;
+  std::map<int, std::map<int,double>> neigh_strips_times;
+  std::map<int, std::map<int,double>> neigh_strips_lefttimes;
+  std::map<int, std::map<int,double>> neigh_strips_righttimes;
   
 
   //integrated hit/digit parameters
@@ -83,11 +89,17 @@ public:
   void RemoveDigitizedGate(G4int gate);
   
   inline void SetTubeID(G4int tube) {tubeID = tube;};
+  inline void SetLAPPDID(G4int lappd) {lappdID = lappd;};
   inline void AddGate(int g,float t) { Gates.insert(g); TriggerTimes.push_back(t);}
   inline void SetPe(G4int gate,  G4float Q)      {pe[gate]     = Q;};
   inline void SetTime(G4int gate, G4float T)    {time[gate]   = T;};
   inline void SetPreSmearTime(G4int gate, G4float T)    {time_presmear[gate]   = T;};
   inline void SetParentID(G4int gate, G4int parent) { primaryParentID[gate] = parent; };
+  inline void SetStripNo(G4int gate, G4int strip){ stripno[gate] = strip; };
+  inline void SetNeighStripNo(G4int gate, std::map<int,double> neighstrip ){ neigh_strips_peaks[gate]=neighstrip; };
+  inline void SetNeighStripTime(G4int gate, std::map<int,double> neighstriptime ){ neigh_strips_times[gate]=neighstriptime; };
+  inline void SetNeighStripLeftTime(G4int gate, std::map<int,double> neighstriplefttime ){ neigh_strips_lefttimes[gate]=neighstriplefttime; };
+  inline void SetNeighStripRightTime(G4int gate, std::map<int,double> neighstriprighttime ){ neigh_strips_righttimes[gate]=neighstriprighttime; };
 
   // Add a digit number and unique photon number to fDigiComp
   inline void AddPhotonToDigiComposition(int digi_number, int photon_number){
@@ -103,11 +115,17 @@ public:
   inline G4int   GetParentID(int gate) { return primaryParentID[gate];};
   inline G4float GetGateTime(int gate) { return TriggerTimes[gate];}
   inline G4int   GetTubeID() {return tubeID;};
+  inline G4int   GetLAPPDID() {return lappdID;};
   inline G4float GetPe(int gate)     {return pe[gate];};
   inline G4float GetTime(int gate)   {return time[gate];};
   inline G4float GetPreSmearTime(int gate)   {return time_presmear[gate];};
   std::vector<int> GetDigiCompositionInfo(int gate);
   inline std::map< int, std::vector<int> > GetDigiCompositionInfo(){return fDigiComp;}
+  inline G4int   GetStripNo(int gate){ return stripno[gate];};
+  inline std::map<int,double> GetNeighStripNo(int gate){ return neigh_strips_peaks[gate]; };
+  inline std::map<int,double> GetNeighStripTime(int gate){ return neigh_strips_times[gate]; };
+  inline std::map<int,double> GetNeighStripLeftTime(int gate){ return neigh_strips_lefttimes[gate]; };
+  inline std::map<int,double> GetNeighStripRightTime(int gate){ return neigh_strips_righttimes[gate]; };
 
   inline int NumberOfGates() { return Gates.size();}
   inline int NumberOfSubEvents() { return (Gates.size()-1);}

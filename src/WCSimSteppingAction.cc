@@ -230,3 +230,11 @@ double WCSimSteppingAction::FieldLines(G4double /*x*/,G4double /*y*/,G4int /*coo
 //     return 0.1*((abs(y)/y)*(1-Radius*Radius/((x*x+y*y)*(x*x+y*y))) + abs(y)*(2*Radius*Radius*y/((x*x+y*y)*(x*x+y*y))));
   return 0;
 }
+
+G4String ToName(G4OpBoundaryProcessStatus boundaryStatus){
+G4String processnames[14]={"Undefined","FresnelRefraction","FresnelReflection","TotalInternalReflection","LambertianReflection","LobeReflection","SpikeReflection","BackScattering","Absorption","Detection","NotAtBoundary","SameMaterial","StepTooSmall","NoRINDEX"};
+return processnames[boundaryStatus];}
+
+G4String ToName2(G4StepStatus stepStatus){
+G4String processnames[8]={"fWorldBoundary","fGeomBoundary","fAtRestDoItProc","fAlongStepDoItProc","fPostStepDoItProc","fUserDefinedLimit","fExclusivelyForcedProc","fUndefined"};
+return processnames[stepStatus];}

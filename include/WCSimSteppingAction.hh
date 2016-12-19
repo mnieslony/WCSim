@@ -37,6 +37,8 @@ private:
 
   G4double ret[2];
   G4OpBoundaryProcessStatus fExpectedNextStatus;
+  G4String ToName(G4OpBoundaryProcessStatus boundaryStatus);
+  G4String ToName2(G4StepStatus stepStatus);
 
 };
 

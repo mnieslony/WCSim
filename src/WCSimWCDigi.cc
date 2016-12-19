@@ -10,6 +10,7 @@ G4Allocator<WCSimWCDigi> WCSimWCDigiAllocator;
 WCSimWCDigi::WCSimWCDigi()
 {
   tubeID = 0; 
+  lappdID = 0; 
   Gates.clear();
   TriggerTimes.clear();
   //  TriggerTimes.reserve(10);
@@ -30,6 +31,7 @@ WCSimWCDigi::WCSimWCDigi(const WCSimWCDigi& right)
   // in principle assignment = is defined for containers...
   Gates = right.Gates;
   tubeID = right.tubeID; 
+  lappdID = right.lappdID;
   pe     = right.pe;
   time   = right.time;
   time_presmear = right.time_presmear;
@@ -39,6 +41,7 @@ const WCSimWCDigi& WCSimWCDigi::operator=(const WCSimWCDigi& right)
 {
   TriggerTimes = right.TriggerTimes;
   tubeID = right.tubeID; 
+  lappdID = right.lappdID;
   pe     = right.pe;
   time   = right.time;
   time_presmear = right.time_presmear;
@@ -48,7 +51,7 @@ const WCSimWCDigi& WCSimWCDigi::operator=(const WCSimWCDigi& right)
 
 int WCSimWCDigi::operator==(const WCSimWCDigi& right) const
 { 
- return ( (tubeID==right.tubeID) && (pe==right.pe) && (time==right.time) 
+ return ( (tubeID==right.tubeID) && (lappdID==right.lappdID) && (pe==right.pe) && (time==right.time) 
 	  && (time_presmear==right.time_presmear)
 	  && (TriggerTimes==right.TriggerTimes) && (tubeID==right.tubeID) ); 
 }
@@ -58,6 +61,7 @@ void WCSimWCDigi::Draw() {;}
 void WCSimWCDigi::Print()
 {
   G4cout << "TubeID: " << tubeID 
+         << "lappdID: " << lappdID
 	 <<"Number of Gates " << NumberOfGates();
   for (unsigned int i = 0 ; i < pe.size() ; i++) {
     G4cout  << "Gate = " << i 

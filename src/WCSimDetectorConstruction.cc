@@ -23,10 +23,12 @@
 std::map<int, G4Transform3D> WCSimDetectorConstruction::tubeIDMap;
 std::map<int, G4Transform3D> WCSimDetectorConstruction::mrdtubeIDMap;
 std::map<int, G4Transform3D> WCSimDetectorConstruction::facctubeIDMap;
+std::map<int, G4Transform3D> WCSimDetectorConstruction::lappdIDMap;
 //std::map<int, cyl_location>  WCSimDetectorConstruction::tubeCylLocation;
 hash_map<std::string, int, hash<std::string> > WCSimDetectorConstruction::tubeLocationMap;
 hash_map<std::string, int, hash<std::string> > WCSimDetectorConstruction::mrdtubeLocationMap;
 hash_map<std::string, int, hash<std::string> > WCSimDetectorConstruction::facctubeLocationMap;
+hash_map<std::string, int, hash<std::string> > WCSimDetectorConstruction::lappdLocationMap;
 
 WCSimDetectorConstruction::WCSimDetectorConstruction(G4int DetConfig,WCSimTuningParameters* WCSimTuningPars):WCSimTuningParams(WCSimTuningPars)
 {
@@ -52,15 +54,20 @@ WCSimDetectorConstruction::WCSimDetectorConstruction(G4int DetConfig,WCSimTuning
   WCSimDetectorConstruction::tubeIDMap.clear();
   WCSimDetectorConstruction::mrdtubeIDMap.clear();
   WCSimDetectorConstruction::facctubeIDMap.clear();
+  WCSimDetectorConstruction::lappdIDMap.clear();
   //WCSimDetectorConstruction::tubeCylLocation.clear();// (JF) Removed
   WCSimDetectorConstruction::tubeLocationMap.clear();
   WCSimDetectorConstruction::mrdtubeLocationMap.clear();
   WCSimDetectorConstruction::facctubeLocationMap.clear();
+  WCSimDetectorConstruction::lappdLocationMap.clear();
   WCSimDetectorConstruction::PMTLogicalVolumes.clear();
+  WCSimDetectorConstruction::LAPPDLogicalVolumes.clear();
   totalNumPMTs = 0;
   totalNumMrdPMTs = 0;
   totalNumFaccPMTs = 0;
+  totalNumLAPPDs = 0;
   WCPMTExposeHeight= 0.;
+  WCLAPPDExposeHeight= 0.;
   //-----------------------------------------------------
   // Set the default WC geometry.  This can be changed later.
   //-----------------------------------------------------
@@ -83,6 +90,8 @@ WCSimDetectorConstruction::WCSimDetectorConstruction(G4int DetConfig,WCSimTuning
 
    //default is to use collection efficiency
   SetPMT_Coll_Eff(1);
+  SetLAPPD_QE_Method(1);
+  SetLAPPD_Coll_Eff(1);
   // set default visualizer to OGLSX
   SetVis_Choice("OGLSX");
 
@@ -113,6 +122,7 @@ WCSimDetectorConstruction::~WCSimDetectorConstruction(){
     delete fpmts.at(i);
   }
   fpmts.clear();
+<<<<<<< HEAD
   for (unsigned int i=0;i<fmrdpmts.size();i++){
     delete fmrdpmts.at(i);
   }
@@ -121,6 +131,10 @@ WCSimDetectorConstruction::~WCSimDetectorConstruction(){
     delete ffaccpmts.at(i);
   }
   ffaccpmts.clear();
+  for (unsigned int i=0;i<flappds.size();i++){
+    delete flappds.at(i);
+  }
+  flappds.clear();
 }
 
 G4VPhysicalVolume* WCSimDetectorConstruction::Construct()
@@ -133,10 +147,12 @@ G4VPhysicalVolume* WCSimDetectorConstruction::Construct()
   G4LogicalBorderSurface::CleanSurfaceTable();
   G4LogicalSkinSurface::CleanSurfaceTable();
   WCSimDetectorConstruction::PMTLogicalVolumes.clear();
+  WCSimDetectorConstruction::LAPPDLogicalVolumes.clear();
 
   totalNumPMTs = 0;
   totalNumMrdPMTs = 0;
   totalNumFaccPMTs = 0;
+  totalNumLAPPDs = 0;  
   
   //-----------------------------------------------------
   // Create Logical Volumes
@@ -211,9 +227,11 @@ G4VPhysicalVolume* WCSimDetectorConstruction::Construct()
   tubeIDMap.clear();
   mrdtubeIDMap.clear();
   facctubeIDMap.clear();
+  lappdIDMap.clear();
   tubeLocationMap.clear();
   mrdtubeLocationMap.clear();
   facctubeLocationMap.clear();
+  lappdLocationMap.clear();
 
 
   // Traverse and print the geometry Tree
@@ -238,6 +256,15 @@ G4VPhysicalVolume* WCSimDetectorConstruction::Construct()
   return physiExpHall;
   
   
+}
+
+WCSimLAPPDObject *WCSimDetectorConstruction::CreateLAPPDObject(G4String LAPPDType, G4String CollectionName2)
+{
+  if (LAPPDType == "lappd"){
+     WCSimLAPPDObject* lappd = new LAPPD;
+     WCSimDetectorConstruction::SetLAPPDPointer(lappd, CollectionName2);
+      return lappd;
+  }
 }
 
 WCSimPMTObject *WCSimDetectorConstruction::CreatePMTObject(G4String PMTType, G4String CollectionName)

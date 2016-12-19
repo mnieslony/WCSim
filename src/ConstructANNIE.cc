@@ -81,6 +81,7 @@
 // ==============================
   #include "WCSimWCSD.hh"
   #include "WCSimPMTObject.hh"
+  #include "WCSimLAPPDObject.hh"
 // ***********/WCSim PMT integration
 // =================================
 

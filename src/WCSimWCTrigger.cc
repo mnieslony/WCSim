@@ -1,5 +1,6 @@
 #include "WCSimWCTrigger.hh"
 #include "WCSimWCPMT.hh"
+#include "WCSimWCLAPPD.hh"
 #include "WCSimWCDigi.hh"
 #include "WCSimWCHit.hh"
 #include "G4EventManager.hh"

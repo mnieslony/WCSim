@@ -22,6 +22,10 @@ WCSimRootGeom::WCSimRootGeom()
   fPMTArray = 0;
   fPMTArray = new TClonesArray("WCSimRootPMT", 500);
 
+  fWCNumLAPPD = 0;
+  fLAPPDArray = 0;
+  fLAPPDArray = new TClonesArray("WCSimRootPMT", 500);
+
 }
 
 //______________________________________________________________________________
@@ -61,6 +65,25 @@ void WCSimRootGeom::SetPMT(Int_t i, Int_t tubeno, Int_t cyl_loc,
   // Set PMT values
 TClonesArray &pmtArray = *fPMTArray;
     WCSimRootPMT *jPMT = new(pmtArray[i]) WCSimRootPMT(tubeno, cyl_loc, rot, pos);
+    //WCSimRootPMT jPMT = *(WCSimRootPMT*)(*fPMTArray)[i];
+    // jPMT.SetTubeNo(tubeno);
+    // jPMT.SetCylLoc(cyl_loc);
+    // int j;
+    // for (j=0;j<3;j++){
+    //   jPMT.SetOrientation(j,rot[j]);
+    //   jPMT.SetPosition(j,pos[j]);
+    // }
+
+}
+
+void WCSimRootGeom::SetLAPPD(Int_t i, Int_t lappdno, Int_t cyl_loc, 
+			    Float_t rot[3], Float_t pos[3], bool expand)
+{
+   if(expand) (*(fLAPPDArray)).ExpandCreate(i+2);
+
+  // Set PMT values
+   TClonesArray &LAPPDArray = *fLAPPDArray;
+   WCSimRootPMT *jLAPPD = new(LAPPDArray[i]) WCSimRootPMT(lappdno, cyl_loc, rot, pos);
     //WCSimRootPMT jPMT = *(WCSimRootPMT*)(*fPMTArray)[i];
     // jPMT.SetTubeNo(tubeno);
     // jPMT.SetCylLoc(cyl_loc);

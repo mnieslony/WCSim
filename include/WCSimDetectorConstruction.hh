@@ -4,6 +4,8 @@
 
 #include "WCSimPmtInfo.hh"
 #include "WCSimPMTObject.hh"
+#include "WCSimLAPPDInfo.hh"
+#include "WCSimLAPPDObject.hh"
 
 #include "G4Transform3D.hh"
 #include "G4VUserDetectorConstruction.hh"
@@ -104,15 +106,23 @@ public:
   G4int    GetTotalNumPmts() {return totalNumPMTs;}
   G4int    GetTotalNumMrdPmts() {return totalNumMrdPMTs;}
   G4int    GetTotalNumFaccPmts() {return totalNumFaccPMTs;}
+  G4int    GetTotalNumLAPPDs() {return totalNumLAPPDs;}
   
   G4int    GetPMT_QE_Method(){return PMT_QE_Method;}
   G4double GetwaterTank_Length() {return waterTank_Length;} 
   G4int    UsePMT_Coll_Eff(){return PMT_Coll_Eff;}
 
+	G4int    GetLAPPD_QE_Method(){return LAPPD_QE_Method;}
+  G4int    UseLAPPD_Coll_Eff(){return LAPPD_Coll_Eff;}
+
   G4double GetPMTSize1() {return WCPMTSize;}
+  G4double GetLAPPDSize1() {return WCLAPPDSize;}
 
   G4float GetPMTQE(G4String,G4float, G4int, G4float, G4float, G4float);
   G4float GetPMTCollectionEfficiency(G4float theta_angle, G4String CollectionName) { return GetPMTPointer(CollectionName)->GetCollectionEfficiency(theta_angle); };
+
+	G4float GetLAPPDQE(G4String,G4float, G4int, G4float, G4float, G4float);
+	G4float GetLAPPDCollectionEfficiency(G4float theta_angle, G4String CollectionName2) { return GetLAPPDPointer(CollectionName2)->GetCollectionEfficiency(theta_angle); };
 
   WCSimPMTObject *CreatePMTObject(G4String, G4String);
 
@@ -130,6 +140,24 @@ public:
   }
  
   G4ThreeVector GetWCOffset(){return WCOffset;}
+	G4ThreeVector GetWCOffset2(){return WCOffset2;}
+
+  //_________lappd ________
+
+  WCSimLAPPDObject * CreateLAPPDObject(G4String, G4String);
+  std::map<G4String, WCSimLAPPDObject*>  CollectionNameMap2;
+  WCSimLAPPDObject * LAPPDptr;
+
+  void SetLAPPDPointer(WCSimLAPPDObject* lappd, G4String CollectionName2){
+    CollectionNameMap2[CollectionName2] = lappd;
+  }
+  WCSimLAPPDObject* GetLAPPDPointer(G4String CollectionName2){
+    LAPPDptr = CollectionNameMap2[CollectionName2];
+    if (LAPPDptr == NULL) {G4cout << CollectionName2 << " is not a recognized hit collection. Exiting WCSim." << G4endl; exit(1);}
+    return LAPPDptr;
+  }
+ //______________________ 
+
   
   // Related to the WC tube ID
   static G4int GetTubeID(std::string tubeTag){return tubeLocationMap[tubeTag];}
@@ -141,12 +169,17 @@ public:
   static G4int GetFaccTubeID(std::string tubeTag){return facctubeLocationMap[tubeTag];}
   static G4Transform3D GetFaccTubeTransform(int tubeNo){return facctubeIDMap[tubeNo];}
 
+  static G4int GetLAPPDID(std::string lappdTag){return lappdLocationMap[lappdTag];}
+  static G4Transform3D GetlappdTransform(int lappdNo){return lappdIDMap[lappdNo];}
+
   // Related to Pi0 analysis
   G4bool SavePi0Info()              {return pi0Info_isSaved;}
   void   SavePi0Info(G4bool choice) {pi0Info_isSaved=choice;}
   
   void   SetPMT_QE_Method(G4int choice){PMT_QE_Method = choice;}
   void   SetPMT_Coll_Eff(G4int choice){PMT_Coll_Eff = choice;}
+	void   SetLAPPD_QE_Method(G4int choice){LAPPD_QE_Method = choice;}
+  void   SetLAPPD_Coll_Eff(G4int choice){LAPPD_Coll_Eff = choice;}
   void   SetVis_Choice(G4String choice){Vis_Choice = choice;}
   G4String GetVis_Choice() {return Vis_Choice;}
 
@@ -178,8 +211,10 @@ public:
     G4bool GetIsCylinder() {return isCylinder;}
 
   std::vector<WCSimPmtInfo*>* Get_Pmts() {return &fpmts;}
+  std::vector<WCSimLAPPDInfo*>* Get_LAPPDs() {return &flappds;}
 
   G4String GetIDCollectionName(){return WCIDCollectionName;}
+	G4String GetIDCollectionName2(){return WCIDCollectionName2;}
 
  
 private:
@@ -193,6 +228,7 @@ private:
   // between events!
   WCSimWCSD* aWCPMT;
   
+  WCSimWCSD* aWCLAPPD;
 
   //Water, Blacksheet surface
   G4OpticalSurface * OpWaterBSSurface;
@@ -212,6 +248,7 @@ private:
   G4LogicalVolume*   ConstructCylinder();
   G4LogicalVolume* ConstructPMT(G4String,G4String, G4String detectorElement="tank");
   G4LogicalVolume* ConstructFlatFacedPMT(G4String PMTName, G4String CollectionName, G4String detectorElement="mrd");
+  G4LogicalVolume* ConstructLAPPD(G4String,G4String);
 
   G4LogicalVolume* ConstructCaps(G4int zflip);
 
@@ -271,11 +308,13 @@ private:
   //   Put all of it in the sensitive detector according to QE
   //   Good for low energy photons
   G4int PMT_QE_Method;
+	G4int LAPPD_QE_Method;
 
   //XQ 03/31/11
   // 0 to not use collection efficiency
   // 1 to use
   G4int PMT_Coll_Eff;
+	G4int LAPPD_Coll_Eff;
 
   //NP 06/17/15
   // "OGLSX" for classic visualization
@@ -291,6 +330,7 @@ private:
   G4String WCDetectorName;
   G4String WCIDCollectionName;
   G4String WCODCollectionName;
+	G4String WCIDCollectionName2;
 
   // WC PMT parameters
   G4String WCPMTName;
@@ -299,12 +339,21 @@ private:
 
   static PMTMap_t PMTLogicalVolumes;
 
+  //LAPPD 
+  G4String WCLAPPDName;
+  typedef std::pair<G4String, G4String> LAPPDKey_t;
+  typedef std::map<LAPPDKey_t, G4LogicalVolume*> LAPPDMap_t;
+  static LAPPDMap_t LAPPDLogicalVolumes;
+
   // WC geometry parameters
 
   G4double WCPMTRadius;
   G4double WCPMTExposeHeight;
   G4double WCBarrelPMTOffset;
 
+  G4double WCLAPPDRadius;
+  G4double WCLAPPDExposeHeight;
+  G4double WCBarrelLAPPDOffset;
   G4double WCIDDiameter;
 
   G4double WCCapLength;
@@ -323,6 +372,15 @@ private:
 
   G4double WCBarrelNumPMTHorizontal;
   G4double WCCapPMTSpacing;
+
+  G4double WCBarrelRingNPhi2;
+  G4double WCBarrelNRingsLAPPD;
+  G4double WCLAPPDPercentCoverage;
+  G4double WCLAPPDperCellHorizontal;
+  G4double WCLAPPDperCellVertical;
+  G4double WCBarrelNumLAPPDHorizontal;
+  
+  G4double WCCapLAPPDSpacing;
   G4double WCCapEdgeWidth;//jh TODO: not used
   
   G4double WCCapEdgeLimit;
@@ -338,6 +396,10 @@ private:
   G4double outerAnnulusRadius;
   G4String water;
 
+  G4double totalAngle2;
+  G4double dPhi2;
+  G4double barrelCellHeight2;
+  G4double mainAnnulusHeight2;
 
  //for 1kt
   G4double WCDiameter;
@@ -403,6 +465,13 @@ private:
     G4double outerPMT_Apitch;
 
     G4double blackSheetThickness;
+	  G4double innerLAPPD_Height;
+    G4double innerLAPPD_Radius;
+    G4double innerLAPPD_Expose;
+	  G4double outerLAPPD_Height;
+    G4double outerLAPPD_Radius;
+    G4double outerLAPPD_Expose;
+	  G4String outerLAPPD_Name;
 
     G4int innerPMT_TopN;
     G4int innerPMT_BotN;
@@ -435,18 +504,26 @@ private:
   G4double WCPMTSize;       // Info for the geometry tree: pmt size
   G4ThreeVector WCOffset;   // Info for the geometry tree: WC center offset
 
+  G4int totalNumLAPPDs; 
+  G4double WCLAPPDSize;  
+  G4ThreeVector WCOffset2;   // Info for the geometry tree: WC center offset
+ 
   // Tube map information
 
   static std::map<int, G4Transform3D> tubeIDMap;
 //  static std::map<int, cyl_location> tubeCylLocation;
   static hash_map<std::string, int, hash<std::string> >  tubeLocationMap; 
  
+  static std::map<int, G4Transform3D> lappdIDMap;
+  static hash_map<std::string, int, hash<std::string> >  lappdLocationMap;
+
   // Variables related to configuration
 
   G4int myConfiguration;   // Detector Config Parameter
   G4double innerradius;
  
   std::vector<WCSimPmtInfo*> fpmts;
+  std::vector<WCSimLAPPDInfo*> flappds;
   
   // MRD & Veto variables
   // ====================================================

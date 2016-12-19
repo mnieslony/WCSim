@@ -20,5 +20,8 @@
 #pragma link C++ class WCSimPmtInfo+;
 #pragma link C++ class WCSimEnumerations+;
 
+#pragma link C++ class WCSimLAPPDInfo+;
+#pragma link C++ class WCSimLAPPDpulse+;
+#pragma link C++ class WCSimLAPPDpulseCluster+;
 
 #endif

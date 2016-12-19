@@ -36,9 +36,14 @@ WCSimWCSD::~WCSimWCSD() {}
 void WCSimWCSD::Initialize(G4HCofThisEvent* HCE)
 {
   // Make a new hits collection. With the name we set in the constructor
-  hitsCollection = new WCSimWCHitsCollection
-    (SensitiveDetectorName,collectionName[0]);
-
+  if(collectionName[0]!= "ANNIEp2-glassFaceWCONLYLAPPDS"){
+    hitsCollection = new WCSimWCHitsCollection
+      (SensitiveDetectorName,collectionName[0]); }
+  //G4cout<<"collectionName[0]= ******* "<<collectionName[0]<<G4endl;
+  if(collectionName[0]== "ANNIEp2-glassFaceWCONLYLAPPDS"){
+    hitsCollectionlappd = new WCSimWCHitsCollection
+      (SensitiveDetectorName,collectionName[0]);
+  }
   // This is a trick.  We only want to do this once.  When the program
   // starts HCID will equal -1.  Then it will be set to the pointer to
   // this collection.
@@ -49,10 +54,17 @@ void WCSimWCSD::Initialize(G4HCofThisEvent* HCE)
     HCID =  GetCollectionID(0); 
   }  
   // Add it to the Hit collection of this event.
-  HCE->AddHitsCollection( HCID, hitsCollection );  
+
+  if(collectionName[0]!= "ANNIEp2-glassFaceWCONLYLAPPDS"){
+    HCE->AddHitsCollection( HCID, hitsCollection ); 
+  }
+  if(collectionName[0]== "ANNIEp2-glassFaceWCONLYLAPPDS"){
+    HCE->AddHitsCollection( HCID, hitsCollectionlappd ); 
+  }
 
   // Initilize the Hit map to all tubes not hit.
   PMTHitMap.clear();
+  LAPPDHitMap.clear();
   // Trick to access the static maxPE variable.  This will go away with the 
   // variable.
 
@@ -110,7 +122,11 @@ G4bool WCSimWCSD::ProcessHits(G4Step* aStep, G4TouchableHistory*)
   }
   G4String WCCollectionName;
   if(detectorElement=="tank"){
+    if(collectionName[0]=="ANNIEp2-glassFaceWCONLYLAPPDS"){
+  	WCCollectionName = fdet->GetIDCollectionName2();
+    } else {
   	WCCollectionName = fdet->GetIDCollectionName();
+    }
   } else if (detectorElement=="mrd"){
   	WCCollectionName = fdet->GetMRDCollectionName();
   } else if (detectorElement=="facc"){
@@ -129,6 +145,7 @@ G4bool WCSimWCSD::ProcessHits(G4Step* aStep, G4TouchableHistory*)
   // tag construction.
 
   std::stringstream tubeTag;
+  std::stringstream lappdTag;
 
   // Start tubeTag with mother to distinguish different PMT hierarchies
 //  G4LogicalVolume *theMother = thePhysical->GetMotherLogical();
@@ -136,11 +153,21 @@ G4bool WCSimWCSD::ProcessHits(G4Step* aStep, G4TouchableHistory*)
 //    tubeTag << theMother->GetName() << ":";
 
 //  tubeTag << thePhysical->GetName(); 
-  for (G4int i = theTouchable->GetHistoryDepth()-1 ; i >= 0; i--){
-    tubeTag << ":" << theTouchable->GetVolume(i)->GetName();
-    tubeTag << "-" << theTouchable->GetCopyNumber(i);
+  if(collectionName[0]!= "ANNIEp2-glassFaceWCONLYLAPPDS"){
+    for (G4int i = theTouchable->GetHistoryDepth()-1 ; i >= 0; i--){
+      tubeTag << ":" << theTouchable->GetVolume(i)->GetName();
+      tubeTag << "-" << theTouchable->GetCopyNumber(i);
+    }
+    //  tubeTag << ":" << theTouchable->GetVolume(i)->GetCopyNo(); 
   }
-  //  tubeTag << ":" << theTouchable->GetVolume(i)->GetCopyNo(); 
+  
+  if(collectionName[0]== "ANNIEp2-glassFaceWCONLYLAPPDS"){
+    for (G4int ii = theTouchable->GetHistoryDepth()-1 ; ii >= 0; ii--){
+      lappdTag << ":" << theTouchable->GetVolume(ii)->GetName();
+      lappdTag << "-" << theTouchable->GetCopyNumber(ii);
+      // G4cout<<"00000 lappdTag: "<<lappdTag.str()<<G4endl;
+    }
+  }
 
 //  G4cout << tubeTag.str() << G4endl;
 
@@ -153,15 +180,18 @@ G4bool WCSimWCSD::ProcessHits(G4Step* aStep, G4TouchableHistory*)
   } else if(detectorElement=="facc"){
     replicaNumber = WCSimDetectorConstruction::GetFaccTubeID(tubeTag.str());
   }
+  G4int replicaNumber2 = WCSimDetectorConstruction::GetLAPPDID(lappdTag.str());
 
     
   G4float theta_angle;
   G4float effectiveAngularEfficiency;
+  G4float effectiveAngularEfficiency2;
 
   
   G4float ratio = 1.;
   G4float maxQE;
   G4float photonQE;
+  if(volumeName != "ANNIEp2-glassFaceWCONLYLAPPDS"){
   if (fdet->GetPMT_QE_Method()==1){
     photonQE = 1.1;
   }else if (fdet->GetPMT_QE_Method()==2){
@@ -171,53 +201,128 @@ G4bool WCSimWCSD::ProcessHits(G4Step* aStep, G4TouchableHistory*)
   }else if (fdet->GetPMT_QE_Method()==3){
     ratio = 1./(1.-0.25);
     photonQE = fdet->GetPMTQE(volumeName, wavelength,1,240,660,ratio);
+  }else{ photonQE=0.3; }
   }
+  //----- for lappds -------
+  if(volumeName=="ANNIEp2-glassFaceWCONLYLAPPDS"){
+    if (fdet->GetLAPPD_QE_Method()==1){
+      photonQE = 1.1;
+    }else if (fdet->GetLAPPD_QE_Method()==2){
+      maxQE = fdet->GetLAPPDQE(WCIDCollectionName,wavelength,0,240,660,ratio);
+      photonQE = fdet->GetLAPPDQE(volumeName, wavelength,1,240,660,ratio);
+      photonQE = photonQE/maxQE;
+    }else if (fdet->GetLAPPD_QE_Method()==3){
+      ratio = 1./(1.-0.25);
+      photonQE = fdet->GetLAPPDQE(volumeName, wavelength,1,240,660,ratio);
+    }
+  }else{ photonQE=0.3; }
+
   
   if (G4UniformRand() <= photonQE){
-    
+   
      G4double local_x = localPosition.x();
      G4double local_y = localPosition.y();
      G4double local_z = localPosition.z();
      theta_angle = acos(fabs(local_z)/sqrt(pow(local_x,2)+pow(local_y,2)+pow(local_z,2)))/3.1415926*180.;
-     effectiveAngularEfficiency = fdet->GetPMTCollectionEfficiency(theta_angle, volumeName);
-     if (G4UniformRand() <= effectiveAngularEfficiency || fdet->UsePMT_Coll_Eff()==0){
-       //Retrieve the pointer to the appropriate hit collection. Since volumeName is the same as the SD name, this works. 
-       G4SDManager* SDman = G4SDManager::GetSDMpointer();
-       G4RunManager* Runman = G4RunManager::GetRunManager();
-       G4int collectionID = SDman->GetCollectionID(volumeName);
-       const G4Event* currentEvent = Runman->GetCurrentEvent();
-       G4HCofThisEvent* HCofEvent = currentEvent->GetHCofThisEvent();
-       hitsCollection = (WCSimWCHitsCollection*)(HCofEvent->GetHC(collectionID));
-      
-       // If this tube hasn't been hit add it to the collection
-       if (PMTHitMap[replicaNumber] == 0)
-	 {
-	   WCSimWCHit* newHit = new WCSimWCHit();
-	   newHit->SetTubeID(replicaNumber);
-	   newHit->SetTrackID(trackID);
-	   newHit->SetEdep(energyDeposition); 
-	   newHit->SetLogicalVolume(thePhysical->GetLogicalVolume());
-	   
-	   G4AffineTransform aTrans = theTouchable->GetHistory()->GetTopTransform();
-	   newHit->SetRot(aTrans.NetRotation());
-	   
-	   aTrans.Invert();
-	   newHit->SetPos(aTrans.NetTranslation());
-	   
-	   // Set the hitMap value to the collection hit number
-	   PMTHitMap[replicaNumber] = hitsCollection->insert( newHit );
+     
+     if(volumeName != "ANNIEp2-glassFaceWCONLYLAPPDS"){
+       effectiveAngularEfficiency = fdet->GetPMTCollectionEfficiency(theta_angle, volumeName);
+       if (G4UniformRand() <= effectiveAngularEfficiency || fdet->UsePMT_Coll_Eff()==0){
+         //Retrieve the pointer to the appropriate hit collection. Since volumeName is the same as the SD name, this works. 
+         G4SDManager* SDman = G4SDManager::GetSDMpointer();
+         G4RunManager* Runman = G4RunManager::GetRunManager();
+         G4int collectionID = SDman->GetCollectionID(volumeName);
+         const G4Event* currentEvent = Runman->GetCurrentEvent();
+         G4HCofThisEvent* HCofEvent = currentEvent->GetHCofThisEvent();
+         hitsCollection = (WCSimWCHitsCollection*)(HCofEvent->GetHC(collectionID));
+        
+         // If this tube hasn't been hit add it to the collection
+         if (PMTHitMap[replicaNumber] == 0)
+	   {
+	     //G4cout<<"_________ new PMT hit_______"<<G4endl;
+	     //G4cout<<"localPMTPosition : "<<localPosition(0)<<","<<localPosition(1)<<","<<localPosition(2)<<G4endl;
+	     WCSimWCHit* newHit = new WCSimWCHit();
+	     newHit->SetTubeID(replicaNumber);
+	     newHit->SetTrackID(trackID);
+	     newHit->SetEdep(energyDeposition); 
+	     newHit->SetLogicalVolume(thePhysical->GetLogicalVolume());
+	     //G4cout<<"it should have: replicaNumber= "<<replicaNumber<<" trackID= "<<trackID<<G4endl;
+	     G4AffineTransform aTrans = theTouchable->GetHistory()->GetTopTransform();
+	     newHit->SetRot(aTrans.NetRotation());
+	     
+	     aTrans.Invert();
+	     newHit->SetPos(aTrans.NetTranslation());
+	     
+	     // Set the hitMap value to the collection hit number
+	     PMTHitMap[replicaNumber] = hitsCollection->insert( newHit );
+	     (*hitsCollection)[PMTHitMap[replicaNumber]-1]->AddPe(hitTime);
+	     (*hitsCollection)[PMTHitMap[replicaNumber]-1]->AddParentID(primParentID);
+	     
+	     //     if ( particleDefinition != G4OpticalPhoton::OpticalPhotonDefinition() )
+	     //       newHit->Print();
+	   }
+         else {
 	   (*hitsCollection)[PMTHitMap[replicaNumber]-1]->AddPe(hitTime);
 	   (*hitsCollection)[PMTHitMap[replicaNumber]-1]->AddParentID(primParentID);
 	   
+         }
+       }
+     }//for pmts
+     //__________ lappd _________
+      if(volumeName=="ANNIEp2-glassFaceWCONLYLAPPDS"){
+       
+       effectiveAngularEfficiency2 = fdet->GetLAPPDCollectionEfficiency(theta_angle, volumeName);
+       if (G4UniformRand() <= effectiveAngularEfficiency2 || fdet->UseLAPPD_Coll_Eff()==0){
+
+       G4cout<<"trackID= "<<trackID<<" volumeName= "<<volumeName<<" hitTime= "<<hitTime<<G4endl;
+
+       /*G4StepPoint*       postStepPoint = aStep->GetPostStepPoint();
+       G4ThreeVector worldPositionpost = postStepPoint->GetPosition();
+       G4ThreeVector localPositionpost = theTouchable->GetHistory()->GetTopTransform().TransformPoint(worldPositionpost);
+       */
+       hitsCollectionlappd = (WCSimWCHitsCollection*)(HCofEvent->GetHC(collectionID));
+       // If this tube hasn't been hit add it to the collection
+       if (LAPPDHitMap[replicaNumber2] == 0)
+	 {
+	   G4cout<<"_________ new LAPPD hit_______"<<G4endl;
+	   WCSimWCHit* newHit1 = new WCSimWCHit();
+	   newHit1->SetTubeID(replicaNumber2);
+
+	   //G4cout<<"it should have: replicaNumber2= "<<replicaNumber2<<" trackID= "<<trackID<<G4endl;
+	   newHit1->SetLogicalVolume(thePhysical->GetLogicalVolume());
+	   
+	   G4AffineTransform aTrans = theTouchable->GetHistory()->GetTopTransform();
+	   newHit1->SetRot(aTrans.NetRotation());
+
+	   G4cout<<"worldPosition : "<<worldPosition(0)<<","<<worldPosition(1)<<","<<worldPosition(2)<<G4endl;
+	   G4cout<<"localPosition : "<<localPosition(0)<<","<<localPosition(1)<<","<<localPosition(2)<<G4endl;
+          
+	   aTrans.Invert();
+	   G4cout<<"aTrans.NetTranslation()= "<<aTrans.NetTranslation().x()<<","<<aTrans.NetTranslation().y()<<","<<aTrans.NetTranslation().z()<<G4endl;
+	   G4cout<<"HITdist_diffLV: "<<sqrt( (localPosition(0)-aTrans.NetTranslation().x())*(localPosition(0)-aTrans.NetTranslation().x()) + (localPosition(1)-aTrans.NetTranslation().y())*(localPosition(1)-aTrans.NetTranslation().y()) + (localPosition(2)-aTrans.NetTranslation().z())*(localPosition(2)-aTrans.NetTranslation().z()) )<<G4endl;
+           G4cout<<"HITdist_RLV: "<<sqrt( (localPosition(0)-aTrans.NetTranslation().x())*(localPosition(0)-aTrans.NetTranslation().x()) + (localPosition(1)-aTrans.NetTranslation().y())*(localPosition(1)-aTrans.NetTranslation().y()) )<<G4endl;
+
+	   newHit1->SetPos(aTrans.NetTranslation());
+
+	   // Set the hitMap value to the collection hit number
+	   LAPPDHitMap[replicaNumber2] = hitsCollectionlappd->insert( newHit1 );
+	   (*hitsCollectionlappd)[LAPPDHitMap[replicaNumber2]-1]->AddPe(hitTime);
+	   (*hitsCollectionlappd)[LAPPDHitMap[replicaNumber2]-1]->AddParentID(primParentID);
+	   (*hitsCollectionlappd)[LAPPDHitMap[replicaNumber2]-1]->AddStripPosition(localPosition);
+	   //G4cout<<"hitTime= "<<hitTime<<" primParentID= "<<primParentID<<G4endl;
 	   //     if ( particleDefinition != G4OpticalPhoton::OpticalPhotonDefinition() )
 	   //       newHit->Print();
 	 }
        else {
-	 (*hitsCollection)[PMTHitMap[replicaNumber]-1]->AddPe(hitTime);
-	 (*hitsCollection)[PMTHitMap[replicaNumber]-1]->AddParentID(primParentID);
-	 
+	 (*hitsCollectionlappd)[LAPPDHitMap[replicaNumber2]-1]->AddPe(hitTime);
+	 (*hitsCollectionlappd)[LAPPDHitMap[replicaNumber2]-1]->AddParentID(primParentID);
+	 G4cout<<"add new localPosition : "<<localPosition(0)<<","<<localPosition(1)<<","<<localPosition(2)<<G4endl;
+         (*hitsCollectionlappd)[LAPPDHitMap[replicaNumber2]-1]->AddStripPosition(localPosition);
+ 	 G4cout<<"_________________________"<<G4endl;	
        }
      }
+   }//for lappds
+    //__________________________
   }
 
   return true;
@@ -228,10 +333,14 @@ void WCSimWCSD::EndOfEvent(G4HCofThisEvent*)
   if (verboseLevel>0) 
   { 
     G4int numHits = hitsCollection->entries();
+    G4int numHitslappd = hitsCollectionlappd->entries();
 
     G4cout << "There are " << numHits << " hits in the "<<detectorElement<<" : "<< G4endl;
+    G4cout << "There are " << numHitslappd << " hits in the WC-LAPPDs: " << G4endl;
     for (G4int i=0; i < numHits; i++) 
       (*hitsCollection)[i]->Print();
+    for (G4int ii=0; ii < numHitslappd; ii++) 
+      (*hitsCollectionlappd)[ii]->Print();
   } 
 }
 
