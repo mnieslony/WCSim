@@ -83,7 +83,6 @@ WCSimEventAction::WCSimEventAction(WCSimRunAction* myRun,
   G4DigiManager* DMman = G4DigiManager::GetDMpointer();
 
   //create PMT response module
-<<<<<<< HEAD
   WCSimWCPMT* WCDMPMT = new WCSimWCPMT( "WCReadoutPMT", myDetector, "tank");
   DMman->AddNewModule(WCDMPMT);
 

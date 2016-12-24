@@ -114,7 +114,6 @@ G4LogicalVolume* WCSimDetectorConstruction::ConstructCylinder()
 //			       360.*deg);
 
   G4Tubs* solidWC = new G4Tubs("WC",
-<<<<<<< HEAD
 			       0.0*m,
 			       WCRadius+2.*cm,
 			       .5*WCLength+2.*cm,	// smaller excess for ANNIE
@@ -725,6 +724,7 @@ If used here, uncomment the SetVisAttributes(WClogic) line, and comment out the 
 						 -barrelCellWidth/2.+(i+0.5)*horizontalSpacing,
 						 -barrelCellHeight/2.+(j+0.5)*verticalSpacing);
 
+  G4cout<<"PMT position: "<<WCIDRadius<<","<<-barrelCellWidth/2.+(i+0.5)*horizontalSpacing<<","<<-barrelCellHeight/2.+(j+0.5)*verticalSpacing<<G4endl;
 
       G4VPhysicalVolume* physiWCBarrelPMT =
 	new G4PVPlacement(WCPMTRotation,              // its rotation
@@ -741,7 +741,6 @@ If used here, uncomment the SetVisAttributes(WClogic) line, and comment out the 
 		// this is still the case.
     }
   }
-  G4cout<<"PMT position: "<<WCIDRadius<<","<<-barrelCellWidth/2.+(i+0.5)*horizontalSpacing<<","<<-barrelCellHeight/2.+(j+0.5)*verticalSpacing<<G4endl;
 
   //////----------- Barrel LAPPD placement --------------
   G4RotationMatrix* WCLAPPDRotation = new G4RotationMatrix;

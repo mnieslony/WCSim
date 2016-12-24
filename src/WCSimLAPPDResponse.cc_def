@@ -14,8 +14,8 @@ ClassImp(WCSimLAPPDresponse)
 
 WCSimLAPPDresponse::WCSimLAPPDresponse()
 {
-  //TFile* tf = new TFile("pulsecharacteristics.root","READ");
-  TFile* tf = new TFile("/annie/app/users/edrakopo/WCSimWCLAPPD/pulsecharacteristics.root","READ");
+  TFile* tf = new TFile("pulsecharacteristics.root","READ");
+  //TFile* tf = new TFile("/annie/app/users/edrakopo/WCSimWCLAPPD/pulsecharacteristics.root","READ");
   // the shape of a typical pulse 
   _templatepulse = (TH1D*) tf->Get("templatepulse");
   // variations in the peak signal on the central strip

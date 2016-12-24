@@ -41,6 +41,9 @@ namespace std {} using namespace std;
 #include "/home/marc/LinuxSystemFiles/WCSim/gitver/wcsim/include/WCSimRootEvent.hh"
 #include "/home/marc/LinuxSystemFiles/WCSim/gitver/wcsim/include/WCSimRootGeom.hh"
 #include "/home/marc/LinuxSystemFiles/WCSim/gitver/wcsim/include/WCSimPmtInfo.hh"
+#include "/home/marc/LinuxSystemFiles/WCSim/gitver/wcsim/include/WCSimLAPPDInfo.hh"
+#include "/home/marc/LinuxSystemFiles/WCSim/gitver/wcsim/include/WCSimLAPPDpulse.hh"
+#include "/home/marc/LinuxSystemFiles/WCSim/gitver/wcsim/include/WCSimLAPPDpulseCluster.hh"
 #include "/home/marc/LinuxSystemFiles/WCSim/gitver/wcsim/include/WCSimEnumerations.hh"
 
 // Header files passed via #pragma extra_include
@@ -314,7 +317,7 @@ namespace ROOT {
       ::WCSimRootGeom *ptr = 0;
       static ::TVirtualIsAProxy* isa_proxy = new ::TInstrumentedIsAProxy< ::WCSimRootGeom >(0);
       static ::ROOT::TGenericClassInfo 
-         instance("WCSimRootGeom", ::WCSimRootGeom::Class_Version(), "WCSimRootGeom.hh", 49,
+         instance("WCSimRootGeom", ::WCSimRootGeom::Class_Version(), "WCSimRootGeom.hh", 52,
                   typeid(::WCSimRootGeom), ::ROOT::Internal::DefineBehavior(ptr, ptr),
                   &::WCSimRootGeom::Dictionary, isa_proxy, 4,
                   sizeof(::WCSimRootGeom) );
@@ -440,6 +443,98 @@ namespace ROOT {
    static void WCSimEnumerations_TClassManip(TClass* ){
    }
 
+} // end of namespace ROOT
+
+namespace ROOT {
+   static void *new_WCSimLAPPDInfo(void *p = 0);
+   static void *newArray_WCSimLAPPDInfo(Long_t size, void *p);
+   static void delete_WCSimLAPPDInfo(void *p);
+   static void deleteArray_WCSimLAPPDInfo(void *p);
+   static void destruct_WCSimLAPPDInfo(void *p);
+
+   // Function generating the singleton type initializer
+   static TGenericClassInfo *GenerateInitInstanceLocal(const ::WCSimLAPPDInfo*)
+   {
+      ::WCSimLAPPDInfo *ptr = 0;
+      static ::TVirtualIsAProxy* isa_proxy = new ::TInstrumentedIsAProxy< ::WCSimLAPPDInfo >(0);
+      static ::ROOT::TGenericClassInfo 
+         instance("WCSimLAPPDInfo", ::WCSimLAPPDInfo::Class_Version(), "WCSimLAPPDInfo.hh", 14,
+                  typeid(::WCSimLAPPDInfo), ::ROOT::Internal::DefineBehavior(ptr, ptr),
+                  &::WCSimLAPPDInfo::Dictionary, isa_proxy, 4,
+                  sizeof(::WCSimLAPPDInfo) );
+      instance.SetNew(&new_WCSimLAPPDInfo);
+      instance.SetNewArray(&newArray_WCSimLAPPDInfo);
+      instance.SetDelete(&delete_WCSimLAPPDInfo);
+      instance.SetDeleteArray(&deleteArray_WCSimLAPPDInfo);
+      instance.SetDestructor(&destruct_WCSimLAPPDInfo);
+      return &instance;
+   }
+   TGenericClassInfo *GenerateInitInstance(const ::WCSimLAPPDInfo*)
+   {
+      return GenerateInitInstanceLocal((::WCSimLAPPDInfo*)0);
+   }
+   // Static variable to force the class initialization
+   static ::ROOT::TGenericClassInfo *_R__UNIQUE_(Init) = GenerateInitInstanceLocal((const ::WCSimLAPPDInfo*)0x0); R__UseDummy(_R__UNIQUE_(Init));
+} // end of namespace ROOT
+
+namespace ROOT {
+   static void delete_WCSimLAPPDpulse(void *p);
+   static void deleteArray_WCSimLAPPDpulse(void *p);
+   static void destruct_WCSimLAPPDpulse(void *p);
+
+   // Function generating the singleton type initializer
+   static TGenericClassInfo *GenerateInitInstanceLocal(const ::WCSimLAPPDpulse*)
+   {
+      ::WCSimLAPPDpulse *ptr = 0;
+      static ::TVirtualIsAProxy* isa_proxy = new ::TInstrumentedIsAProxy< ::WCSimLAPPDpulse >(0);
+      static ::ROOT::TGenericClassInfo 
+         instance("WCSimLAPPDpulse", ::WCSimLAPPDpulse::Class_Version(), "WCSimLAPPDpulse.hh", 10,
+                  typeid(::WCSimLAPPDpulse), ::ROOT::Internal::DefineBehavior(ptr, ptr),
+                  &::WCSimLAPPDpulse::Dictionary, isa_proxy, 4,
+                  sizeof(::WCSimLAPPDpulse) );
+      instance.SetDelete(&delete_WCSimLAPPDpulse);
+      instance.SetDeleteArray(&deleteArray_WCSimLAPPDpulse);
+      instance.SetDestructor(&destruct_WCSimLAPPDpulse);
+      return &instance;
+   }
+   TGenericClassInfo *GenerateInitInstance(const ::WCSimLAPPDpulse*)
+   {
+      return GenerateInitInstanceLocal((::WCSimLAPPDpulse*)0);
+   }
+   // Static variable to force the class initialization
+   static ::ROOT::TGenericClassInfo *_R__UNIQUE_(Init) = GenerateInitInstanceLocal((const ::WCSimLAPPDpulse*)0x0); R__UseDummy(_R__UNIQUE_(Init));
+} // end of namespace ROOT
+
+namespace ROOT {
+   static void *new_WCSimLAPPDpulseCluster(void *p = 0);
+   static void *newArray_WCSimLAPPDpulseCluster(Long_t size, void *p);
+   static void delete_WCSimLAPPDpulseCluster(void *p);
+   static void deleteArray_WCSimLAPPDpulseCluster(void *p);
+   static void destruct_WCSimLAPPDpulseCluster(void *p);
+
+   // Function generating the singleton type initializer
+   static TGenericClassInfo *GenerateInitInstanceLocal(const ::WCSimLAPPDpulseCluster*)
+   {
+      ::WCSimLAPPDpulseCluster *ptr = 0;
+      static ::TVirtualIsAProxy* isa_proxy = new ::TInstrumentedIsAProxy< ::WCSimLAPPDpulseCluster >(0);
+      static ::ROOT::TGenericClassInfo 
+         instance("WCSimLAPPDpulseCluster", ::WCSimLAPPDpulseCluster::Class_Version(), "WCSimLAPPDpulseCluster.hh", 9,
+                  typeid(::WCSimLAPPDpulseCluster), ::ROOT::Internal::DefineBehavior(ptr, ptr),
+                  &::WCSimLAPPDpulseCluster::Dictionary, isa_proxy, 4,
+                  sizeof(::WCSimLAPPDpulseCluster) );
+      instance.SetNew(&new_WCSimLAPPDpulseCluster);
+      instance.SetNewArray(&newArray_WCSimLAPPDpulseCluster);
+      instance.SetDelete(&delete_WCSimLAPPDpulseCluster);
+      instance.SetDeleteArray(&deleteArray_WCSimLAPPDpulseCluster);
+      instance.SetDestructor(&destruct_WCSimLAPPDpulseCluster);
+      return &instance;
+   }
+   TGenericClassInfo *GenerateInitInstance(const ::WCSimLAPPDpulseCluster*)
+   {
+      return GenerateInitInstanceLocal((::WCSimLAPPDpulseCluster*)0);
+   }
+   // Static variable to force the class initialization
+   static ::ROOT::TGenericClassInfo *_R__UNIQUE_(Init) = GenerateInitInstanceLocal((const ::WCSimLAPPDpulseCluster*)0x0); R__UseDummy(_R__UNIQUE_(Init));
 } // end of namespace ROOT
 
 //______________________________________________________________________________
@@ -828,6 +923,111 @@ TClass *WCSimPmtInfo::Class()
 }
 
 //______________________________________________________________________________
+atomic_TClass_ptr WCSimLAPPDInfo::fgIsA(0);  // static to hold class pointer
+
+//______________________________________________________________________________
+const char *WCSimLAPPDInfo::Class_Name()
+{
+   return "WCSimLAPPDInfo";
+}
+
+//______________________________________________________________________________
+const char *WCSimLAPPDInfo::ImplFileName()
+{
+   return ::ROOT::GenerateInitInstanceLocal((const ::WCSimLAPPDInfo*)0x0)->GetImplFileName();
+}
+
+//______________________________________________________________________________
+int WCSimLAPPDInfo::ImplFileLine()
+{
+   return ::ROOT::GenerateInitInstanceLocal((const ::WCSimLAPPDInfo*)0x0)->GetImplFileLine();
+}
+
+//______________________________________________________________________________
+TClass *WCSimLAPPDInfo::Dictionary()
+{
+   fgIsA = ::ROOT::GenerateInitInstanceLocal((const ::WCSimLAPPDInfo*)0x0)->GetClass();
+   return fgIsA;
+}
+
+//______________________________________________________________________________
+TClass *WCSimLAPPDInfo::Class()
+{
+   if (!fgIsA.load()) { R__LOCKGUARD2(gInterpreterMutex); fgIsA = ::ROOT::GenerateInitInstanceLocal((const ::WCSimLAPPDInfo*)0x0)->GetClass(); }
+   return fgIsA;
+}
+
+//______________________________________________________________________________
+atomic_TClass_ptr WCSimLAPPDpulse::fgIsA(0);  // static to hold class pointer
+
+//______________________________________________________________________________
+const char *WCSimLAPPDpulse::Class_Name()
+{
+   return "WCSimLAPPDpulse";
+}
+
+//______________________________________________________________________________
+const char *WCSimLAPPDpulse::ImplFileName()
+{
+   return ::ROOT::GenerateInitInstanceLocal((const ::WCSimLAPPDpulse*)0x0)->GetImplFileName();
+}
+
+//______________________________________________________________________________
+int WCSimLAPPDpulse::ImplFileLine()
+{
+   return ::ROOT::GenerateInitInstanceLocal((const ::WCSimLAPPDpulse*)0x0)->GetImplFileLine();
+}
+
+//______________________________________________________________________________
+TClass *WCSimLAPPDpulse::Dictionary()
+{
+   fgIsA = ::ROOT::GenerateInitInstanceLocal((const ::WCSimLAPPDpulse*)0x0)->GetClass();
+   return fgIsA;
+}
+
+//______________________________________________________________________________
+TClass *WCSimLAPPDpulse::Class()
+{
+   if (!fgIsA.load()) { R__LOCKGUARD2(gInterpreterMutex); fgIsA = ::ROOT::GenerateInitInstanceLocal((const ::WCSimLAPPDpulse*)0x0)->GetClass(); }
+   return fgIsA;
+}
+
+//______________________________________________________________________________
+atomic_TClass_ptr WCSimLAPPDpulseCluster::fgIsA(0);  // static to hold class pointer
+
+//______________________________________________________________________________
+const char *WCSimLAPPDpulseCluster::Class_Name()
+{
+   return "WCSimLAPPDpulseCluster";
+}
+
+//______________________________________________________________________________
+const char *WCSimLAPPDpulseCluster::ImplFileName()
+{
+   return ::ROOT::GenerateInitInstanceLocal((const ::WCSimLAPPDpulseCluster*)0x0)->GetImplFileName();
+}
+
+//______________________________________________________________________________
+int WCSimLAPPDpulseCluster::ImplFileLine()
+{
+   return ::ROOT::GenerateInitInstanceLocal((const ::WCSimLAPPDpulseCluster*)0x0)->GetImplFileLine();
+}
+
+//______________________________________________________________________________
+TClass *WCSimLAPPDpulseCluster::Dictionary()
+{
+   fgIsA = ::ROOT::GenerateInitInstanceLocal((const ::WCSimLAPPDpulseCluster*)0x0)->GetClass();
+   return fgIsA;
+}
+
+//______________________________________________________________________________
+TClass *WCSimLAPPDpulseCluster::Class()
+{
+   if (!fgIsA.load()) { R__LOCKGUARD2(gInterpreterMutex); fgIsA = ::ROOT::GenerateInitInstanceLocal((const ::WCSimLAPPDpulseCluster*)0x0)->GetClass(); }
+   return fgIsA;
+}
+
+//______________________________________________________________________________
 void WCSimRootCherenkovDigiHit::Streamer(TBuffer &R__b)
 {
    // Stream an object of class WCSimRootCherenkovDigiHit.
@@ -1211,6 +1411,98 @@ namespace ROOT {
    }
 } // end of namespace ROOT for class ::WCSimEnumerations
 
+//______________________________________________________________________________
+void WCSimLAPPDInfo::Streamer(TBuffer &R__b)
+{
+   // Stream an object of class WCSimLAPPDInfo.
+
+   if (R__b.IsReading()) {
+      R__b.ReadClassBuffer(WCSimLAPPDInfo::Class(),this);
+   } else {
+      R__b.WriteClassBuffer(WCSimLAPPDInfo::Class(),this);
+   }
+}
+
+namespace ROOT {
+   // Wrappers around operator new
+   static void *new_WCSimLAPPDInfo(void *p) {
+      return  p ? new(p) ::WCSimLAPPDInfo : new ::WCSimLAPPDInfo;
+   }
+   static void *newArray_WCSimLAPPDInfo(Long_t nElements, void *p) {
+      return p ? new(p) ::WCSimLAPPDInfo[nElements] : new ::WCSimLAPPDInfo[nElements];
+   }
+   // Wrapper around operator delete
+   static void delete_WCSimLAPPDInfo(void *p) {
+      delete ((::WCSimLAPPDInfo*)p);
+   }
+   static void deleteArray_WCSimLAPPDInfo(void *p) {
+      delete [] ((::WCSimLAPPDInfo*)p);
+   }
+   static void destruct_WCSimLAPPDInfo(void *p) {
+      typedef ::WCSimLAPPDInfo current_t;
+      ((current_t*)p)->~current_t();
+   }
+} // end of namespace ROOT for class ::WCSimLAPPDInfo
+
+//______________________________________________________________________________
+void WCSimLAPPDpulse::Streamer(TBuffer &R__b)
+{
+   // Stream an object of class WCSimLAPPDpulse.
+
+   if (R__b.IsReading()) {
+      R__b.ReadClassBuffer(WCSimLAPPDpulse::Class(),this);
+   } else {
+      R__b.WriteClassBuffer(WCSimLAPPDpulse::Class(),this);
+   }
+}
+
+namespace ROOT {
+   // Wrapper around operator delete
+   static void delete_WCSimLAPPDpulse(void *p) {
+      delete ((::WCSimLAPPDpulse*)p);
+   }
+   static void deleteArray_WCSimLAPPDpulse(void *p) {
+      delete [] ((::WCSimLAPPDpulse*)p);
+   }
+   static void destruct_WCSimLAPPDpulse(void *p) {
+      typedef ::WCSimLAPPDpulse current_t;
+      ((current_t*)p)->~current_t();
+   }
+} // end of namespace ROOT for class ::WCSimLAPPDpulse
+
+//______________________________________________________________________________
+void WCSimLAPPDpulseCluster::Streamer(TBuffer &R__b)
+{
+   // Stream an object of class WCSimLAPPDpulseCluster.
+
+   if (R__b.IsReading()) {
+      R__b.ReadClassBuffer(WCSimLAPPDpulseCluster::Class(),this);
+   } else {
+      R__b.WriteClassBuffer(WCSimLAPPDpulseCluster::Class(),this);
+   }
+}
+
+namespace ROOT {
+   // Wrappers around operator new
+   static void *new_WCSimLAPPDpulseCluster(void *p) {
+      return  p ? new(p) ::WCSimLAPPDpulseCluster : new ::WCSimLAPPDpulseCluster;
+   }
+   static void *newArray_WCSimLAPPDpulseCluster(Long_t nElements, void *p) {
+      return p ? new(p) ::WCSimLAPPDpulseCluster[nElements] : new ::WCSimLAPPDpulseCluster[nElements];
+   }
+   // Wrapper around operator delete
+   static void delete_WCSimLAPPDpulseCluster(void *p) {
+      delete ((::WCSimLAPPDpulseCluster*)p);
+   }
+   static void deleteArray_WCSimLAPPDpulseCluster(void *p) {
+      delete [] ((::WCSimLAPPDpulseCluster*)p);
+   }
+   static void destruct_WCSimLAPPDpulseCluster(void *p) {
+      typedef ::WCSimLAPPDpulseCluster current_t;
+      ((current_t*)p)->~current_t();
+   }
+} // end of namespace ROOT for class ::WCSimLAPPDpulseCluster
+
 namespace ROOT {
    static TClass *vectorlEintgR_Dictionary();
    static void vectorlEintgR_TClassManip(TClass*);
@@ -1343,6 +1635,9 @@ namespace {
 "/home/marc/LinuxSystemFiles/WCSim/gitver/wcsim/include/WCSimRootEvent.hh",
 "/home/marc/LinuxSystemFiles/WCSim/gitver/wcsim/include/WCSimRootGeom.hh",
 "/home/marc/LinuxSystemFiles/WCSim/gitver/wcsim/include/WCSimPmtInfo.hh",
+"/home/marc/LinuxSystemFiles/WCSim/gitver/wcsim/include/WCSimLAPPDInfo.hh",
+"/home/marc/LinuxSystemFiles/WCSim/gitver/wcsim/include/WCSimLAPPDpulse.hh",
+"/home/marc/LinuxSystemFiles/WCSim/gitver/wcsim/include/WCSimLAPPDpulseCluster.hh",
 "/home/marc/LinuxSystemFiles/WCSim/gitver/wcsim/include/WCSimEnumerations.hh",
 0
     };
@@ -1372,6 +1667,9 @@ class __attribute__((annotate(R"ATTRDUMP(WCSimRootEvent structure)ATTRDUMP"))) _
 class __attribute__((annotate(R"ATTRDUMP(WCSimPMT structure)ATTRDUMP"))) __attribute__((annotate("$clingAutoload$/home/marc/LinuxSystemFiles/WCSim/gitver/wcsim/include/WCSimRootGeom.hh")))  WCSimRootPMT;
 class __attribute__((annotate("$clingAutoload$/home/marc/LinuxSystemFiles/WCSim/gitver/wcsim/include/WCSimPmtInfo.hh")))  WCSimPmtInfo;
 class __attribute__((annotate("$clingAutoload$/home/marc/LinuxSystemFiles/WCSim/gitver/wcsim/include/WCSimRootEvent.hh")))  WCSimEnumerations;
+class __attribute__((annotate("$clingAutoload$/home/marc/LinuxSystemFiles/WCSim/gitver/wcsim/include/WCSimLAPPDInfo.hh")))  WCSimLAPPDInfo;
+class __attribute__((annotate("$clingAutoload$/home/marc/LinuxSystemFiles/WCSim/gitver/wcsim/include/WCSimLAPPDpulse.hh")))  WCSimLAPPDpulse;
+class __attribute__((annotate("$clingAutoload$/home/marc/LinuxSystemFiles/WCSim/gitver/wcsim/include/WCSimLAPPDpulseCluster.hh")))  WCSimLAPPDpulseCluster;
 )DICTFWDDCLS";
     static const char* payloadCode = R"DICTPAYLOAD(
 #line 1 "WCSimRootDict dictionary payload"
@@ -1384,12 +1682,18 @@ class __attribute__((annotate("$clingAutoload$/home/marc/LinuxSystemFiles/WCSim/
 #include "/home/marc/LinuxSystemFiles/WCSim/gitver/wcsim/include/WCSimRootEvent.hh"
 #include "/home/marc/LinuxSystemFiles/WCSim/gitver/wcsim/include/WCSimRootGeom.hh"
 #include "/home/marc/LinuxSystemFiles/WCSim/gitver/wcsim/include/WCSimPmtInfo.hh"
+#include "/home/marc/LinuxSystemFiles/WCSim/gitver/wcsim/include/WCSimLAPPDInfo.hh"
+#include "/home/marc/LinuxSystemFiles/WCSim/gitver/wcsim/include/WCSimLAPPDpulse.hh"
+#include "/home/marc/LinuxSystemFiles/WCSim/gitver/wcsim/include/WCSimLAPPDpulseCluster.hh"
 #include "/home/marc/LinuxSystemFiles/WCSim/gitver/wcsim/include/WCSimEnumerations.hh"
 
 #undef  _BACKWARD_BACKWARD_WARNING_H
 )DICTPAYLOAD";
     static const char* classesHeaders[]={
 "WCSimEnumerations", payloadCode, "@",
+"WCSimLAPPDInfo", payloadCode, "@",
+"WCSimLAPPDpulse", payloadCode, "@",
+"WCSimLAPPDpulseCluster", payloadCode, "@",
 "WCSimPmtInfo", payloadCode, "@",
 "WCSimRootCherenkovDigiHit", payloadCode, "@",
 "WCSimRootCherenkovHit", payloadCode, "@",

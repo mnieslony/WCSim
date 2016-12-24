@@ -208,7 +208,7 @@ G4bool WCSimWCSD::ProcessHits(G4Step* aStep, G4TouchableHistory*)
     if (fdet->GetLAPPD_QE_Method()==1){
       photonQE = 1.1;
     }else if (fdet->GetLAPPD_QE_Method()==2){
-      maxQE = fdet->GetLAPPDQE(WCIDCollectionName,wavelength,0,240,660,ratio);
+      maxQE = fdet->GetLAPPDQE(WCCollectionName,wavelength,0,240,660,ratio);
       photonQE = fdet->GetLAPPDQE(volumeName, wavelength,1,240,660,ratio);
       photonQE = photonQE/maxQE;
     }else if (fdet->GetLAPPD_QE_Method()==3){
@@ -273,6 +273,12 @@ G4bool WCSimWCSD::ProcessHits(G4Step* aStep, G4TouchableHistory*)
        
        effectiveAngularEfficiency2 = fdet->GetLAPPDCollectionEfficiency(theta_angle, volumeName);
        if (G4UniformRand() <= effectiveAngularEfficiency2 || fdet->UseLAPPD_Coll_Eff()==0){
+       //Retrieve the pointer to the appropriate hit collection. Since volumeName is the same as the SD name, this works. 
+       G4SDManager* SDman = G4SDManager::GetSDMpointer();
+       G4RunManager* Runman = G4RunManager::GetRunManager();
+       G4int collectionID = SDman->GetCollectionID(volumeName);
+       const G4Event* currentEvent = Runman->GetCurrentEvent();
+       G4HCofThisEvent* HCofEvent = currentEvent->GetHCofThisEvent();
 
        G4cout<<"trackID= "<<trackID<<" volumeName= "<<volumeName<<" hitTime= "<<hitTime<<G4endl;
 

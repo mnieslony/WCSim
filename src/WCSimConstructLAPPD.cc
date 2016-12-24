@@ -59,7 +59,7 @@ else
 
   G4double sphereRadius = radius; //radius is actually half length in x,y
   //(expose*expose+ radius*radius)/(2*expose);
-  G4double LAPPDOffset =  expose-glassThickness/2.; //centre of glass position coordinates
+  G4double LAPPDOffset = 0.;//expose-glassThickness/2.; //centre of glass position coordinates
 
   //All components of the LAPPD are now contained in a single logical volume logicWCLAPPD.
   //Origin is on the blacksheet, faces positive z-direction.
@@ -90,44 +90,44 @@ else{
     logicWCLAPPD->SetVisAttributes(G4VisAttributes::Invisible);
  }
 //Need a volume to cut away excess behind blacksheet-for LAPPDs no need for that 
- G4Box* solidCutOffTubs =
-   new G4Box(    "cutOffLAPPDs",
-		 0.01*m,
-		 0.01*m,
-		 0.01*m);
+// G4Box* solidCutOffTubs =
+//   new G4Box(    "cutOffLAPPDs",
+//		 0.01*m,
+//		 0.01*m,
+//		 0.01*m);
 
 //LAPPD active area
   G4Box* tmpSolidInteriorWCLAPPD = 
    new G4Box("tmpInteriorWCLAPPD",                    
-	     sphereRadius*m,              //half length in x ~ 10.15cm
-	     sphereRadius*m,              //half length in y ~ 10.15cm
-	     (expose*m-glassThickness) //half length in z
+	     sphereRadius,              //half length in x ~ 10.15cm
+	     sphereRadius,              //half length in y ~ 10.15cm
+	     (expose-glassThickness) //half length in z
 	     );//
 
   G4Transform3D transform = G4Transform3D(G4RotationMatrix(), G4ThreeVector(-1*m, -1*m, -1*m));
-  G4SubtractionSolid* solidInteriorWCLAPPD =
-      new G4SubtractionSolid(    "InteriorWCLAPPD",
-				 tmpSolidInteriorWCLAPPD,
-				 solidCutOffTubs,
-                                 transform);
+//  G4SubtractionSolid* solidInteriorWCLAPPD =
+//      new G4SubtractionSolid(    "InteriorWCLAPPD",
+//				 tmpSolidInteriorWCLAPPD,
+//				 solidCutOffTubs,
+//                                 transform);
 
   // "Air" here is not true air, but a modified material
   // with n = 1 and a very short absorption length
   G4LogicalVolume* logicInteriorWCLAPPD =
-    new G4LogicalVolume(    solidInteriorWCLAPPD,
+    new G4LogicalVolume(    tmpSolidInteriorWCLAPPD, //solidInteriorWCLAPPD,
 			    G4Material::GetMaterial("Air"),
 			    "InteriorWCLAPPD",
 			    0,0,0);
 
-  //G4cout<<"From ConstructLAPPD: LAPPDOffset= "<<LAPPDOffset<<" expose= "<<expose<<G4endl;
-  G4VPhysicalVolume* physiInteriorWCLAPPD =
-      new G4PVPlacement(0,
-			G4ThreeVector(0, 0, 0),
-			logicInteriorWCLAPPD,
-			"InteriorWCLAPPD",
-			logicWCLAPPD,
-			false,
-			0);
+//  //G4cout<<"From ConstructLAPPD: LAPPDOffset= "<<LAPPDOffset<<" expose= "<<expose<<G4endl;
+//  G4VPhysicalVolume* physiInteriorWCLAPPD =
+//      new G4PVPlacement(0,
+//			G4ThreeVector(0, 0, 0),
+//			logicInteriorWCLAPPD,
+//			"InteriorWCLAPPD",
+//			logicWCLAPPD,
+//			false,
+//			0);
 
 if (Vis_Choice == "RayTracer"){
 // Adding color and forcing the inner portion of the LAPPD's to be viewed
@@ -142,32 +142,41 @@ else {
   logicInteriorWCLAPPD->SetVisAttributes(G4VisAttributes::Invisible);
  }
 //we ned that to substract the LAPPD active area to get the glass volume
-G4Box* solidCutOffTubs2 =
-   new G4Box(    "cutOffLAPPDsglass",
-                 sphereRadius*m,
-                 sphereRadius*m,
-                 (expose*m));//-glassThickness));
+//G4Box* solidCutOffTubs2 =
+//   new G4Box(    "cutOffLAPPDsglass",
+//                 sphereRadius,
+//                 sphereRadius,
+//                 expose);//-glassThickness));
 
 //Create LAPPD Glass Face
  G4Box* tmpGlassFaceWCLAPPD = 
    new G4Box("tmpGlassFaceWCLAPPD",                    
 	     (sphereRadius + 0.0085*m), //half length in x
 	     (sphereRadius + 0.013*m), //half length in y
-	     (expose+glassThickness)       //half length in z
+	     (expose)//+glassThickness)       //half length in z
 	     );//
 
- G4SubtractionSolid* solidGlassFaceWCLAPPD =
-   new G4SubtractionSolid(    CollectionName2,
-			      tmpGlassFaceWCLAPPD,
-			      solidCutOffTubs//,
-			      //transform  
-			); 
+// G4SubtractionSolid* solidGlassFaceWCLAPPD =
+//   new G4SubtractionSolid(    CollectionName2,
+//			      tmpGlassFaceWCLAPPD,
+//			      solidCutOffTubs//,
+//			      //transform  
+//			); 
 
  G4LogicalVolume *logicGlassFaceWCLAPPD =
-   new G4LogicalVolume(    solidGlassFaceWCLAPPD,
+   new G4LogicalVolume(    tmpGlassFaceWCLAPPD, //solidGlassFaceWCLAPPD,
 			   G4Material::GetMaterial("Glass"),
 			   CollectionName2,
 			   0,0,0);
+
+ G4VPhysicalVolume* physiInteriorWCLAPPD =
+    new G4PVPlacement(0,
+		G4ThreeVector(0, 0, -glassThickness),
+		logicInteriorWCLAPPD,
+		"InteriorWCLAPPD",
+		logicGlassFaceWCLAPPD,
+		false,
+		0);
 
  G4VPhysicalVolume* physiGlassFaceWCLAPPD =
    new G4PVPlacement(0,
@@ -221,7 +230,7 @@ G4Box* solidCutOffTubs2 =
   // make a new one
   if( ! SDman->FindSensitiveDetector(SDName, false) ) {
     // G4cout<<"-------- test2: "<<CollectionName2<<G4endl;
-    aWCLAPPD = new WCSimWCSD(CollectionName2,SDName,this );
+    aWCLAPPD = new WCSimWCSD(CollectionName2,SDName,this,"tank" );
     SDman->AddNewDetector( aWCLAPPD );
   }
 

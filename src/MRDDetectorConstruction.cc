@@ -93,8 +93,8 @@ void WCSimDetectorConstruction::DefineANNIEdimensions(){
 	vetolgfullylen = 10.*cm;
 	vetolgfullxlen = 50.*cm;
 
-	vetoZlen = 2*vetopaddlefullzlen+vetopaddlegap;
-	if((2.*FACCPMTRadius+vetopaddlegap)>vetoZlen){vetoZlen=(2.*FACCPMTRadius+vetopaddlegap);}
+	vetolayerthickness = std::max(vetopaddlefullzlen,(2*(FACCPMTRadius+2*cm)));
+	vetoZlen = vetolayerthickness+vetopaddlegap+(vetopaddlefullzlen/2);	// not 2xthickness as they're not back to back
 
 	//extern G4double tankouterRadius;
 
@@ -157,7 +157,7 @@ void WCSimDetectorConstruction::DefineANNIEdimensions(){
 	vetoLG_box = new G4Trd("vetoLG_box", vetopaddlefullylen/2, vetolgfullylen/2, vetopaddlefullzlen/2, vetopaddlefullzlen/2, vetolgfullxlen/2);
 
 	vetopmtfullheight = FACCPMTExposeHeight;
-	totVeto_box = new G4Box("totVeto_box", (vetopaddlefullxlen/2)+vetolgfullxlen+vetopmtfullheight+nothickness+vetopaddlegap*2, (((vetopaddlefullylen+vetopaddlegap)*vetopaddlesperpanel)+vetolayer2offset)/2+vetopaddlegap*2+FACCPMTRadius*2, vetoZlen);
+	totVeto_box = new G4Box("totVeto_box", (vetopaddlefullxlen/2)+vetolgfullxlen+vetopmtfullheight+nothickness+vetopaddlegap*2, (((vetopaddlefullylen+vetopaddlegap)*vetopaddlesperpanel)+vetolayer2offset)/2+vetopaddlegap*2+FACCPMTRadius*2, vetoZlen/2.);
 
 	// Define rotation matrices 
 	//=========================
@@ -308,7 +308,7 @@ void WCSimDetectorConstruction::ConstructMRD(G4LogicalVolume* expHall_log, G4VPh
   //===============================================================================================================
  
   G4cout<<"Constructing VETO"<<G4endl;
-  G4double vetoZoffset = -(0*tankouterRadius) + (vetoZlen/2.) + 2*cm;	// by definition of rob's geometry, FACC is ~z=0
+  G4double vetoZoffset = -(0*tankouterRadius) + (vetoZlen/2.) - 2*cm;	// by definition of rob's geometry, FACC is ~z=0
   //G4cout << "Veto z start: " << vetoZoffset-(vetoZlen/2.) << " and total length: "<< vetoZlen << G4endl;
   
   G4LogicalVolume* totVeto_log = new G4LogicalVolume(totVeto_box, G4Material::GetMaterial("Vacuum"), "totVetolog",0,0,0);
@@ -613,7 +613,7 @@ void WCSimDetectorConstruction::ComputeVetoPaddleTransformation (const G4int cop
 		G4int panelnum = floor(copyNo/vetopaddlesperpanel);												// numbering from 0
 		G4int paddlenum = copyNo%vetopaddlesperpanel; 														// numering from 0 within a panel
 		Zposition = panelnum*(vetopaddlefullzlen+vetopaddlegap); 									// layer width offset
-		Zposition = Zposition + (vetopaddlefullzlen/2);														// offset by half depth to place front face not centre
+		Zposition = Zposition + (vetolayerthickness/2);														// offset by half depth to place front face not centre
 		Zposition = Zposition - (vetoZlen/2);																			// offset by half total length to shift to front
 			
 		// AFAIK paddle dims are the same in both layers.

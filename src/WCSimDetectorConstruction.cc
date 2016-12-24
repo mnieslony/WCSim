@@ -122,7 +122,6 @@ WCSimDetectorConstruction::~WCSimDetectorConstruction(){
     delete fpmts.at(i);
   }
   fpmts.clear();
-<<<<<<< HEAD
   for (unsigned int i=0;i<fmrdpmts.size();i++){
     delete fmrdpmts.at(i);
   }

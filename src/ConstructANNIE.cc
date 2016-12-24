@@ -70,13 +70,6 @@
 #include "G4SystemOfUnits.hh"
 #include "G4GDMLParser.hh"
 
-// **********SciBooNE integration
-// ==============================
-//#include "SBsimMRDSD.hh"
-#include "SBsimMRDDB.hh"
-// **********/SciBooNE integration
-// ===============================
-
 // *********WCSim PMT integration
 // ==============================
   #include "WCSimWCSD.hh"

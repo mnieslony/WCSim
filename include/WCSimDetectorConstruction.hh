@@ -37,11 +37,6 @@
 static const G4double INCH = 2.54*cm;
 // *************/SciBooNE integration
 
-#include "MRDSD.hh"
-#include "mrdPMTSD.hh"
-#include "faccPMTSD.hh"
-#include "FACCSD.hh"
-
 
 using __gnu_cxx::hash;
 using __gnu_cxx::hashtable;
@@ -650,6 +645,7 @@ private:
 	G4double vetopmtfullheight;
 
 	G4double vetoZlen;
+	G4double vetolayerthickness;
 
 	G4double maxwidth;
 	G4double maxheight;

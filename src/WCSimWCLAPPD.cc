@@ -53,7 +53,7 @@ WCSimWCLAPPD::WCSimWCLAPPD(G4String name,
   DigiHitMapLAPPD.clear();
  
  
-  TFile* tf = new TFile("/annie/app/users/edrakopo/WCSim_ANNIE/pulsecharacteristics.root","READ");
+  TFile* tf = new TFile("pulsecharacteristics.root","READ");
   // the shape of a typical pulse 
   _templatepulse = (TH1D*) tf->Get("templatepulse");
   // variations in the peak signal on the central strip
