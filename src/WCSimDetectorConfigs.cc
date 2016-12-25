@@ -113,9 +113,10 @@ void WCSimDetectorConstruction::SetANNIEPhase2Geometry()
   WCCapEdgeLimit        = WCIDDiameter/2.0 - WCPMTRadius;
   WCBlackSheetThickness = 1.01*mm;				// liner is 40 mil. which is, of course, 40 milli inches. 
   //WCBarrelNRingsLAPPD     = 2;
-  WCBarrelLAPPDOffset     = 0.25*m; 			// offset of first barrel ring from tank caps
+  WCBarrelLAPPDOffset     = 0.2*m; 			// offset of first barrel ring from tank caps
+  WCCapLAPPDSpacing       = 2*(WCLAPPDRadius+100.*mm);
   //WCBarrelNumLAPPDHorizontal  = 1;  			// it should result to: 4 rings of 1 LAPPD = 4LAPPDs (?)
-  WCLAPPDperCellHorizontal= 1;					// 
+  WCLAPPDperCellHorizontal= 2;					// 
   WCLAPPDperCellVertical  = 1;					// assume each row corresponds to a cell - significance of cells?
 }
 

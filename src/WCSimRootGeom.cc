@@ -33,6 +33,7 @@ WCSimRootGeom::~WCSimRootGeom()
 {
   fPMTArray->Delete();
   delete fPMTArray;
+  delete fLAPPDArray;
 }
 
 //______________________________________________________________________________

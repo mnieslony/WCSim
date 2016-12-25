@@ -160,6 +160,7 @@ set(WCSIM_SCRIPTS
   visRayTracer.mac
   tuning_parameters.mac
   primaries_directory.mac
+  pulsecharacteristics.root
   )
 
 foreach(_script ${WCSIM_SCRIPTS})

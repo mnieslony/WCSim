@@ -1252,12 +1252,16 @@ G4LogicalVolume* WCSimDetectorConstruction::ConstructCaps(G4int zflip)
   // -----------------------------------------------------
   
 	G4LogicalVolume* logicWCPMT = ConstructPMT(WCPMTName, WCIDCollectionName, "tank");
+	G4LogicalVolume* logicWCLAPPD = ConstructLAPPD(WCLAPPDName, WCIDCollectionName2);
 	
 	// If using RayTracer and want to view the detector without caps, comment out the top and bottom PMT's
 
   G4double xoffset;
   G4double yoffset;
+  G4double xoffset2;
+  G4double yoffset2;
   G4int    icopy = 0;
+  G4int    icopylappd = 0;
 
   G4RotationMatrix* WCCapPMTRotation = new G4RotationMatrix;
   if(zflip==-1){
@@ -1298,11 +1302,33 @@ G4LogicalVolume* WCSimDetectorConstruction::ConstructCaps(G4int zflip)
 
 	icopy++;
       }
+     }
+   }
+  
+  // loop over the cap for LAPPDs
+  G4int CapNCell2 = WCCapEdgeLimit/WCCapLAPPDSpacing + 2;
+  for ( int i = -CapNCell2 ; i <  CapNCell2; i++) {
+    for (int j = -CapNCell2 ; j <  CapNCell2; j++)   {
+       xoffset2 = i*WCCapLAPPDSpacing + WCCapLAPPDSpacing*0.5;
+       yoffset2 = j*WCCapLAPPDSpacing + WCCapLAPPDSpacing*0.5;
+       G4ThreeVector cellpos = G4ThreeVector(xoffset2, yoffset2, 0);
+       if (((sqrt(xoffset2*xoffset2 + yoffset2*yoffset2) + WCLAPPDRadius) < WCCapEdgeLimit) ) {
+         G4VPhysicalVolume* physiCapLAPPD =
+            new G4PVPlacement(WCCapPMTRotation,
+                              cellpos,                   // its position
+                              logicWCLAPPD,                // its logical volume
+                              "WCPMT", // its name 
+                              logicWCCap,         // its mother volume
+                              false,                 // no boolean os
+                              icopylappd);               // every PMT need a unique id.
+         icopylappd++;
+       }
     }
   }
 
-  G4cout << "total on cap: " << icopy << "\n";
+  G4cout << "total on cap: " << icopy <<" total lappds on cap "<<icopylappd<< "\n";
   G4cout << "Coverage was calculated to be: " << (icopy*WCPMTRadius*WCPMTRadius/(WCIDRadius*WCIDRadius)) << "\n";
+  G4cout << "LAPPD Coverage was calculated to be: " << (icopylappd*WCLAPPDRadius*WCLAPPDRadius/(WCIDRadius*WCIDRadius)) << "\n";
 
     ///////////////   Barrel PMT placement
   G4RotationMatrix* WCPMTRotation = new G4RotationMatrix;

@@ -84,7 +84,7 @@ void WCSimWCLAPPD::AddSinglePhotonTrace(double trans, double para, double time)
   // Draw a random value for the peak signal peak
   double peak = _PHD->GetRandom(); 
   //
-  G4cout<<"______ peak= "<<peak<<G4endl;
+  //G4cout<<"______ peak= "<<peak<<G4endl;
   
   // find nearest strip
   int neareststripnum = this->FindStripNumber(trans);
@@ -95,7 +95,7 @@ void WCSimWCLAPPD::AddSinglePhotonTrace(double trans, double para, double time)
   // width of the charge sharing
   double thesigma =  _pulsewidth->Interpolate(offcenter);
 
-  G4cout<<"nearest stripnum: "<<neareststripnum<<" off center: "<<offcenter<<" thesigma "<<thesigma<<G4endl;
+  //G4cout<<"nearest stripnum: "<<neareststripnum<<" off center: "<<offcenter<<" thesigma "<<thesigma<<G4endl;
 
   TF1* theChargeSpread = new TF1("theChargeSpread","gaus",-100,100);
   theChargeSpread->SetParameter(0,peak);
@@ -123,11 +123,11 @@ void WCSimWCLAPPD::AddSinglePhotonTrace(double trans, double para, double time)
     //signal has to be larger than 0.5 mV
     if( (wspeak>0.5) && (wstrip>0) && (wstrip<31) ) {
    
-      G4cout<<"which strip "<<wstrip<<" peakvalue "<<wspeak<<G4endl;
-      G4cout<<"time= "<<time<<" lefttime: "<<lefttime<<" righttime: "<<righttime<<G4endl;
+      //G4cout<<"which strip "<<wstrip<<" peakvalue "<<wspeak<<G4endl;
+      //G4cout<<"time= "<<time<<" lefttime: "<<lefttime<<" righttime: "<<righttime<<G4endl;
       WCSimLAPPDpulse* pulse = new WCSimLAPPDpulse(time,lefttime,righttime,wspeak,wstrip);
       _pulseCluster->AddPulse(pulse);
-      G4cout<<"pulsetime: "<<pulse->Getpulsetime()<<" peak= "<<pulse->Getpeakvalue()<<" stripnum= "<<pulse->Getstripnum()<<G4endl;
+      //G4cout<<"pulsetime: "<<pulse->Getpulsetime()<<" peak= "<<pulse->Getpeakvalue()<<" stripnum= "<<pulse->Getstripnum()<<G4endl;
       stripno_peak.insert(std::pair<int,double> (pulse->Getstripnum(), wspeak) );
       stripno_time.insert(std::pair<int,double> (pulse->Getstripnum(), time) );
       stripno_lefttime.insert(std::pair<int,double> (pulse->Getstripnum(), lefttime) );
@@ -262,7 +262,7 @@ G4double WCSimWCLAPPD::rn1pe(){
 void WCSimWCLAPPD::Digitize()
 {
   G4cout<<"..........I'm in digitizing step for LAPPDs.........."<<G4endl;
-  DigitsCollection = new WCSimWCDigitsCollection ("WCDigitizedCollection",collectionName[0]);
+  DigitsCollection = new WCSimWCDigitsCollection ("WCDigitizedCollectionLAPPD",collectionName[0]);
   G4String WCIDCollectionName = myDetector->GetIDCollectionName2();
   G4DigiManager* DigiMan = G4DigiManager::GetDMpointer();
  
@@ -288,8 +288,8 @@ void WCSimWCLAPPD::MakePeCorrection_lappd(WCSimWCHitsCollection* WCHClappd)
   //Get the LAPPD info for hit time smearing
   G4String WCIDCollectionName = myDetector->GetIDCollectionName2();
   WCSimLAPPDObject * LAPPD = myDetector->GetLAPPDPointer(WCIDCollectionName);
-  G4cout<<"____WCIDCollectionName from WCSimWCLAPPD: "<<WCIDCollectionName<<G4endl;
-  G4cout<<"WCHClappd->entries()= "<<WCHClappd->entries()<<G4endl;
+  //G4cout<<"____WCIDCollectionName from WCSimWCLAPPD: "<<WCIDCollectionName<<G4endl;
+  //G4cout<<"WCHClappd->entries()= "<<WCHClappd->entries()<<G4endl;
 
   for (G4int i=0; i < WCHClappd->entries(); i++)
     {
@@ -315,11 +315,11 @@ void WCSimWCLAPPD::MakePeCorrection_lappd(WCSimWCHitsCollection* WCHClappd)
 	//apply time smearing
 	float Q = (peSmeared > 0.5) ? peSmeared : 0.5;
 	time_LAPPD = time_true + LAPPD->HitTimeSmearing(Q);
-	G4cout<<"---- from WCSimWCLAPPD: lappd= "<<lappd<<" time_LAPPD= "<<time_LAPPD<<G4endl;
+	//G4cout<<"---- from WCSimWCLAPPD: lappd= "<<lappd<<" time_LAPPD= "<<time_LAPPD<<G4endl;
         
 	double strip_coorx = ((*WCHClappd)[i]->GetStripPosition(ip).x()); 
 	double strip_coory = ((*WCHClappd)[i]->GetStripPosition(ip).y()); 
-	G4cout<<"GetStripPosition= "<<(*WCHClappd)[i]->GetStripPosition(ip)<<" strip_coorx= "<<strip_coorx<<" strip_coory= "<<strip_coory<<G4endl;
+	//G4cout<<"GetStripPosition= "<<(*WCHClappd)[i]->GetStripPosition(ip)<<" strip_coorx= "<<strip_coorx<<" strip_coory= "<<strip_coory<<G4endl;
 
 	//-------- Get a random strip number and find its coordinate --------
 	//WCSimLAPPDResponse* lappdres = new WCSimLAPPDResponse();
@@ -341,21 +341,22 @@ void WCSimWCLAPPD::MakePeCorrection_lappd(WCSimWCHitsCollection* WCHClappd)
 	// add a photon hit to the LAPPDresponse class
 	// AddSinglePhotonTrace(position_transverse_tostrips(mm), position_parallel_tostrips(mm), global_time(psec))
 	//AddSinglePhotonTrace(coor2-20.0, 50, 1000);
-	G4cout<<"_______ for check_________****"<<G4endl;
+	//G4cout<<"_______ for check_________****"<<G4endl;
         AddSinglePhotonTrace(strip_coory, strip_coorx, time_LAPPD);
-	
+/*
         for(std::map<int,double>::iterator m1=stripno_peak.begin(); m1!=stripno_peak.end(); ++m1){
            G4cout<<"map____"<<(m1)->first<<","<<(m1)->second<<G4endl;
         }
         for(std::map<int,double>::iterator m1=stripno_time.begin(); m1!=stripno_time.end(); ++m1){
            G4cout<<"maptime____"<<(m1)->first<<","<<(m1)->second<<G4endl;
         }
-	for(std::map<int,double>::iterator m3=stripno_lefttime.begin(); m3!=stripno_lefttime.end(); ++m3){
+        for(std::map<int,double>::iterator m3=stripno_lefttime.begin(); m3!=stripno_lefttime.end(); ++m3){
            G4cout<<"maplefttime____"<<(m3)->first<<","<<(m3)->second<<G4endl;
         }
         for(std::map<int,double>::iterator m4=stripno_righttime.begin(); m4!=stripno_righttime.end(); ++m4){
            G4cout<<"maprighttime____"<<(m4)->first<<","<<(m4)->second<<G4endl;
         }
+*/
 	// Get the cluster storing all of the pulses on the LAPPD
 	/*LAPPDpulseCluster* mclust = mlappd->GetPulseCluster();
 	cout<<"pulses for string: "<<sno<<mclust->GetPulse(sno)<<endl;
@@ -372,7 +373,7 @@ void WCSimWCLAPPD::MakePeCorrection_lappd(WCSimWCHitsCollection* WCHClappd)
 	   cout<<"channel "<<i+1<<" number of hits: "<<mclust->GetNPulsesStrip(i+1)<<endl;
 	}*/
 	//--------------
-	G4cout<<"----------before digitisation........"<<G4endl;
+	//G4cout<<"----------before digitisation........"<<G4endl;
 	if ( DigiHitMapLAPPD[lappd] == 0) {
 	  WCSimWCDigi* Digi = new WCSimWCDigi();
 	  Digi->SetLogicalVolume((*WCHClappd)[0]->GetLogicalVolume());

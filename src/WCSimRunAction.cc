@@ -219,6 +219,62 @@ void WCSimRunAction::FillGeoTree(){
   wcsimrootgeom-> SetWCNumPMT(numpmt);
   wcsimrootgeom-> SetWCNumLAPPD(numlappd);
   
+  // debugging
+  Float_t thecylrad = wcsimrootgeom->GetWCCylRadius();
+  G4cout<<"thecylrad="<<thecylrad<<G4endl;
+  Float_t thecyllength = wcsimrootgeom->GetWCCylLength();
+  G4cout<<"thecyllength="<<thecyllength<<G4endl;
+  Int_t thegeotype = wcsimrootgeom->GetGeo_Type();
+  G4cout<<"thegeotype="<<thegeotype<<G4endl;
+  Int_t thenumpmt = wcsimrootgeom->GetWCNumPMT();
+  G4cout<<"thenumpmt="<<thenumpmt<<G4endl;
+  Float_t thepmtrad = wcsimrootgeom->GetWCPMTRadius();
+  G4cout<<"thepmtrad="<<thepmtrad<<G4endl;
+  Int_t thenumlappd = wcsimrootgeom->GetWCNumLAPPD();
+  G4cout<<"thenumlappd="<<thenumlappd<<G4endl;
+  Float_t thelappdrad = wcsimrootgeom->GetWCLAPPDRadius();
+  G4cout<<"thelappdrad="<<thelappdrad<<G4endl;
+  for(int indx=0;indx<3;indx++){
+    Float_t thewcoffset = wcsimrootgeom->GetWCOffset(indx);
+    G4cout<<"thewcoffset["<<indx<<"]="<<thewcoffset<<G4endl;
+  }
+  Int_t theorient = wcsimrootgeom->GetOrientation();
+  G4cout<<"theorient="<<theorient<<G4endl;
+  for(int indx=0;indx<thenumpmt;indx++){
+    WCSimRootPMT therootpmt = wcsimrootgeom->GetPMT(indx);
+    //G4cout<<"therootpmt["<<indx<<"]="<<therootpmt<<G4endl;
+    Int_t thetubeno = therootpmt.GetTubeNo();
+    G4cout<<"thetubeno["<<indx<<"]="<<thetubeno<<G4endl;
+//    Int_t thelappdno = therootpmt.GetLAPPDNo();
+//    G4cout<<"thelappdno["<<indx<<"]="<<thelappdno<<G4endl;
+    Int_t thecylloc = therootpmt.GetCylLoc();
+    G4cout<<"thecylloc["<<indx<<"]="<<thecylloc<<G4endl;
+    for(int indxx=0;indxx<3;indxx++){
+      Float_t theorient = therootpmt.GetOrientation(indxx);
+      G4cout<<"theorient["<<indx<<","<<indxx<<"]="<<theorient<<G4endl;
+      Float_t thepos = therootpmt.GetPosition(indxx);
+      G4cout<<"thepos["<<indx<<","<<indxx<<"]="<<thepos<<G4endl;
+    }
+  }
+  for(int indx=0;indx<thenumlappd;indx++){
+    WCSimRootPMT therootpmt = wcsimrootgeom->GetLAPPD(indx);
+    //G4cout<<"therootpmt["<<indx<<"]="<<therootpmt<<G4endl;
+    Int_t thetubeno = therootpmt.GetTubeNo();
+    G4cout<<"thetubeno["<<indx<<"]="<<thetubeno<<G4endl;
+//    Int_t thelappdno = therootpmt.GetLAPPDNo();
+//    G4cout<<"thelappdno["<<indx<<"]="<<thelappdno<<G4endl;
+    Int_t thecylloc = therootpmt.GetCylLoc();
+    G4cout<<"thecylloc["<<indx<<"]="<<thecylloc<<G4endl;
+    for(int indxx=0;indxx<3;indxx++){
+      Float_t theorient = therootpmt.GetOrientation(indxx);
+      G4cout<<"theorient["<<indx<<","<<indxx<<"]="<<theorient<<G4endl;
+      Float_t thepos = therootpmt.GetPosition(indxx);
+      G4cout<<"thepos["<<indx<<","<<indxx<<"]="<<thepos<<G4endl;
+    }
+  }
+  G4cout<<"wcsimrootgeom is at "<<wcsimrootgeom<<G4endl;
+  // end debugging
+  
   geoTree->Fill();
   TFile* hfile = geoTree->GetCurrentFile();
   hfile->Write(); 
