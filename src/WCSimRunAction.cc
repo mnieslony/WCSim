@@ -139,6 +139,7 @@ void WCSimRunAction::FillGeoTree(){
   Float_t pos[3];
   Float_t rot[3];
   Int_t cylLoc;
+  Float_t zeroes[3]={0.,0.,0.};
 
   if (wcsimdetector->GetIsEggShapedHyperK()) {
       geo_type = 2;
@@ -179,12 +180,12 @@ void WCSimRunAction::FillGeoTree(){
   WCSimPmtInfo *pmt;
   for (unsigned int i=0;i!=fpmts->size();i++){
     pmt = ((WCSimPmtInfo*)fpmts->at(i));
-    pos[0] = pmt->Get_transx();
-    pos[1] = pmt->Get_transy();
-    pos[2] = pmt->Get_transz();
-    rot[0] = pmt->Get_orienx();
-    rot[1] = pmt->Get_orieny();
-    rot[2] = pmt->Get_orienz();
+    pos[0] = (Float_t)pmt->Get_transx();
+    pos[1] = (Float_t)pmt->Get_transy();
+    pos[2] = (Float_t)pmt->Get_transz();
+    rot[0] = (Float_t)pmt->Get_orienx();
+    rot[1] = (Float_t)pmt->Get_orieny();
+    rot[2] = (Float_t)pmt->Get_orienz();
     tubeNo = pmt->Get_tubeid();
     cylLoc = pmt->Get_cylocation();
     wcsimrootgeom-> SetPMT(i,tubeNo,cylLoc,rot,pos);
@@ -198,12 +199,12 @@ void WCSimRunAction::FillGeoTree(){
   WCSimLAPPDInfo *lappd;
   for (unsigned int i=0;i!=flappds->size();i++){
     lappd = ((WCSimLAPPDInfo*)flappds->at(i));
-    pos[0] = lappd->Get_transx();
-    pos[1] = lappd->Get_transy();
-    pos[2] = lappd->Get_transz();
-    rot[0] = lappd->Get_orienx();
-    rot[1] = lappd->Get_orieny();
-    rot[2] = lappd->Get_orienz();
+    pos[0] = (Float_t)lappd->Get_transx();
+    pos[1] = (Float_t)lappd->Get_transy();
+    pos[2] = (Float_t)lappd->Get_transz();
+    rot[0] = (Float_t)lappd->Get_orienx();
+    rot[1] = (Float_t)lappd->Get_orieny();
+    rot[2] = (Float_t)lappd->Get_orienz();
     lappdNo = lappd->Get_lappdid();
     cylLoc = lappd->Get_cylocation();
     wcsimrootgeom-> SetLAPPD(i,lappdNo,cylLoc,rot,pos);
@@ -220,59 +221,59 @@ void WCSimRunAction::FillGeoTree(){
   wcsimrootgeom-> SetWCNumLAPPD(numlappd);
   
   // debugging
-  Float_t thecylrad = wcsimrootgeom->GetWCCylRadius();
-  G4cout<<"thecylrad="<<thecylrad<<G4endl;
-  Float_t thecyllength = wcsimrootgeom->GetWCCylLength();
-  G4cout<<"thecyllength="<<thecyllength<<G4endl;
-  Int_t thegeotype = wcsimrootgeom->GetGeo_Type();
-  G4cout<<"thegeotype="<<thegeotype<<G4endl;
-  Int_t thenumpmt = wcsimrootgeom->GetWCNumPMT();
-  G4cout<<"thenumpmt="<<thenumpmt<<G4endl;
-  Float_t thepmtrad = wcsimrootgeom->GetWCPMTRadius();
-  G4cout<<"thepmtrad="<<thepmtrad<<G4endl;
-  Int_t thenumlappd = wcsimrootgeom->GetWCNumLAPPD();
-  G4cout<<"thenumlappd="<<thenumlappd<<G4endl;
-  Float_t thelappdrad = wcsimrootgeom->GetWCLAPPDRadius();
-  G4cout<<"thelappdrad="<<thelappdrad<<G4endl;
-  for(int indx=0;indx<3;indx++){
-    Float_t thewcoffset = wcsimrootgeom->GetWCOffset(indx);
-    G4cout<<"thewcoffset["<<indx<<"]="<<thewcoffset<<G4endl;
-  }
-  Int_t theorient = wcsimrootgeom->GetOrientation();
-  G4cout<<"theorient="<<theorient<<G4endl;
-  for(int indx=0;indx<thenumpmt;indx++){
-    WCSimRootPMT therootpmt = wcsimrootgeom->GetPMT(indx);
-    //G4cout<<"therootpmt["<<indx<<"]="<<therootpmt<<G4endl;
-    Int_t thetubeno = therootpmt.GetTubeNo();
-    G4cout<<"thetubeno["<<indx<<"]="<<thetubeno<<G4endl;
-//    Int_t thelappdno = therootpmt.GetLAPPDNo();
-//    G4cout<<"thelappdno["<<indx<<"]="<<thelappdno<<G4endl;
-    Int_t thecylloc = therootpmt.GetCylLoc();
-    G4cout<<"thecylloc["<<indx<<"]="<<thecylloc<<G4endl;
-    for(int indxx=0;indxx<3;indxx++){
-      Float_t theorient = therootpmt.GetOrientation(indxx);
-      G4cout<<"theorient["<<indx<<","<<indxx<<"]="<<theorient<<G4endl;
-      Float_t thepos = therootpmt.GetPosition(indxx);
-      G4cout<<"thepos["<<indx<<","<<indxx<<"]="<<thepos<<G4endl;
-    }
-  }
-  for(int indx=0;indx<thenumlappd;indx++){
-    WCSimRootPMT therootpmt = wcsimrootgeom->GetLAPPD(indx);
-    //G4cout<<"therootpmt["<<indx<<"]="<<therootpmt<<G4endl;
-    Int_t thetubeno = therootpmt.GetTubeNo();
-    G4cout<<"thetubeno["<<indx<<"]="<<thetubeno<<G4endl;
-//    Int_t thelappdno = therootpmt.GetLAPPDNo();
-//    G4cout<<"thelappdno["<<indx<<"]="<<thelappdno<<G4endl;
-    Int_t thecylloc = therootpmt.GetCylLoc();
-    G4cout<<"thecylloc["<<indx<<"]="<<thecylloc<<G4endl;
-    for(int indxx=0;indxx<3;indxx++){
-      Float_t theorient = therootpmt.GetOrientation(indxx);
-      G4cout<<"theorient["<<indx<<","<<indxx<<"]="<<theorient<<G4endl;
-      Float_t thepos = therootpmt.GetPosition(indxx);
-      G4cout<<"thepos["<<indx<<","<<indxx<<"]="<<thepos<<G4endl;
-    }
-  }
-  G4cout<<"wcsimrootgeom is at "<<wcsimrootgeom<<G4endl;
+//  Float_t thecylrad = wcsimrootgeom->GetWCCylRadius();
+//  G4cout<<"thecylrad="<<thecylrad<<G4endl;
+//  Float_t thecyllength = wcsimrootgeom->GetWCCylLength();
+//  G4cout<<"thecyllength="<<thecyllength<<G4endl;
+//  Int_t thegeotype = wcsimrootgeom->GetGeo_Type();
+//  G4cout<<"thegeotype="<<thegeotype<<G4endl;
+//  Int_t thenumpmt = wcsimrootgeom->GetWCNumPMT();
+//  G4cout<<"thenumpmt="<<thenumpmt<<G4endl;
+//  Float_t thepmtrad = wcsimrootgeom->GetWCPMTRadius();
+//  G4cout<<"thepmtrad="<<thepmtrad<<G4endl;
+//  Int_t thenumlappd = wcsimrootgeom->GetWCNumLAPPD();
+//  G4cout<<"thenumlappd="<<thenumlappd<<G4endl;
+//  Float_t thelappdrad = wcsimrootgeom->GetWCLAPPDRadius();
+//  G4cout<<"thelappdrad="<<thelappdrad<<G4endl;
+//  for(int indx=0;indx<3;indx++){
+//    Float_t thewcoffset = wcsimrootgeom->GetWCOffset(indx);
+//    G4cout<<"thewcoffset["<<indx<<"]="<<thewcoffset<<G4endl;
+//  }
+//  Int_t theorient = wcsimrootgeom->GetOrientation();
+//  G4cout<<"theorient="<<theorient<<G4endl;
+//  for(int indx=0;indx<thenumpmt;indx++){
+//    WCSimRootPMT therootpmt = wcsimrootgeom->GetPMT(indx);
+//    //G4cout<<"therootpmt["<<indx<<"]="<<therootpmt<<G4endl;
+//    Int_t thetubeno = therootpmt.GetTubeNo();
+//    G4cout<<"thetubeno["<<indx<<"]="<<thetubeno<<G4endl;
+////    Int_t thelappdno = therootpmt.GetLAPPDNo();
+////    G4cout<<"thelappdno["<<indx<<"]="<<thelappdno<<G4endl;
+//    Int_t thecylloc = therootpmt.GetCylLoc();
+//    G4cout<<"thecylloc["<<indx<<"]="<<thecylloc<<G4endl;
+//    for(int indxx=0;indxx<3;indxx++){
+//      Float_t theorient = therootpmt.GetOrientation(indxx);
+//      G4cout<<"theorient["<<indx<<","<<indxx<<"]="<<theorient<<G4endl;
+//      Float_t thepos = therootpmt.GetPosition(indxx);
+//      G4cout<<"thepos["<<indx<<","<<indxx<<"]="<<thepos<<G4endl;
+//    }
+//  }
+//  for(int indx=0;indx<thenumlappd;indx++){
+//    WCSimRootPMT therootpmt = wcsimrootgeom->GetLAPPD(indx);
+//    //G4cout<<"therootpmt["<<indx<<"]="<<therootpmt<<G4endl;
+//    Int_t thetubeno = therootpmt.GetTubeNo();
+//    G4cout<<"thetubeno["<<indx<<"]="<<thetubeno<<G4endl;
+////    Int_t thelappdno = therootpmt.GetLAPPDNo();
+////    G4cout<<"thelappdno["<<indx<<"]="<<thelappdno<<G4endl;
+//    Int_t thecylloc = therootpmt.GetCylLoc();
+//    G4cout<<"thecylloc["<<indx<<"]="<<thecylloc<<G4endl;
+//    for(int indxx=0;indxx<3;indxx++){
+//      Float_t theorient = therootpmt.GetOrientation(indxx);
+//      G4cout<<"theorient["<<indx<<","<<indxx<<"]="<<theorient<<G4endl;
+//      Float_t thepos = therootpmt.GetPosition(indxx);
+//      G4cout<<"thepos["<<indx<<","<<indxx<<"]="<<thepos<<G4endl;
+//    }
+//  }
+//  G4cout<<"wcsimrootgeom is at "<<wcsimrootgeom<<G4endl;
   // end debugging
   
   geoTree->Fill();
