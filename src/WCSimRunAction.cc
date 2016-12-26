@@ -208,7 +208,7 @@ void WCSimRunAction::FillGeoTree(){
     lappdNo = lappd->Get_lappdid();
     cylLoc = lappd->Get_cylocation();
     wcsimrootgeom-> SetLAPPD(i,lappdNo,cylLoc,rot,pos);
-    G4cout<<"lappd= "<<lappdNo<<" at position: "<<pos[0]<<","<<pos[1]<<","<<pos[2]<<G4endl;
+    //G4cout<<"lappd= "<<lappdNo<<" at position: "<<pos[0]<<","<<pos[1]<<","<<pos[2]<<G4endl;
   }
   if (flappds->size() != (unsigned int)numlappd) {
     G4cout << "Mismatch between number of lappds and lappd list in geofile.txt!!"<<G4endl;

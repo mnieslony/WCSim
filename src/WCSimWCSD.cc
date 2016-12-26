@@ -280,7 +280,7 @@ G4bool WCSimWCSD::ProcessHits(G4Step* aStep, G4TouchableHistory*)
        const G4Event* currentEvent = Runman->GetCurrentEvent();
        G4HCofThisEvent* HCofEvent = currentEvent->GetHCofThisEvent();
 
-       G4cout<<"trackID= "<<trackID<<" volumeName= "<<volumeName<<" hitTime= "<<hitTime<<G4endl;
+       //G4cout<<"trackID= "<<trackID<<" volumeName= "<<volumeName<<" hitTime= "<<hitTime<<G4endl;
 
        /*G4StepPoint*       postStepPoint = aStep->GetPostStepPoint();
        G4ThreeVector worldPositionpost = postStepPoint->GetPosition();
@@ -290,7 +290,7 @@ G4bool WCSimWCSD::ProcessHits(G4Step* aStep, G4TouchableHistory*)
        // If this tube hasn't been hit add it to the collection
        if (LAPPDHitMap[replicaNumber2] == 0)
 	 {
-	   G4cout<<"_________ new LAPPD hit_______"<<G4endl;
+	   //G4cout<<"_________ new LAPPD hit_______"<<G4endl;
 	   WCSimWCHit* newHit1 = new WCSimWCHit();
 	   newHit1->SetTubeID(replicaNumber2);
 
@@ -300,13 +300,13 @@ G4bool WCSimWCSD::ProcessHits(G4Step* aStep, G4TouchableHistory*)
 	   G4AffineTransform aTrans = theTouchable->GetHistory()->GetTopTransform();
 	   newHit1->SetRot(aTrans.NetRotation());
 
-	   G4cout<<"worldPosition : "<<worldPosition(0)<<","<<worldPosition(1)<<","<<worldPosition(2)<<G4endl;
-	   G4cout<<"localPosition : "<<localPosition(0)<<","<<localPosition(1)<<","<<localPosition(2)<<G4endl;
+	   //G4cout<<"worldPosition : "<<worldPosition(0)<<","<<worldPosition(1)<<","<<worldPosition(2)<<G4endl;
+	   //G4cout<<"localPosition : "<<localPosition(0)<<","<<localPosition(1)<<","<<localPosition(2)<<G4endl;
           
 	   aTrans.Invert();
-	   G4cout<<"aTrans.NetTranslation()= "<<aTrans.NetTranslation().x()<<","<<aTrans.NetTranslation().y()<<","<<aTrans.NetTranslation().z()<<G4endl;
-	   G4cout<<"HITdist_diffLV: "<<sqrt( (localPosition(0)-aTrans.NetTranslation().x())*(localPosition(0)-aTrans.NetTranslation().x()) + (localPosition(1)-aTrans.NetTranslation().y())*(localPosition(1)-aTrans.NetTranslation().y()) + (localPosition(2)-aTrans.NetTranslation().z())*(localPosition(2)-aTrans.NetTranslation().z()) )<<G4endl;
-           G4cout<<"HITdist_RLV: "<<sqrt( (localPosition(0)-aTrans.NetTranslation().x())*(localPosition(0)-aTrans.NetTranslation().x()) + (localPosition(1)-aTrans.NetTranslation().y())*(localPosition(1)-aTrans.NetTranslation().y()) )<<G4endl;
+	   //G4cout<<"aTrans.NetTranslation()= "<<aTrans.NetTranslation().x()<<","<<aTrans.NetTranslation().y()<<","<<aTrans.NetTranslation().z()<<G4endl;
+	   //G4cout<<"HITdist_diffLV: "<<sqrt( (localPosition(0)-aTrans.NetTranslation().x())*(localPosition(0)-aTrans.NetTranslation().x()) + (localPosition(1)-aTrans.NetTranslation().y())*(localPosition(1)-aTrans.NetTranslation().y()) + (localPosition(2)-aTrans.NetTranslation().z())*(localPosition(2)-aTrans.NetTranslation().z()) )<<G4endl;
+           //G4cout<<"HITdist_RLV: "<<sqrt( (localPosition(0)-aTrans.NetTranslation().x())*(localPosition(0)-aTrans.NetTranslation().x()) + (localPosition(1)-aTrans.NetTranslation().y())*(localPosition(1)-aTrans.NetTranslation().y()) )<<G4endl;
 
 	   newHit1->SetPos(aTrans.NetTranslation());
 
@@ -322,9 +322,9 @@ G4bool WCSimWCSD::ProcessHits(G4Step* aStep, G4TouchableHistory*)
        else {
 	 (*hitsCollectionlappd)[LAPPDHitMap[replicaNumber2]-1]->AddPe(hitTime);
 	 (*hitsCollectionlappd)[LAPPDHitMap[replicaNumber2]-1]->AddParentID(primParentID);
-	 G4cout<<"add new localPosition : "<<localPosition(0)<<","<<localPosition(1)<<","<<localPosition(2)<<G4endl;
+	 //G4cout<<"add new localPosition : "<<localPosition(0)<<","<<localPosition(1)<<","<<localPosition(2)<<G4endl;
          (*hitsCollectionlappd)[LAPPDHitMap[replicaNumber2]-1]->AddStripPosition(localPosition);
- 	 G4cout<<"_________________________"<<G4endl;	
+ 	 //G4cout<<"_________________________"<<G4endl;	
        }
      }
    }//for lappds

@@ -111,7 +111,7 @@ void WCSimWCLAPPD::AddSinglePhotonTrace(double trans, double para, double time)
   double lefttime = leftdistance/(0.53*(0.299792458)); // 53% speed of light (picoseconds per mm) on transmission lines
   double righttime = rightdistance/(0.53*(0.299792458)); // 53% speed of light (picoseconds per mm) on transmission lines
 
-  G4cout<<leftdistance<<" "<<rightdistance<<" "<<lefttime<<" "<<righttime<<G4endl;
+  //G4cout<<leftdistance<<" "<<rightdistance<<" "<<lefttime<<" "<<righttime<<G4endl;
 
   //loop over five-strip cluster about the central strip
   for(int i=0; i<5; i++){
@@ -134,12 +134,12 @@ void WCSimWCLAPPD::AddSinglePhotonTrace(double trans, double para, double time)
       stripno_righttime.insert(std::pair<int,double> (pulse->Getstripnum(), righttime) );
     }
   }   
-  G4cout<<"---> Done Adding Pulse"<<G4endl;
+  //G4cout<<"---> Done Adding Pulse"<<G4endl;
  }
    
 TH1D* WCSimWCLAPPD::GetTrace(int CHnumber, int parity, double starttime, double samplesize, int numsamples, double thenoise)
 {
-  G4cout<<"======== INN GetTrace ======"<<G4endl;
+  //G4cout<<"======== IN GetTrace ======"<<G4endl;
   // parameters for the histogram of the scope trace
   double lowend = (starttime-(samplesize/2.));
   double upend = lowend + samplesize*((double)numsamples);
@@ -157,7 +157,7 @@ TH1D* WCSimWCLAPPD::GetTrace(int CHnumber, int parity, double starttime, double 
 
           double mnoise = thenoise*(mrand->Rndm()-0.5);
           trace->SetBinContent(j+1, mnoise);
-	  G4cout<<"___ --- mnoise= "<<mnoise<<G4endl;
+	  //G4cout<<"___ --- mnoise= "<<mnoise<<G4endl;
          }
   } else{
   //if there are pulses on the strip, loop over the N pulses on that strip
@@ -261,7 +261,7 @@ G4double WCSimWCLAPPD::rn1pe(){
 
 void WCSimWCLAPPD::Digitize()
 {
-  G4cout<<"..........I'm in digitizing step for LAPPDs.........."<<G4endl;
+  //G4cout<<"..........I'm in digitizing step for LAPPDs.........."<<G4endl;
   DigitsCollection = new WCSimWCDigitsCollection ("WCDigitizedCollectionLAPPD",collectionName[0]);
   G4String WCIDCollectionName = myDetector->GetIDCollectionName2();
   G4DigiManager* DigiMan = G4DigiManager::GetDMpointer();
@@ -298,19 +298,19 @@ void WCSimWCLAPPD::MakePeCorrection_lappd(WCSimWCHitsCollection* WCHClappd)
       double time_LAPPD, time_true;
       G4ThreeVector hitPos2;
 
-      G4cout<<"Total Pes: "<<(*WCHClappd)[i]->GetTotalPe()<<G4endl;
+      //G4cout<<"Total Pes: "<<(*WCHClappd)[i]->GetTotalPe()<<G4endl;
       WCSimWCHit* aHit = (*WCHClappd)[i]; //(*mymrdCollection)[hitnum];
       G4ThreeVector hitPos = aHit->GetPos();
       double hitPosx=hitPos.x();
       double hitPosy=hitPos.y();
       double hitPosz=hitPos.z();
-      G4cout<<"LAPPD= "<<lappd<<" hitPosx= "<<hitPosx<<" hitPosy= "<<hitPosy<<" hitPosz= "<<hitPosz<<G4endl;
+      //G4cout<<"LAPPD= "<<lappd<<" hitPosx= "<<hitPosx<<" hitPosy= "<<hitPosy<<" hitPosz= "<<hitPosz<<G4endl;
 
       for (G4int ip =0; ip < (*WCHClappd)[i]->GetTotalPe(); ip++){
 	time_true = (*WCHClappd)[i]->GetTime(ip);
 	peSmeared = rn1pe(); 
 	int parent_id = (*WCHClappd)[i]->GetParentID(ip);
-	G4cout<<"------- ip= "<<ip<<" time_true= "<<time_true<<" parent_id= "<<parent_id<<G4endl;
+	//G4cout<<"------- ip= "<<ip<<" time_true= "<<time_true<<" parent_id= "<<parent_id<<G4endl;
 
 	//apply time smearing
 	float Q = (peSmeared > 0.5) ? peSmeared : 0.5;
@@ -336,7 +336,7 @@ void WCSimWCLAPPD::MakePeCorrection_lappd(WCSimWCHitsCollection* WCHClappd)
 	G4cout<<"strip number for: " <<coor<<" "<<sno0<<G4endl;
         G4cout<<"--------------"<<G4endl;*/
 	int sno = FindStripNumber(strip_coory);
-        G4cout<<"strip number for: " <<strip_coory<<" "<<sno<<G4endl;
+        //G4cout<<"strip number for: " <<strip_coory<<" "<<sno<<G4endl;
 
 	// add a photon hit to the LAPPDresponse class
 	// AddSinglePhotonTrace(position_transverse_tostrips(mm), position_parallel_tostrips(mm), global_time(psec))
