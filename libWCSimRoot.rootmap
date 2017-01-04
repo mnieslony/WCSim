@@ -1,6 +1,7 @@
 [ libWCSimRoot.so ]
 # List of selected classes
 class WCSimEnumerations
+class WCSimLAPPDInfo
 class WCSimPmtInfo
 class WCSimRootCherenkovDigiHit
 class WCSimRootCherenkovHit
@@ -13,6 +14,7 @@ class WCSimRootPi0
 class WCSimRootTrack
 class WCSimRootTrigger
 header WCSimEnumerations.hh
+header WCSimLAPPDInfo.hh
 header WCSimPmtInfo.hh
 header WCSimRootEvent.hh
 header WCSimRootGeom.hh
