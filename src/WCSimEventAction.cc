@@ -862,14 +862,19 @@ G4cout<<"Filling FACC Root Event"<<G4endl;
 		"facc");
   
   TTree* tree = GetRunAction()->GetTree();
-  //TBranch* tankeventbranch = tree->GetBranch("wcsimrootevent");
-  //tree->SetEntries(tankeventbranch->GetEntries());
-  tree->SetEntries(GetRunAction()->GetNumberOfEventsGenerated());
+  TBranch* tankeventbranch = tree->GetBranch("wcsimrootevent");
+  tree->SetEntries(tankeventbranch->GetEntries());
+  //tree->SetEntries(GetRunAction()->GetNumberOfEventsGenerated());
   TFile* hfile = tree->GetCurrentFile();
   // MF : overwrite the trees -- otherwise we have as many copies of the tree
   // as we have events. All the intermediate copies are incomplete, only the
   // last one is useful --> huge waste of disk space.
   hfile->Write("",TObject::kOverwrite);
+  
+  G4cout<<"events generated so far: "<<(GetRunAction()->GetNumberOfEventsGenerated())<<G4endl;
+  if(event_id%1000==0&&event_id!=0){
+    GetRunAction()->CreateNewOutputFile();
+  }
   
   G4cout<<"############# WCSIM FINISH END OF EVENT ACTION  ################"<<G4endl;
 
@@ -1361,8 +1366,8 @@ void WCSimEventAction::FillRootEvent(G4int event_id,
 
   for (int i = 0 ; i < wcsimrootsuperevent->GetNumberOfEvents(); i++) {
     wcsimrootevent = wcsimrootsuperevent->GetTrigger(i);
-    G4cout << ">>>Root event "
-	   <<std::setw(5)<<wcsimrootevent->GetHeader()->GetEvtNum()<<"\n";
+    //G4cout << ">>>Root event "
+	  // <<std::setw(5)<<wcsimrootevent->GetHeader()->GetEvtNum()<<"\n";
     //   if (WCDC){
     // G4cout <<"WC digi:"<<std::setw(4)<<wcsimrootevent->GetNcherenkovdigihits()<<"  ";
     // G4cout <<"WC digi sumQ:"<<std::setw(4)<<wcsimrootevent->GetSumQ()<<"  ";

@@ -31,7 +31,7 @@ void WCSimRunActionMessenger::SetNewValue(G4UIcommand* command,G4String newValue
 
   if ( command == RootFile)
     {
-      WCSimRun->SetRootFileName(newValue);
+      WCSimRun->SetRootFileNameBase(newValue);
       G4cout << "Output ROOT file set to " << newValue << G4endl;
     }
 

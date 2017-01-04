@@ -142,7 +142,7 @@ void WCSimDetectorConstruction::DescribeAndRegisterPMT(G4VPhysicalVolume* aPV ,i
   replicaNoString[aDepth] = pvname.str() + "-" + depth.str();
 
    if( thepvname== WCIDCollectionName2 ){
-     G4cout<<"____counting all LAPPDs"<<G4endl;
+     //G4cout<<"____counting all LAPPDs"<<G4endl;
      totalNumLAPPDs++;
      lappdIDMap[totalNumLAPPDs] = aTransform;
       std::string LAPPDTag; 

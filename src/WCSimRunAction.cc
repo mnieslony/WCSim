@@ -33,6 +33,8 @@ WCSimRunAction::WCSimRunAction(WCSimDetectorConstruction* test)
   // Messenger to allow IO options
   wcsimdetector = test;
   messenger = new WCSimRunActionMessenger(this);
+  OutputFileNum=0;
+  WCSimTree=0;
 
 }
 
@@ -41,9 +43,9 @@ WCSimRunAction::~WCSimRunAction()
 
 }
 
-void WCSimRunAction::BeginOfRunAction(const G4Run* /*aRun*/)
+void WCSimRunAction::BeginOfRunAction(const G4Run* aRun)
 {
-//   G4cout << "### Run " << aRun->GetRunID() << " start." << G4endl;
+  G4cout << "### Run " << aRun->GetRunID() << " start." << G4endl;
   numberOfEventsGenerated = 0;
   numberOfTimesWaterTubeHit = 0;
   numberOfTimesCatcherHit = 0;
@@ -57,18 +59,7 @@ void WCSimRunAction::BeginOfRunAction(const G4Run* /*aRun*/)
   // MF, aug 2006 ... you never know...
   WCSimRootTrigger::Class()->GetStreamerInfo()->Optimize(kFALSE);
 
-  // Create the Root file
-
-  // Now controlled by the messenger
-  
-  G4String rootname = GetRootFileName();
-  TFile* hfile = new TFile(rootname.c_str(),"RECREATE","WCSim ROOT file");
-  hfile->SetCompressionLevel(2);
-
-  // Event tree
-  TTree* tree = new TTree("wcsimT","WCSim Tree");
-
-  SetTree(tree);
+  // Create the events to store in the output tree
   wcsimrootsuperevent = new WCSimRootEvent(); //empty list
   wcsimrootsuperevent_mrd = new WCSimRootEvent();
   wcsimrootsuperevent_facc = new WCSimRootEvent();
@@ -76,6 +67,31 @@ void WCSimRunAction::BeginOfRunAction(const G4Run* /*aRun*/)
   wcsimrootsuperevent->Initialize(); // make at least one event
   wcsimrootsuperevent_mrd->Initialize();
   wcsimrootsuperevent_facc->Initialize();
+  
+  // Create the Root file and output tree
+  CreateNewOutputFile();
+}
+
+void WCSimRunAction::CloseOutputFile(){
+  TFile* hfile = WCSimTree->GetCurrentFile(); 
+  if(hfile){ hfile->Close(); }
+  WCSimTree=0;
+}
+
+void WCSimRunAction::CreateNewOutputFile(){
+  if(WCSimTree){  // if we're creating a new output file to break up large simulations, WCSimTree will be !=0
+    CloseOutputFile();
+    OutputFileNum++;
+  }
+  RootFileName = GetRootFileNameBase() + "_" + std::to_string(OutputFileNum) + ".root";
+  G4cout<<"Setting output file to "<<RootFileName<<G4endl;
+  TFile* hfile = new TFile(RootFileName.c_str(),"RECREATE","WCSim ROOT file");
+  hfile->SetCompressionLevel(2);
+
+  // Event tree
+  TTree* tree = new TTree("wcsimT","WCSim Tree");
+
+  SetTree(tree);
   Int_t branchStyle = 1; //new style by default
   TTree::SetBranchStyle(branchStyle);
   Int_t bufsize = 64000;
@@ -84,18 +100,17 @@ void WCSimRunAction::BeginOfRunAction(const G4Run* /*aRun*/)
   wcsimrooteventbranch_mrd = tree->Branch("wcsimrootevent_mrd", "WCSimRootEvent", &wcsimrootsuperevent_mrd, bufsize,2);
   wcsimrooteventbranch_facc = tree->Branch("wcsimrootevent_facc", "WCSimRootEvent", &wcsimrootsuperevent_facc, bufsize,2);
   
-  // Geometry tree
-
+  // Geometry tree - store a copy in each output file (a bit redundant but safer and doesn't take much space)
   geoTree = new TTree("wcsimGeoT","WCSim Geometry Tree");
   SetGeoTree(geoTree);
   wcsimrootgeom = new WCSimRootGeom();
   TBranch *geoBranch = geoTree->Branch("wcsimrootgeom", "WCSimRootGeom", &wcsimrootgeom, bufsize,0);
-
   FillGeoTree();
 }
 
-void WCSimRunAction::EndOfRunAction(const G4Run*)
+void WCSimRunAction::EndOfRunAction(const G4Run* aRun)
 {
+  G4cout << "### Run " << aRun->GetRunID() << " end." << G4endl;
 //G4cout << "Number of Events Generated: "<< numberOfEventsGenerated << G4endl;
 //G4cout << "Number of times MRD hit: " << numberOfTimesMRDHit << G4endl;
 //G4cout << "Number of times FGD hit: "    << numberOfTimesFGDHit << G4endl;
@@ -109,9 +124,7 @@ void WCSimRunAction::EndOfRunAction(const G4Run*)
 //        << "% through-going (hit Catcher)" << G4endl;
 
   // Close the Root file at the end of the run
-
-  TFile* hfile = WCSimTree->GetCurrentFile();
-  hfile->Close();
+  CloseOutputFile();
 
   // Clean up stuff on the heap; I think deletion of hfile and trees
   // is taken care of by the file close
