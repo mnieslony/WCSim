@@ -64,6 +64,10 @@ private:
   Int_t                  fWCNumPMT;   // Number of PMTs
   Float_t                fWCLAPPDRadius; // Radius of LAPPD
   Int_t                  fWCNumLAPPD;   // Number of LAPPDs
+  Float_t                fMRDPMTRadius; // Radius of MRD PMTs
+  Int_t                  fWCNumMrdPMT;  // Number of MRD PMTs
+  Float_t                fFACCPMTRadius; //Radius of FACC PMTs
+  Int_t                  fWCNumFaccPMT;  // Number of FACC PMTs
   Float_t                fWCOffset[3]; // Offset of barrel center in global coords
   Int_t                  fOrientation; //Orientation o detector, 0 is 2km horizontal, 1 is Upright
 
@@ -72,6 +76,8 @@ private:
   //WCSimRootPMT          fPMTArray[maxNumPMT];  // Array of PMTs
   TClonesArray           *fPMTArray;
   TClonesArray           *fLAPPDArray;
+  TClonesArray           *fMRDPMTArray;
+  TClonesArray           *fFACCPMTArray;
 
 public:
 
@@ -89,6 +95,10 @@ public:
   void  SetWCPMTRadius(Float_t f) {fWCPMTRadius = f;}
   void  SetWCNumLAPPD(Int_t i) {fWCNumLAPPD= i;}
   void  SetWCLAPPDRadius(Float_t f) {fWCLAPPDRadius = f;}
+  void  SetWCNumMrdPMT(Int_t i) {fWCNumMrdPMT = i;}
+  void  SetMRDPMTRadius(Float_t f) {fMRDPMTRadius = f;}
+  void  SetWCNumFaccPMT(Int_t i) {fWCNumFaccPMT = i;}
+  void  SetFACCPMTRadius(Float_t f) {fFACCPMTRadius = f;}
   void  SetWCOffset(Float_t x, Float_t y, Float_t z) 
            {fWCOffset[0]=x; fWCOffset[1]=y; fWCOffset[2] = z;}
   void  SetPMT(Int_t i, Int_t tubeno, Int_t cyl_loc, Float_t rot[3], Float_t pos[3], bool expand=true);
@@ -105,11 +115,17 @@ public:
   Float_t GetWCPMTRadius() const {return fWCPMTRadius;}
   Int_t GetWCNumLAPPD() const {return fWCNumLAPPD;}
   Float_t GetWCLAPPDRadius() const {return fWCLAPPDRadius;}
+  Int_t GetWCNumMRDPMT() const {return fWCNumMrdPMT;}
+  Float_t GetMRDPMTRadius() const {return fMRDPMTRadius;}
+  Int_t GetWCNumFACCPMT() const {return fWCNumFaccPMT;}
+  Float_t GetFACCPMTRadius() const {return fFACCPMTRadius;}
   Float_t GetWCOffset(Int_t i) const {return (i<3) ? fWCOffset[i] : 0.;}
   Int_t GetOrientation() { return fOrientation; }
   //WCSimRootPMT GetPMT(Int_t i){return *(new WCSimRootPMT());}
   WCSimRootPMT GetPMT(Int_t i){return *(WCSimRootPMT*)(*fPMTArray)[i];}
   WCSimRootPMT GetLAPPD(Int_t i){return *(WCSimRootPMT*)(*fLAPPDArray)[i];}
+  WCSimRootPMT GetMRDPMT(Int_t i){return *(WCSimRootPMT*)(*fMRDPMTArray)[i];}
+  WCSimRootPMT GetFACCPMT(Int_t i){return *(WCSimRootPMT*)(*fFACCPMTArray)[i];} 
 
   ClassDef(WCSimRootGeom,1)  //WCSimRootEvent structure
 };

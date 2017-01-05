@@ -549,7 +549,9 @@ private:
   void PlaceVetoPMTs(G4LogicalVolume* totVeto_log);
   void PlaceMylarOnFACCPaddles(G4VPhysicalVolume* expHall_phys, G4VPhysicalVolume* totVeto_phys);
   G4String GetMRDPMTName()			  {return MRDPMTName;}
+  G4double GetMRDPMTRadius()      {return MRDPMTRadius;}
   G4String GetFACCPMTName()			  {return FACCPMTName;}
+  G4double GetFACCPMTRadius()     {return FACCPMTRadius;}
   G4String GetMRDCollectionName(){return WCMRDCollectionName;}
   G4String GetFACCCollectionName(){return WCFACCCollectionName;}
 //  private:

@@ -53,7 +53,7 @@ libWCSimRoot.so : $(ROOTOBJS)
 
 ./src/WCSimRootDict.cc : $(ROOTSRC)
 	@echo Compiling rootcint ...
-	rootcling  -f ./src/WCSimRootDict.cc -rml libWCSimRoot.so -I./include -I$(shell root-config --incdir) WCSimRootEvent.hh WCSimRootGeom.hh  WCSimPmtInfo.hh WCSimLAPPDInfo.hh WCSimEnumerations.hh WCSimRootLinkDef.hh
+	rootcling -f ./src/WCSimRootDict.cc -rml libWCSimRoot.so -rmf libWCSimRoot.rootmap -I./include -I$(shell root-config --incdir) WCSimRootEvent.hh WCSimRootGeom.hh WCSimPmtInfo.hh WCSimLAPPDInfo.hh WCSimEnumerations.hh WCSimRootLinkDef.hh
 
 rootcint: ./src/WCSimRootDict.cc
 

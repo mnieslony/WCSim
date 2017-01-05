@@ -24,7 +24,9 @@ public:
   void BeginOfRunAction(const G4Run*);
   void EndOfRunAction(const G4Run*);
   void SetRootFileName(G4String fname) { RootFileName = fname; }
+  void SetRootFileNameBase(G4String fname) { RootFileNameBase = fname; }
   G4String GetRootFileName() { return RootFileName; }
+  G4String GetRootFileNameBase() { return RootFileNameBase; }
   void FillGeoTree();
   TTree* GetTree(){ return WCSimTree; }
   TBranch* GetBranch(G4String detectorElement){
@@ -58,10 +60,14 @@ public:
   void incrementFVWaterTubeHits() { numberOfTimesFVWaterTubeHit++;} 
   void incrementCatcherHits()     { numberOfTimesCatcherHit++;}
   void SetNtuples(int ntup) {ntuples=ntup;}
+  void CloseOutputFile();
+  void CreateNewOutputFile();
 
 private:
   // MFechner : set by the messenger
   std::string RootFileName;
+  std::string RootFileNameBase;
+  G4int OutputFileNum;
   //
   TTree* WCSimTree;
   TBranch* wcsimrooteventbranch;

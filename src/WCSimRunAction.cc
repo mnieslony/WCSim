@@ -33,6 +33,8 @@ WCSimRunAction::WCSimRunAction(WCSimDetectorConstruction* test)
   // Messenger to allow IO options
   wcsimdetector = test;
   messenger = new WCSimRunActionMessenger(this);
+  OutputFileNum=0;
+  WCSimTree=0;
 
 }
 
@@ -41,9 +43,9 @@ WCSimRunAction::~WCSimRunAction()
 
 }
 
-void WCSimRunAction::BeginOfRunAction(const G4Run* /*aRun*/)
+void WCSimRunAction::BeginOfRunAction(const G4Run* aRun)
 {
-//   G4cout << "### Run " << aRun->GetRunID() << " start." << G4endl;
+  G4cout << "### Run " << aRun->GetRunID() << " start." << G4endl;
   numberOfEventsGenerated = 0;
   numberOfTimesWaterTubeHit = 0;
   numberOfTimesCatcherHit = 0;
@@ -57,18 +59,7 @@ void WCSimRunAction::BeginOfRunAction(const G4Run* /*aRun*/)
   // MF, aug 2006 ... you never know...
   WCSimRootTrigger::Class()->GetStreamerInfo()->Optimize(kFALSE);
 
-  // Create the Root file
-
-  // Now controlled by the messenger
-  
-  G4String rootname = GetRootFileName();
-  TFile* hfile = new TFile(rootname.c_str(),"RECREATE","WCSim ROOT file");
-  hfile->SetCompressionLevel(2);
-
-  // Event tree
-  TTree* tree = new TTree("wcsimT","WCSim Tree");
-
-  SetTree(tree);
+  // Create the events to store in the output tree
   wcsimrootsuperevent = new WCSimRootEvent(); //empty list
   wcsimrootsuperevent_mrd = new WCSimRootEvent();
   wcsimrootsuperevent_facc = new WCSimRootEvent();
@@ -76,6 +67,31 @@ void WCSimRunAction::BeginOfRunAction(const G4Run* /*aRun*/)
   wcsimrootsuperevent->Initialize(); // make at least one event
   wcsimrootsuperevent_mrd->Initialize();
   wcsimrootsuperevent_facc->Initialize();
+  
+  // Create the Root file and output tree
+  CreateNewOutputFile();
+}
+
+void WCSimRunAction::CloseOutputFile(){
+  TFile* hfile = WCSimTree->GetCurrentFile(); 
+  if(hfile){ hfile->Close(); }
+  WCSimTree=0;
+}
+
+void WCSimRunAction::CreateNewOutputFile(){
+  if(WCSimTree){  // if we're creating a new output file to break up large simulations, WCSimTree will be !=0
+    CloseOutputFile();
+    OutputFileNum++;
+  }
+  RootFileName = GetRootFileNameBase() + "_" + std::to_string(OutputFileNum) + ".root";
+  G4cout<<"Setting output file to "<<RootFileName<<G4endl;
+  TFile* hfile = new TFile(RootFileName.c_str(),"RECREATE","WCSim ROOT file");
+  hfile->SetCompressionLevel(2);
+
+  // Event tree
+  TTree* tree = new TTree("wcsimT","WCSim Tree");
+
+  SetTree(tree);
   Int_t branchStyle = 1; //new style by default
   TTree::SetBranchStyle(branchStyle);
   Int_t bufsize = 64000;
@@ -84,18 +100,17 @@ void WCSimRunAction::BeginOfRunAction(const G4Run* /*aRun*/)
   wcsimrooteventbranch_mrd = tree->Branch("wcsimrootevent_mrd", "WCSimRootEvent", &wcsimrootsuperevent_mrd, bufsize,2);
   wcsimrooteventbranch_facc = tree->Branch("wcsimrootevent_facc", "WCSimRootEvent", &wcsimrootsuperevent_facc, bufsize,2);
   
-  // Geometry tree
-
+  // Geometry tree - store a copy in each output file (a bit redundant but safer and doesn't take much space)
   geoTree = new TTree("wcsimGeoT","WCSim Geometry Tree");
   SetGeoTree(geoTree);
   wcsimrootgeom = new WCSimRootGeom();
   TBranch *geoBranch = geoTree->Branch("wcsimrootgeom", "WCSimRootGeom", &wcsimrootgeom, bufsize,0);
-
   FillGeoTree();
 }
 
-void WCSimRunAction::EndOfRunAction(const G4Run*)
+void WCSimRunAction::EndOfRunAction(const G4Run* aRun)
 {
+  G4cout << "### Run " << aRun->GetRunID() << " end." << G4endl;
 //G4cout << "Number of Events Generated: "<< numberOfEventsGenerated << G4endl;
 //G4cout << "Number of times MRD hit: " << numberOfTimesMRDHit << G4endl;
 //G4cout << "Number of times FGD hit: "    << numberOfTimesFGDHit << G4endl;
@@ -109,9 +124,7 @@ void WCSimRunAction::EndOfRunAction(const G4Run*)
 //        << "% through-going (hit Catcher)" << G4endl;
 
   // Close the Root file at the end of the run
-
-  TFile* hfile = WCSimTree->GetCurrentFile();
-  hfile->Close();
+  CloseOutputFile();
 
   // Clean up stuff on the heap; I think deletion of hfile and trees
   // is taken care of by the file close
@@ -131,6 +144,10 @@ void WCSimRunAction::FillGeoTree(){
   G4int numpmt;
   G4double lappdradius;
   G4int numlappd;
+  G4double mrdpmtradius;
+  G4int nummrdpmts;
+  G4double faccpmtradius;
+  G4int numfaccpmts;
   G4int orientation;
   Float_t offset[3];
   
@@ -164,10 +181,17 @@ void WCSimRunAction::FillGeoTree(){
   numpmt = wcsimdetector->GetTotalNumPmts();
   lappdradius = wcsimdetector->GetLAPPDSize1();
   numlappd = wcsimdetector->GetTotalNumLAPPDs();
+  mrdpmtradius = wcsimdetector->GetMRDPMTRadius();
+  nummrdpmts = wcsimdetector->GetTotalNumMrdPmts();
+  faccpmtradius = wcsimdetector->GetFACCPMTRadius();
+  numfaccpmts = wcsimdetector->GetTotalNumFaccPmts();
+  
   orientation = 0;
   
   wcsimrootgeom-> SetWCPMTRadius(pmtradius);
   wcsimrootgeom-> SetWCLAPPDRadius(lappdradius);
+  wcsimrootgeom-> SetMRDPMTRadius(mrdpmtradius);
+  wcsimrootgeom-> SetFACCPMTRadius(faccpmtradius);
   wcsimrootgeom-> SetOrientation(orientation);
   
   G4ThreeVector offset1= wcsimdetector->GetWCOffset();
@@ -188,7 +212,7 @@ void WCSimRunAction::FillGeoTree(){
     rot[2] = (Float_t)pmt->Get_orienz();
     tubeNo = pmt->Get_tubeid();
     cylLoc = pmt->Get_cylocation();
-    wcsimrootgeom-> SetPMT(i,tubeNo,cylLoc,rot,pos);
+    wcsimrootgeom-> SetPMT(i,tubeNo,cylLoc,rot,pos,"tank");
   }
   if (fpmts->size() != (unsigned int)numpmt) {
     G4cout << "Mismatch between number of pmts and pmt list in geofile.txt!!"<<G4endl;
@@ -208,17 +232,57 @@ void WCSimRunAction::FillGeoTree(){
     lappdNo = lappd->Get_lappdid();
     cylLoc = lappd->Get_cylocation();
     wcsimrootgeom-> SetLAPPD(i,lappdNo,cylLoc,rot,pos);
-    G4cout<<"lappd= "<<lappdNo<<" at position: "<<pos[0]<<","<<pos[1]<<","<<pos[2]<<G4endl;
+    //G4cout<<"lappd= "<<lappdNo<<" at position: "<<pos[0]<<","<<pos[1]<<","<<pos[2]<<G4endl;
   }
   if (flappds->size() != (unsigned int)numlappd) {
     G4cout << "Mismatch between number of lappds and lappd list in geofile.txt!!"<<G4endl;
     G4cout << flappds->size() <<" vs. "<< numlappd <<G4endl;
+  }
+  
+  // mrd pmts
+  fpmts = wcsimdetector->Get_MrdPmts();
+  for (unsigned int i=0;i!=fpmts->size();i++){
+    pmt = ((WCSimPmtInfo*)fpmts->at(i));
+    pos[0] = (Float_t)pmt->Get_transx();
+    pos[1] = (Float_t)pmt->Get_transy();
+    pos[2] = (Float_t)pmt->Get_transz();
+    rot[0] = (Float_t)pmt->Get_orienx();
+    rot[1] = (Float_t)pmt->Get_orieny();
+    rot[2] = (Float_t)pmt->Get_orienz();
+    tubeNo = pmt->Get_tubeid();
+    cylLoc = pmt->Get_cylocation();
+    wcsimrootgeom-> SetPMT(i,tubeNo,cylLoc,rot,pos,"mrd");
+  }
+  if (fpmts->size() != (unsigned int)numpmt) {
+    G4cout << "Mismatch between number of mrd pmts and pmt list in geofile.txt!!"<<G4endl;
+    G4cout << fpmts->size() <<" vs. "<< numpmt <<G4endl;
+  }
+  
+  //facc pmts
+  fpmts = wcsimdetector->Get_FaccPmts();
+  for (unsigned int i=0;i!=fpmts->size();i++){
+    pmt = ((WCSimPmtInfo*)fpmts->at(i));
+    pos[0] = (Float_t)pmt->Get_transx();
+    pos[1] = (Float_t)pmt->Get_transy();
+    pos[2] = (Float_t)pmt->Get_transz();
+    rot[0] = (Float_t)pmt->Get_orienx();
+    rot[1] = (Float_t)pmt->Get_orieny();
+    rot[2] = (Float_t)pmt->Get_orienz();
+    tubeNo = pmt->Get_tubeid();
+    cylLoc = pmt->Get_cylocation();
+    wcsimrootgeom-> SetPMT(i,tubeNo,cylLoc,rot,pos,"facc");
+  }
+  if (fpmts->size() != (unsigned int)numpmt) {
+    G4cout << "Mismatch between number of facc pmts and pmt list in geofile.txt!!"<<G4endl;
+    G4cout << fpmts->size() <<" vs. "<< numpmt <<G4endl;
   }
 
   // G4cout <<"#lappds: "<<flappds->size() <<" vs. "<< numlappd <<G4endl;
   
   wcsimrootgeom-> SetWCNumPMT(numpmt);
   wcsimrootgeom-> SetWCNumLAPPD(numlappd);
+  wcsimrootgeom-> SetWCNumMrdPMT(nummrdpmts);
+  wcsimrootgeom-> SetWCNumFaccPMT(numfaccpmts);
   
   // debugging
 //  Float_t thecylrad = wcsimrootgeom->GetWCCylRadius();

@@ -354,7 +354,7 @@ void WCSimEventAction::EndOfEventAction(const G4Event* evt)
   { 
     collectionID = SDman->GetCollectionID(WCIDCollectionName);
     WCHC = (WCSimWCHitsCollection*)HCE->GetHC(collectionID);
-    G4cout<<WCIDCollectionName<<" has "<<WCHC->entries()<<" entries"<<G4endl;
+    //G4cout<<WCIDCollectionName<<" has "<<WCHC->entries()<<" entries"<<G4endl;
     collectionID2 = SDman->GetCollectionID(WCIDCollectionName2);
     WCHClappd = (WCSimWCHitsCollection*)HCE->GetHC(collectionID2);
     //G4cout<<"-----------name= "<<name<<" name2= "<<name2<<"--------"<<G4endl;
@@ -371,11 +371,11 @@ void WCSimEventAction::EndOfEventAction(const G4Event* evt)
   //  Get Digitized Hit Collection
   // ----------------------------------------------------------------------
   //G4cout<<"WCIDCollectionName= "<<WCIDCollectionName<<" WCIDCollectionName2= "<<WCIDCollectionName2<<G4endl;
-  G4cout<<"____________ WCHC->entries()= "<<int(WCHC->entries())<<G4endl;
-  G4cout<<"____________ WCHClappd->entries()= "<<int(WCHClappd->entries())<<G4endl;
+  //G4cout<<"____________ WCHC->entries()= "<<int(WCHC->entries())<<G4endl;
+  //G4cout<<"____________ WCHClappd->entries()= "<<int(WCHClappd->entries())<<G4endl;
   //if(WCHClappd->entries()>0.){ G4cout<<"GOTIT!!!!!!"<<G4endl; }
   for (G4int ii=0; ii< WCHClappd->entries() ;ii++){
-    G4cout<<"total pe @ LAPPDs: "<< (*WCHClappd)[ii]->GetTotalPe() << G4endl;
+    //G4cout<<"total pe @ LAPPDs: "<< (*WCHClappd)[ii]->GetTotalPe() << G4endl;
     G4int   lappdID         = (*WCHClappd)[ii]->GetTubeID();
     objnumv.push_back((*WCHClappd)[ii]->GetTubeID());
     G4float timelappd           = (*WCHClappd)[ii]->GetTime(ii);
@@ -434,7 +434,7 @@ void WCSimEventAction::EndOfEventAction(const G4Event* evt)
     }
     lappd_numhits = lappd_numhits0;
     lappdhit_totalpes_perevt = totalpes_perevt;
-    G4cout<<"lappd_numhits= "<<lappd_numhits<<" lappdhit_totalpes_perevt= "<<lappdhit_totalpes_perevt<<G4endl;
+    //G4cout<<"lappd_numhits= "<<lappd_numhits<<" lappdhit_totalpes_perevt= "<<lappdhit_totalpes_perevt<<G4endl;
     //LAPPDtree ->Fill();
     /*for(int m=0; m<totalpes_perevt; m++){
       G4cout<<"tellme: "<<lappdhit_stripcoorx[m]<<","<<lappdhit_stripcoory[m]<<","<<lappdhit_stripcoorz[m]<<G4endl;
@@ -824,7 +824,8 @@ void WCSimEventAction::EndOfEventAction(const G4Event* evt)
     }
   }
 
-   G4cout << "end________________ Filling Root Event: "<<event_id<<" lappdevt: "<<lappdevt<< G4endl;
+   //G4cout << "end________________ Filling Root Event: "<<event_id<<" lappdevt: "<<lappdevt<< G4endl;
+   G4cout<<"Filling Root Event: "<<event_id<<G4endl;
 
    //   G4cout << "event_id: " << &event_id << G4endl;
    // G4cout << "jhfNtuple: " << &jhfNtuple << G4endl;
@@ -861,14 +862,19 @@ G4cout<<"Filling FACC Root Event"<<G4endl;
 		"facc");
   
   TTree* tree = GetRunAction()->GetTree();
-  //TBranch* tankeventbranch = tree->GetBranch("wcsimrootevent");
-  //tree->SetEntries(tankeventbranch->GetEntries());
-  tree->SetEntries(GetRunAction()->GetNumberOfEventsGenerated());
+  TBranch* tankeventbranch = tree->GetBranch("wcsimrootevent");
+  tree->SetEntries(tankeventbranch->GetEntries());
+  //tree->SetEntries(GetRunAction()->GetNumberOfEventsGenerated());
   TFile* hfile = tree->GetCurrentFile();
   // MF : overwrite the trees -- otherwise we have as many copies of the tree
   // as we have events. All the intermediate copies are incomplete, only the
   // last one is useful --> huge waste of disk space.
   hfile->Write("",TObject::kOverwrite);
+  
+  G4cout<<"events generated so far: "<<(GetRunAction()->GetNumberOfEventsGenerated())<<G4endl;
+  if(event_id%1000==0&&event_id!=0){
+    GetRunAction()->CreateNewOutputFile();
+  }
   
   G4cout<<"############# WCSIM FINISH END OF EVENT ACTION  ################"<<G4endl;
 
@@ -1360,8 +1366,8 @@ void WCSimEventAction::FillRootEvent(G4int event_id,
 
   for (int i = 0 ; i < wcsimrootsuperevent->GetNumberOfEvents(); i++) {
     wcsimrootevent = wcsimrootsuperevent->GetTrigger(i);
-    G4cout << ">>>Root event "
-	   <<std::setw(5)<<wcsimrootevent->GetHeader()->GetEvtNum()<<"\n";
+    //G4cout << ">>>Root event "
+	  // <<std::setw(5)<<wcsimrootevent->GetHeader()->GetEvtNum()<<"\n";
     //   if (WCDC){
     // G4cout <<"WC digi:"<<std::setw(4)<<wcsimrootevent->GetNcherenkovdigihits()<<"  ";
     // G4cout <<"WC digi sumQ:"<<std::setw(4)<<wcsimrootevent->GetSumQ()<<"  ";

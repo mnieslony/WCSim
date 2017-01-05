@@ -61,15 +61,15 @@ ROOTSRC  := ./src/WCSimRootEvent.cc ./include/WCSimRootEvent.hh ./src/WCSimRootG
 
 ROOTOBJS  := $(G4WORKDIR)/tmp/$(G4SYSTEM)/WCSim/WCSimRootEvent.o $(G4WORKDIR)/tmp/$(G4SYSTEM)/WCSim/WCSimRootGeom.o $(G4WORKDIR)/tmp/$(G4SYSTEM)/WCSim/WCSimPmtInfo.o $(G4WORKDIR)/tmp/$(G4SYSTEM)/WCSim/WCSimLAPPDInfo.o $(G4WORKDIR)/tmp/$(G4SYSTEM)/WCSim/WCSimEnumerations.o $(G4WORKDIR)/tmp/$(G4SYSTEM)/WCSim/WCSimRootDict.o 
 
-shared: $(ROOTSRC) $(ROOTOBJS) 
+shared: $(ROOTSRC) $(ROOTOBJS)
 	g++ -shared -O $(ROOTOBJS) -o $(ROOTSO) $(ROOTLIBS)
 
 libWCSim.a : $(ROOTOBJS)
 	$(RM) $@
-	ar clq $@ $(ROOTOBJS) 
+	ar clq $@ $(ROOTOBJS)
 
 ./src/WCSimRootDict.cc : $(ROOTSRC)
-	rootcint  -f ./src/WCSimRootDict.cc -c -I./include -I$(shell root-config --incdir) WCSimRootEvent.hh WCSimRootGeom.hh  WCSimPmtInfo.hh WCSimLAPPDInfo.hh WCSimEnumerations.hh WCSimRootLinkDef.hh
+	rootcint -f ./src/WCSimRootDict.cc -c -I./include -I$(shell root-config --incdir) WCSimRootEvent.hh WCSimRootGeom.hh WCSimPmtInfo.hh WCSimLAPPDInfo.hh WCSimEnumerations.hh WCSimRootLinkDef.hh
 
 rootcint: ./src/WCSimRootDict.cc
 

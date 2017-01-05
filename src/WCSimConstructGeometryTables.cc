@@ -142,7 +142,7 @@ void WCSimDetectorConstruction::DescribeAndRegisterPMT(G4VPhysicalVolume* aPV ,i
   replicaNoString[aDepth] = pvname.str() + "-" + depth.str();
 
    if( thepvname== WCIDCollectionName2 ){
-     G4cout<<"____counting all LAPPDs"<<G4endl;
+     //G4cout<<"____counting all LAPPDs"<<G4endl;
      totalNumLAPPDs++;
      lappdIDMap[totalNumLAPPDs] = aTransform;
       std::string LAPPDTag; 
@@ -258,10 +258,15 @@ void WCSimDetectorConstruction::DumpGeometryTableToFile()
     geoFile << setw(8)<< innerradius;
     geoFile << setw(8)<<WCCylInfo[2];
   }
+  geoFile<<G4endl;
   geoFile <<" PMTs:"<< setw(10)<<totalNumPMTs;
   geoFile << setw(8)<<WCPMTSize << setw(4)  <<G4endl;
   geoFile <<"LAPPDs:"<< setw(10)<<totalNumLAPPDs;
   geoFile << setw(8)<<WCLAPPDSize << setw(4)  <<G4endl;
+  geoFile <<"MRDPMTs:"<< setw(10)<<totalNumMrdPMTs;
+  geoFile << setw(8)<<MRDPMTRadius/CLHEP::cm << setw(4)  <<G4endl;
+  geoFile <<"FACCPMTs:"<< setw(10)<<totalNumFaccPMTs;
+  geoFile << setw(8)<<FACCPMTRadius/CLHEP::cm << setw(4)  <<G4endl;
 
   geoFile << setw(8)<< WCOffset(0)<< setw(8)<<WCOffset(1)<<
     setw(8) << WCOffset(2)<<G4endl;
@@ -292,11 +297,11 @@ void WCSimDetectorConstruction::DumpGeometryTableToFile()
 
     // Figure out if pmt is on top/bottom or barrel
     // print key: 0-top, 1-barrel, 2-bottom
-    if (pmtOrientation*newTransform.getTranslation() > 0)//veto pmt
-    {cylLocation=3;}
-    else if (pmtOrientation.z()==1.0)//bottom
+//    if (pmtOrientation*newTransform.getTranslation() > 0)//veto pmt
+//    {cylLocation=3;}  // disable for annie, some pmts are getting marked as veto...??
+    if (pmtOrientation.y()==1.0)//bottom   //SWITCH Z TO Y FOR ANNIE
     {cylLocation=2;}
-    else if (pmtOrientation.z()==-1.0)//top
+    else if (pmtOrientation.y()==-1.0)//top     // SWITCH Z TO Y FOR ANNIE
     {cylLocation=0;}
     else // barrel
     {cylLocation=1;}
@@ -340,19 +345,10 @@ void WCSimDetectorConstruction::DumpGeometryTableToFile()
     G4Vector3D nullOrient = G4Vector3D(0,0,1);
     G4Vector3D pmtOrientation = newTransform * nullOrient;
     //cyl_location cylLocation = tubeCylLocation[tubeID];
-
-    // TODO: make these record something sensible for the MRD/FACC
-    if (pmtOrientation*newTransform.getTranslation() > 0)//veto pmt
-    {cylLocation=3;}
-    else if (pmtOrientation.z()==1.0)//bottom
-    {cylLocation=2;}
-    else if (pmtOrientation.z()==-1.0)//top
-    {cylLocation=0;}
-    else // barrel
-    {cylLocation=1;}
+    cylLocation=4;  //cylLocation 4 for MRD
     
     geoFile.precision(9);
-     geoFile << setw(4) << tubeID 
+     geoFile <<"MRD:"<< setw(4) << tubeID 
  	    << " " << setw(8) << newTransform.getTranslation().getX()/CLHEP::cm
  	    << " " << setw(8) << newTransform.getTranslation().getY()/CLHEP::cm
  	    << " " << setw(8) << newTransform.getTranslation().getZ()/CLHEP::cm
@@ -389,20 +385,10 @@ void WCSimDetectorConstruction::DumpGeometryTableToFile()
     G4Vector3D nullOrient = G4Vector3D(0,0,1);
     G4Vector3D pmtOrientation = newTransform * nullOrient;
     //cyl_location cylLocation = tubeCylLocation[tubeID];
-
-    // Figure out if pmt is on top/bottom or barrel
-    // print key: 0-top, 1-barrel, 2-bottom
-    if (pmtOrientation*newTransform.getTranslation() > 0)//veto pmt
-    {cylLocation=3;}
-    else if (pmtOrientation.z()==1.0)//bottom
-    {cylLocation=2;}
-    else if (pmtOrientation.z()==-1.0)//top
-    {cylLocation=0;}
-    else // barrel
-    {cylLocation=1;}
+    cylLocation=5;  //cylLocation 5 for FACC
     
     geoFile.precision(9);
-     geoFile << setw(4) << tubeID 
+     geoFile <<"FACC:" << setw(4) << tubeID 
  	    << " " << setw(8) << newTransform.getTranslation().getX()/CLHEP::cm
  	    << " " << setw(8) << newTransform.getTranslation().getY()/CLHEP::cm
  	    << " " << setw(8) << newTransform.getTranslation().getZ()/CLHEP::cm
@@ -435,11 +421,11 @@ void WCSimDetectorConstruction::DumpGeometryTableToFile()
     // G4cout<<"lappdOrientation= "<<lappdOrientation<<" veto? "<<(lappdOrientation*newTransform2.getTranslation())<<G4endl;
     // Figure out if pmt is on top/bottom or barrel
     // print key: 0-top, 1-barrel, 2-bottom
-    if (lappdOrientation*newTransform2.getTranslation() > 0)//veto lappd
-    {cylLocation2=3;}
-    else if (lappdOrientation.z()==1.0)//bottom
-    {cylLocation2=2;}
-    else if (lappdOrientation.z()==-1.0)//top
+//    if (lappdOrientation*newTransform2.getTranslation() > 0)//veto lappd
+//    {cylLocation2=3;}
+    if (lappdOrientation.y()==1.0)//bottom - Y not Z for ANNIE
+     {cylLocation2=2;}
+    else if (lappdOrientation.y()==-1.0)//top - Y not Z for ANNIE
     {cylLocation2=0;}
     else // barrel
     {cylLocation2=1;}
