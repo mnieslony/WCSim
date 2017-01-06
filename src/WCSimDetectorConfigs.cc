@@ -108,10 +108,10 @@ void WCSimDetectorConstruction::SetANNIEPhase2Geometry()
   WCBarrelNRings        = 5;					// 5 rings of 16 = 80 PMTs + 60 on each end cap = 200 total PMTs
   WCPMTperCellHorizontal= 2;					// 
   WCPMTperCellVertical  = 1;					// assume each row corresponds to a cell - significance of cells?
-  WCCapPMTSpacing       = 2*(WCPMTRadius+15.*mm);	// something like that looks about right    
+  WCCapPMTSpacing       = 2*(WCPMTRadius+25.*mm);	// something like that looks about right    prev 15*mm
   // 15->20 produces 8x8 with lappds, but they overlap significantly.
   //WCCapEdgeLimit        = 4.9*WCCapPMTSpacing;	// breaks geometry... 
-  WCCapEdgeLimit        = WCIDDiameter/2.0 - WCPMTRadius;
+  WCCapEdgeLimit        = WCIDDiameter/2.0 - WCPMTRadius - 10*cm;    // added -5
   WCBlackSheetThickness = 1.01*mm;				// liner is 40 mil. which is, of course, 40 milli inches. 
   //WCBarrelNRingsLAPPD     = 2;
   WCBarrelLAPPDOffset     = 0.2*m; 			// offset of first barrel ring from tank caps

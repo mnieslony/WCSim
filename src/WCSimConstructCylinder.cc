@@ -722,7 +722,8 @@ If used here, uncomment the SetVisAttributes(WClogic) line, and comment out the 
     for(G4double j = 0; j < WCPMTperCellVertical; j++){
       G4ThreeVector PMTPosition =  G4ThreeVector(WCIDRadius,
 						 -barrelCellWidth/2.+(i+0.5)*horizontalSpacing,
-						 -barrelCellHeight/2.+(j+0.5)*verticalSpacing);
+						 -barrelCellHeight/2.+(j+0.5)*verticalSpacing
+						 -(verticalSpacing/4.));
 
   G4cout<<"PMT position: "<<WCIDRadius<<","<<-barrelCellWidth/2.+(i+0.5)*horizontalSpacing<<","<<-barrelCellHeight/2.+(j+0.5)*verticalSpacing<<G4endl;
 
@@ -759,11 +760,10 @@ If used here, uncomment the SetVisAttributes(WClogic) line, and comment out the 
   //for(G4double i = 0; i < WCPMTperCellHorizontal; i++){
   //	for(G4double j = 0; j < WCPMTperCellVertical; j++){
 	  
-      G4ThreeVector LAPPDPosition =  G4ThreeVector(WCIDRadius,
+      G4ThreeVector LAPPDPosition =  G4ThreeVector((WCIDRadius-((outerAnnulusRadius-innerAnnulusRadius)/2.)),
 												   -barrelCellWidth2/2.+(i+0.5)*horizontalSpacingLAPPD,
-												   -barrelCellHeight2/2.+(j+0.5)*verticalSpacingLAPPD);
-												   //-barrelCellWidth2/2.+(i+0.5)*horizontalSpacingLAPPD,
-												   //-barrelCellHeight2/2.+(j+0.5)*verticalSpacingLAPPD);
+												   -barrelCellHeight2/2.+(j+0.5)*verticalSpacingLAPPD
+												   -(verticalSpacingLAPPD/4.));
 	 
       G4VPhysicalVolume* physiWCBarrelLAPPD =
 		new G4PVPlacement(WCLAPPDRotation,              // its rotation
@@ -1284,9 +1284,24 @@ G4LogicalVolume* WCSimDetectorConstruction::ConstructCaps(G4int zflip)
       //	- 2.0 * WCBarrelEffRadius * sqrt(xoffset*xoffset+yoffset*yoffset)
       //	+ WCBarrelEffRadius*WCBarrelEffRadius;
       //      if ( (comp > WCPMTRadius*WCPMTRadius) && ((sqrt(xoffset*xoffset + yoffset*yoffset) + WCPMTRadius) < WCCapEdgeLimit) ) {
-            if (((sqrt(xoffset*xoffset + yoffset*yoffset) + WCPMTRadius) < WCCapEdgeLimit) ) {
+     if( (i%2==0 && j%2==0) || (i%2!=0 && j%2!=0) ){
+       if (((sqrt(xoffset*xoffset + yoffset*yoffset) + WCLAPPDRadius) < WCCapEdgeLimit + WCLAPPDRadius ) ) {
+        G4cout<<"LAPPD at: "<<i<<" j= "<<j<<" cellpos= "<<cellpos<<G4endl;
+        //add LAPPDs in cap:
+        G4ThreeVector cellposlappd = G4ThreeVector(xoffset, yoffset, (WCBarrelPMTOffset/2.)*zflip);
+        G4VPhysicalVolume* physiCapLAPPD =
+            new G4PVPlacement(WCCapPMTRotation,
+                              cellposlappd,                   // its position
+                              logicWCLAPPD,                // its logical volume
+                              "WCPMT", // its name 
+                              logicWCCap,         // its mother volume
+                              false,                 // no boolean os
+                              icopylappd);               // every PMT need a unique id.
+         icopylappd++;
+       }
+     } else {
 
-
+	if (((sqrt(xoffset*xoffset + yoffset*yoffset) + WCPMTRadius) < WCCapEdgeLimit) ) {
 	G4VPhysicalVolume* physiCapPMT =
 	  new G4PVPlacement(WCCapPMTRotation,
 			    cellpos,                   // its position
@@ -1301,11 +1316,14 @@ G4LogicalVolume* WCSimDetectorConstruction::ConstructCaps(G4int zflip)
 	// this is still the case.
 
 	icopy++;
+	}
       }
      }
    }
   
-  // loop over the cap for LAPPDs
+  
+/*
+  // loop over the cap for LAPPDs   << now included above.
   G4int CapNCell2 = WCCapEdgeLimit/WCCapLAPPDSpacing + 2;
   for ( int i = -CapNCell2 ; i <  CapNCell2; i++) {
     for (int j = -CapNCell2 ; j <  CapNCell2; j++)   {
@@ -1325,7 +1343,7 @@ G4LogicalVolume* WCSimDetectorConstruction::ConstructCaps(G4int zflip)
        }
     }
   }
-
+*/
   G4cout << "total on cap: " << icopy <<" total lappds on cap "<<icopylappd<< "\n";
   G4cout << "Coverage was calculated to be: " << (icopy*WCPMTRadius*WCPMTRadius/(WCIDRadius*WCIDRadius)) << "\n";
   G4cout << "LAPPD Coverage was calculated to be: " << (icopylappd*WCLAPPDRadius*WCLAPPDRadius/(WCIDRadius*WCIDRadius)) << "\n";
