@@ -76,7 +76,7 @@ void WCSimDetectorConstruction::SetANNIEPhase2Geometry()
   WCLAPPDExposeHeight = lappd->GetExposeHeight();
   WCLAPPDRadius = lappd->GetRadius();
 
-  WCAddGd = false;
+  WCAddGd = true;
   // TODO: conver these with the ones below, and add in other constants from MRD definition etc.
   tankouterRadius= 1.524*m;  	// 120" exactly (TSW blueprint) = 3.048m diameter
   tankhy = 1.98*m;				// 13ft exactly (TSW blueprint) = 3.96m tall; hz is HALF height
@@ -108,7 +108,8 @@ void WCSimDetectorConstruction::SetANNIEPhase2Geometry()
   WCBarrelNRings        = 5;					// 5 rings of 16 = 80 PMTs + 60 on each end cap = 200 total PMTs
   WCPMTperCellHorizontal= 2;					// 
   WCPMTperCellVertical  = 1;					// assume each row corresponds to a cell - significance of cells?
-  WCCapPMTSpacing       = 2*(WCPMTRadius+15.*mm);	// something like that looks about right
+  WCCapPMTSpacing       = 2*(WCPMTRadius+15.*mm);	// something like that looks about right    
+  // 15->20 produces 8x8 with lappds, but they overlap significantly.
   //WCCapEdgeLimit        = 4.9*WCCapPMTSpacing;	// breaks geometry... 
   WCCapEdgeLimit        = WCIDDiameter/2.0 - WCPMTRadius;
   WCBlackSheetThickness = 1.01*mm;				// liner is 40 mil. which is, of course, 40 milli inches. 

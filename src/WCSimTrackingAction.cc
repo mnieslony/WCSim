@@ -67,11 +67,12 @@ void WCSimTrackingAction::PostUserTrackingAction(const G4Track* aTrack)
   // is the particle in the set ?
   // is it a gamma 
   // due to lazy evaluation of the 'or' in C++ the order is important
-  if( aTrack->GetParentID()==0 || 
-      ((creatorProcess!=0) && ProcessList.count(creatorProcess->GetProcessName()) ) || 
-      (ParticleList.count(aTrack->GetDefinition()->GetPDGEncoding()) )
-      || (aTrack->GetDefinition()->GetPDGEncoding()==22 && aTrack->GetTotalEnergy() > 50.0*CLHEP::MeV)
-      )
+//  if( aTrack->GetParentID()==0 || 
+//      ((creatorProcess!=0) && ProcessList.count(creatorProcess->GetProcessName()) ) || 
+//      (ParticleList.count(aTrack->GetDefinition()->GetPDGEncoding()) )
+//      || (aTrack->GetDefinition()->GetPDGEncoding()==22 && aTrack->GetTotalEnergy() > 50.0*CLHEP::MeV)
+//      )
+  if( aTrack->GetParentID()==0 || ((creatorProcess!=0) && ProcessList.count(creatorProcess->GetProcessName())) || (ParticleList.count(aTrack->GetDefinition()->GetPDGEncoding())) || (aTrack->GetDefinition()->GetPDGEncoding()==22 && aTrack->GetTotalEnergy() > 1.0*MeV) || (creatorProcess->GetProcessName() == "muMinusCaptureAtRest" && aTrack->GetTotalEnergy() > 1.0*MeV) )  // save more information. code from wcsim github issue 197.
   {
     // if so the track is worth saving
     anInfo->WillBeSaved(true);
