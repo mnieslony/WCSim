@@ -253,9 +253,9 @@ void WCSimRunAction::FillGeoTree(){
     cylLoc = pmt->Get_cylocation();
     wcsimrootgeom-> SetPMT(i,tubeNo,cylLoc,rot,pos,"mrd");
   }
-  if (fpmts->size() != (unsigned int)numpmt) {
+  if (fpmts->size() != (unsigned int)nummrdpmts) {
     G4cout << "Mismatch between number of mrd pmts and pmt list in geofile.txt!!"<<G4endl;
-    G4cout << fpmts->size() <<" vs. "<< numpmt <<G4endl;
+    G4cout << fpmts->size() <<" vs. "<< nummrdpmts <<G4endl;
   }
   
   //facc pmts
@@ -272,9 +272,9 @@ void WCSimRunAction::FillGeoTree(){
     cylLoc = pmt->Get_cylocation();
     wcsimrootgeom-> SetPMT(i,tubeNo,cylLoc,rot,pos,"facc");
   }
-  if (fpmts->size() != (unsigned int)numpmt) {
+  if (fpmts->size() != (unsigned int)numfaccpmts) {
     G4cout << "Mismatch between number of facc pmts and pmt list in geofile.txt!!"<<G4endl;
-    G4cout << fpmts->size() <<" vs. "<< numpmt <<G4endl;
+    G4cout << fpmts->size() <<" vs. "<< numfaccpmts <<G4endl;
   }
 
   // G4cout <<"#lappds: "<<flappds->size() <<" vs. "<< numlappd <<G4endl;

@@ -6,6 +6,7 @@
 #include "G4ParticleGun.hh"
 #include "G4GeneralParticleSource.hh"
 #include "G4ParticleTable.hh"
+#include "G4IonTable.hh"
 #include "G4ParticleDefinition.hh"
 #include "G4ThreeVector.hh"
 #include "TLorentzVector.h"
@@ -52,8 +53,11 @@ WCSimPrimaryGeneratorAction::WCSimPrimaryGeneratorAction(
 
   // Initialize to zero
   mode = 0;
-  vtxvol = 0;
-  vtx = G4ThreeVector(0.,0.,0.);
+  nvtxs = 0;
+  for( Int_t u=0; u<MAX_N_PRIMARIES; u++){
+    vtxsvol[u] = 0;
+    vtxs[u] = G4ThreeVector(0.,0.,0.);
+  }
   nuEnergy = 0.;
   _counterRock=0; // counter for generated in Rock
   _counterCublic=0; // counter generated
@@ -64,8 +68,8 @@ WCSimPrimaryGeneratorAction::WCSimPrimaryGeneratorAction(
   particleGun = new G4ParticleGun(n_particle);
   particleGun->SetParticleEnergy(1.0*CLHEP::GeV);
   particleGun->SetParticleMomentumDirection(G4ThreeVector(0.,0.,1.0));
-
   G4ParticleTable* particleTable = G4ParticleTable::GetParticleTable();
+  G4IonTable* ionTable = G4IonTable::GetIonTable();
   G4String particleName;
   particleGun->
     SetParticleDefinition(particleTable->FindParticle(particleName="mu+"));
@@ -168,9 +172,9 @@ void WCSimPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 
 	    // Read the Vertex line
 	    token = readInLine(inputFile, lineSize, inBuf);
-	    vtx = G4ThreeVector(atof(token[1])*CLHEP::cm,
-				atof(token[2])*CLHEP::cm,
-				atof(token[3])*CLHEP::cm);
+	    vtxs[0] = G4ThreeVector(atof(token[1])*cm,
+				    atof(token[2])*cm,
+				    atof(token[3])*cm);
 	    
             // true : Generate vertex in Rock , false : Generate vertex in WC tank
             SetGenerateVertexInRock(false);
@@ -180,20 +184,20 @@ void WCSimPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 	    // First, the neutrino line
 
 	    token=readInLine(inputFile, lineSize, inBuf);
-	    beampdg = atoi(token[1]);
-	    beamenergy = atof(token[2])*CLHEP::MeV;
-	    beamdir = G4ThreeVector(atof(token[3]),
-				    atof(token[4]),
-				    atof(token[5]));
+	    beampdgs[0] = atoi(token[1]);
+	    beamenergies[0] = atof(token[2])*MeV;
+	    beamdirs[0] = G4ThreeVector(atof(token[3]),
+					atof(token[4]),
+					atof(token[5]));
 
 	    // Now read the target line
 
 	    token=readInLine(inputFile, lineSize, inBuf);
-	    targetpdg = atoi(token[1]);
-	    targetenergy = atof(token[2])*CLHEP::MeV;
-	    targetdir = G4ThreeVector(atof(token[3]),
-				      atof(token[4]),
-				      atof(token[5]));
+	    targetpdgs[0] = atoi(token[1]);
+	    targetenergies[0] = atof(token[2])*MeV;
+	    targetdirs[0] = G4ThreeVector(atof(token[3]),
+					  atof(token[4]),
+					  atof(token[5]));
 
 	    // Read the info line, basically a dummy
 	    token=readInLine(inputFile, lineSize, inBuf);
@@ -218,9 +222,38 @@ void WCSimPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 		    G4ThreeVector dir = G4ThreeVector(atof(token[3]),
 						      atof(token[4]),
 						      atof(token[5]));
-		    particleGun->
-		      SetParticleDefinition(particleTable->
-					    FindParticle(pdgid));
+		    std::cout<<"PDGcode "<<pdgid<<"\n";
+		    //must handle the case of an ion speratly from other particles
+		    //check PDG code if we have an ion.
+		    //PDG code format for ions ±10LZZZAAAI
+		    char strPDG[11];
+		    char strA[10]={0};
+		    char strZ[10]={0};
+		    
+
+		    long int A=0,Z=0;
+		    //		    A=strotl(strPDG,&str);
+		    if(abs(pdgid) >= 1000000000)
+		      {
+			//ion
+			sprintf(strPDG,"%i",abs(pdgid));
+			strncpy(strZ, &strPDG[3], 3);
+			strncpy(strA, &strPDG[6], 3);
+			strA[3]='\0';
+			strZ[3]='\0';
+			A=atoi(strA);
+			Z=atoi(strZ);
+			G4ParticleDefinition* ion;
+			ion =  G4IonTable::GetIonTable()->GetIon(Z, A, 0.);
+			particleGun->SetParticleDefinition(ion);
+			particleGun->SetParticleCharge(0);
+		      }
+		    else {
+		      //not ion
+		      particleGun->
+			SetParticleDefinition(particleTable->
+		      FindParticle(pdgid));
+		    }
 		    G4double mass = 
 		      particleGun->GetParticleDefinition()->GetPDGMass();
 
@@ -228,7 +261,7 @@ void WCSimPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 
 		    particleGun->SetParticleEnergy(ekin);
 		    //G4cout << "Particle: " << pdgid << " KE: " << ekin << G4endl;
-		    particleGun->SetParticlePosition(vtx);
+		    particleGun->SetParticlePosition(vtxs[0]);
 		    particleGun->SetParticleMomentumDirection(dir);
 		    particleGun->GeneratePrimaryVertex(anEvent);
 		  }
@@ -258,11 +291,42 @@ void WCSimPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
   {      // manual gun operation
     particleGun->GeneratePrimaryVertex(anEvent);
 
+    //To prevent occasional seg fault from an un assigned targetpdg 
+    targetpdgs[0] = 2212; //ie. proton
+
     G4ThreeVector P  =anEvent->GetPrimaryVertex()->GetPrimary()->GetMomentum();
     G4ThreeVector vtx=anEvent->GetPrimaryVertex()->GetPosition();
     G4double m       =anEvent->GetPrimaryVertex()->GetPrimary()->GetMass();
     G4int pdg        =anEvent->GetPrimaryVertex()->GetPrimary()->GetPDGcode();
+   
 
+    char strPDG[11];
+    char strA[10]={0};
+    char strZ[10]={0};
+    
+    
+    long int A=0,Z=0;
+    //		    A=strotl(strPDG,&str);
+    if(abs(pdg) >= 1000000000)
+      {
+	//ion
+	sprintf(strPDG,"%i",abs(pdg));
+	strncpy(strZ, &strPDG[3], 3);
+	strncpy(strA, &strPDG[6], 3);
+	strA[3]='\0';
+	strZ[3]='\0';
+	A=atoi(strA);
+	Z=atoi(strZ);
+
+	G4ParticleDefinition* ion   = G4IonTable::GetIonTable()->GetIon(Z, A, 0);
+	ion->SetPDGStable(false);
+	ion->SetPDGLifeTime(0.);
+	
+	G4ParticleDefinition* ion2   = G4IonTable::GetIonTable()->GetIon(Z, A, 0);
+	std::cout<<"ion2 "<<ion2->GetPDGLifeTime()<<"\n";
+      }
+    
+    
     G4ThreeVector dir  = P.unit();
     G4double E         = std::sqrt((P.dot(P))+(CLHEP::m*CLHEP::m));
 
@@ -277,6 +341,7 @@ void WCSimPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
   }
   else if (useLaserEvt)
     {
+      targetpdgs[0] = 2212; //ie. proton 
       //T. Akiri: Create the GPS LASER event
       MyGPS->GeneratePrimaryVertex(anEvent);
       
@@ -284,12 +349,12 @@ void WCSimPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
       G4ThreeVector vtx =anEvent->GetPrimaryVertex()->GetPosition();
       G4int pdg         =anEvent->GetPrimaryVertex()->GetPrimary()->GetPDGcode();
       
-      G4ThreeVector dir  = P.unit();
+//       G4ThreeVector dir  = P.unit();
       G4double E         = std::sqrt((P.dot(P)));
       
-      SetVtx(vtx);
+//       SetVtx(vtx);
       SetBeamEnergy(E);
-      SetBeamDir(dir);
+       //       SetBeamDir(dir);
       SetBeamPDG(pdg);
     }
   
@@ -341,7 +406,6 @@ void WCSimPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 			G4cout<< "Reached end of Tree. Last entries' tree number was "
 						<< treeNumber <<", this entries' tree number is "<< nextTreeNumber <<G4endl;
 			G4cout<<"Getting new tree branches"<<G4endl;
-			// maybe all this isn't necessary??
 			inputdata->SetBranchAddress("run",&runbranchval,&runBranch);
 			inputdata->SetBranchAddress("ntank",&ntankbranchval,&nTankBranch);
 			inputdata->SetBranchAddress("nupdg",&nupdgval,&nupdgBranch);
@@ -398,6 +462,7 @@ void WCSimPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 		TLorentzVector neutrinovertex(nuvtxtval, nuvtxxval, nuvtxyval, nuvtxzval);
 		G4cout<<"The origin interaction was a "<<(parttype->GetParticleName())<<" at ("<<nuvtxtval<<","<<nuvtxxval<<","<<nuvtxyval<<","<<nuvtxzval<<") in "<<nupvval<<" "<<numatval<<G4endl;
 		G4cout<<"This entry has "<<ntankbranchval<<" primaries"<<G4endl;
+		nvtxs=ntankbranchval;
 		
 		if(vtxxbranchval){delete[] vtxxbranchval;}
 		if(vtxybranchval){delete[] vtxybranchval;}
@@ -487,6 +552,18 @@ void WCSimPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 			particleGun->SetParticleMomentumDirection(thepdir);
 			particleGun->GeneratePrimaryVertex(anEvent);	//anEvent is provided by geant4 when invoking the method
 			//G4cout<<"Vertex set"<<G4endl;
+			// store the information in the list of primaries
+			vtxsvol[i] = 0;
+			vtxs[i] = thevtx;
+			// First, the neutrino line
+			beampdgs[i] = pdgval;
+			beamenergies[i] = eval*MeV;
+			beamdirs[i] = thepdir;	// unit vector... should it be?
+			// Now read the target information ... 
+			// we don't have this from our primaries, since the target isn't defined
+			targetpdgs[i] = 0;
+			targetenergies[i] = 0.*MeV;
+			targetdirs[i] = G4ThreeVector(0.,0.,0.);
 		}
 		
 		inputEntry++;

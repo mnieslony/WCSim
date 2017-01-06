@@ -61,7 +61,7 @@ namespace ROOT {
       ::WCSimRootCherenkovDigiHit *ptr = 0;
       static ::TVirtualIsAProxy* isa_proxy = new ::TInstrumentedIsAProxy< ::WCSimRootCherenkovDigiHit >(0);
       static ::ROOT::TGenericClassInfo 
-         instance("WCSimRootCherenkovDigiHit", ::WCSimRootCherenkovDigiHit::Class_Version(), "WCSimRootEvent.hh", 125,
+         instance("WCSimRootCherenkovDigiHit", ::WCSimRootCherenkovDigiHit::Class_Version(), "WCSimRootEvent.hh", 127,
                   typeid(::WCSimRootCherenkovDigiHit), ::ROOT::Internal::DefineBehavior(ptr, ptr),
                   &::WCSimRootCherenkovDigiHit::Dictionary, isa_proxy, 4,
                   sizeof(::WCSimRootCherenkovDigiHit) );
@@ -93,7 +93,7 @@ namespace ROOT {
       ::WCSimRootCherenkovHit *ptr = 0;
       static ::TVirtualIsAProxy* isa_proxy = new ::TInstrumentedIsAProxy< ::WCSimRootCherenkovHit >(0);
       static ::ROOT::TGenericClassInfo 
-         instance("WCSimRootCherenkovHit", ::WCSimRootCherenkovHit::Class_Version(), "WCSimRootEvent.hh", 83,
+         instance("WCSimRootCherenkovHit", ::WCSimRootCherenkovHit::Class_Version(), "WCSimRootEvent.hh", 85,
                   typeid(::WCSimRootCherenkovHit), ::ROOT::Internal::DefineBehavior(ptr, ptr),
                   &::WCSimRootCherenkovHit::Dictionary, isa_proxy, 4,
                   sizeof(::WCSimRootCherenkovHit) );
@@ -125,7 +125,7 @@ namespace ROOT {
       ::WCSimRootCherenkovHitTime *ptr = 0;
       static ::TVirtualIsAProxy* isa_proxy = new ::TInstrumentedIsAProxy< ::WCSimRootCherenkovHitTime >(0);
       static ::ROOT::TGenericClassInfo 
-         instance("WCSimRootCherenkovHitTime", ::WCSimRootCherenkovHitTime::Class_Version(), "WCSimRootEvent.hh", 102,
+         instance("WCSimRootCherenkovHitTime", ::WCSimRootCherenkovHitTime::Class_Version(), "WCSimRootEvent.hh", 104,
                   typeid(::WCSimRootCherenkovHitTime), ::ROOT::Internal::DefineBehavior(ptr, ptr),
                   &::WCSimRootCherenkovHitTime::Dictionary, isa_proxy, 4,
                   sizeof(::WCSimRootCherenkovHitTime) );
@@ -157,7 +157,7 @@ namespace ROOT {
       ::WCSimRootTrack *ptr = 0;
       static ::TVirtualIsAProxy* isa_proxy = new ::TInstrumentedIsAProxy< ::WCSimRootTrack >(0);
       static ::ROOT::TGenericClassInfo 
-         instance("WCSimRootTrack", ::WCSimRootTrack::Class_Version(), "WCSimRootEvent.hh", 23,
+         instance("WCSimRootTrack", ::WCSimRootTrack::Class_Version(), "WCSimRootEvent.hh", 25,
                   typeid(::WCSimRootTrack), ::ROOT::Internal::DefineBehavior(ptr, ptr),
                   &::WCSimRootTrack::Dictionary, isa_proxy, 4,
                   sizeof(::WCSimRootTrack) );
@@ -189,7 +189,7 @@ namespace ROOT {
       ::WCSimRootEventHeader *ptr = 0;
       static ::TVirtualIsAProxy* isa_proxy = new ::TInstrumentedIsAProxy< ::WCSimRootEventHeader >(0);
       static ::ROOT::TGenericClassInfo 
-         instance("WCSimRootEventHeader", ::WCSimRootEventHeader::Class_Version(), "WCSimRootEvent.hh", 151,
+         instance("WCSimRootEventHeader", ::WCSimRootEventHeader::Class_Version(), "WCSimRootEvent.hh", 153,
                   typeid(::WCSimRootEventHeader), ::ROOT::Internal::DefineBehavior(ptr, ptr),
                   &::WCSimRootEventHeader::Dictionary, isa_proxy, 4,
                   sizeof(::WCSimRootEventHeader) );
@@ -221,7 +221,7 @@ namespace ROOT {
       ::WCSimRootTrigger *ptr = 0;
       static ::TVirtualIsAProxy* isa_proxy = new ::TInstrumentedIsAProxy< ::WCSimRootTrigger >(0);
       static ::ROOT::TGenericClassInfo 
-         instance("WCSimRootTrigger", ::WCSimRootTrigger::Class_Version(), "WCSimRootEvent.hh", 204,
+         instance("WCSimRootTrigger", ::WCSimRootTrigger::Class_Version(), "WCSimRootEvent.hh", 206,
                   typeid(::WCSimRootTrigger), ::ROOT::Internal::DefineBehavior(ptr, ptr),
                   &::WCSimRootTrigger::Dictionary, isa_proxy, 4,
                   sizeof(::WCSimRootTrigger) );
@@ -253,7 +253,7 @@ namespace ROOT {
       ::WCSimRootEvent *ptr = 0;
       static ::TVirtualIsAProxy* isa_proxy = new ::TInstrumentedIsAProxy< ::WCSimRootEvent >(0);
       static ::ROOT::TGenericClassInfo 
-         instance("WCSimRootEvent", ::WCSimRootEvent::Class_Version(), "WCSimRootEvent.hh", 326,
+         instance("WCSimRootEvent", ::WCSimRootEvent::Class_Version(), "WCSimRootEvent.hh", 335,
                   typeid(::WCSimRootEvent), ::ROOT::Internal::DefineBehavior(ptr, ptr),
                   &::WCSimRootEvent::Dictionary, isa_proxy, 4,
                   sizeof(::WCSimRootEvent) );
@@ -285,7 +285,7 @@ namespace ROOT {
       ::WCSimRootPi0 *ptr = 0;
       static ::TVirtualIsAProxy* isa_proxy = new ::TInstrumentedIsAProxy< ::WCSimRootPi0 >(0);
       static ::ROOT::TGenericClassInfo 
-         instance("WCSimRootPi0", ::WCSimRootPi0::Class_Version(), "WCSimRootEvent.hh", 175,
+         instance("WCSimRootPi0", ::WCSimRootPi0::Class_Version(), "WCSimRootEvent.hh", 177,
                   typeid(::WCSimRootPi0), ::ROOT::Internal::DefineBehavior(ptr, ptr),
                   &::WCSimRootPi0::Dictionary, isa_proxy, 4,
                   sizeof(::WCSimRootPi0) );
@@ -415,7 +415,7 @@ namespace ROOT {
       ::WCSimEnumerations *ptr = 0;
       static ::TVirtualIsAProxy* isa_proxy = new ::TIsAProxy(typeid(::WCSimEnumerations));
       static ::ROOT::TGenericClassInfo 
-         instance("WCSimEnumerations", "WCSimEnumerations.hh", 19,
+         instance("WCSimEnumerations", "WCSimEnumerations.hh", 20,
                   typeid(::WCSimEnumerations), ::ROOT::Internal::DefineBehavior(ptr, ptr),
                   &WCSimEnumerations_Dictionary, isa_proxy, 4,
                   sizeof(::WCSimEnumerations) );

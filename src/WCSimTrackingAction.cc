@@ -22,6 +22,16 @@ WCSimTrackingAction::WCSimTrackingAction()
   ParticleList.insert(-321); // kaon-
   ParticleList.insert(311); // kaon0
   ParticleList.insert(-311); // kaon0 bar
+  
+  ParticleList.insert(11);   // e-
+  ParticleList.insert(-11);  // e+
+  ParticleList.insert(12);   // nu_e
+  ParticleList.insert(-12);  // nubar_e
+  ParticleList.insert(13);   // mu-
+  ParticleList.insert(-13);  // mu+
+  ParticleList.insert(14);   // nu_mu
+  ParticleList.insert(-14);  // nubar_mu
+  
   // don't put gammas there or there'll be too many
 }
 
@@ -93,7 +103,7 @@ void WCSimTrackingAction::PostUserTrackingAction(const G4Track* aTrack)
 
   G4Track* theTrack = (G4Track*)aTrack;
   theTrack->SetUserInformation(anInfo);
-
+  
   // pass primary parent ID to children
   G4TrackVector* secondaries = fpTrackingManager->GimmeSecondaries();
   if(secondaries)

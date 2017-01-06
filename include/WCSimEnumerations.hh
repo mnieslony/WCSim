@@ -8,6 +8,7 @@ typedef enum ETriggerType {
   kTriggerNDigits,
   kTriggerNDigitsTest,
   kTriggerTankDigits,
+  kTriggerNoTrig,
   kTriggerFailure // this should always be the last entry (for looping)
 } TriggerType_t;
 
