@@ -47,6 +47,7 @@ public:
   WCSimRunAction* GetRunAction(){return runAction;}
   void SetDigitizerChoice(G4String digitizer) { DigitizerChoice = digitizer; }
   void SetTriggerChoice  (G4String trigger)   { TriggerChoice   = trigger;   }
+  void CreateNewLAPPDFile();
 
 private:
   G4int WCSimEventFindStartingVolume( G4ThreeVector vtx);
@@ -70,6 +71,7 @@ private:
  
   TFile *LAPPDfile;
   TTree *LAPPDtree;
+  G4String LAPPDRootFileName;
   G4int lappd_numhits;
  
   G4int lappdevt;

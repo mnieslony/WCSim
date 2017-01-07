@@ -54,6 +54,7 @@ public:
   void SetRootGeom(WCSimRootGeom* rgeom){wcsimrootgeom=rgeom;}
   int  GetNumberOfEventsGenerated() { return numberOfEventsGenerated;}
   int  GetNtuples(){return ntuples;}
+  G4int GetOutputFileNum(){return OutputFileNum;}
 
   void incrementEventsGenerated() { numberOfEventsGenerated++;}
   void incrementWaterTubeHits()   { numberOfTimesWaterTubeHit++;} 

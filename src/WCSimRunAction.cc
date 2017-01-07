@@ -33,7 +33,7 @@ WCSimRunAction::WCSimRunAction(WCSimDetectorConstruction* test)
   // Messenger to allow IO options
   wcsimdetector = test;
   messenger = new WCSimRunActionMessenger(this);
-  OutputFileNum=0;
+  OutputFileNum=-1;
   WCSimTree=0;
 
 }
@@ -73,16 +73,15 @@ void WCSimRunAction::BeginOfRunAction(const G4Run* aRun)
 }
 
 void WCSimRunAction::CloseOutputFile(){
-  TFile* hfile = WCSimTree->GetCurrentFile(); 
-  if(hfile){ hfile->Close(); }
-  WCSimTree=0;
+  if(WCSimTree){ 
+    TFile* hfile = WCSimTree->GetCurrentFile(); 
+    hfile->Close(); delete hfile; hfile=0; WCSimTree=0;
+  }
 }
 
 void WCSimRunAction::CreateNewOutputFile(){
-  if(WCSimTree){  // if we're creating a new output file to break up large simulations, WCSimTree will be !=0
-    CloseOutputFile();
-    OutputFileNum++;
-  }
+  CloseOutputFile();
+  OutputFileNum++;
   RootFileName = GetRootFileNameBase() + "_" + std::to_string(OutputFileNum) + ".root";
   G4cout<<"Setting output file to "<<RootFileName<<G4endl;
   TFile* hfile = new TFile(RootFileName.c_str(),"RECREATE","WCSim ROOT file");

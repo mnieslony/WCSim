@@ -77,7 +77,7 @@ WCSimEventAction::WCSimEventAction(WCSimRunAction* myRun,
 				   WCSimPrimaryGeneratorAction* myGenerator)
   :runAction(myRun), generatorAction(myGenerator), 
    detectorConstructor(myDetector),
-   ConstructedDAQClasses(false)
+   ConstructedDAQClasses(false), LAPPDfile(0)
 {
   DAQMessenger = new WCSimWCDAQMessenger(this);
 
@@ -115,9 +115,6 @@ WCSimEventAction::WCSimEventAction(WCSimRunAction* myRun,
  // ****************
  //  LAPPD TRUTH HITS
  // ****************
-  LAPPDfile = new TFile("LAPPDEvents.root","RECREATE");
-  LAPPDtree = new TTree("LAPPDTree","LAPPDTree");
-
   lappdhit_x = new G4double[klappdhitnmax]; // where/when was the hit?
   lappdhit_y = new G4double[klappdhitnmax];
   lappdhit_z = new G4double[klappdhitnmax];
@@ -129,35 +126,6 @@ WCSimEventAction::WCSimEventAction(WCSimRunAction* myRun,
   lappdhit_objnum = new G4int[klappdhitnmax];     // which geometry object was hit?
   //lappdhit_copynum = new G4int[klappdhitnmax];    // which copy was hit?
 
-  LAPPDtree->Branch("lappdevt",&lappdevt);
-  LAPPDtree->Branch("lappd_numhits",&lappd_numhits, "lappd_numhits/I");
-  LAPPDtree->Branch("lappdhit_totalpes_perevt", &lappdhit_totalpes_perevt, "lappdhit_totalpes_perevt/I");
-  LAPPDtree->Branch("lappdhit_totalpes_perlappd2", &lappdhit_totalpes_perlappd2);
-
-  LAPPDtree->Branch("lappdhit_x",lappdhit_x,"lappdhit_x[lappd_numhits]/D");
-  LAPPDtree->Branch("lappdhit_y",lappdhit_y,"lappdhit_y[lappd_numhits]/D");
-  LAPPDtree->Branch("lappdhit_z",lappdhit_z,"lappdhit_z[lappd_numhits]/D");
-  LAPPDtree->Branch("lappdhit_t",lappdhit_t,"lappdhit_t[lappd_numhits]/D");
-  LAPPDtree->Branch("lappdhit_stripcoorx", &lappdhit_stripcoorx);
-  LAPPDtree->Branch("lappdhit_stripcoory", &lappdhit_stripcoory);
-  LAPPDtree->Branch("lappdhit_stripcoorz", &lappdhit_stripcoorz);
-  LAPPDtree->Branch("lappdhit_process",lappdhit_process,"lappdhit_process[lappd_numhits]/I");
-  LAPPDtree->Branch("lappdhit_particleID",lappdhit_particleID,"lappdhit_particleID[lappd_numhits]/I");
-  LAPPDtree->Branch("lappdhit_trackID",lappdhit_trackID,"lappdhit_trackID[lappd_numhits]/I");
-  LAPPDtree->Branch("lappdhit_edep",lappdhit_edep,"lappdhit_edep[lappd_numhits]/D");
-  LAPPDtree->Branch("lappdhit_objnum",lappdhit_objnum,"lappdhit_objnum[lappd_numhits]/I");
-  //LAPPDtree->Branch("lappdhit_copynum",lappdhit_copynum,"lappdhit_copynum[lappd_numhits]/I");
-  LAPPDtree->Branch("lappdhit_stripnum", &lappdhit_stripnum);
-  LAPPDtree->Branch("lappdhit_truetime2",&lappdhit_truetime2);
-  LAPPDtree->Branch("lappdhit_smeartime2", &lappdhit_smeartime2);
-  LAPPDtree->Branch("lappdhit_primaryParentID2",&lappdhit_primaryParentID2);
-  LAPPDtree->Branch("lappdhit_NoOfneighstripsHit", &lappdhit_NoOfneighstripsHit);
-  LAPPDtree->Branch("lappdhit_neighstripnum", &lappdhit_neighstripnum);
-  LAPPDtree->Branch("lappdhit_neighstrippeak", &lappdhit_neighstrippeak);
-  LAPPDtree->Branch("lappdhit_neighstrip_time", &lappdhit_neighstrip_time);
-  LAPPDtree->Branch("lappdhit_neighstrip_lefttime", &lappdhit_neighstrip_lefttime);
-  LAPPDtree->Branch("lappdhit_neighstrip_righttime", &lappdhit_neighstrip_righttime);
-
 }
 
 WCSimEventAction::~WCSimEventAction()
@@ -166,10 +134,7 @@ WCSimEventAction::~WCSimEventAction()
   
   // Actions to cleanup LAPPD truth hits:
   // ====================================
-   LAPPDfile->cd();	
-   LAPPDtree->Write();
-   LAPPDfile->Close();
-   delete LAPPDfile; 
+   if(LAPPDfile){LAPPDfile->Close(); delete LAPPDfile; LAPPDfile=0;}
    
    delete[] lappdhit_x;
    delete[] lappdhit_y;
@@ -248,10 +213,13 @@ void WCSimEventAction::CreateDAQInstances()
 }
 
 
-void WCSimEventAction::BeginOfEventAction(const G4Event*)
+void WCSimEventAction::BeginOfEventAction(const G4Event* evt)
 {
   if(!ConstructedDAQClasses)
     CreateDAQInstances();
+  
+  // equivalent of beginrunaction using event id
+  if(evt->GetEventID()==0){ CreateNewLAPPDFile(); }
 }
 
 void WCSimEventAction::EndOfEventAction(const G4Event* evt)
@@ -622,6 +590,8 @@ void WCSimEventAction::EndOfEventAction(const G4Event* evt)
     }//idigi
    }
   LAPPDtree->Fill();
+  LAPPDfile->cd();
+  LAPPDfile->Write("",TObject::kOverwrite);
 
   lappdhit_NoOfneighstripsHit.clear();
   lappdhit_stripcoorx.clear();
@@ -1000,6 +970,7 @@ G4cout<<"Filling FACC Root Event"<<G4endl;
   tree->SetEntries(tankeventbranch->GetEntries());
   //tree->SetEntries(GetRunAction()->GetNumberOfEventsGenerated());
   TFile* hfile = tree->GetCurrentFile();
+  hfile->cd();
   // MF : overwrite the trees -- otherwise we have as many copies of the tree
   // as we have events. All the intermediate copies are incomplete, only the
   // last one is useful --> huge waste of disk space.
@@ -1008,6 +979,7 @@ G4cout<<"Filling FACC Root Event"<<G4endl;
   G4cout<<"events generated so far: "<<(GetRunAction()->GetNumberOfEventsGenerated())<<G4endl;
   if(event_id%1000==0&&event_id!=0){
     GetRunAction()->CreateNewOutputFile();
+    CreateNewLAPPDFile(); // this must always come *after* the runaction version
   }
   
   G4cout<<"############# WCSIM FINISH END OF EVENT ACTION  ################"<<G4endl;
@@ -1540,4 +1512,43 @@ void WCSimEventAction::FillRootEvent(G4int event_id,
   // M Fechner : reinitialize the super event after the writing is over
   wcsimrootsuperevent->ReInitialize();
   
+}
+
+void WCSimEventAction::CreateNewLAPPDFile(){
+  if(LAPPDfile){LAPPDfile->Close(); delete LAPPDfile; LAPPDfile=0;}
+  // LAPPD file
+  LAPPDRootFileName = GetRunAction()->GetRootFileNameBase() + "_lappd_" + std::to_string(GetRunAction()->GetOutputFileNum()) + ".root";
+  LAPPDfile = new TFile(LAPPDRootFileName.c_str(),"RECREATE","WCSim LAPPD file");
+  LAPPDfile->SetCompressionLevel(2);
+  LAPPDfile->cd();
+  LAPPDtree = new TTree("LAPPDTree","LAPPDTree");
+  // Create the branches
+  LAPPDtree->Branch("lappdevt",&lappdevt);
+  LAPPDtree->Branch("lappd_numhits",&lappd_numhits, "lappd_numhits/I");
+  LAPPDtree->Branch("lappdhit_totalpes_perevt", &lappdhit_totalpes_perevt, "lappdhit_totalpes_perevt/I");
+  LAPPDtree->Branch("lappdhit_totalpes_perlappd2", &lappdhit_totalpes_perlappd2);
+
+  LAPPDtree->Branch("lappdhit_x",lappdhit_x,"lappdhit_x[lappd_numhits]/D");
+  LAPPDtree->Branch("lappdhit_y",lappdhit_y,"lappdhit_y[lappd_numhits]/D");
+  LAPPDtree->Branch("lappdhit_z",lappdhit_z,"lappdhit_z[lappd_numhits]/D");
+  LAPPDtree->Branch("lappdhit_t",lappdhit_t,"lappdhit_t[lappd_numhits]/D");
+  LAPPDtree->Branch("lappdhit_stripcoorx", &lappdhit_stripcoorx);
+  LAPPDtree->Branch("lappdhit_stripcoory", &lappdhit_stripcoory);
+  LAPPDtree->Branch("lappdhit_stripcoorz", &lappdhit_stripcoorz);
+  LAPPDtree->Branch("lappdhit_process",lappdhit_process,"lappdhit_process[lappd_numhits]/I");
+  LAPPDtree->Branch("lappdhit_particleID",lappdhit_particleID,"lappdhit_particleID[lappd_numhits]/I");
+  LAPPDtree->Branch("lappdhit_trackID",lappdhit_trackID,"lappdhit_trackID[lappd_numhits]/I");
+  LAPPDtree->Branch("lappdhit_edep",lappdhit_edep,"lappdhit_edep[lappd_numhits]/D");
+  LAPPDtree->Branch("lappdhit_objnum",lappdhit_objnum,"lappdhit_objnum[lappd_numhits]/I");
+  //LAPPDtree->Branch("lappdhit_copynum",lappdhit_copynum,"lappdhit_copynum[lappd_numhits]/I");
+  LAPPDtree->Branch("lappdhit_stripnum", &lappdhit_stripnum);
+  LAPPDtree->Branch("lappdhit_truetime2",&lappdhit_truetime2);
+  LAPPDtree->Branch("lappdhit_smeartime2", &lappdhit_smeartime2);
+  LAPPDtree->Branch("lappdhit_primaryParentID2",&lappdhit_primaryParentID2);
+  LAPPDtree->Branch("lappdhit_NoOfneighstripsHit", &lappdhit_NoOfneighstripsHit);
+  LAPPDtree->Branch("lappdhit_neighstripnum", &lappdhit_neighstripnum);
+  LAPPDtree->Branch("lappdhit_neighstrippeak", &lappdhit_neighstrippeak);
+  LAPPDtree->Branch("lappdhit_neighstrip_time", &lappdhit_neighstrip_time);
+  LAPPDtree->Branch("lappdhit_neighstrip_lefttime", &lappdhit_neighstrip_lefttime);
+  LAPPDtree->Branch("lappdhit_neighstrip_righttime", &lappdhit_neighstrip_righttime);
 }
