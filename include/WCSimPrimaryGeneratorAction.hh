@@ -125,6 +125,7 @@ private:
 	G4String primariesDirectory;
 	G4String neutrinosDirectory;
 	G4bool loadNewPrimaries;
+	G4int primariesoffset;
 	
 public:
 

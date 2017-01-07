@@ -4,6 +4,7 @@
 class WCSimPrimaryGeneratorAction;
 class G4UIdirectory;
 class G4UIcmdWithAString;
+class G4UIcmdWithAnInteger;
 
 #include "G4UImessenger.hh"
 #include "globals.hh"
