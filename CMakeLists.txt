@@ -160,6 +160,8 @@ set(WCSIM_SCRIPTS
   visRayTracer.mac
   tuning_parameters.mac
   primaries_directory.mac
+  setRandomParameters.mac
+  src/WCSimRootDict_rdict.pcm
   pulsecharacteristics.root
   )
 

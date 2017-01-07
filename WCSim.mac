@@ -196,11 +196,18 @@
 #/vis/scene/activateModel G4TrajectoriesModel false 
 ## now only tracks explicitly drawn in the EndOfEventAction will be shown
 
+# set the random seed
+#/WCSim/random/seed 52878        #default 31415
+# set the offset from the start of the tchain at which to start reading primaries in
+#/mygen/primariesoffset 10000
+# these will be set in the mac file (contents updated by a batch file):
+/control/execute setRandomParameters.mac
+
 ## change the name of the output root file, default = wcsim (the .root is appended internally)
 /WCSimIO/RootFile wcsim
 #/WCSimIO/RootFile SKtest_10MeV_Uni_Iso  # for bonsai
 
-#/run/beamOn 1
+#/run/beamOn 3
 # should run 10000 events for bonsai
 
 #exit

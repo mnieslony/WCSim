@@ -371,6 +371,7 @@ void WCSimPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 			G4cout<<"@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#"<<G4endl;
 			G4cout<<"@#@#@#@#@#@#@#@#@#@ REACHED END OF INPUT FILE! #@#@#@#@#@#@#@#@#@#@#@#"<<G4endl;
 			G4cout<<"@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#"<<G4endl;
+			exit(-1);
 			inputEntry=0;
 			localEntry = inputdata->LoadTree(inputEntry);
 			metadata->LoadTree(inputEntry);
@@ -662,7 +663,8 @@ void WCSimPrimaryGeneratorAction::LoadNewPrimaries(){
 		G4cout<<"BRANCHES ARE ZOMBIES ARGH!"<<G4endl;
 	}
 	
-	inputEntry=0;
+	inputEntry=primariesoffset;
+	primariesoffset=0;
 	runBranch->GetEntry(inputEntry);
 	G4cout<<"first run: "<<runbranchval<<G4endl;
 	treeNumber=inputdata->GetTreeNumber();

@@ -34,6 +34,11 @@ WCSimPrimaryGeneratorMessenger::WCSimPrimaryGeneratorMessenger(WCSimPrimaryGener
   neutrinosfileDirectoryCmd->SetGuidance("Specify the directory containing genie neutrino root files. Set this before setting the primariesDirectory. Both should be set at the same time.");
   neutrinosfileDirectoryCmd->SetParameterName("directoryName",true);
   neutrinosfileDirectoryCmd->SetDefaultValue("");
+
+  primariesStartEventCmd = new G4UIcmdWithAnInteger("/mygen/primariesoffset", this);
+  primariesStartEventCmd->SetGuidance("The starting entry number for reading primaries");
+  primariesStartEventCmd->SetParameterName("primariesoffset",true);
+  primariesStartEventCmd->SetDefaultValue(0);
 }
 
 WCSimPrimaryGeneratorMessenger::~WCSimPrimaryGeneratorMessenger()
@@ -43,6 +48,7 @@ WCSimPrimaryGeneratorMessenger::~WCSimPrimaryGeneratorMessenger()
   delete primariesfileDirectoryCmd;
   delete neutrinosfileDirectoryCmd;
   delete mydetDirectory;
+  delete primariesStartEventCmd;
 }
 
 void WCSimPrimaryGeneratorMessenger::SetNewValue(G4UIcommand * command,G4String newValue)
@@ -100,6 +106,12 @@ void WCSimPrimaryGeneratorMessenger::SetNewValue(G4UIcommand * command,G4String 
   {
     myAction->SetNeutrinoFilesDirectory(newValue);
     G4cout << "Input directory set to " << newValue << G4endl;
+  }
+  
+  if( command == primariesStartEventCmd )
+  {
+    myAction->SetPrimariesOffset(primariesStartEventCmd->GetNewIntValue(newValue));
+    G4cout << "Primary files will be read starting from entry "<<newValue << G4endl;
   }
 
 }

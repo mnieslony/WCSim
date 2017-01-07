@@ -27,6 +27,7 @@ class WCSimPrimaryGeneratorMessenger: public G4UImessenger
   G4UIcmdWithAString* fileNameCmd;
   G4UIcmdWithAString* primariesfileDirectoryCmd;
   G4UIcmdWithAString* neutrinosfileDirectoryCmd;
+  G4UIcmdWithAnInteger* primariesStartEventCmd;
   
 };
 

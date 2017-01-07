@@ -159,6 +159,7 @@ public:
   inline void SetNeutrinoFilesDirectory(G4String directoryName) { neutrinosDirectory = directoryName; }
   inline void SetNewPrimariesFlag(G4bool flagin){ loadNewPrimaries=flagin; }
   void LoadNewPrimaries();
+  void SetPrimariesOffset(G4int offset){ primariesoffset=offset; }
   inline G4bool IsGeneratingVertexInRock() { return GenerateVertexInRock; }
   inline void SetGenerateVertexInRock(G4bool choice) { GenerateVertexInRock = choice; }
 #ifndef NO_GENIE
