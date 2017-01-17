@@ -161,7 +161,7 @@ set(WCSIM_SCRIPTS
   tuning_parameters.mac
   primaries_directory.mac
   setRandomParameters.mac
-  src/WCSimRootDict_rdict.pcm
+  WCSimRootDict_rdict.pcm
   pulsecharacteristics.root
   )
 

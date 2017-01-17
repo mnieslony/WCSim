@@ -15,6 +15,22 @@
 /vis/viewer/set/viewpointThetaPhi 80 10 deg
 /vis/viewer/set/upVector 0 1 0
 /vis/viewer/panTo -1 1
+# add visibility of the hidden parent structures
+#/vis/geometry/set/visibility WCBarrelCell 0
+#/vis/geometry/set/visibility WCBarrelCell 1
+#/vis/geometry/set/visibility WCCapPolygon 1
+#/vis/geometry/set/forceSolid ANNIEp2-glassFaceWCPMT -1 1
+#/vis/geometry/set/forceSolid ANNIEp2-glassFaceWCONLYLAPPDS -1 1
+#/vis/viewer/zoom 2
+#/vis/viewer/pan -1 0
+## following additional commands show a top-down view zoomed over an ocatgonal side
+#/vis/viewer/set/viewpointThetaPhi 90 90
+#/vis/viewer/zoom 0.7
+#/vis/viewer/set/upVector 0.29 0. 0.71
+#/vis/viewer/zoom 2
+#/vis/viewer/pan -1 -1
+#/vis/viewer/pan 0.4 0.2
+#/vis/viewer/zoom 1.5
 
 # Vis settings for HK
 #/vis/viewer/set/upVector 0 1 0

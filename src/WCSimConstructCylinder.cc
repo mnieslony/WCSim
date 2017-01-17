@@ -714,16 +714,22 @@ If used here, uncomment the SetVisAttributes(WClogic) line, and comment out the 
   G4RotationMatrix* WCPMTRotation = new G4RotationMatrix;
   WCPMTRotation->rotateY(90.*deg);
 
-  G4double barrelCellWidth = 2.*WCIDRadius*tan(dPhi/2.);
+  G4double barrelCellWidth = 2.*WCIDRadius*tan(dPhi/2.)*0.9;    // multiply by 0.9 to squeeze pmts closer
   G4double horizontalSpacing   = barrelCellWidth/WCPMTperCellHorizontal;
   G4double verticalSpacing     = barrelCellHeight/WCPMTperCellVertical;
 
   for(G4double i = 0; i < WCPMTperCellHorizontal; i++){
     for(G4double j = 0; j < WCPMTperCellVertical; j++){
-      G4ThreeVector PMTPosition =  G4ThreeVector(WCIDRadius,
-						 -barrelCellWidth/2.+(i+0.5)*horizontalSpacing,
-						 -barrelCellHeight/2.+(j+0.5)*verticalSpacing
-						 -(verticalSpacing/4.));
+//      G4ThreeVector PMTPosition =  G4ThreeVector(WCIDRadius,                      // configuration 4 across at cell bottom
+//						 -barrelCellWidth/2.+(i+0.5)*horizontalSpacing,
+//						 -barrelCellHeight/2.+(j+0.5)*verticalSpacing
+//						 -(verticalSpacing/4.));
+//      G4ThreeVector PMTPosition =  G4ThreeVector(WCIDRadius,                      // configuration 2 rows of 2 at cell edges
+//						 -barrelCellWidth/2.+ (((((int)i)%2)*3)+0.5)*horizontalSpacing,
+//						 -barrelCellHeight/2.+(((((int)i)%2)*2)+1)*(verticalSpacing/4.));
+      G4ThreeVector PMTPosition =  G4ThreeVector(WCIDRadius,                      // configuration 2 rows of 2 at cell edges
+						 -barrelCellWidth/2.+ (((i>1)*2)+0.5)*horizontalSpacing,
+						 -barrelCellHeight/2.+(((((int)i)%2)*2)+1)*(verticalSpacing/4.));
 
   G4cout<<"PMT position: "<<WCIDRadius<<","<<-barrelCellWidth/2.+(i+0.5)*horizontalSpacing<<","<<-barrelCellHeight/2.+(j+0.5)*verticalSpacing<<G4endl;
 
@@ -747,7 +753,7 @@ If used here, uncomment the SetVisAttributes(WClogic) line, and comment out the 
   G4RotationMatrix* WCLAPPDRotation = new G4RotationMatrix;
   WCLAPPDRotation->rotateY(90.*deg);
   //when I define it with the pmt parameters it works fine...Why????
-  G4double barrelCellWidth2 = 2.*WCIDRadius*tan(dPhi/2.);
+  G4double barrelCellWidth2 = 2.*WCIDRadius*tan(dPhi/2.)*0.9;
   //G4double horizontalSpacingLAPPD   = barrelCellWidth/WCPMTperCellHorizontal;
   //G4double verticalSpacingLAPPD     = barrelCellHeight/WCPMTperCellVertical;
   G4double horizontalSpacingLAPPD   = barrelCellWidth/WCLAPPDperCellHorizontal;
@@ -760,10 +766,18 @@ If used here, uncomment the SetVisAttributes(WClogic) line, and comment out the 
   //for(G4double i = 0; i < WCPMTperCellHorizontal; i++){
   //	for(G4double j = 0; j < WCPMTperCellVertical; j++){
 	  
+// configuration 4 across at cell bottom
+//      G4ThreeVector LAPPDPosition =  G4ThreeVector((WCIDRadius-((outerAnnulusRadius-innerAnnulusRadius)/2.)),
+//												   -barrelCellWidth2/2.+(i+0.5)*horizontalSpacingLAPPD,
+//												   -barrelCellHeight2/2.+(j+0.5)*verticalSpacingLAPPD
+//												   -(verticalSpacingLAPPD/4.));
+// configuration 2 rows of 2 at cell centres
+//      G4ThreeVector LAPPDPosition =  G4ThreeVector((WCIDRadius-((outerAnnulusRadius-innerAnnulusRadius)/2.)),
+//						 -barrelCellWidth2/2.+ ((((int)i)%2)+1.5)*horizontalSpacingLAPPD,
+//						 -barrelCellHeight2/2.+(((((int)i)%2)*2)-1)*(verticalSpacingLAPPD/4.));
       G4ThreeVector LAPPDPosition =  G4ThreeVector((WCIDRadius-((outerAnnulusRadius-innerAnnulusRadius)/2.)),
-												   -barrelCellWidth2/2.+(i+0.5)*horizontalSpacingLAPPD,
-												   -barrelCellHeight2/2.+(j+0.5)*verticalSpacingLAPPD
-												   -(verticalSpacingLAPPD/4.));
+						 -barrelCellWidth2/2.+ (((i>1)*2)+1.5)*horizontalSpacingLAPPD,
+						 -barrelCellHeight2/2.+(((((int)i)%2)*2)-1)*(verticalSpacingLAPPD/4.));
 	 
       G4VPhysicalVolume* physiWCBarrelLAPPD =
 		new G4PVPlacement(WCLAPPDRotation,              // its rotation
@@ -1352,25 +1366,40 @@ G4LogicalVolume* WCSimDetectorConstruction::ConstructCaps(G4int zflip)
   G4RotationMatrix* WCPMTRotation = new G4RotationMatrix;
   WCPMTRotation->rotateY(90.*deg);
 
-  G4double barrelCellWidth = 2.*WCIDRadius*tan(dPhi/2.);
+  G4double barrelCellWidth = 2.*WCIDRadius*tan(dPhi/2.)*0.9;
   G4double horizontalSpacing   = barrelCellWidth/WCPMTperCellHorizontal;
   G4double verticalSpacing     = barrelCellHeight/WCPMTperCellVertical;
 
   for(G4double i = 0; i < WCPMTperCellHorizontal; i++){
     for(G4double j = 0; j < WCPMTperCellVertical; j++){
+	if(((int)i)%2==0){
       G4ThreeVector PMTPosition =  G4ThreeVector(WCIDRadius,
 						 -barrelCellWidth/2.+(i+0.5)*horizontalSpacing,
 						 (-barrelCellHeight/2.+(j+0.5)*verticalSpacing)*zflip);
 
-     G4VPhysicalVolume* physiWCBarrelBorderPMT =
-	new G4PVPlacement(WCPMTRotation,                      // its rotation
-			  PMTPosition,
-			  logicWCPMT,                // its logical volume
-			  "WCPMT",             // its name
-			  logicWCBarrelBorderCell,         // its mother volume
-			  false,                     // no boolean operations
-			  (int)(i*WCPMTperCellVertical+j)
-			  ,true);                      // no particular field
+		 G4VPhysicalVolume* physiWCBarrelBorderPMT =
+		new G4PVPlacement(WCPMTRotation,                      // its rotation
+				  PMTPosition,
+				  logicWCPMT,                // its logical volume
+				  "WCPMT",             // its name
+				  logicWCBarrelBorderCell,         // its mother volume
+				  false,                     // no boolean operations
+				  (int)(i*WCPMTperCellVertical+j)
+				  ,true);                      // no particular field
+	} else {
+      G4ThreeVector PMTPosition =  G4ThreeVector(WCIDRadius-((outerAnnulusRadius-innerAnnulusRadius)/2.),
+						 -barrelCellWidth/2.+(i+0.5)*horizontalSpacing,
+						 (-barrelCellHeight/2.+(j+0.5)*verticalSpacing)*zflip);
+		G4VPhysicalVolume* physiWCBarrelBorderLAPPD =
+		new G4PVPlacement(WCPMTRotation,                      // its rotation
+				  PMTPosition,
+				  logicWCLAPPD,                // its logical volume
+				  "WCLAPPD",             // its name
+				  logicWCBarrelBorderCell,         // its mother volume
+				  false,                     // no boolean operations
+				  (int)(i*WCPMTperCellVertical+j)
+				  ,true);                      // no particular field
+	}
 
 
    // logicWCPMT->GetDaughter(0),physiCapPMT is the glass face. If you add more 

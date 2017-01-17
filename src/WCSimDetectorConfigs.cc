@@ -104,9 +104,9 @@ void WCSimDetectorConstruction::SetANNIEPhase2Geometry()
 												// from blueprints, this is 100.57" = 255.4cm
   WCIDHeight            = 3.96*m; 				// full height
   WCBarrelPMTOffset     = 0.0715*m; 			// offset of first barrel ring from tank caps
-  WCBarrelNumPMTHorizontal  = 16; 				// 2 PMTs per panel around an octagonal inner structure
+  WCBarrelNumPMTHorizontal  = 32; 				// 2 PMTs per panel around an octagonal inner structure
   WCBarrelNRings        = 5;					// 5 rings of 16 = 80 PMTs + 60 on each end cap = 200 total PMTs
-  WCPMTperCellHorizontal= 2;					// 
+  WCPMTperCellHorizontal= 4;					// 
   WCPMTperCellVertical  = 1;					// assume each row corresponds to a cell - significance of cells?
   WCCapPMTSpacing       = 2*(WCPMTRadius+25.*mm);	// something like that looks about right    prev 15*mm
   // 15->20 produces 8x8 with lappds, but they overlap significantly.
@@ -117,7 +117,7 @@ void WCSimDetectorConstruction::SetANNIEPhase2Geometry()
   WCBarrelLAPPDOffset     = 0.2*m; 			// offset of first barrel ring from tank caps
   WCCapLAPPDSpacing       = 2*(WCLAPPDRadius+100.*mm);
   //WCBarrelNumLAPPDHorizontal  = 1;  			// it should result to: 4 rings of 1 LAPPD = 4LAPPDs (?)
-  WCLAPPDperCellHorizontal= 2;					// 
+  WCLAPPDperCellHorizontal= 4;					// 
   WCLAPPDperCellVertical  = 1;					// assume each row corresponds to a cell - significance of cells?
 }
 
