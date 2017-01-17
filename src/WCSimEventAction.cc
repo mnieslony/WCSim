@@ -372,18 +372,26 @@ void WCSimEventAction::EndOfEventAction(const G4Event* evt)
     G4int totalpes_perevt = 0; G4int lappd_numhits0=0;
     for (G4int hitnum=0; hitnum<numberOfHits2; hitnum++) {
        G4cout<<"retrieving details for lappd hit "<<hitnum<<G4endl;
-       lappd_numhits0++;
+       lappd_numhits0++;  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+       G4cout<<"retrieving lappd aHit "<<hitnum<<G4endl;
        WCSimWCHit* aHit = (*WCHClappd)[hitnum];
+       G4cout<<"retrieving hit position from aHit "<<aHit<<G4endl;
        G4ThreeVector hitPos = aHit->GetPos();
+       G4cout<<"retrieving hit x from hitPos "<<hitPos<<G4endl;
        hitPosx=hitPos.x();
+       G4cout<<"retrieving hit y"<<G4endl;
        hitPosy=hitPos.y();
+       G4cout<<"retrieving hit z"<<G4endl;
        hitPosz=hitPos.z();
+       G4cout<<"retrieving hit time"<<G4endl;
        hitTime = aHit->GetTime(hitnum);
        //G4cout<<"hitTime= "<<hitTime<<G4endl;
        //hitParticleName = aHit->GetParticleName();
+       G4cout<<"retrieving hit tackid"<<G4endl;
        hitTrackID = aHit->GetTrackID();
-       for (G4int ip =0; ip < (*WCHClappd)[hitnum]->GetTotalPe(); ip++){
-         G4cout<<"retrieving pe "<<ip<<" for lappd hit "<<"hitnum"<<G4endl;
+       G4cout<<"looping over totalpes"<<G4endl;
+       for (G4int ip =0; ip < (*WCHClappd)[hitnum]->GetTotalPe(); ip++){ //~~~~~~~~~~~~~~~~
+         G4cout<<"retrieving pe "<<ip<<" for lappd hit "<<hitnum<<G4endl;
        //hitPartCode = aHit->GetParticleID();
          lappdhit_process[hitnum] = hitProcessCode;
          double strip_coorx = ((*WCHClappd)[hitnum]->GetStripPosition(ip).x());
