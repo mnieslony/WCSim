@@ -66,7 +66,7 @@ void WCSimWCDigi::Print()
   for (unsigned int i = 0 ; i < pe.size() ; i++) {
     G4cout  << "Gate = " << i 
 	    << " PE: "    << pe[i]
-	    << " Time:"   << time[i] << G4endl;
+	    << " Time:"   << time.at(i) << G4endl;
   }
 }
 
@@ -88,7 +88,7 @@ void WCSimWCDigi::RemoveDigitizedGate(G4int gate)
   //pe map
   pe.erase(gate);
   //time map and time_float vector
-  float gatetime = time[gate];
+  float gatetime = time.at(gate);
   time.erase(gate);
   time_presmear.erase(gate);
   std::vector<G4float>::iterator it = std::find(time_float.begin(), time_float.end(), gatetime);

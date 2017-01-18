@@ -117,7 +117,7 @@ public:
   inline G4int   GetTubeID() {return tubeID;};
   inline G4int   GetLAPPDID() {return lappdID;};
   inline G4float GetPe(int gate)     {return pe[gate];};
-  inline G4float GetTime(int gate)   {return time[gate];};
+  inline G4float GetTime(int gate)   {return time.at(gate);};
   inline G4float GetPreSmearTime(int gate)   {return time_presmear[gate];};
   std::vector<int> GetDigiCompositionInfo(int gate);
   inline std::map< int, std::vector<int> > GetDigiCompositionInfo(){return fDigiComp;}
@@ -161,13 +161,13 @@ public:
     int index_primaryparentid;
     for (i = 1; i < (int) time.size(); ++i)
       {
-        index_time  = time[i];
+        index_time  = time.at(i);
         index_timepresmear  = time_presmear[i];
         index_pe = pe[i];
 	index_digicomp = fDigiComp[i];
 	index_primaryparentid = primaryParentID[i];
-        for (j = i; j > 0 && time[j-1] > index_time; j--) {
-          time[j] = time[j-1];
+        for (j = i; j > 0 && time.at(j-1) > index_time; j--) {
+          time[j] = time.at(j-1);
           pe[j] = pe[j-1];
 	  fDigiComp[j] = fDigiComp[j-1];
 	  primaryParentID[j] = primaryParentID[j-1];
