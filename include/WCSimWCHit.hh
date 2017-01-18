@@ -84,12 +84,12 @@ class WCSimWCHit : public G4VHit
   G4int         GetTubeID()     { return tubeID; };
   G4int         GetTrackID()    { return trackID; };
   G4ThreeVector GetPos()        { return pos; };
-  G4ThreeVector GetStripPosition(int i)  { return position[i];};
+  G4ThreeVector GetStripPosition(int i)  { return position.at(i);};
   
   void AddStripPosition(G4ThreeVector pos) { position.push_back(pos); }
   G4int         GetTotalPe()    { return totalPe;};
-  G4float       GetTime(int i)  { return time[i];};
-  G4int         GetParentID(int i) { return primaryParentID[i];};
+  G4float       GetTime(int i)  { return time.at(i);};
+  G4int         GetParentID(int i) { return primaryParentID.at(i);};
   
   G4LogicalVolume* GetLogicalVolume() {return pLogV;};
 

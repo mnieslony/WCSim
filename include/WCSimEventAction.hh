@@ -84,7 +84,6 @@ private:
   G4double *lappdhit_x;
   G4double *lappdhit_y;
   G4double *lappdhit_z;
-  G4double *lappdhit_t;
   G4int *lappdhit_process;
   G4int *lappdhit_particleID;
   G4int *lappdhit_trackID;
@@ -97,6 +96,7 @@ private:
   std::vector<double> lappdhit_stripcoorx;
   std::vector<double> lappdhit_stripcoory;  
   std::vector<double> lappdhit_stripcoorz;
+  std::vector<double> lappdhit_stripcoort;
   std::vector<float> lappdhit_truetime2, lappdhit_smeartime2;
   std::vector<int>   lappdhit_primaryParentID2;	
   std::vector<int> lappdhit_stripnum;

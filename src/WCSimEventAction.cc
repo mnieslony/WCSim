@@ -118,7 +118,6 @@ WCSimEventAction::WCSimEventAction(WCSimRunAction* myRun,
   lappdhit_x = new G4double[klappdhitnmax]; // where/when was the hit?
   lappdhit_y = new G4double[klappdhitnmax];
   lappdhit_z = new G4double[klappdhitnmax];
-  lappdhit_t = new G4double[klappdhitnmax];
   lappdhit_process = new G4int[klappdhitnmax];    // what was the interaction process?
   lappdhit_particleID = new G4int[klappdhitnmax]; // what was the particle type interacting?
   lappdhit_trackID = new G4int[klappdhitnmax];    // what was the track ID
@@ -139,7 +138,6 @@ WCSimEventAction::~WCSimEventAction()
    delete[] lappdhit_x;
    delete[] lappdhit_y;
    delete[] lappdhit_z;
-   delete[] lappdhit_t;
    delete[] lappdhit_process;
    delete[] lappdhit_particleID;
    delete[] lappdhit_trackID;
@@ -357,9 +355,7 @@ void WCSimEventAction::EndOfEventAction(const G4Event* evt)
   for (G4int ii=0; ii< WCHClappd->entries() ;ii++){
     //G4cout<<"total pe @ LAPPDs: "<< (*WCHClappd)[ii]->GetTotalPe() << G4endl;
     G4int   lappdID         = (*WCHClappd)[ii]->GetTubeID();
-    objnumv.push_back((*WCHClappd)[ii]->GetTubeID());
-    G4float timelappd           = (*WCHClappd)[ii]->GetTime(ii);
-    //G4cout<<"ii= "<<ii<<" @ "<<timelappd<<" lappdID "<<lappdID<<" @ "<<timelappd<<G4endl; 
+    objnumv.push_back(lappdID);
   }
   
   //--------- STORE lappd HITS -------------
@@ -384,8 +380,6 @@ void WCSimEventAction::EndOfEventAction(const G4Event* evt)
        G4cout<<"retrieving hit z"<<G4endl;
        hitPosz=hitPos.z();
        G4cout<<"retrieving hit time"<<G4endl;
-       hitTime = aHit->GetTime(hitnum);
-       //G4cout<<"hitTime= "<<hitTime<<G4endl;
        //hitParticleName = aHit->GetParticleName();
        G4cout<<"retrieving hit tackid"<<G4endl;
        hitTrackID = aHit->GetTrackID();
@@ -397,10 +391,12 @@ void WCSimEventAction::EndOfEventAction(const G4Event* evt)
          double strip_coorx = ((*WCHClappd)[hitnum]->GetStripPosition(ip).x());
          double strip_coory = ((*WCHClappd)[hitnum]->GetStripPosition(ip).y());
          double strip_coorz = ((*WCHClappd)[hitnum]->GetStripPosition(ip).z());
+         double strip_coort = aHit->GetTime(ip);
          //G4cout<<"totalpes_perevt= "<<totalpes_perevt<<"--->GetStripPosition= "<<(*WCHClappd)[hitnum]->GetStripPosition(ip)<<" strip_coorx= "<<strip_coorx<<" strip_coory= "<<strip_coory<<G4endl;
          lappdhit_stripcoorx.push_back(strip_coorx);
          lappdhit_stripcoory.push_back(strip_coory);
          lappdhit_stripcoorz.push_back(strip_coorz);
+         lappdhit_stripcoort.push_back(strip_coort);
          totalpes_perevt++;
        }
        //hitPartCode = ConvertParticleNameToCode(hitParticleName); // or use hitParticleID - from PDGEncoding?
@@ -414,7 +410,6 @@ void WCSimEventAction::EndOfEventAction(const G4Event* evt)
        lappdhit_x[hitnum] = hitPosx;
        lappdhit_y[hitnum] = hitPosy;
        lappdhit_z[hitnum] = hitPosz;
-       lappdhit_t[hitnum] = hitTime;
        lappdhit_particleID[hitnum] = hitPartCode;
        lappdhit_trackID[hitnum] = hitTrackID;
        lappdhit_edep[hitnum] = hitEdep;
@@ -623,6 +618,7 @@ void WCSimEventAction::EndOfEventAction(const G4Event* evt)
   lappdhit_stripcoorx.clear();
   lappdhit_stripcoory.clear();
   lappdhit_stripcoorz.clear();
+  lappdhit_stripcoort.clear();
   lappdhit_totalpes_perlappd2.clear();
   objnumv.clear();
   lappdhit_smeartime2.clear();
@@ -644,7 +640,6 @@ void WCSimEventAction::EndOfEventAction(const G4Event* evt)
        {
 	 G4int   tubeID         = (*WCDC)[i]->GetTubeID();
 	 G4float photoElectrons = (*WCDC)[i]->GetPe(i);
-	 G4float time           = (*WCDC)[i]->GetTime(i);
 	 //	 G4cout << "time " << i << " " <<time << G4endl; 
 	 //	 G4cout << "tubeID " << i << " " <<tubeID << G4endl; 
 	 //	 G4cout << "Pe " << i << " " <<photoElectrons << G4endl; 
@@ -1557,10 +1552,10 @@ void WCSimEventAction::CreateNewLAPPDFile(){
   LAPPDtree->Branch("lappdhit_x",lappdhit_x,"lappdhit_x[lappd_numhits]/D");
   LAPPDtree->Branch("lappdhit_y",lappdhit_y,"lappdhit_y[lappd_numhits]/D");
   LAPPDtree->Branch("lappdhit_z",lappdhit_z,"lappdhit_z[lappd_numhits]/D");
-  LAPPDtree->Branch("lappdhit_t",lappdhit_t,"lappdhit_t[lappd_numhits]/D");
   LAPPDtree->Branch("lappdhit_stripcoorx", &lappdhit_stripcoorx);
   LAPPDtree->Branch("lappdhit_stripcoory", &lappdhit_stripcoory);
   LAPPDtree->Branch("lappdhit_stripcoorz", &lappdhit_stripcoorz);
+  LAPPDtree->Branch("lappdhit_stripcoort", &lappdhit_stripcoort);
   LAPPDtree->Branch("lappdhit_process",lappdhit_process,"lappdhit_process[lappd_numhits]/I");
   LAPPDtree->Branch("lappdhit_particleID",lappdhit_particleID,"lappdhit_particleID[lappd_numhits]/I");
   LAPPDtree->Branch("lappdhit_trackID",lappdhit_trackID,"lappdhit_trackID[lappd_numhits]/I");
