@@ -286,6 +286,7 @@ void WCSimWCTriggerBase::AlgNDigits(WCSimWCDigitsCollection* WCDCPMT, bool remov
       //int tube=(*WCDCPMT)[i]->GetTubeID();
       //Loop over each Digit in this PMT
       G4cout<<"looping over totalpe for entry "<<i<<G4endl;
+      G4cout<<"this loop is over totalpe="<<(*WCDCPMT)[i]->GetTotalPe()<<" pe's"<<G4endl;
       for ( G4int ip = 0 ; ip < (*WCDCPMT)[i]->GetTotalPe() ; ip++) {
       G4cout<<"getting time for ip="<<ip<<G4endl;
 	int digit_time = (*WCDCPMT)[i]->GetTime(ip);

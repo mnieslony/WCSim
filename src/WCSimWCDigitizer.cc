@@ -20,11 +20,11 @@
 #include <cstring>
 
 #ifndef NPMTS_VERBOSE
-#define NPMTS_VERBOSE 10
+#define NPMTS_VERBOSE 200	//10
 #endif
 
 #ifndef HYPER_VERBOSITY
-//#define HYPER_VERBOSITY
+#define HYPER_VERBOSITY
 #endif
 
 
@@ -33,7 +33,7 @@
 // *******************************************
 
 #ifndef WCSIMWCDIGITIZER_VERBOSE
-//#define WCSIMWCDIGITIZER_VERBOSE
+#define WCSIMWCDIGITIZER_VERBOSE
 #endif
 
 WCSimWCDigitizerBase::WCSimWCDigitizerBase(G4String name,
