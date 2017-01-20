@@ -117,7 +117,26 @@ public:
   inline G4int   GetTubeID() {return tubeID;};
   inline G4int   GetLAPPDID() {return lappdID;};
   inline G4float GetPe(int gate)     {return pe[gate];};
-  inline G4float GetTime(int gate)   {return time.at(gate);};
+  inline G4float GetTime(int gate)   {
+    try {
+      return time.at(gate);
+    }
+    catch (...) {
+      G4cout<<"Exception occurred while attempting to use WCSimWCDigi::GetTime to retrieve time for pe "
+            << gate << " from map of times. The time map has entries:" << G4endl;
+      for (auto& x: time){
+        try{
+          G4cout << x.first << ": ";
+          G4cout << x.second << G4endl;
+        }
+        catch (...) {
+          G4cout << G4endl << "Exception reading map entry!!"<<G4endl;
+          break;
+        }
+      }
+      throw;
+    }
+  };
   inline G4float GetPreSmearTime(int gate)   {return time_presmear[gate];};
   std::vector<int> GetDigiCompositionInfo(int gate);
   inline std::map< int, std::vector<int> > GetDigiCompositionInfo(){return fDigiComp;}

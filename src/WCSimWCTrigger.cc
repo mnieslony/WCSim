@@ -281,15 +281,20 @@ void WCSimWCTriggerBase::AlgNDigits(WCSimWCDigitsCollection* WCDCPMT, bool remov
     digit_times.clear();
     
     //Loop over each PMT
-    G4cout<<"looping over WCDCPMT entries"<<G4endl;
     for (G4int i = 0 ; i < WCDCPMT->entries() ; i++) {
       //int tube=(*WCDCPMT)[i]->GetTubeID();
       //Loop over each Digit in this PMT
-      G4cout<<"looping over totalpe for entry "<<i<<G4endl;
-      G4cout<<"this loop is over totalpe="<<(*WCDCPMT)[i]->GetTotalPe()<<" pe's"<<G4endl;
       for ( G4int ip = 0 ; ip < (*WCDCPMT)[i]->GetTotalPe() ; ip++) {
-      G4cout<<"getting time for ip="<<ip<<G4endl;
-	int digit_time = (*WCDCPMT)[i]->GetTime(ip);
+        int digit_time=0;
+      	try{
+	  digit_time = (*WCDCPMT)[i]->GetTime(ip);
+	}
+	catch (...){
+	  G4cout<<"Exception in WCSimWCTriggerBase::AlgNDigits call to WCSimWCDigi::GetTime "
+	        <<G4endl<<"Attempt to retrieve time from pe "<<ip<<" in WCDCPMT entry "<<i<<G4endl;
+	  G4cout<<"The digi had "<<(*WCDCPMT)[i]->GetTotalPe()<<" total pe's."<<G4endl;
+	  digit_time=-999;
+	}
 	//hit in trigger window?
 	G4cout<<"checking digit in window"<<G4endl;
 	if(digit_time >= window_start_time && digit_time <= (window_start_time + ndigitsWindow)) {
@@ -455,7 +460,16 @@ void WCSimWCTriggerBase::FillDigitsCollection(WCSimWCDigitsCollection* WCDCPMT, 
       int tube=(*WCDCPMT)[i]->GetTubeID();
       //loop over digits in this PMT
       for ( G4int ip = 0; ip < (*WCDCPMT)[i]->GetTotalPe(); ip++){
-	int digit_time  = (*WCDCPMT)[i]->GetTime(ip);
+	int digit_time=0;
+	try{
+	  digit_time = (*WCDCPMT)[i]->GetTime(ip);
+	}
+	catch (...){
+	  G4cout<<"Exception in WCSimWCTriggerBase::FillDigitsCollection call to WCSimWCDigi::GetTime "
+	        <<G4endl<<"Attempt to retrieve time from pe "<<ip<<" in WCDCPMT entry "<<i<<G4endl;
+	  G4cout<<"The digi had "<<(*WCDCPMT)[i]->GetTotalPe()<<" total pe's."<<G4endl;
+	  digit_time=-999;
+	}
 	if(digit_time >= lowerbound && digit_time <= upperbound) {
 	  //hit in event window
 	  digitsinthistrigger++;

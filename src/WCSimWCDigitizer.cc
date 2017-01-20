@@ -20,11 +20,11 @@
 #include <cstring>
 
 #ifndef NPMTS_VERBOSE
-#define NPMTS_VERBOSE 200	//10
+//#define NPMTS_VERBOSE 10
 #endif
 
 #ifndef HYPER_VERBOSITY
-#define HYPER_VERBOSITY
+//#define HYPER_VERBOSITY
 #endif
 
 
@@ -33,7 +33,7 @@
 // *******************************************
 
 #ifndef WCSIMWCDIGITIZER_VERBOSE
-#define WCSIMWCDIGITIZER_VERBOSE
+//#define WCSIMWCDIGITIZER_VERBOSE
 #endif
 
 WCSimWCDigitizerBase::WCSimWCDigitizerBase(G4String name,
@@ -249,7 +249,16 @@ void WCSimWCDigitizerSKI::DigitizeHits(WCSimWCDigitsCollection* WCHCPMT) {
       //loop over the hits on this PMT
       for( G4int ip = 0 ; ip < (*WCHCPMT)[i]->GetTotalPe() ; ip++)
 	{
-	  float time = (*WCHCPMT)[i]->GetTime(ip);
+	  float time=0.;
+	  try{
+	    time = (*WCHCPMT)[i]->GetTime(ip);
+	  }
+	  catch (...){
+	    G4cout<<"Exception in WCSimWCDigitizerSKI::DigitizeHits call to WCSimWCDigi::GetTime "
+	          <<G4endl<<"Attempt to retreive time from pe "<<ip<<" in WCHCPMT entry "<<i<<G4endl;
+	    G4cout<<"This digi had "<<(*WCHCPMT)[i]->GetTotalPe()<<" total pes"<<G4endl;
+	    time=-999.;
+	  }
           float pe = (*WCHCPMT)[i]->GetPe(ip);
 
 	  //start the integration time as the time of the first hit
