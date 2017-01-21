@@ -22,7 +22,7 @@ WCSimLAPPDpulseCluster::WCSimLAPPDpulseCluster()
     std::vector<int> myinput;
     fLAPPDstripPulseCoordinate.push_back(myinput);
   }
-std::cout<<"the vector array SIZE: "<<fLAPPDstripPulseCoordinate.size()<<std::endl;
+//std::cout<<"the vector array SIZE: "<<fLAPPDstripPulseCoordinate.size()<<std::endl;
 }
 
 WCSimLAPPDpulseCluster::~WCSimLAPPDpulseCluster()

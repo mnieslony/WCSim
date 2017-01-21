@@ -11,6 +11,7 @@
 #include <algorithm>
 //for less_equal, bind2nd,...
 #include <functional>
+#include <assert.h>
 
 // compose2 is not part of the C++ standard
 // use this kludgy technique to use it
@@ -79,6 +80,10 @@ class WCSimWCHit : public G4VHit
       maxPe = totalPe;
 
     time.push_back(hitTime);
+    if(hitTime > 1000000.){
+      G4cout<<"NONSENSICAL HIT TIME ="<<hitTime<<" in hit generated for pLogV="<<(pLogV->GetName())<<G4endl;
+      assert(false);
+    }
   }
  
   G4int         GetTubeID()     { return tubeID; };

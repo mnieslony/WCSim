@@ -107,6 +107,11 @@ G4bool WCSimWCSD::ProcessHits(G4Step* aStep, G4TouchableHistory*)
   
   G4double energyDeposition  = aStep->GetTotalEnergyDeposit();
   G4double hitTime           = aStep->GetPreStepPoint()->GetGlobalTime();
+  if(hitTime>1000000){ 
+    G4cout<<"NONSENSE HIT TIME="<<hitTime<<" IN WCSIMWCSD FOR DETECTOR ELEMENT "<<detectorElement<<G4endl;
+    G4cout<<"aStep="<<aStep<<", PreStepPoint="<<aStep->GetPreStepPoint()<<G4endl;
+    assert(false);
+  }
 
   G4ParticleDefinition *particleDefinition = 
     aStep->GetTrack()->GetDefinition();
