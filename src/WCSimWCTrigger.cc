@@ -19,7 +19,7 @@
 // for memset
 #include <cstring>
 #include <algorithm>
-
+#include <exception>
 
 
 // *******************************************
@@ -293,15 +293,13 @@ void WCSimWCTriggerBase::AlgNDigits(WCSimWCDigitsCollection* WCDCPMT, bool remov
 	  G4cout<<"Exception in WCSimWCTriggerBase::AlgNDigits call to WCSimWCDigi::GetTime "
 	        <<G4endl<<"Attempt to retrieve time from pe "<<ip<<" in WCDCPMT entry "<<i<<G4endl;
 	  G4cout<<"The digi had "<<(*WCDCPMT)[i]->GetTotalPe()<<" total pe's."<<G4endl;
-	  digit_time=-999;
+	  assert(false);
 	}
 	//hit in trigger window?
-	G4cout<<"checking digit in window"<<G4endl;
 	if(digit_time >= window_start_time && digit_time <= (window_start_time + ndigitsWindow)) {
 	  n_digits++;
 	  digit_times.push_back(digit_time);
 	}
-	G4cout<<"checking if this is a later digit than we have recorded"<<G4endl;
 	//G4cout << digit_time << G4endl;
 	//get the time of the last hit (to make the loop shorter)
 	if(first_loop && (digit_time > lasthit))
@@ -309,10 +307,8 @@ void WCSimWCTriggerBase::AlgNDigits(WCSimWCDigitsCollection* WCDCPMT, bool remov
       }//loop over Digits
     }//loop over PMTs
 
-    G4cout<<"checking if threshold exceeded"<<G4endl;
     //if over threshold, issue trigger
     if(n_digits > this_ndigitsThreshold) {
-    	G4cout<<"threshold exceeded"<<G4endl;
       ntrig++;
       //The trigger time is the time of the first hit above threshold
       std::sort(digit_times.begin(), digit_times.end());
@@ -331,14 +327,11 @@ void WCSimWCTriggerBase::AlgNDigits(WCSimWCDigitsCollection* WCDCPMT, bool remov
 	     << "]. Threshold is: " << this_ndigitsThreshold << G4endl;
 #endif
 
-    G4cout<<"checking if trigger found"<<G4endl;
     //move onto the next go through the timing loop
     if(triggerfound) {
-      G4cout<<"trigger found"<<G4endl;
       window_start_time = triggertime + GetPostTriggerWindow(TriggerTypes.back());
     }//triggerfound
     else {
-      G4cout<<"trigger not found, shifting window"<<G4endl;
       window_start_time += window_step_size;
     }
 
@@ -468,7 +461,7 @@ void WCSimWCTriggerBase::FillDigitsCollection(WCSimWCDigitsCollection* WCDCPMT, 
 	  G4cout<<"Exception in WCSimWCTriggerBase::FillDigitsCollection call to WCSimWCDigi::GetTime "
 	        <<G4endl<<"Attempt to retrieve time from pe "<<ip<<" in WCDCPMT entry "<<i<<G4endl;
 	  G4cout<<"The digi had "<<(*WCDCPMT)[i]->GetTotalPe()<<" total pe's."<<G4endl;
-	  digit_time=-999;
+	  assert(false);
 	}
 	if(digit_time >= lowerbound && digit_time <= upperbound) {
 	  //hit in event window

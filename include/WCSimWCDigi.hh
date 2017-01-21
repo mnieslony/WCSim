@@ -11,6 +11,7 @@
 #include <set>
 #include <map>
 #include <vector>
+#include <exception>
 
 // for sort, find, count_if
 #include <algorithm>

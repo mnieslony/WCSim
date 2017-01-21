@@ -33,6 +33,7 @@
 #include <string>
 #include <vector>
 #include <climits>
+#include <exception>
 
 #include "jhfNtuple.h"
 #include "TTree.h"
@@ -363,35 +364,32 @@ void WCSimEventAction::EndOfEventAction(const G4Event* evt)
   lappdevt=evt->GetEventID();
   G4double totalEnergy2 = 0.;
   G4int numberOfHits2 = WCHClappd->GetSize();
-  G4cout << "&&&&  A total of " << numberOfHits2 << " hits on lappd were recorded!" << G4endl;
+  //G4cout << "&&&&  A total of " << numberOfHits2 << " hits on lappd were recorded!" << G4endl;
   if (WCHClappd!=0) {
     G4int totalpes_perevt = 0; G4int lappd_numhits0=0;
     for (G4int hitnum=0; hitnum<numberOfHits2; hitnum++) {
-       G4cout<<"retrieving details for lappd hit "<<hitnum<<G4endl;
-       lappd_numhits0++;  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-       G4cout<<"retrieving lappd aHit "<<hitnum<<G4endl;
+       lappd_numhits0++;
        WCSimWCHit* aHit = (*WCHClappd)[hitnum];
-       G4cout<<"retrieving hit position from aHit "<<aHit<<G4endl;
        G4ThreeVector hitPos = aHit->GetPos();
-       G4cout<<"retrieving hit x from hitPos "<<hitPos<<G4endl;
        hitPosx=hitPos.x();
-       G4cout<<"retrieving hit y"<<G4endl;
        hitPosy=hitPos.y();
-       G4cout<<"retrieving hit z"<<G4endl;
        hitPosz=hitPos.z();
-       G4cout<<"retrieving hit time"<<G4endl;
        //hitParticleName = aHit->GetParticleName();
-       G4cout<<"retrieving hit tackid"<<G4endl;
        hitTrackID = aHit->GetTrackID();
-       G4cout<<"looping over totalpes"<<G4endl;
-       for (G4int ip =0; ip < (*WCHClappd)[hitnum]->GetTotalPe(); ip++){ //~~~~~~~~~~~~~~~~
-         G4cout<<"retrieving pe "<<ip<<" for lappd hit "<<hitnum<<G4endl;
+       for (G4int ip =0; ip < (*WCHClappd)[hitnum]->GetTotalPe(); ip++){
        //hitPartCode = aHit->GetParticleID();
          lappdhit_process[hitnum] = hitProcessCode;
          double strip_coorx = ((*WCHClappd)[hitnum]->GetStripPosition(ip).x());
          double strip_coory = ((*WCHClappd)[hitnum]->GetStripPosition(ip).y());
          double strip_coorz = ((*WCHClappd)[hitnum]->GetStripPosition(ip).z());
-         double strip_coort = aHit->GetTime(ip);
+         double strip_coort;
+         try{
+           strip_coort = aHit->GetTime(ip);
+         } 
+         catch (...){
+           G4cout<<"Error in WCSimEventAction::EndOfEventAction() calling WCSimWCHit::GetTime "<<G4endl;
+           assert(false);
+         }
          //G4cout<<"totalpes_perevt= "<<totalpes_perevt<<"--->GetStripPosition= "<<(*WCHClappd)[hitnum]->GetStripPosition(ip)<<" strip_coorx= "<<strip_coorx<<" strip_coory= "<<strip_coory<<G4endl;
          lappdhit_stripcoorx.push_back(strip_coorx);
          lappdhit_stripcoory.push_back(strip_coory);
@@ -425,7 +423,6 @@ void WCSimEventAction::EndOfEventAction(const G4Event* evt)
       G4cout<<"tellme: "<<lappdhit_stripcoorx[m]<<","<<lappdhit_stripcoory[m]<<","<<lappdhit_stripcoorz[m]<<G4endl;
      }*/
   }
-  G4cout<<"done processing lappd hits"<<G4endl;
 
   // Get a pointer to the Digitizing Module Manager
   G4DigiManager* DMman = G4DigiManager::GetDMpointer();
@@ -440,7 +437,6 @@ void WCSimEventAction::EndOfEventAction(const G4Event* evt)
  
   WCSimWCLAPPD* WCDMLAPPD =
     (WCSimWCLAPPD*)DMman->FindDigitizerModule("WCReadoutLAPPD");
-  G4cout<<"Reinitializing WCDLAPPD"<<G4endl;
   WCDMLAPPD->ReInitialize();
   
 #ifdef TIME_DAQ_STEPS
@@ -462,7 +458,6 @@ void WCSimEventAction::EndOfEventAction(const G4Event* evt)
     (WCSimWCAddDarkNoise*)DMman->FindDigitizerModule("WCDarkNoise");
   
   //Add the dark noise
-  G4cout<<"Adding dark noise with WCDNM"<<G4endl;
   WCDNM->AddDarkNoise();
 
   // Next, do the digitization
@@ -474,6 +469,7 @@ void WCSimEventAction::EndOfEventAction(const G4Event* evt)
   //Digitize the hits
   G4cout<<"Digitizing WCDM"<<G4endl;
   WCDM->Digitize();
+  G4cout<<"Done digitizing WCDM"<<G4endl;
 
   // Finally, apply the trigger
   
@@ -530,13 +526,11 @@ void WCSimEventAction::EndOfEventAction(const G4Event* evt)
    int hit_parentid; G4int id0=0;
    //loop over the DigitsCollection
    for(int idigi = 0; idigi < WCDC_hitslappd->entries(); idigi++) {
-      G4cout<<"Adding LAPPD raw hit "<<idigi<<G4endl;
       int digi_tubeid = (*WCDC_hitslappd)[idigi]->GetTubeID();
       //G4cout<<"digi_lappdid= "<<digi_tubeid<<"/"<<(*WCDC_hitslappd)[idigi]->GetTotalPe()<<G4endl;
       lappdhit_totalpes_perlappd2.push_back((*WCDC_hitslappd)[idigi]->GetTotalPe());
 
       for(G4int id = 0; id < (*WCDC_hitslappd)[idigi]->GetTotalPe(); id++){
-        G4cout<<"Adding pe "<<id<<"for LAPPD digi "<<idigi<<G4endl;
         id0++;
         hit_time_true  = (*WCDC_hitslappd)[idigi]->GetPreSmearTime(id);
         hit_parentid = (*WCDC_hitslappd)[idigi]->GetParentID(id);
@@ -550,7 +544,6 @@ void WCSimEventAction::EndOfEventAction(const G4Event* evt)
         //G4cout<<"LAPPD idigi= "<<idigi<<" id= "<<id<<" stripno= "<<stripno<<G4endl;
         std::map<int,double> stripno_peak=(*WCDC_hitslappd)[idigi]->GetNeighStripNo(id);
         int stiphit=0;
-        G4cout<<"processing stripno_peaks"<<G4endl;
         for(std::map<int,double>::iterator m1=stripno_peak.begin(); m1!=stripno_peak.end(); ++m1){
            //G4cout<<"DIGImap____"<<(m1)->first<<","<<(m1)->second<<G4endl;
            stiphit++;
@@ -562,21 +555,18 @@ void WCSimEventAction::EndOfEventAction(const G4Event* evt)
         lappdhit_NoOfneighstripsHit.push_back(stiphit);
        
         std::map<int,double> stripno_time=(*WCDC_hitslappd)[idigi]->GetNeighStripTime(id);
-        G4cout<<"processing stripno_times"<<G4endl;
         for(std::map<int,double>::iterator m2=stripno_time.begin(); m2!=stripno_time.end(); ++m2){
           //G4cout<<"DIGItime____"<<(m2)->first<<","<<(m2)->second<<G4endl;
           lappdhit_neighstrip_time.push_back( (m2)->second );
         }
         stripno_time.clear();
         std::map<int,double> stripno_lefttime=(*WCDC_hitslappd)[idigi]->GetNeighStripLeftTime(id);
-        G4cout<<"processing stripno_lefttimes"<<G4endl;
         for(std::map<int,double>::iterator m3=stripno_lefttime.begin(); m3!=stripno_lefttime.end(); ++m3){
           //G4cout<<"DIGIlefttime____"<<(m3)->first<<","<<(m3)->second<<G4endl;
           lappdhit_neighstrip_lefttime.push_back( (m3)->second );
         }
         stripno_lefttime.clear();
         std::map<int,double> stripno_righttime=(*WCDC_hitslappd)[idigi]->GetNeighStripRightTime(id);
-        G4cout<<"processing stripno_righttimes"<<G4endl;
         for(std::map<int,double>::iterator m4=stripno_righttime.begin(); m4!=stripno_righttime.end(); ++m4){
           //G4cout<<"DIGIrighttime____"<<(m4)->first<<","<<(m4)->second<<G4endl;
           lappdhit_neighstrip_righttime.push_back( (m4)->second );
@@ -608,12 +598,9 @@ void WCSimEventAction::EndOfEventAction(const G4Event* evt)
       primaryParentID2.clear();*/
     }//idigi
    }
-  G4cout<<"Filling LAPPDtree"<<G4endl;
   LAPPDtree->Fill();
   LAPPDfile->cd();
-  G4cout<<"Writing LAPPD file"<<G4endl;
   LAPPDfile->Write("",TObject::kOverwrite);
-  G4cout<<"clearing up"<<G4endl;
   lappdhit_NoOfneighstripsHit.clear();
   lappdhit_stripcoorx.clear();
   lappdhit_stripcoory.clear();
@@ -646,7 +633,6 @@ void WCSimEventAction::EndOfEventAction(const G4Event* evt)
 	 //   (*WCDC)[i]->Print();
        }
    */
-   G4cout<<"moving to MRD & FACC"<<G4endl;
   // Repeat the steps for the MRD and FACC
   G4cout<<G4endl<<G4endl;
   G4String WCMRDCollectionName = detectorConstructor->GetMRDCollectionName();

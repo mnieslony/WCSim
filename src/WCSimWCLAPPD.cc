@@ -35,6 +35,7 @@
 #include <iomanip>
 #include <map>
 #include <iterator>
+#include <exception>
 
 //This class is an edited copy of LAPPDresponse.hh 
 
@@ -307,7 +308,13 @@ void WCSimWCLAPPD::MakePeCorrection_lappd(WCSimWCHitsCollection* WCHClappd)
       //G4cout<<"LAPPD= "<<lappd<<" hitPosx= "<<hitPosx<<" hitPosy= "<<hitPosy<<" hitPosz= "<<hitPosz<<G4endl;
 
       for (G4int ip =0; ip < (*WCHClappd)[i]->GetTotalPe(); ip++){
-	time_true = (*WCHClappd)[i]->GetTime(ip);
+	try{
+	  time_true = (*WCHClappd)[i]->GetTime(ip);
+	}
+	catch (...){
+	  G4cout<<"Exception in WCSimWCLAPPD::MakePeCorrection_lappd call of WCSimWCHit::GetTime"<<G4endl;
+	  assert(false);
+	}
 	peSmeared = rn1pe(); 
 	int parent_id = (*WCHClappd)[i]->GetParentID(ip);
 	//G4cout<<"------- ip= "<<ip<<" time_true= "<<time_true<<" parent_id= "<<parent_id<<G4endl;

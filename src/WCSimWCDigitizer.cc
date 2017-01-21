@@ -18,6 +18,7 @@
 #include <vector>
 // for memset
 #include <cstring>
+#include <exception>
 
 #ifndef NPMTS_VERBOSE
 //#define NPMTS_VERBOSE 10
@@ -257,7 +258,7 @@ void WCSimWCDigitizerSKI::DigitizeHits(WCSimWCDigitsCollection* WCHCPMT) {
 	    G4cout<<"Exception in WCSimWCDigitizerSKI::DigitizeHits call to WCSimWCDigi::GetTime "
 	          <<G4endl<<"Attempt to retreive time from pe "<<ip<<" in WCHCPMT entry "<<i<<G4endl;
 	    G4cout<<"This digi had "<<(*WCHCPMT)[i]->GetTotalPe()<<" total pes"<<G4endl;
-	    time=-999.;
+	    assert(false);
 	  }
           float pe = (*WCHCPMT)[i]->GetPe(ip);
 

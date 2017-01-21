@@ -18,6 +18,7 @@
 #include <vector>
 // for memset
 #include <cstring>
+#include <exception>
 
 #ifndef HYPER_VERBOSITY
 //#define HYPER_VERBOSITY
@@ -157,7 +158,13 @@ void WCSimWCPMT::MakePeCorrection(WCSimWCHitsCollection* WCHC)
       double time_PMT, time_true;
 
 	  for (G4int ip =0; ip < (*WCHC)[i]->GetTotalPe(); ip++){
-	    time_true = (*WCHC)[i]->GetTime(ip);
+	    try{
+	      time_true = (*WCHC)[i]->GetTime(ip);
+	    }
+	    catch (...){
+	      G4cout<<"Error in WCSimWCPMT::MakePeCorrection call of WCSimWCHit::GetTime()"<<G4endl;
+	      assert(false);
+	    }
 	    peSmeared = rn1pe();
 	    int parent_id = (*WCHC)[i]->GetParentID(ip);
 
