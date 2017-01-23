@@ -271,11 +271,6 @@ void WCSimWCAddDarkNoise::AddDarkNoiseBeforeDigi(WCSimWCDigitsCollection* WCHCPM
 	//time of noise hit to be generated
 	//A time from t=num1 to num2
 	current_time = num1 + G4UniformRand()*windowsize;
-	if(current_time>1000000){
-	  G4cout<<"NONSENSE DARK NOISE TIME, current_time="<<current_time<<", num1="<<num1<<", windowsize="<<windowsize<<", detectorElement="<<detectorElement<<G4endl;
-	  assert(false);
-	}
-
 	//now a random PMT.  Assuming noise levels are the same for
 	//each PMT.
 	int noise_pmt = static_cast<int>( G4UniformRand() * number_pmts ) + 1; //so that pmt numbers runs from 1 to Npmt

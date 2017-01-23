@@ -287,7 +287,8 @@ void WCSimWCTriggerBase::AlgNDigits(WCSimWCDigitsCollection* WCDCPMT, bool remov
       for ( G4int ip = 0 ; ip < (*WCDCPMT)[i]->GetTotalPe() ; ip++) {
         int digit_time=0;
       	try{
-	  digit_time = (*WCDCPMT)[i]->GetTime(ip);
+	  G4float temp_time = (*WCDCPMT)[i]->GetTime(ip);
+	  digit_time = (int)temp_time;
 	}
 	catch (...){
 	  G4cout<<"Exception in WCSimWCTriggerBase::AlgNDigits call to WCSimWCDigi::GetTime "
@@ -455,7 +456,8 @@ void WCSimWCTriggerBase::FillDigitsCollection(WCSimWCDigitsCollection* WCDCPMT, 
       for ( G4int ip = 0; ip < (*WCDCPMT)[i]->GetTotalPe(); ip++){
 	int digit_time=0;
 	try{
-	  digit_time = (*WCDCPMT)[i]->GetTime(ip);
+	  G4float temp_time = (*WCDCPMT)[i]->GetTime(ip);
+	  digit_time = (int)temp_time;
 	}
 	catch (...){
 	  G4cout<<"Exception in WCSimWCTriggerBase::FillDigitsCollection call to WCSimWCDigi::GetTime "

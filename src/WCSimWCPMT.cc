@@ -160,10 +160,6 @@ void WCSimWCPMT::MakePeCorrection(WCSimWCHitsCollection* WCHC)
 	  for (G4int ip =0; ip < (*WCHC)[i]->GetTotalPe(); ip++){
 	    try{
 	      time_true = (*WCHC)[i]->GetTime(ip);
-	      if(time_true > 1000000){ 
-	        G4cout<<"NONSENSICAL TIME_TRUE= "<<time_true<<" in detectorElement"<<detectorElement<<G4endl;
-	        assert(false);
-	      }
 	    }
 	    catch (...){
 	      G4cout<<"Error in WCSimWCPMT::MakePeCorrection call of WCSimWCHit::GetTime()"<<G4endl;
