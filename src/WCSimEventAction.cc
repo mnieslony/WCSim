@@ -337,7 +337,7 @@ void WCSimEventAction::EndOfEventAction(const G4Event* evt)
     collectionID2 = SDman->GetCollectionID(WCIDCollectionName2);
     WCHClappd = (WCSimWCHitsCollection*)HCE->GetHC(collectionID2);
     //G4cout<<"-----------name= "<<name<<" name2= "<<name2<<"--------"<<G4endl;
-  } else {G4cout<<"Could not find hit colletion of event!"<<G4endl;}
+  } else {G4cerr<<"Could not find hit colletion of event!"<<G4endl;}
   /** used if save raw hits is enabled in preprocessor - WCHC is a member variable used in FillRootEvent() */
   
   // To use Do like This:
@@ -387,8 +387,9 @@ void WCSimEventAction::EndOfEventAction(const G4Event* evt)
            strip_coort = aHit->GetTime(ip);
          } 
          catch (...){
-           G4cout<<"Error in WCSimEventAction::EndOfEventAction() calling WCSimWCHit::GetTime "<<G4endl;
-           assert(false);
+           G4cerr<<"Error in WCSimEventAction::EndOfEventAction() calling WCSimWCHit::GetTime "<<G4endl;
+           //assert(false);
+           strip_coort = -997.;
          }
          //G4cout<<"totalpes_perevt= "<<totalpes_perevt<<"--->GetStripPosition= "<<(*WCHClappd)[hitnum]->GetStripPosition(ip)<<" strip_coorx= "<<strip_coorx<<" strip_coory= "<<strip_coory<<G4endl;
          lappdhit_stripcoorx.push_back(strip_coorx);
@@ -458,6 +459,7 @@ void WCSimEventAction::EndOfEventAction(const G4Event* evt)
     (WCSimWCAddDarkNoise*)DMman->FindDigitizerModule("WCDarkNoise");
   
   //Add the dark noise
+  G4cout<<"Adding dark noise with WCDNM"<<G4endl;
   WCDNM->AddDarkNoise();
 
   // Next, do the digitization
@@ -469,7 +471,6 @@ void WCSimEventAction::EndOfEventAction(const G4Event* evt)
   //Digitize the hits
   G4cout<<"Digitizing WCDM"<<G4endl;
   WCDM->Digitize();
-  G4cout<<"Done digitizing WCDM"<<G4endl;
 
   // Finally, apply the trigger
   
@@ -645,26 +646,26 @@ void WCSimEventAction::EndOfEventAction(const G4Event* evt)
 #endif
   }
   WCSimWCPMT* WCDMPMT_MRD = (WCSimWCPMT*)DMman->FindDigitizerModule("WCReadoutPMT_MRD");
-  if(WCDMPMT_MRD==0){G4cout<<"WCReadoutPMT_MRD digitzer module not found!"<<G4endl;}
+  if(WCDMPMT_MRD==0){G4cerr<<"WCReadoutPMT_MRD digitzer module not found!"<<G4endl;}
   WCDMPMT_MRD->ReInitialize();
 #ifdef HYPER_VERBOSITY
   G4cout<<"WCSimEventAction::EndOfEventAction ☆ Calling Digitize on (WCSimWCPMT*)WCReadoutPMT_MRD"<<G4endl;
 #endif
   WCDMPMT_MRD->Digitize();
   WCSimWCAddDarkNoise* WCDNM_MRD = (WCSimWCAddDarkNoise*)DMman->FindDigitizerModule("WCDarkNoise_MRD");
-  if(WCDNM_MRD==0){G4cout<<"WCDarkNoise_MRD dark noise module not found!"<<G4endl;}
+  if(WCDNM_MRD==0){G4cerr<<"WCDarkNoise_MRD dark noise module not found!"<<G4endl;}
 #ifdef HYPER_VERBOSITY
   G4cout<<"WCSimEventAction::EndOfEventAction ☆ Calling AddDarkNoise on (WCSimWCAddDarkNoise*)WCDarkNoise_MRD"<<G4endl;
 #endif
   WCDNM_MRD->AddDarkNoise();
   WCSimWCDigitizerBase* WCDM_MRD = (WCSimWCDigitizerBase*)DMman->FindDigitizerModule("WCReadoutDigits_MRD");
-  if(WCDM_MRD==0){G4cout<<"WCReadoutDigits_MRD digitizer module not found!"<<G4endl;}
+  if(WCDM_MRD==0){G4cerr<<"WCReadoutDigits_MRD digitizer module not found!"<<G4endl;}
 #ifdef HYPER_VERBOSITY
   G4cout<<"WCSimEventAction::EndOfEventAction ☆ Calling Digitize on (WCSimWCDigitizerBase*)WCReadoutDigits_MRD"<<G4endl;
 #endif
   WCDM_MRD->Digitize();
   WCSimWCTriggerBase* WCTM_MRD = (WCSimWCTriggerBase*)DMman->FindDigitizerModule("WCReadout_MRD");
-  if(WCTM_MRD==0){G4cout<<"WCReadout_MRD trigger module not found!"<<G4endl;}
+  if(WCTM_MRD==0){G4cerr<<"WCReadout_MRD trigger module not found!"<<G4endl;}
   WCTM_MRD->SetDarkRate(WCDNM_MRD->GetDarkRate());
 #ifdef HYPER_VERBOSITY
   G4cout<<"WCSimEventAction::EndOfEventAction ☆ Calling Digitize on (WCSimWCTriggerBase*)WCReadout_MRD"<<G4endl;

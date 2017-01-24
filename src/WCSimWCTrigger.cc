@@ -20,6 +20,7 @@
 #include <cstring>
 #include <algorithm>
 #include <exception>
+#include <limits>
 
 
 // *******************************************
@@ -231,7 +232,7 @@ void WCSimWCTriggerBase::Digitize()
   // Do the work  
   if (WCDCPMT) {
     DoTheWork(WCDCPMT);
-  } else {G4cout<<"could not find trigger PMT digits collection for "<<detectorElement<<G4endl;}
+  } else {G4cerr<<"could not find trigger PMT digits collection for "<<detectorElement<<G4endl;}
   
 #ifdef HYPER_VERBOSITY
   if(detectorElement=="mrd"){G4cout<<"WCSimWCTriggerBase::Digitize ☆ storing the triggered digits collection "<<collectionName[0]
@@ -284,24 +285,31 @@ void WCSimWCTriggerBase::AlgNDigits(WCSimWCDigitsCollection* WCDCPMT, bool remov
     for (G4int i = 0 ; i < WCDCPMT->entries() ; i++) {
       //int tube=(*WCDCPMT)[i]->GetTubeID();
       //Loop over each Digit in this PMT
+      //G4cout<<"getting totalpe"<<G4endl;
+      //G4int atotalpe = (*WCDCPMT)[i]->GetTotalPe();
+      //G4cout<<"atotalpe of "<<atotalpe<<" this entry"<<G4endl;
       for ( G4int ip = 0 ; ip < (*WCDCPMT)[i]->GetTotalPe() ; ip++) {
         int digit_time=0;
       	try{
+      	  //G4cout<<"getting time as float ...";
 	  G4float temp_time = (*WCDCPMT)[i]->GetTime(ip);
-	  digit_time = (int)temp_time;
+	  //G4cout<<"converting to int ... ";
+	  if(temp_time<(std::numeric_limits<int>::max())){digit_time = (int)temp_time;} else {digit_time=-999;};
+	  //G4cout<<"converted"<<G4endl;
 	}
 	catch (...){
-	  G4cout<<"Exception in WCSimWCTriggerBase::AlgNDigits call to WCSimWCDigi::GetTime "
+	  G4cerr<<"Exception in WCSimWCTriggerBase::AlgNDigits call to WCSimWCDigi::GetTime "
 	        <<G4endl<<"Attempt to retrieve time from pe "<<ip<<" in WCDCPMT entry "<<i<<G4endl;
-	  G4cout<<"The digi had "<<(*WCDCPMT)[i]->GetTotalPe()<<" total pe's."<<G4endl;
-	  assert(false);
+	  G4cerr<<"The digi had "<<(*WCDCPMT)[i]->GetTotalPe()<<" total pe's."<<G4endl;
+	  //assert(false);
+	  digit_time=-998;
 	}
+	//G4cout << digit_time << G4endl;
 	//hit in trigger window?
 	if(digit_time >= window_start_time && digit_time <= (window_start_time + ndigitsWindow)) {
 	  n_digits++;
 	  digit_times.push_back(digit_time);
 	}
-	//G4cout << digit_time << G4endl;
 	//get the time of the last hit (to make the loop shorter)
 	if(first_loop && (digit_time > lasthit))
 	  lasthit = digit_time;
@@ -344,7 +352,6 @@ void WCSimWCTriggerBase::AlgNDigits(WCSimWCDigitsCollection* WCDCPMT, bool remov
 	     << " to " << lasthit - (ndigitsWindow - 10)
 	     << G4endl;
 #endif
-      G4cout<<"setting end of window as last digit"<<G4endl;
       window_end_time = lasthit - (ndigitsWindow - 10);
       first_loop = false;
     }
@@ -457,13 +464,14 @@ void WCSimWCTriggerBase::FillDigitsCollection(WCSimWCDigitsCollection* WCDCPMT, 
 	int digit_time=0;
 	try{
 	  G4float temp_time = (*WCDCPMT)[i]->GetTime(ip);
-	  digit_time = (int)temp_time;
+	  if(temp_time<(std::numeric_limits<int>::max())) {digit_time = (int)temp_time;} else {digit_time=-999;}
 	}
 	catch (...){
-	  G4cout<<"Exception in WCSimWCTriggerBase::FillDigitsCollection call to WCSimWCDigi::GetTime "
+	  G4cerr<<"Exception in WCSimWCTriggerBase::FillDigitsCollection call to WCSimWCDigi::GetTime "
 	        <<G4endl<<"Attempt to retrieve time from pe "<<ip<<" in WCDCPMT entry "<<i<<G4endl;
-	  G4cout<<"The digi had "<<(*WCDCPMT)[i]->GetTotalPe()<<" total pe's."<<G4endl;
-	  assert(false);
+	  G4cerr<<"The digi had "<<(*WCDCPMT)[i]->GetTotalPe()<<" total pe's."<<G4endl;
+	  //assert(false);
+	  digit_time=-996;
 	}
 	if(digit_time >= lowerbound && digit_time <= upperbound) {
 	  //hit in event window

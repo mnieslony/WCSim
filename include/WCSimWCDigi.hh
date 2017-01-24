@@ -123,15 +123,15 @@ public:
       return time.at(gate);
     }
     catch (...) {
-      G4cout<<"Exception occurred while attempting to use WCSimWCDigi::GetTime to retrieve time for pe "
+      G4cerr<<"Exception occurred while attempting to use WCSimWCDigi::GetTime to retrieve time for pe "
             << gate << " from map of times. The time map has entries:" << G4endl;
       for (auto& x: time){
         try{
-          G4cout << x.first << ": ";
-          G4cout << x.second << G4endl;
+          G4cerr << x.first << ": ";
+          G4cerr << x.second << G4endl;
         }
         catch (...) {
-          G4cout << G4endl << "Exception reading map entry!!"<<G4endl;
+          G4cerr << G4endl << "Exception reading map entry!!"<<G4endl;
           break;
         }
       }

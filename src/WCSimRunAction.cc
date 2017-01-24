@@ -211,7 +211,7 @@ void WCSimRunAction::FillGeoTree(){
     rot[2] = (Float_t)pmt->Get_orienz();
     tubeNo = pmt->Get_tubeid();
     cylLoc = pmt->Get_cylocation();
-    wcsimrootgeom-> SetPMT(i,tubeNo,cylLoc,rot,pos,"tank");
+    wcsimrootgeom-> SetPMT(i,tubeNo,cylLoc,rot,pos);
   }
   if (fpmts->size() != (unsigned int)numpmt) {
     G4cout << "Mismatch between number of pmts and pmt list in geofile.txt!!"<<G4endl;
@@ -250,7 +250,7 @@ void WCSimRunAction::FillGeoTree(){
     rot[2] = (Float_t)pmt->Get_orienz();
     tubeNo = pmt->Get_tubeid();
     cylLoc = pmt->Get_cylocation();
-    wcsimrootgeom-> SetPMT(i,tubeNo,cylLoc,rot,pos,"mrd");
+    wcsimrootgeom-> SetPMT(i,tubeNo,cylLoc,rot,pos);
   }
   if (fpmts->size() != (unsigned int)nummrdpmts) {
     G4cout << "Mismatch between number of mrd pmts and pmt list in geofile.txt!!"<<G4endl;
@@ -269,7 +269,7 @@ void WCSimRunAction::FillGeoTree(){
     rot[2] = (Float_t)pmt->Get_orienz();
     tubeNo = pmt->Get_tubeid();
     cylLoc = pmt->Get_cylocation();
-    wcsimrootgeom-> SetPMT(i,tubeNo,cylLoc,rot,pos,"facc");
+    wcsimrootgeom-> SetPMT(i,tubeNo,cylLoc,rot,pos);
   }
   if (fpmts->size() != (unsigned int)numfaccpmts) {
     G4cout << "Mismatch between number of facc pmts and pmt list in geofile.txt!!"<<G4endl;
