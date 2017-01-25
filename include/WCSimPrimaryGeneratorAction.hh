@@ -106,6 +106,7 @@ private:
   TChain* metadata;
   TChain* geniedata;
 	
+	Long64_t localEntry;
 	Int_t inputEntry;
 	Int_t entriesInThisTree;
 	Int_t treeNumber;

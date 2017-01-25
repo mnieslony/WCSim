@@ -20,6 +20,7 @@
 
 #include "G4Navigator.hh"
 #include "G4TransportationManager.hh"
+#include "G4UImanager.hh"
 
 // GENIE headers
 #ifndef NO_GENIE
@@ -361,46 +362,11 @@ void WCSimPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
   else if (useBeamEvt)
     {
 		if(loadNewPrimaries){ LoadNewPrimaries(); }	// update TChain if a new file is loaded by messenger
-		
-		Long64_t localEntry = inputdata->LoadTree(inputEntry);
+		//inputdata has already had tree loaded at the end of last event's GeneratePrimaries call
 		metadata->LoadTree(inputEntry);
 #ifndef NO_GENIE
 		geniedata->LoadTree(inputEntry);
 #endif
-		if(localEntry<0){
-			G4cout<<"@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#"<<G4endl;
-			G4cout<<"@#@#@#@#@#@#@#@#@#@ REACHED END OF INPUT FILE! #@#@#@#@#@#@#@#@#@#@#@#"<<G4endl;
-			G4cout<<"@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#"<<G4endl;
-			exit(-1);
-			inputEntry=0;
-			localEntry = inputdata->LoadTree(inputEntry);
-			metadata->LoadTree(inputEntry);
-#ifndef NO_GENIE
-			geniedata->LoadTree(inputEntry);
-#endif
-			// should be done below since this opens a new tree
-//			inputdata->SetBranchAddress("run",&runbranchval,&runBranch);
-//			inputdata->SetBranchAddress("ntank",&ntankbranchval,&nTankBranch);
-//			inputdata->SetBranchAddress("nupdg",&nupdgval,&nupdgBranch);
-//			inputdata->SetBranchAddress("nuvtxx",&nuvtxxval,&nuvtxxBranch);
-//			inputdata->SetBranchAddress("nuvtxy",&nuvtxyval,&nuvtxyBranch);
-//			inputdata->SetBranchAddress("nuvtxz",&nuvtxzval,&nuvtxzBranch);
-//			inputdata->SetBranchAddress("nuvtxt",&nuvtxtval,&nuvtxtBranch);
-//			inputdata->SetBranchAddress("vtxvol",&nupvval,&nuPVBranch);
-//			inputdata->SetBranchAddress("vtxmat",&numatval,&nuvtxmatBranch);
-//			vtxxBranch=inputdata->GetBranch("vx");
-//			vtxyBranch=inputdata->GetBranch("vy");
-//			vtxzBranch=inputdata->GetBranch("vz");
-//			vtxtBranch=inputdata->GetBranch("vt");
-//			pxBranch=inputdata->GetBranch("px");
-//			pyBranch=inputdata->GetBranch("py");
-//			pzBranch=inputdata->GetBranch("pz");
-//			EBranch=inputdata->GetBranch("E");
-//			KEBranch=inputdata->GetBranch("kE");
-//			pdgBranch=inputdata->GetBranch("pdgtank");
-//			nuprimaryBranch=inputdata->GetBranch("primary");
-//			entriesInThisTree = runBranch->GetEntries();
-		}
 		
 		Int_t nextTreeNumber = inputdata->GetTreeNumber();
 		if(treeNumber!=nextTreeNumber){
@@ -567,7 +533,18 @@ void WCSimPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 			targetdirs[i] = G4ThreeVector(0.,0.,0.);
 		}
 		
+		// check if this is to be the last event and soft abort the run
+		// (abort at the end of this event) if so
 		inputEntry++;
+		localEntry = inputdata->LoadTree(inputEntry);
+		if(localEntry<0){
+			// get the pointer to the UI manager
+			G4UImanager* UI = G4UImanager::GetUIpointer();
+			UI->ApplyCommand("/run/abort 1");	// abort after processing current event
+			G4cout<<"@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#"<<G4endl;
+			G4cout<<"@#@#@#@#@#@#@#@#@#@ REACHED END OF INPUT FILE! #@#@#@#@#@#@#@#@#@#@#@#"<<G4endl;
+			G4cout<<"@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#"<<G4endl;
+		}
 		
 	}
 
@@ -668,6 +645,7 @@ void WCSimPrimaryGeneratorAction::LoadNewPrimaries(){
 	runBranch->GetEntry(inputEntry);
 	G4cout<<"first run: "<<runbranchval<<G4endl;
 	treeNumber=inputdata->GetTreeNumber();
+	localEntry = inputdata->LoadTree(inputEntry);
 	
 	loadNewPrimaries=false;
 }
