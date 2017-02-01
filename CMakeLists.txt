@@ -12,6 +12,7 @@ if(DEFINED ENV{GEANT4_10_2})
 endif()
 if(DEFINED ENV{NO_GENIE})
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DNO_GENIE")
+  message(STATUS "GENIE features disabled.")
 endif()
 #----------------------------------------------------------------------------
 # Find ROOT (required package) in CONFIG mode. Looking for ROOTConfig.cmake.

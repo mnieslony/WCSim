@@ -52,6 +52,7 @@ public:
 private:
   G4int WCSimEventFindStartingVolume( G4ThreeVector vtx);
   G4int WCSimEventFindStoppingVolume( G4String stopVolumeName);
+  G4int WCSimEventFindVertexVolume(G4ThreeVector vtx);
 
   ///Create instances of the user-chosen digitizer and trigger classes
   void  CreateDAQInstances();

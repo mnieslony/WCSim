@@ -37,7 +37,7 @@ void WCSimDetectorConstruction::SetANNIEPhase1Geometry()
   tankyoffset = 144.64875*mm;
   expHall_x = 50*m;
   expHall_y = expHall_z = 500*m;
-  GDMLFilename = "annie_v03.gdml";
+  GDMLFilename = "annie_v04.gdml";
   
   WCLength = tankhy;
   WCRadius = tankouterRadius;
@@ -84,7 +84,7 @@ void WCSimDetectorConstruction::SetANNIEPhase2Geometry()
   tankyoffset = 144.64875*mm;
   expHall_x = 50*m;
   expHall_y = expHall_z = 500*m;
-  GDMLFilename = "annie_v03.gdml";
+  GDMLFilename = "annie_v04.gdml";
   
   WCSimPMTObject* MRDPMT = CreatePMTObject("FlatFacedPMT2inch",WCMRDCollectionName);
   MRDPMTName = MRDPMT->GetPMTName();

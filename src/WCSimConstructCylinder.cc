@@ -85,7 +85,7 @@ G4LogicalVolume* WCSimDetectorConstruction::ConstructCylinder()
   WCLength    = WCIDHeight + 5.*cm;	// arbitrary additional space?
   //WCRadius    = (WCIDDiameter/2. + WCBlackSheetThickness + 20*cm)/cos(dPhi/2.); 
   // this is known - set in DetectorConfigs
-  G4cout<<"innerAnnulusRadius= "<<innerAnnulusRadius<<" outerAnnulusRadius= "<<outerAnnulusRadius<<G4endl;
+  //G4cout<<"innerAnnulusRadius= "<<innerAnnulusRadius<<" outerAnnulusRadius= "<<outerAnnulusRadius<<G4endl;
   
  
 //  // now we know the extend of the detector and are able to tune the tolerance
@@ -731,7 +731,7 @@ If used here, uncomment the SetVisAttributes(WClogic) line, and comment out the 
 						 -barrelCellWidth/2.+ (((i>1)*2)+0.5)*horizontalSpacing,
 						 -barrelCellHeight/2.+(((((int)i)%2)*2)+1)*(verticalSpacing/4.));
 
-  G4cout<<"PMT position: "<<WCIDRadius<<","<<-barrelCellWidth/2.+(i+0.5)*horizontalSpacing<<","<<-barrelCellHeight/2.+(j+0.5)*verticalSpacing<<G4endl;
+  //G4cout<<"PMT position: "<<WCIDRadius<<","<<-barrelCellWidth/2.+(i+0.5)*horizontalSpacing<<","<<-barrelCellHeight/2.+(j+0.5)*verticalSpacing<<G4endl;
 
       G4VPhysicalVolume* physiWCBarrelPMT =
 	new G4PVPlacement(WCPMTRotation,              // its rotation
@@ -1300,7 +1300,7 @@ G4LogicalVolume* WCSimDetectorConstruction::ConstructCaps(G4int zflip)
       //      if ( (comp > WCPMTRadius*WCPMTRadius) && ((sqrt(xoffset*xoffset + yoffset*yoffset) + WCPMTRadius) < WCCapEdgeLimit) ) {
      if( (i%2==0 && j%2==0) || (i%2!=0 && j%2!=0) ){
        if (((sqrt(xoffset*xoffset + yoffset*yoffset) + WCLAPPDRadius) < WCCapEdgeLimit + WCLAPPDRadius ) ) {
-        G4cout<<"LAPPD at: "<<i<<" j= "<<j<<" cellpos= "<<cellpos<<G4endl;
+        //G4cout<<"LAPPD at: "<<i<<" j= "<<j<<" cellpos= "<<cellpos<<G4endl;
         //add LAPPDs in cap:
         G4ThreeVector cellposlappd = G4ThreeVector(xoffset, yoffset, (WCBarrelPMTOffset/2.)*zflip);
         G4VPhysicalVolume* physiCapLAPPD =

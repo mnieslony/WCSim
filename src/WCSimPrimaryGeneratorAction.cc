@@ -361,12 +361,11 @@ void WCSimPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
   
   else if (useBeamEvt)
     {
+		// Load the next entry, with all required trees and files
+		// ------------------------------------------------------
 		if(loadNewPrimaries){ LoadNewPrimaries(); }	// update TChain if a new file is loaded by messenger
 		//inputdata has already had tree loaded at the end of last event's GeneratePrimaries call
 		metadata->LoadTree(inputEntry);
-#ifndef NO_GENIE
-		geniedata->LoadTree(inputEntry);
-#endif
 		
 		Int_t nextTreeNumber = inputdata->GetTreeNumber();
 		if(treeNumber!=nextTreeNumber){
@@ -382,6 +381,7 @@ void WCSimPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 			inputdata->SetBranchAddress("nuvtxt",&nuvtxtval,&nuvtxtBranch);
 			inputdata->SetBranchAddress("vtxvol",&nupvval,&nuPVBranch);
 			inputdata->SetBranchAddress("vtxmat",&numatval,&nuvtxmatBranch);
+			inputdata->SetBranchAddress("entry",&genieentrybranchval,&genieentryBranch);
 			metadata->SetBranchAddress("inputFluxName",&nufluxfilenameval,&nufluxfilenameBranch);
 #ifndef NO_GENIE
 			geniedata->SetBranchAddress("gmcrec",&genierecordval,&genierecordBranch);
@@ -420,9 +420,22 @@ void WCSimPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 		nuvtxtBranch->GetEntry(localEntry);
 		nuPVBranch->GetEntry(localEntry);
 		nuvtxmatBranch->GetEntry(localEntry);
+		genieentryBranch->GetEntry(localEntry);
 		nufluxfilenameBranch->GetEntry(localEntry);
+		
 #ifndef NO_GENIE
-		genierecordBranch->GetEntry(localEntry);
+		Long64_t genielocalEntry = geniedata->LoadTree(genieentrybranchval);
+		// load the appropriate genie entry. we assume 1:1 correspondance of genie:g4dirt files.
+		// So the following should not be necessary, as the files should be loaded synchronously
+		if(genielocalEntry<0){
+			// get the pointer to the UI manager
+			G4UImanager* UI = G4UImanager::GetUIpointer();
+			UI->ApplyCommand("/run/abort 1");	// abort after processing current event
+			G4cout<<"@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#"<<G4endl;
+			G4cout<<"@#@#@#@#@#@#@#@#@#@ REACHED END OF GENIE FILE! #@#@#@#@#@#@#@#@#@#@#@#"<<G4endl;
+			G4cout<<"@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#"<<G4endl;
+		}
+		genierecordBranch->GetEntry(genieentrybranchval);
 #endif
 		
 		G4ParticleDefinition* parttype = particleTable->FindParticle(nupdgval);
@@ -485,6 +498,138 @@ void WCSimPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 		pdgBranch->GetEntry(localEntry);
 		nuprimaryBranch->GetEntry(localEntry);
 		
+		// OK, actually use the loaded information
+		// ----------------------------------------
+		// First the genie information (largely unused as not currently stored in wcsim output)
+		// ===========================
+#ifndef NO_GENIE
+		// genie information available: (not all is currently stored)
+		genie::EventRecord* gevtRec = genierecordval->event;
+		genie::Interaction* genieint = gevtRec->Summary();
+	
+		// process information:
+//		TString procinfostring = genieint->ProcInfo().AsString();
+//		TString scatteringtypestring = genieint->ScatteringTypeAsString();
+//		TString interactiontypestring = genieint->InteractionTypeAsString();
+//		Bool_t isQE = interaction.ProcInfo().IsQuasiElastic();
+//		Double_t neutrinoq2 = genieint->Kine().Q2();
+//		TLorentzVector& k1 = *(gevtRec->Probe()->P4());
+//		TLorentzVector& k2 = *(gevtRec->FinalStatePrimaryLepton()->P4());
+//		Double_t costhfsl = TMath::Cos( k2.Vect().Angle(k1.Vect()) );
+//		TLorentzVector* genieVtx = gevtRec->Vertex();
+//		G4double x = genieVtx->X() * m;         // same info as nuvtx in g4dirt file
+//		G4double y = genieVtx->Y() * m;         // GENIE uses meters
+//		G4double z = genieVtx->Z() * m;         // GENIE uses meters
+//		G4double t = genieVtx->T() * second;    // GENIE uses seconds for time
+		Int_t neutinteractioncode = utils::ghep::NeutReactionCode(&event);           // neut interaction code
+//		Int_t nuanceinteractioncode  = utils::ghep::NuanceReactionCode(&event);      // nuance if preferred
+		
+		// neutrino information:
+		Double_t probeenergy = genieint->InitState().ProbeE(genie::kRfLab) * GeV;
+//		TSring probepartname = genieint->InitState().Probe()->GetName();
+		Int_t probepdg = genieint->InitState().Probe()->Pdg();
+		TLorentzVector* probemomentum = genieint->InitState().Probe()->P4();
+		TVector3 probethreemomentum = probemomentum->Vect();
+		TVector3 probemomentumdir = probethreemomentum.Unit();
+		// n.b.  genieint->InitState().Probe == gevtRec->Probe()
+		
+		// target nucleon:
+//		int targetnucleonpdg = genieint->InitState().Tgt().HitNucPdg();
+//		TString targetnucleonname;
+//		if ( genie::pdg::IsNeutronOrProton(targetnucleonpdg) ) {
+//			TParticlePDG * p = genie::PDGLibrary::Instance()->Find(targetnucleonpdg);
+//			targetnucleonname = p->GetName();
+//		} else {
+//			targetnucleonname = targetnucleonpdg;
+//		}
+		TLorentzVector targetnucleonmomentum = genieint->InitState().Tgt()->P4();
+		TVector3 targetnucleonthreemomentum = targetnucleonmomentum.Vect();
+		Double_t targetnucleonenergy = targetnucleonmomentum.Energy() * GeV;
+		
+		// target nucleus:
+		Int_t targetnucleuspdg = genieint->InitState().Tgt()->Pdg();
+//		TParticlePDG * targetnucleus = genie::PDGLibrary::Instance()->Find( targetnucleuspdg );
+//		TString targetnucleusname = "unknown";
+//		if(targetnucleus){ targetnucleusname = nucleartarget->GetName(); }
+//		Int_t targetnucleusZ = genieint->InitState().Tgt().Z();
+//		Int_t targetnucleusA = genieint->InitState().Tgt().A();
+	
+		// remnant nucleus:
+//		int remnucpos = gevtRec->RemnantNucleusPosition(); 
+//		TString remnantnucleusname="n/a";
+//		Double_t remnantnucleusenergy=-1. * GeV;
+//		if(remnucpos>-1){
+//			remnantnucleusname = gevtRec->Particle(remnucpos)->Name();
+//			remnantnucleusenergy = gevtRec->Particle(remnucpos)->Energy(); //GeV
+//		}
+	
+		// final state lepton:
+//		int fsleppos = gevtRec->FinalStatePrimaryLeptonPosition();
+//		TString fsleptonname="n/a";
+//		Double_t fsleptonenergy=-1. * GeV;
+//		if(fsleppos>-1){
+//			fsleptonname = gevtRec->Particle(ipos)->Name();
+//			fsleptonenergy = gevtRec->Particle(ipos)->Energy();
+//		}
+	
+		// other remnants:
+//		Int_t numfsprotons = genieint->ExclTag().NProtons();
+//		Int_t numfsneutrons = genieint->ExclTag().NNeutrons();
+//		Int_t numfspi0 = genieint->ExclTag().NPi0();
+//		Int_t numfspiplus = genieint->ExclTag().NPiPlus();
+//		Int_t numfspiminus = genieint->ExclTag().NPiMinus();
+		
+		//  The following information is retrieved from the PrimaryGeneratorAction in EndOfEventAction:
+		//  For each neutrino vertex, the neutrino, target, + any nue, gamma and e daughters are stored.
+		///////////////////////
+		//	vecRecNumber           // entry number in input file. we should store filename too.
+		//	mode;                  // neutrino interaction mode
+		//	nvtxs;                 // number of neutrino(?) vertices.
+		//	npar;                  // number of primary particles? not used.
+		//	vtxsvol[nvtxs]         // neutrino vertex volume indices. not used, looked up in EndOfEventAction.
+		//	vtxs[nvtxs]            // neutrino interaction vertices.
+		//	beampdgs[nvtxs]        // pdgs of probe neutrinos
+		//	beamenergies[nvtxs]    // energies of probe neutrinos, MeV (just as num)
+		//	beamdirs[nvtxs]        // directions of probe neutrinos
+		//	targetpdgs[nvtxs]      // pdgs of neutrino targets
+		//	targetenergies[nvtxs]  // target nucleon energies, MeV (just as num)
+		//	targetdirs[nvtxs]      // momentum direction unit vector of target
+		///////////////////////
+		
+		vecRecNumber = genieentrybranchval;
+		mode = neutinteractioncode;
+		nvtxs = 1;
+		npar = -1;                                              // ? not used.
+		for(int i=0; i<nvtxs; i++){                             // we only ever have 1 neutrino intx
+			vtxsvol[i] = -10;                                   // looked up in EndOfEventAction
+			vtxs[i] = G4ThreeVector(nuvtxxval, nuvtxyval, nuvtxzval);
+			beampdgs[i] = probepdg;
+			beamenergies[i] = probeenergy;
+			beamdirs[i] = probemomentumdir;
+			targetpdgs[i] = targetnucleuspdg;
+			targetenergies[i] = targetnucleonenergy;
+			targetdirs[i] = targetnucleonthreemomentum.Unit();
+		}
+#else
+		// without genie we don't have the primary interaction information....
+		vecRecNumber = genieentrybranchval;
+		mode = -999;
+		nvtxs = 1;
+		npar = -1;                                              // ? not used.
+		for(int i=0; i<nvtxs; i++){                             // we only ever have 1 neutrino intx
+			vtxsvol[i] = -10;                                   // looked up in EndOfEventAction
+			vtxs[i] = G4ThreeVector(-999., -999., -999.);
+			beampdgs[i] = -999;
+			beamenergies[i] = -999.;
+			beamdirs[i] = G4ThreeVector(-999., -999., -999.);
+			targetpdgs[i] = -999;
+			targetenergies[i] = -999.;
+			targetdirs[i] = G4ThreeVector(-0., -0., -1.);
+		}
+#endif
+		
+		// Now read the outgoing particles: These we will simulate
+		// =======================================================
 		//G4cout<<"Looping over primaries"<<G4endl;
 		for(int i=0;i<ntankbranchval;i++){
 			//G4cout<<"Loading details of primary "<<i<<G4endl;
@@ -517,20 +662,8 @@ void WCSimPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 			particleGun->SetParticlePosition(thevtx);
 			particleGun->SetParticleTime(vtxtval);
 			particleGun->SetParticleMomentumDirection(thepdir);
-			particleGun->GeneratePrimaryVertex(anEvent);	//anEvent is provided by geant4 when invoking the method
+			particleGun->GeneratePrimaryVertex(anEvent);	//anEvent provided by G4 when invoking the method
 			//G4cout<<"Vertex set"<<G4endl;
-			// store the information in the list of primaries
-			vtxsvol[i] = 0;
-			vtxs[i] = thevtx;
-			// First, the neutrino line
-			beampdgs[i] = pdgval;
-			beamenergies[i] = eval*MeV;
-			beamdirs[i] = thepdir;	// unit vector... should it be?
-			// Now read the target information ... 
-			// we don't have this from our primaries, since the target isn't defined
-			targetpdgs[i] = 0;
-			targetenergies[i] = 0.*MeV;
-			targetdirs[i] = G4ThreeVector(0.,0.,0.);
 		}
 		
 		// check if this is to be the last event and soft abort the run
@@ -616,6 +749,7 @@ void WCSimPrimaryGeneratorAction::LoadNewPrimaries(){
 	inputdata->SetBranchAddress("nuvtxt",&nuvtxtval,&nuvtxtBranch);
 	inputdata->SetBranchAddress("vtxvol",&nupvval,&nuPVBranch);
 	inputdata->SetBranchAddress("vtxmat",&numatval,&nuvtxmatBranch);
+	inputdata->SetBranchAddress("entry",&genieentrybranchval,&genieentryBranch);
 	metadata->SetBranchAddress("inputFluxName",&nufluxfilenameval,&nufluxfilenameBranch);
 #ifndef NO_GENIE
 	geniedata->SetBranchAddress("gmcrec",&genierecordval,&genierecordBranch);
