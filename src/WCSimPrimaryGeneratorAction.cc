@@ -25,6 +25,7 @@
 // GENIE headers
 #ifndef NO_GENIE
 #include "GHEP/GHepParticle.h"
+#include "GHEP/GHepUtils.h"
 #include "Ntuple/NtpMCTreeHeader.h"
 #include "Interaction/Interaction.h"
 #endif
@@ -506,6 +507,7 @@ void WCSimPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 		// genie information available: (not all is currently stored)
 		genie::EventRecord* gevtRec = genierecordval->event;
 		genie::Interaction* genieint = gevtRec->Summary();
+		// we write files with v2_8_6, but read with v2_12_0, so /*V*/ indicates reading is validated
 	
 		// process information:
 //		TString procinfostring = genieint->ProcInfo().AsString();
@@ -521,17 +523,17 @@ void WCSimPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 //		G4double y = genieVtx->Y() * m;         // GENIE uses meters
 //		G4double z = genieVtx->Z() * m;         // GENIE uses meters
 //		G4double t = genieVtx->T() * second;    // GENIE uses seconds for time
-		Int_t neutinteractioncode = utils::ghep::NeutReactionCode(&event);           // neut interaction code
-//		Int_t nuanceinteractioncode  = utils::ghep::NuanceReactionCode(&event);      // nuance if preferred
+		Int_t neutinteractioncode = genie::utils::ghep::NeutReactionCode(gevtRec); /*V*/
+//		Int_t nuanceinteractioncode  = genie::utils::ghep::NuanceReactionCode(gevtRec);
 		
 		// neutrino information:
-		Double_t probeenergy = genieint->InitState().ProbeE(genie::kRfLab) * GeV;
+		Double_t probeenergy = genieint->InitState().ProbeE(genie::kRfLab) * GeV;  /*V*/
 //		TSring probepartname = genieint->InitState().Probe()->GetName();
-		Int_t probepdg = genieint->InitState().Probe()->Pdg();
-		TLorentzVector* probemomentum = genieint->InitState().Probe()->P4();
+		Int_t probepdg = genieint->InitState().Probe()->PdgCode();                 /*V*/
+		TLorentzVector* probemomentum = gevtRec->Probe()->P4();                    /*V*/
 		TVector3 probethreemomentum = probemomentum->Vect();
 		TVector3 probemomentumdir = probethreemomentum.Unit();
-		// n.b.  genieint->InitState().Probe == gevtRec->Probe()
+		// n.b.  genieint->InitState().Probe != gevtRec->Probe()
 		
 		// target nucleon:
 //		int targetnucleonpdg = genieint->InitState().Tgt().HitNucPdg();
@@ -542,12 +544,12 @@ void WCSimPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 //		} else {
 //			targetnucleonname = targetnucleonpdg;
 //		}
-		TLorentzVector targetnucleonmomentum = genieint->InitState().Tgt()->P4();
-		TVector3 targetnucleonthreemomentum = targetnucleonmomentum.Vect();
-		Double_t targetnucleonenergy = targetnucleonmomentum.Energy() * GeV;
+		TLorentzVector* targetnucleonmomentum = gevtRec->HitNucleon()->P4();       /*V*/
+		TVector3 targetnucleonthreemomentum = targetnucleonmomentum->Vect();
+		Double_t targetnucleonenergy = targetnucleonmomentum->Energy() * GeV;
 		
 		// target nucleus:
-		Int_t targetnucleuspdg = genieint->InitState().Tgt()->Pdg();
+		Int_t targetnucleuspdg = genieint->InitState().Tgt().Pdg();                /*V*/
 //		TParticlePDG * targetnucleus = genie::PDGLibrary::Instance()->Find( targetnucleuspdg );
 //		TString targetnucleusname = "unknown";
 //		if(targetnucleus){ targetnucleusname = nucleartarget->GetName(); }
@@ -601,14 +603,20 @@ void WCSimPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 		nvtxs = 1;
 		npar = -1;                                              // ? not used.
 		for(int i=0; i<nvtxs; i++){                             // we only ever have 1 neutrino intx
-			vtxsvol[i] = -10;                                   // looked up in EndOfEventAction
+			vtxsvol[i] = -10;                               // looked up in EndOfEventAction
 			vtxs[i] = G4ThreeVector(nuvtxxval, nuvtxyval, nuvtxzval);
 			beampdgs[i] = probepdg;
 			beamenergies[i] = probeenergy;
-			beamdirs[i] = probemomentumdir;
 			targetpdgs[i] = targetnucleuspdg;
 			targetenergies[i] = targetnucleonenergy;
-			targetdirs[i] = targetnucleonthreemomentum.Unit();
+			G4ThreeVector probemomdir;                      // convert TVector3 to G4ThreeVector
+			G4ThreeVector targetnucleonmomdir;
+			for(int comp=0; comp<2; comp++){
+				probemomdir[comp] = probemomentumdir[comp];
+				targetnucleonmomdir[comp] = targetnucleonthreemomentum.Unit()[comp];
+			}
+			beamdirs[i] = probemomdir;
+			targetdirs[i] = targetnucleonmomdir;
 		}
 #else
 		// without genie we don't have the primary interaction information....
