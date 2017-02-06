@@ -544,9 +544,14 @@ void WCSimPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 //		} else {
 //			targetnucleonname = targetnucleonpdg;
 //		}
-		TLorentzVector* targetnucleonmomentum = gevtRec->HitNucleon()->P4();       /*V*/
-		TVector3 targetnucleonthreemomentum = targetnucleonmomentum->Vect();
-		Double_t targetnucleonenergy = targetnucleonmomentum->Energy() * GeV;
+		TLorentzVector* targetnucleonmomentum=0;
+		TVector3 targetnucleonthreemomentum(0.,0.,0.);
+		Double_t targetnucleonenergy =0;
+		if(gevtRec->HitNucleon()){
+			targetnucleonmomentum = gevtRec->HitNucleon()->P4();               /*V*/
+			targetnucleonthreemomentum = targetnucleonmomentum->Vect();
+			targetnucleonenergy = targetnucleonmomentum->Energy() * GeV;
+		}
 		
 		// target nucleus:
 		Int_t targetnucleuspdg = genieint->InitState().Tgt().Pdg();                /*V*/

@@ -120,8 +120,6 @@ void WCSimDetectorConstruction::DefineANNIEdimensions(){
 	maxwidth = *std::max_element(widths,widths+(sizeof(widths)/sizeof(widths[0])))+0.1*cm;
 	maxheight = *std::max_element(heights,heights+(sizeof(heights)/sizeof(heights[0])))+0.1*cm;
 	
-	mrdZoffset = (2*tankouterRadius) + tankzoffset + (mrdZlen/2.) + 5*cm;
-		      
 	// Define solids 
 	//==============  
 	// G4Box* variableName = new G4Box("SolidName", x_halflength, y_halflength, z_halflength);
@@ -246,6 +244,8 @@ void WCSimDetectorConstruction::ConstructMRD(G4LogicalVolume* expHall_log, G4VPh
    
   // offset MRD by half of length of both so edges touch + 2cm offset, with 1.52m tank radius puts MRD at z = 1.54*m.
   mrdZoffset = (2*tankouterRadius) + tankzoffset + (mrdZlen/2.) + 5*cm;
+  G4cout<<"########## MRD front face: "<<mrdZoffset-(mrdZlen/2.)<<"                       ##########"<<G4endl;
+  G4cout<<"########## MRD total Z length: "<<mrdZlen/cm<<"                 ########## "<<G4endl;
   //G4cout<<"MRD z start: "<<(tankouterRadius + 2*cm)<<" and total length: "<<mrdZlen<<G4endl;
 
   G4LogicalVolume* totMRD_log = new G4LogicalVolume(totMRD_box, G4Material::GetMaterial("Vacuum"),"totMRDlog",0,0,0);
@@ -484,6 +484,15 @@ void WCSimDetectorConstruction::ComputePaddleTransformation (const G4int copyNo,
 		}
 		
 		G4ThreeVector origin(Xposition,Yposition,Zposition);
+		if(paddlenum==0){ 
+			G4double mrdstart = mrdZoffset-(mrdZlen/2.);
+			char space = ' ';
+			std::string panelnumstring = std::to_string(panelnum);
+			panelnumstring.resize(2,space);
+			G4cout<<"########## MRD scintillator layer "<< panelnumstring;
+			(ishpaddle) ? G4cout<<" (H)" : G4cout<<" (V)";
+			G4cout<<" at z="<<Zposition+mrdstart<<" ##########"<<G4endl;
+		}
 		physVol->SetTranslation(origin);
 		physVol->SetRotation(rotmtx);
 //	physVol->GetLogicalVolume()->SetVisAttributes(scintvatts);	//can set visualisation attributes like this

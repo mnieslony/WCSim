@@ -1260,7 +1260,7 @@ void WCSimEventAction::FillRootEvent(G4int event_id,
 
       G4double ttime = trj->GetGlobalTime(); 
 
-      G4int parentType;
+      G4int parentType=-999;
 
      
       // Right now only secondaries whose parents are pi0's are stored
