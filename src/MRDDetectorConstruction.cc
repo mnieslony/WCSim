@@ -1,3 +1,4 @@
+/* vim:set noexpandtab tabstop=2 wrap */
 // ====================================================================
 //   MRDDetectorConstruction.cc
 //
@@ -244,8 +245,8 @@ void WCSimDetectorConstruction::ConstructMRD(G4LogicalVolume* expHall_log, G4VPh
    
   // offset MRD by half of length of both so edges touch + 2cm offset, with 1.52m tank radius puts MRD at z = 1.54*m.
   mrdZoffset = (2*tankouterRadius) + tankzoffset + (mrdZlen/2.) + 5*cm;
-  G4cout<<"########## MRD front face: "<<mrdZoffset-(mrdZlen/2.)<<"                       ##########"<<G4endl;
-  G4cout<<"########## MRD total Z length: "<<mrdZlen/cm<<"                 ########## "<<G4endl;
+  G4cout<<"########## MRD front face: "<<(mrdZoffset-(mrdZlen/2.))/cm<<"                      ##########"<<G4endl;
+  G4cout<<"########## MRD total Z length: "<<mrdZlen/cm<<"                 ##########"<<G4endl;
   //G4cout<<"MRD z start: "<<(tankouterRadius + 2*cm)<<" and total length: "<<mrdZlen<<G4endl;
 
   G4LogicalVolume* totMRD_log = new G4LogicalVolume(totMRD_box, G4Material::GetMaterial("Vacuum"),"totMRDlog",0,0,0);
@@ -491,7 +492,22 @@ void WCSimDetectorConstruction::ComputePaddleTransformation (const G4int copyNo,
 			panelnumstring.resize(2,space);
 			G4cout<<"########## MRD scintillator layer "<< panelnumstring;
 			(ishpaddle) ? G4cout<<" (H)" : G4cout<<" (V)";
-			G4cout<<" at z="<<Zposition+mrdstart<<" ##########"<<G4endl;
+			G4cout<<" at z="<<((Zposition+mrdstart-(scintfullzlen/2.))/cm)<<" ##########"<<G4endl;
+		}
+		G4cout<<"PMT "<<copyNo<<" : Orientation ";
+		(ishpaddle) ? G4cout<<"H" : G4cout<<"V";
+		G4cout<<" : Layer "<<panelnum;
+		G4cout<<" : Origin ("<<Xposition<<","<<Yposition<<","<<Zposition<<") : Extent (";
+		if(ishpaddle){
+			G4cout<<Xposition-(scinthfullylen/2.)<<"→"<<Xposition+(scinthfullylen/2.)<<", ";
+			G4cout<<Yposition-(scintfullxlen/2.)<<"→"<<Yposition+(scintfullxlen/2.)<<", ";
+			G4cout<<Zposition-(scintfullzlen/2.)+mrdZoffset-(mrdZlen/2.)<<"→"
+						<<Zposition+(scintfullzlen/2.)+mrdZoffset-(mrdZlen/2.)<<")"<<G4endl;
+		} else {
+			G4cout<<Xposition-(scintfullxlen/2.)<<"→"<<Xposition+(scintfullxlen/2.)<<", ";
+			G4cout<<Yposition-(scinthfullylen/2.)<<"→"<<Yposition+(scinthfullylen/2.)<<", ";
+			G4cout<<Zposition-(scintfullzlen/2.)+mrdZoffset-(mrdZlen/2.)<<"→"
+						<<Zposition+(scintfullzlen/2.)+mrdZoffset-(mrdZlen/2.)<<")"<<G4endl;
 		}
 		physVol->SetTranslation(origin);
 		physVol->SetRotation(rotmtx);

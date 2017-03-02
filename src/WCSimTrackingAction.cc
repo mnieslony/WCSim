@@ -31,6 +31,8 @@ WCSimTrackingAction::WCSimTrackingAction()
   ParticleList.insert(-13);  // mu+
   ParticleList.insert(14);   // nu_mu
   ParticleList.insert(-14);  // nubar_mu
+  ParticleList.insert(2112); // neutron
+  ParticleList.insert(2212); // proton
   
   // don't put gammas there or there'll be too many
 }

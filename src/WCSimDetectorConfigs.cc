@@ -79,7 +79,7 @@ void WCSimDetectorConstruction::SetANNIEPhase2Geometry()
   WCAddGd = true;
   // TODO: conver these with the ones below, and add in other constants from MRD definition etc.
   tankouterRadius= 1.524*m;  	// 120" exactly (TSW blueprint) = 3.048m diameter
-  tankhy = 1.98*m;				// 13ft exactly (TSW blueprint) = 3.96m tall; hz is HALF height
+  tankhy = 1.98*m;				// 13ft exactly (TSW blueprint) = 3.96m tall; hy is HALF height
   tankzoffset = 15.70*cm;		//15.70*cm
   tankyoffset = 144.64875*mm;
   expHall_x = 50*m;

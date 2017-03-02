@@ -21,6 +21,7 @@
 #/vis/geometry/set/visibility WCCapPolygon 1
 #/vis/geometry/set/forceSolid ANNIEp2-glassFaceWCPMT -1 1
 #/vis/geometry/set/forceSolid ANNIEp2-glassFaceWCONLYLAPPDS -1 1
+#/vis/geometry/set/colour ANNIEp2-glassFaceWCPMT -1 1. 1. 1. .3
 #/vis/viewer/zoom 2
 #/vis/viewer/pan -1 0
 ## following additional commands show a top-down view zoomed over an ocatgonal side

@@ -1066,6 +1066,7 @@ G4int WCSimEventAction::WCSimEventFindVertexVolume(G4ThreeVector vtx){
   // climb the touchable hierarchy until we find a meaningful volume name (depth 3 in the geometry tree)
   // then record that name
   G4Navigator* tmpNavigator = G4TransportationManager::GetTransportationManager()->GetNavigatorForTracking();
+  G4VPhysicalVolume* primaryPV = tmpNavigator->LocateGlobalPointAndSetup(vtx);
   G4TouchableHistory* touchable = tmpNavigator->CreateTouchableHistory();  // we have deletion responsibility
   Int_t depth = touchable->GetHistoryDepth();
   int breaker=0;
@@ -1202,6 +1203,8 @@ void WCSimEventAction::FillRootEvent(G4int event_id,
   std::set<int> pionList;
   std::set<int> antipionList;
   std::set<int> primaryList;
+  std::set<int> neutronlist;
+  std::set<int> protonlist;
 
   // Pi0 specific variables
   Float_t pi0Vtx[3];
@@ -1231,6 +1234,8 @@ void WCSimEventAction::FillRootEvent(G4int event_id,
     if ( trj->GetPDGEncoding() == -13 ) antimuonList.insert(trj->GetTrackID());
     if ( trj->GetPDGEncoding() == 211 ) pionList.insert(trj->GetTrackID());
     if ( trj->GetPDGEncoding() == -211 ) antipionList.insert(trj->GetTrackID());
+    if ( trj->GetPDGEncoding() == 2212 ) protonlist.insert(trj->GetTrackID());
+    if ( trj->GetPDGEncoding() == 2112 ) neutronlist.insert(trj->GetTrackID());
 
     if( trj->GetParentID() == 0 ) primaryList.insert(trj->GetTrackID());
 
@@ -1279,7 +1284,8 @@ void WCSimEventAction::FillRootEvent(G4int event_id,
       } else if (pionList.count(trj->GetParentID()) ) {
 	parentType = 211;
       } else if (primaryList.count(trj->GetParentID()) ) {
-	parentType = 1;
+	parentType = 1;	// 	secondary - it's parent is in the list of primaries. Note this might not work.
+	// because unless it's parent has been processed first, it won't yet be in the list of primaries.
       } else {  // no identified parent, but not a primary
 	parentType = 999;
       }
