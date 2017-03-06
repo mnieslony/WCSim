@@ -481,8 +481,8 @@ void WCSimWCTriggerBase::FillDigitsCollection(WCSimWCDigitsCollection* WCDCPMT, 
 	  //first apply time offsets
 	  float peSmeared = (*WCDCPMT)[i]->GetPe(ip);
 	  G4double digihittime = 
-	    -triggertime + WCSimWCTriggerBase::offset +
-	    + digit_time;
+	    //-triggertime + WCSimWCTriggerBase::offset +	// temporarily disable for Bonsai
+	     digit_time;
 
 	  //get the composition information for the triggered digit
 	  std::vector<int> triggered_composition = (*WCDCPMT)[i]->GetDigiCompositionInfo(ip);
