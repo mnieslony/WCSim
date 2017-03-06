@@ -351,13 +351,15 @@ void WCSimPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
       G4ThreeVector vtx =anEvent->GetPrimaryVertex()->GetPosition();
       G4int pdg         =anEvent->GetPrimaryVertex()->GetPrimary()->GetPDGcode();
       
-//       G4ThreeVector dir  = P.unit();
+      G4ThreeVector dir  = P.unit();
       G4double E         = std::sqrt((P.dot(P)));
       
-//       SetVtx(vtx);
+      SetVtx(vtx);	// required to store the true vertex for Bonsai!
       SetBeamEnergy(E);
-       //       SetBeamDir(dir);
+      SetBeamDir(dir);
       SetBeamPDG(pdg);
+      G4ParticleDefinition* parttype = particleTable->FindParticle(pdg);
+      G4cout<<"generating 'laser' "<<E/GeV<<"GeV "<<parttype->GetParticleName()<<" event at ("<<vtx.x()<<","<<vtx.y()<<","<<vtx.z()<<")"<<G4endl;
     }
   
   else if (useBeamEvt)
