@@ -359,7 +359,13 @@ void WCSimPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
       SetBeamDir(dir);
       SetBeamPDG(pdg);
       G4ParticleDefinition* parttype = particleTable->FindParticle(pdg);
-      G4cout<<"generating 'laser' "<<E/GeV<<"GeV "<<parttype->GetParticleName()<<" event at ("<<vtx.x()<<","<<vtx.y()<<","<<vtx.z()<<")"<<G4endl;
+      
+      G4cout<<"generating 'laser' "<<E/GeV<<"GeV "<<parttype->GetParticleName()
+            <<" event at ("<<vtx.x()/cm<<","<<vtx.y()/cm<<","<<vtx.z()/cm<<")";
+      G4Navigator* theNavigator = G4TransportationManager::GetTransportationManager()->GetNavigatorForTracking();
+      G4VPhysicalVolume* primaryPV = theNavigator->LocateGlobalPointAndSetup(vtx);
+      std::string vtxvol = ( (primaryPV) ? primaryPV->GetName() : "<<no-primaryPV>>" );
+      G4cout<<" in "<<vtxvol<<G4endl;
     }
   
   else if (useBeamEvt)
