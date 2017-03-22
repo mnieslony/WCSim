@@ -91,7 +91,7 @@
 
 # default dark noise frequency (and conversion factor) is PMT property (NEW), set in the code.
 # Below gives possibility to overwrite nominal values, eg. to switch OFF the Dark Noise.
-/DarkRate/SetDarkRate 0 kHz   #Turn dark noise off
+#/DarkRate/SetDarkRate 0 kHz   #Turn dark noise off
 #/DarkRate/SetDarkRate 4.2 kHz #This is the value for SKI set in SKDETSIM.
 #/DarkRate/SetDarkRate 8.4 kHz #For 20 inch HPDs and Box and Line PMTs, based on High QE 20" R3600 dark rate from EGADS nov 2014
 #/DarkRate/SetDarkRate 3.0 kHz #For 12 inch HPDs and Box and Line PMTs, based on High QE 20" R3600 dark rate from EGADS nov 2014
@@ -129,10 +129,10 @@
 
 
 #Uncomment one of the lines below if you want to use the OGLSX or RayTracer visualizer
-/control/execute visOGLSX.mac
+#/control/execute visOGLSX.mac
 #/control/execute visRayTracer.mac
 
-#/mygen/generator beam	# retrieve input primaries from GENIE output files
+/mygen/generator beam	# retrieve input primaries from GENIE output files
 
 # Or you can use the G4 Particle Gun
 #/mygen/generator normal
@@ -173,24 +173,24 @@
 #/gun/position 50 50 -500 mm
 
 # use laser for bonsai 
-/mygen/generator laser
-/gps/particle e-
-#/gps/particle pi0
-/gps/pos/type Volume
-/gps/pos/shape Cylinder
-/gps/pos/radius 1.5 m   # 1.524 in WCSim::DetectorConfigs
-/gps/pos/halfz 1.97 m   # 1.98m in WCSim::DetectorConfigs
-#/gps/pos/confine WCBarrel
-#rotate the cylinder to align with ANNIE's y-parallel tank
-/gps/pos/rot1 1 0 0
-/gps/pos/rot2 0 0 1
-# place source at centre of tank
-/gps/pos/centre 0 -14.46 168.1 cm
-/gps/ang/type iso
-/gps/energy 10 MeV
-/gps/ene/type Mono
-/gps/ene/gradient 0
-/gps/ene/intercept 1
+#/mygen/generator laser
+#/gps/particle e-
+##/gps/particle pi0
+#/gps/pos/type Volume
+#/gps/pos/shape Cylinder
+#/gps/pos/radius 1.5 m   # 1.524 in WCSim::DetectorConfigs
+#/gps/pos/halfz 1.97 m   # 1.98m in WCSim::DetectorConfigs
+##/gps/pos/confine WCBarrel
+##rotate the cylinder to align with ANNIE's y-parallel tank
+#/gps/pos/rot1 1 0 0
+#/gps/pos/rot2 0 0 1
+## place source at centre of tank
+#/gps/pos/centre 0 -14.46 168.1 cm
+#/gps/ang/type iso
+#/gps/energy 10 MeV
+#/gps/ene/type Mono
+#/gps/ene/gradient 0
+#/gps/ene/intercept 1
 
 # set up visualization view for debugging photons - 
 # should be associated with changes store in branch photonbouncedebug
