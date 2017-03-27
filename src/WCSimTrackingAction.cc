@@ -55,10 +55,14 @@ void WCSimTrackingAction::PreUserTrackingAction(const G4Track* aTrack)
   else 
     fpTrackingManager->SetStoreTrajectory(false);
   
+  /*
+  // implemented to allow photon tracks to be drawn during photon debugging, 
+  // but interferes with saving of primary information.
   WCSimTrackInformation* anInfo = new WCSimTrackInformation();
   G4Track* theTrack = (G4Track*)aTrack;
   anInfo->WillBeSaved(false);
   theTrack->SetUserInformation(anInfo);
+  */
 }
 
 void WCSimTrackingAction::PostUserTrackingAction(const G4Track* aTrack)

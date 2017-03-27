@@ -30,6 +30,11 @@
 #include "Interaction/Interaction.h"
 #endif
 
+// when loading dirt primaries, skip entries that are from upstream rock interactions. 
+#ifdef ONLY_TANK_EVENTS
+#define ONLY_TANK_EVENTS
+#endif
+
 using std::vector;
 using std::string;
 using std::fstream;
@@ -372,6 +377,7 @@ void WCSimPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
     {
 		// Load the next entry, with all required trees and files
 		// ------------------------------------------------------
+		loadbeamentry:
 		if(loadNewPrimaries){ LoadNewPrimaries(); }	// update TChain if a new file is loaded by messenger
 		//inputdata has already had tree loaded at the end of last event's GeneratePrimaries call
 		metadata->LoadTree(inputEntry);
@@ -453,6 +459,10 @@ void WCSimPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 		G4cout<<"This entry has "<<ntankbranchval<<" primaries"<<G4endl;
 		nvtxs=ntankbranchval;
 		
+#ifdef ONLY_TANK_EVENTS
+		if(strcmp(numatval,"TankWater")!=0){ inputEntry++; goto: loadbeamentry; } // nu intx not in tank
+#endif
+		
 		if(vtxxbranchval){delete[] vtxxbranchval;}
 		if(vtxybranchval){delete[] vtxybranchval;}
 		if(vtxzbranchval){delete[] vtxzbranchval;}
@@ -509,6 +519,14 @@ void WCSimPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 		
 		// OK, actually use the loaded information
 		// ----------------------------------------
+#ifdef ONLY_TANK_EVENTS
+		// this *should* always be true, since tank nu events will generate primaries...
+		Bool_t primariesinthisentry=false;
+		for(int i=0;i<ntankbranchval;i++){
+			if(nuprimarybranchval[i]==1){ primariesinthisentry=true; break; }
+		}
+		if(!primariesinthisentry){ inputEntry++; goto: loadbeamentry; } // not genie primaries...
+#endif
 		// First the genie information (largely unused as not currently stored in wcsim output)
 		// ===========================
 #ifndef NO_GENIE

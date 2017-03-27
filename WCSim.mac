@@ -210,8 +210,8 @@
 /control/execute setRandomParameters.mac
 
 ## change the name of the output root file, default = wcsim (the .root is appended internally)
-#/WCSimIO/RootFile wcsim
-/WCSimIO/RootFile ANNIEtest_10MeV_Uni_Iso  # for bonsai
+/WCSimIO/RootFile wcsim
+#/WCSimIO/RootFile ANNIEtest_10MeV_Uni_Iso  # for bonsai
 
 #/run/beamOn 3
 # should run 10000 events for bonsai
