@@ -2,8 +2,14 @@
 #include <TH1F.h>
 #include <stdio.h>     
 #include <stdlib.h>    
+
+#include "../include/WCSimRootEvent.hh"
+#include "../include/WCSimRootGeom.hh"
+#include "../include/WCSimPmtInfo.hh"
+#include "../include/WCSimEnumerations.hh"
+#include "../include/WCSimRootLinkDef.hh"
 // Simple example of reading a generated Root file
-void verification_HitsChargeTime(char *filename="wcsimtest.root", char *filename2="../../WCSim_clean/verification-test-scripts/wcsimtest.root", bool verbose=false)
+int verification_HitsChargeTime(const char *filename="wcsimtest.root", const char *filename2="../../WCSim_clean/verification-test-scripts/wcsimtest.root", bool verbose=false)
 {
   // Clear global scope
   //gROOT->Reset();
@@ -61,9 +67,9 @@ void verification_HitsChargeTime(char *filename="wcsimtest.root", char *filename
   }
   
  
-  TTree  *wcsimT = f->Get("wcsimT");
+  TTree  *wcsimT = (TTree*)f->Get("wcsimT");
   int nevent = wcsimT->GetEntries();
-  TTree  *wcsimT2 = f2->Get("wcsimT");
+  TTree  *wcsimT2 = (TTree*)f2->Get("wcsimT");
   int nevent2 = wcsimT2->GetEntries();
 
   // Create a WCSimRootEvent to put stuff from the tree in and set the branch address for reading from the tree
@@ -254,5 +260,5 @@ void verification_HitsChargeTime(char *filename="wcsimtest.root", char *filename
  time2->SetLineColor(kRed);
  c1->cd(3); time2->Draw("SAME");
   
-
+ return 1;
 }

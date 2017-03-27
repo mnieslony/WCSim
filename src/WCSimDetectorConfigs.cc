@@ -66,7 +66,7 @@ void WCSimDetectorConstruction::SetANNIEPhase2Geometry()
   WCIDCollectionName2 = WCDetectorName +"-glassFaceWCONLYLAPPDS";
   //disabling top veto is an option set in tuning_parameters.mac!
  
-  WCSimPMTObject * PMT = CreatePMTObject("PMT1cm", WCIDCollectionName);
+  WCSimPMTObject * PMT = CreatePMTObject("PMT8inch", WCIDCollectionName);
   WCPMTName = PMT->GetPMTName();
   WCPMTExposeHeight = PMT->GetExposeHeight();
   WCPMTRadius = PMT->GetRadius();
