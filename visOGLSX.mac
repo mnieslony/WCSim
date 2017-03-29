@@ -11,10 +11,10 @@
 #/vis/viewer/set/upVector 0 0 1
 
 # Vis Settings for ANNIE
-/vis/viewer/zoom 1.2
+/vis/viewer/zoom 2.4
 /vis/viewer/set/viewpointThetaPhi 80 10 deg
 /vis/viewer/set/upVector 0 1 0
-/vis/viewer/panTo -1 1
+/vis/viewer/panTo -2 0.8
 # add visibility of the hidden parent structures
 #/vis/geometry/set/visibility WCBarrelCell 0
 #/vis/geometry/set/visibility WCBarrelCell 1

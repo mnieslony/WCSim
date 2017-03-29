@@ -8,6 +8,10 @@
   //MRD DETECTOR DEFINITION
 //===============================================================================================================
 
+#ifndef PRINT_MRD_POSITION
+//#define PRINT_MRD_POSITION
+#endif
+
 #include "G4Material.hh"
 #include "G4MaterialTable.hh"
 #include "G4Element.hh"
@@ -245,9 +249,11 @@ void WCSimDetectorConstruction::ConstructMRD(G4LogicalVolume* expHall_log, G4VPh
    
   // offset MRD by half of length of both so edges touch + 2cm offset, with 1.52m tank radius puts MRD at z = 1.54*m.
   mrdZoffset = (2*tankouterRadius) + tankzoffset + (mrdZlen/2.) + 5*cm;
+#ifdef PRINT_MRD_POSITION
   G4cout<<"########## MRD front face: "<<(mrdZoffset-(mrdZlen/2.))/cm<<"                      ##########"<<G4endl;
   G4cout<<"########## MRD total Z length: "<<mrdZlen/cm<<"                 ##########"<<G4endl;
   //G4cout<<"MRD z start: "<<(tankouterRadius + 2*cm)<<" and total length: "<<mrdZlen<<G4endl;
+#endif
 
   G4LogicalVolume* totMRD_log = new G4LogicalVolume(totMRD_box, G4Material::GetMaterial("Vacuum"),"totMRDlog",0,0,0);
   G4VPhysicalVolume* totMRD_phys = new G4PVPlacement(0,G4ThreeVector(0,0,mrdZoffset),totMRD_log,"totMRDphys",expHall_log,false,0);
@@ -485,6 +491,7 @@ void WCSimDetectorConstruction::ComputePaddleTransformation (const G4int copyNo,
 		}
 		
 		G4ThreeVector origin(Xposition,Yposition,Zposition);
+#ifdef PRINT_MRD_POSITION
 		if(paddlenum==0){ 
 			G4double mrdstart = mrdZoffset-(mrdZlen/2.);
 			char space = ' ';
@@ -509,6 +516,7 @@ void WCSimDetectorConstruction::ComputePaddleTransformation (const G4int copyNo,
 			G4cout<<Zposition-(scintfullzlen/2.)+mrdZoffset-(mrdZlen/2.)<<"→"
 						<<Zposition+(scintfullzlen/2.)+mrdZoffset-(mrdZlen/2.)<<")"<<G4endl;
 		}
+#endif
 		physVol->SetTranslation(origin);
 		physVol->SetRotation(rotmtx);
 //	physVol->GetLogicalVolume()->SetVisAttributes(scintvatts);	//can set visualisation attributes like this
