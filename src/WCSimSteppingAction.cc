@@ -70,9 +70,10 @@ void WCSimSteppingAction::UserSteppingAction(const G4Step* aStep)
    //G4cout<<"optical photon StepStatus is          "<<thePostPoint->GetStepStatus()<<G4endl
    //      <<"               fExpectedNextStatus is "<<fExpectedNextStatus<<G4endl
    //      <<"               boundaryStatus is      "<<boundary->GetStatus()<<G4endl;
-   if ( track->GetCurrentStepNumber() > 50000 ){
+   if ( track->GetCurrentStepNumber() > 500 ){
      track->SetTrackStatus(fStopAndKill); 
      G4cout<<"killing broken photon "<<++numbrokenphotons<<G4endl;
+     return;
    }
    if( aStep->GetPostStepPoint()->GetStepStatus()==fGeomBoundary){
      G4OpBoundaryProcessStatus boundaryStatus=boundary->GetStatus();
@@ -91,6 +92,7 @@ void WCSimSteppingAction::UserSteppingAction(const G4Step* aStep)
           FatalException,ed,
           "Something is wrong with the surface normal or geometry");*/
           track->SetTrackStatus(fStopAndKill);
+          return;
         }
       }
       fExpectedNextStatus=Undefined;
@@ -101,8 +103,8 @@ void WCSimSteppingAction::UserSteppingAction(const G4Step* aStep)
       case LobeReflection:
       case SpikeReflection:
       case BackScattering:
-        {fExpectedNextStatus=StepTooSmall;
-        break;}
+        fExpectedNextStatus=StepTooSmall;
+        break;
       default:
         break;
       }
