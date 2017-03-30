@@ -27,11 +27,15 @@ WCSimLAPPDpulseCluster::WCSimLAPPDpulseCluster()
 
 WCSimLAPPDpulseCluster::~WCSimLAPPDpulseCluster()
 {
-
+  this->Reset();
 }
 
 void WCSimLAPPDpulseCluster::Reset()
 {
+  for(auto apulse : fLAPPDpulseList){
+    delete apulse;
+    apulse=0;
+  }
   fLAPPDpulseList.clear();
   fLAPPDstripPulseCount.clear();
   fLAPPDstripPulseCoordinate.clear();

@@ -182,6 +182,13 @@ void WCSimDetectorConstruction::DefineANNIEdimensions(){
 	scinttapatts = new G4VisAttributes(G4Colour(0.6, 1.0, 0.8));  // light-green
 	scintlgatts = new G4VisAttributes(G4Colour(0.5, 0.5, 0.5));   // grey
 	senssurfatts = new G4VisAttributes(G4Colour(1.0, 1.0, 0.0));  // yellow
+	mrdvisattributes.push_back(scinthatts);
+	mrdvisattributes.push_back(scintvatts);
+	mrdvisattributes.push_back(steelatts);
+	mrdvisattributes.push_back(scinttapatts);
+	mrdvisattributes.push_back(scintlgatts);
+	mrdvisattributes.push_back(senssurfatts);
+	
 	
   // Define Mylar cladding
   // =====================
@@ -208,7 +215,7 @@ void WCSimDetectorConstruction::DefineANNIEdimensions(){
 	G4double mylar_reflectivity[mylarmptentries] = {0.9, 0.9};
 	//G4double mylar_efficiency[mylarmptentries] = {0.8, 0.1};
 
-  G4MaterialPropertiesTable* MPTmylarSurface = new G4MaterialPropertiesTable();
+  MPTmylarSurface = new G4MaterialPropertiesTable();
   MPTmylarSurface->AddProperty("REFLECTIVITY",mylar_Energy,mylar_reflectivity,mylarmptentries);
   //MPTmylarSurface->AddProperty("EFFICIENCY",mylar_Energy,mylar_efficiency,mylarmptentries);
   // i think this actually relates to the airgap implied by 'polishedbackpainted'
@@ -231,7 +238,7 @@ void WCSimDetectorConstruction::DefineANNIEdimensions(){
   G4double ELGphoton[lgmptentries] = {2.038*eV, 4.144*eV};
   G4double lgsurf_EFF[lgmptentries]={0.95,0.95};
   G4double lgsurf_REFL[lgmptentries]={0.,0.};
-  G4MaterialPropertiesTable* lgsurf_MPT = new G4MaterialPropertiesTable();
+  lgsurf_MPT = new G4MaterialPropertiesTable();
   lgsurf_MPT->AddProperty("EFFICIENCY",  ELGphoton, lgsurf_EFF,  lgmptentries);
   lgsurf_MPT->AddProperty("REFLECTIVITY",ELGphoton, lgsurf_REFL, lgmptentries);
   lgSurface_op->SetMaterialPropertiesTable(lgsurf_MPT);
@@ -281,6 +288,7 @@ void WCSimDetectorConstruction::ConstructMRD(G4LogicalVolume* expHall_log, G4VPh
   // ADD VIS ATTRIBS
   //================
   G4VisAttributes* simpleBoxVisAtt= new G4VisAttributes(G4Colour(0.0,1.0,1.0));
+  mrdvisattributes.push_back(simpleBoxVisAtt);
   simpleBoxVisAtt->SetVisibility(false);
   totMRD_log->SetVisAttributes(simpleBoxVisAtt);
 
@@ -332,6 +340,7 @@ void WCSimDetectorConstruction::ConstructMRD(G4LogicalVolume* expHall_log, G4VPh
   // ADD VIS ATTRIBS
   //================
   G4VisAttributes* simpleBoxVisAtt= new G4VisAttributes(G4Colour(0.0,0.0,1.0));
+  mrdvisattributes.push_back(simpleBoxVisAtt);
   simpleBoxVisAtt->SetVisibility(false);
   totVeto_log->SetVisAttributes(simpleBoxVisAtt);
   
@@ -367,13 +376,17 @@ void WCSimDetectorConstruction::PlaceMylarOnMRDPaddles(G4VPhysicalVolume* expHal
   		 if(totMRD_phys){
   	   scintSurface_log
   		 = new G4LogicalBorderSurface("scintcladdinglog",paddles_phys.at(i),totMRD_phys,scintSurface_op);
+  		 bordersurfaces.push_back(scintSurface_log);
   		 scintSurface_log
   		 = new G4LogicalBorderSurface("scintcladdinglog",tapers_phys.at(i),totMRD_phys,scintSurface_op);
+  		 bordersurfaces.push_back(scintSurface_log);
   		 }// else {
   		scintSurface_log
   		 = new G4LogicalBorderSurface("scintcladdinglog",paddles_phys.at(i),expHall_phys,scintSurface_op);
+  		 bordersurfaces.push_back(scintSurface_log);
   		 scintSurface_log
   		 = new G4LogicalBorderSurface("scintcladdinglog",tapers_phys.at(i),expHall_phys,scintSurface_op);
+  		 bordersurfaces.push_back(scintSurface_log);
   		 //}
   }
   
@@ -383,9 +396,11 @@ void WCSimDetectorConstruction::PlaceMylarOnMRDPaddles(G4VPhysicalVolume* expHal
   		 if(totMRD_phys){
   		 scintSurface_log
   		 = new G4LogicalBorderSurface("scintcladdinglog",lgs_phys.at(i),totMRD_phys,scintSurface_op);
+  		 bordersurfaces.push_back(scintSurface_log);
   		 }// else {
   		 scintSurface_log
   		 = new G4LogicalBorderSurface("scintcladdinglog",lgs_phys.at(i),expHall_phys,scintSurface_op);
+  		 bordersurfaces.push_back(scintSurface_log);
   		 //}
   }
 }
@@ -394,20 +409,24 @@ void WCSimDetectorConstruction::PlaceMylarOnMRDPaddles(G4VPhysicalVolume* expHal
 void WCSimDetectorConstruction::PlaceMylarOnFACCPaddles(G4VPhysicalVolume* expHall_phys, G4VPhysicalVolume* totVeto_phys){
   // Place cladding on Veto paddles
   for(G4int i=0;i<(numvetopaddles);i++){
-  		G4LogicalBorderSurface* vetoSurface_log;
-  		vetoSurface_log
+  		G4LogicalBorderSurface* scintSurface_log;
+  		scintSurface_log
   		 = new G4LogicalBorderSurface("vetocladdinglog",vetopaddles_phys.at(i),expHall_phys,scintSurface_op);
-  		 vetoSurface_log
+  		 bordersurfaces.push_back(scintSurface_log);
+  		 scintSurface_log
   		 = new G4LogicalBorderSurface("vetocladdinglog",vetopaddles_phys.at(i),totVeto_phys,scintSurface_op);
+  		 bordersurfaces.push_back(scintSurface_log);
   }
   
   // Place cladding on Veto Light guides
   for(G4int i=0;i<(numvetopaddles);i++){
-  		G4LogicalBorderSurface* vetoSurface_log;
-  		vetoSurface_log
+  		G4LogicalBorderSurface* scintSurface_log;
+  		scintSurface_log
   		 = new G4LogicalBorderSurface("vetocladdinglog",vetolgs_phys.at(i),expHall_phys,scintSurface_op);
-  		 vetoSurface_log
+  		 bordersurfaces.push_back(scintSurface_log);
+  		 scintSurface_log
   		 = new G4LogicalBorderSurface("vetocladdinglog",vetolgs_phys.at(i),totVeto_phys,scintSurface_op);
+  		 bordersurfaces.push_back(scintSurface_log);
   }
 }
 
@@ -751,7 +770,8 @@ void WCSimDetectorConstruction::PlaceLGs(G4LogicalVolume* totMRD_log){
 void WCSimDetectorConstruction::PlaceMRDSDSurfs(G4LogicalVolume* totMRD_log){
 
 	mrdsdsurf_log = new G4LogicalVolume(mrdSurface_box, G4Material::GetMaterial("Air"), "mrdsdsurf_log");
-	G4VisAttributes* surfacevisatts= new G4VisAttributes(G4Colour(1.0, 1.0, 0.));
+	G4VisAttributes* surfacevisatts = new G4VisAttributes(G4Colour(1.0, 1.0, 0.));
+	mrdvisattributes.push_back(surfacevisatts);
 	mrdsdsurf_log->SetVisAttributes(surfacevisatts);
 	G4VPhysicalVolume* mrdsdsurf_phys;
 	
@@ -765,6 +785,7 @@ void WCSimDetectorConstruction::PlaceMRDSDSurfs(G4LogicalVolume* totMRD_log){
   // for dielectric_metal transmittance isn't possible, so either reflection or absorption with probability from mat. properties. 
   for(G4int i=0;i<((numpaddlesperpanelv*numvpanels)+(numpaddlesperpanelh*numhpanels));i++){
       G4LogicalBorderSurface* lgSurface_log = new G4LogicalBorderSurface("lgborderlog",lgs_phys.at(i),mrdsdsurfs_phys.at(i),lgSurface_op);
+      bordersurfaces.push_back(lgSurface_log);
   }
   
   // Create sensitive detector for pmts that will detect photon hits at the ends of the paddles
@@ -887,6 +908,7 @@ void WCSimDetectorConstruction::PlaceVetoLGs(G4LogicalVolume* totVeto_log){
 	// tapered light guide placement
 	vetolg_log = new G4LogicalVolume(vetoLG_box, G4Material::GetMaterial("Glass"),"vetolg_log");
 	G4VisAttributes* surfacevisatts= new G4VisAttributes(G4Colour(0.6, 1.0, 0.8));
+	mrdvisattributes.push_back(surfacevisatts);
 	vetolg_log->SetVisAttributes(surfacevisatts);
 	G4VPhysicalVolume* vetolg_phys;
 	for(G4int i=0;i<(numvetopaddles);i++){
@@ -903,6 +925,7 @@ void WCSimDetectorConstruction::PlaceVetoSDsurfs(G4LogicalVolume* totVeto_log){
 	// gotta make stupid little physical volumes so we can put a surface in. It shouldn't take up any space. 
 	vetoSurface_log = new G4LogicalVolume(vetoSurface_box, G4Material::GetMaterial("Air"),"vetoSurface_log");
 	G4VisAttributes* surfacevisatts= new G4VisAttributes(G4Colour(1.0, 1.0, 0.));
+	mrdvisattributes.push_back(surfacevisatts);
 	vetoSurface_log->SetVisAttributes(surfacevisatts);
 	G4VPhysicalVolume* vetoSurface_phys;
 
@@ -916,6 +939,7 @@ void WCSimDetectorConstruction::PlaceVetoSDsurfs(G4LogicalVolume* totVeto_log){
   // for dielectric_metal transmittance isn't possible, so either reflection or absorption with probability from mat. properties. 
   for(G4int i=0;i<(numvetopaddles);i++){
   	G4LogicalBorderSurface* vetoBorderSurface_log = new G4LogicalBorderSurface("vetoborderlog",vetopaddles_phys.at(i),vetosurfaces_phys.at(i),lgSurface_op);
+  	bordersurfaces.push_back(vetoBorderSurface_log);
   }
   
   // Sensitive detector for Veto PMTs

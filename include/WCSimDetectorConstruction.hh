@@ -10,6 +10,7 @@
 #include "G4Transform3D.hh"
 #include "G4VUserDetectorConstruction.hh"
 #include "G4LogicalVolume.hh"
+#include "G4LogicalBorderSurface.hh"
 #include "G4VPhysicalVolume.hh"
 #include "G4OpticalSurface.hh"
 #include "globals.hh"
@@ -700,7 +701,9 @@ private:
 	G4LogicalVolume* logicFACCPMT;
 	
 	G4OpticalSurface* scintSurface_op;	// mylar reflective surface
+	G4MaterialPropertiesTable* MPTmylarSurface;
 	G4OpticalSurface* lgSurface_op;			// optical surface with efficiency of detection defined, for boundary detection on ends of LGs
+	G4MaterialPropertiesTable* lgsurf_MPT;
 
 	// Physical Volumes
 	// ================
@@ -713,6 +716,7 @@ private:
 	std::vector<G4VPhysicalVolume*> vetopaddles_phys;
 	std::vector<G4VPhysicalVolume*> vetosurfaces_phys;
 	std::vector<G4VPhysicalVolume*> vetolgs_phys;
+	std::vector<G4LogicalBorderSurface*> bordersurfaces;
 
 	// Define rotation matrices 
 	//=========================
@@ -728,6 +732,7 @@ private:
 
 	// Define Visualisation Attributes 
 	//================================
+	std::vector<G4VisAttributes*> mrdvisattributes;
 	G4VisAttributes* scinthatts;
 	G4VisAttributes* scintvatts;
 	G4VisAttributes* steelatts;

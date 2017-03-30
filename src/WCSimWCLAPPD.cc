@@ -44,27 +44,30 @@ extern "C" void skrn1pe_(float* );
 
 //ClassImp(WCSimWCLAPPD)
 
+TFile WCSimWCLAPPD::tf("pulsecharacteristics.root","READ");
+int WCSimWCLAPPD::lappobjectcounter=0;
+
 WCSimWCLAPPD::WCSimWCLAPPD(G4String name,
                                    WCSimDetectorConstruction* myDetector)
  :G4VDigitizerModule(name)
 {
+  lappobjectcounter++;
   G4String colName = "WCRawLAPPDSignalCollection"; //this is the post-noise hit collection for the WC-Check EventAction
   this->myDetector = myDetector;
   collectionName.push_back(colName);
   DigiHitMapLAPPD.clear();
  
  
-  TFile* tf = new TFile("pulsecharacteristics.root","READ");
   // the shape of a typical pulse 
-  _templatepulse = (TH1D*) tf->Get("templatepulse");
+  _templatepulse = (TH1D*) tf.Get("templatepulse");
   // variations in the peak signal on the central strip
-  _PHD = (TH1D*) tf->Get("PHD");
+  _PHD = (TH1D*) tf.Get("PHD");
 
   // charge spreading of a pulse in the transverse direction (in mm)
   // as a function of nearness to strip center. The charge tends to 
   // spread more in the transverse direction if the centroid of the
   // signal is between two striplines
-   _pulsewidth = (TH1D*) tf->Get("pulsewidth");
+   _pulsewidth = (TH1D*) tf.Get("pulsewidth");
 
   // structure to store the pulses, count them, and organize them by channel
   _pulseCluster = new WCSimLAPPDpulseCluster();
@@ -75,8 +78,16 @@ WCSimWCLAPPD::WCSimWCLAPPD(G4String name,
 }
 
 WCSimWCLAPPD::~WCSimWCLAPPD(){
-
+  lappobjectcounter--;
+  if(lappobjectcounter==0){ tf.Close(); }
+  
+  delete _pulseCluster;
+  _pulseCluster=0;
+  
+  delete mrand;
+  mrand=0;
 }
+
 std::map<int,double> stripno_peak; std::map<int,double> stripno_time; 
 std::map<int,double> stripno_lefttime; std::map<int,double> stripno_righttime;
 
@@ -98,10 +109,10 @@ void WCSimWCLAPPD::AddSinglePhotonTrace(double trans, double para, double time)
 
   //G4cout<<"nearest stripnum: "<<neareststripnum<<" off center: "<<offcenter<<" thesigma "<<thesigma<<G4endl;
 
-  TF1* theChargeSpread = new TF1("theChargeSpread","gaus",-100,100);
-  theChargeSpread->SetParameter(0,peak);
-  theChargeSpread->SetParameter(1,0.0);
-  theChargeSpread->SetParameter(2,thesigma);
+  TF1 theChargeSpread = TF1("theChargeSpread","gaus",-100,100);
+  theChargeSpread.SetParameter(0,peak);
+  theChargeSpread.SetParameter(1,0.0);
+  theChargeSpread.SetParameter(2,thesigma);
  
   // calculate distances and times in the parallel direction
   double leftdistance = fabs(-114.554 - para); // annode is 229.108 mm in parallel direction
@@ -119,7 +130,7 @@ void WCSimWCLAPPD::AddSinglePhotonTrace(double trans, double para, double time)
 
     int wstrip = (neareststripnum-2)+i;
     double wtrans = this->StripCoordinate(wstrip);
-    double wspeak = theChargeSpread->Eval(trans-wtrans);
+    double wspeak = theChargeSpread.Eval(trans-wtrans);
 
     //signal has to be larger than 0.5 mV
     if( (wspeak>0.5) && (wstrip>0) && (wstrip<31) ) {
@@ -138,7 +149,7 @@ void WCSimWCLAPPD::AddSinglePhotonTrace(double trans, double para, double time)
   //G4cout<<"---> Done Adding Pulse"<<G4endl;
  }
    
-TH1D* WCSimWCLAPPD::GetTrace(int CHnumber, int parity, double starttime, double samplesize, int numsamples, double thenoise)
+TH1D WCSimWCLAPPD::GetTrace(int CHnumber, int parity, double starttime, double samplesize, int numsamples, double thenoise)
 {
   //G4cout<<"======== IN GetTrace ======"<<G4endl;
   // parameters for the histogram of the scope trace
@@ -151,13 +162,13 @@ TH1D* WCSimWCLAPPD::GetTrace(int CHnumber, int parity, double starttime, double 
   if(parity==1) tracename+="right";
   else tracename+="left";
   //create said histogram
-  TH1D* trace = new TH1D(tracename,tracename,numsamples,lowend,upend);
+  TH1D trace(tracename,tracename,numsamples,lowend,upend);
   //if there are no pulses on the strip, just generate white noise
   if(_pulseCluster->GetNPulsesStrip(CHnumber)==0) {
         for(int j=0; j<numsamples; j++){
 
           double mnoise = thenoise*(mrand->Rndm()-0.5);
-          trace->SetBinContent(j+1, mnoise);
+          trace.SetBinContent(j+1, mnoise);
 	  //G4cout<<"___ --- mnoise= "<<mnoise<<G4endl;
          }
   } else{
@@ -185,7 +196,7 @@ TH1D* WCSimWCLAPPD::GetTrace(int CHnumber, int parity, double starttime, double 
      for(int j=0; j<numsamples; j++){
 
       //get the global time when each sample is acquired
-      double bcent = trace->GetBinCenter(j+1);
+      double bcent = trace.GetBinCenter(j+1);
       double mbincontent=0.0;
       double mnoise=0.0;
 
@@ -197,8 +208,8 @@ TH1D* WCSimWCLAPPD::GetTrace(int CHnumber, int parity, double starttime, double 
       //should arrive, evaluate the pulse value at that sample point
      if( (bcent > tottime) && (bcent< tottime+3000) ) mbincontent+=(peakv*(_templatepulse->Interpolate(bcent-tottime)));
      //add this on to the contributions to the trace from previous pulses
-     double obincontent = trace->GetBinContent(j+1);
-     trace->SetBinContent(j+1,obincontent+mbincontent);
+     double obincontent = trace.GetBinContent(j+1);
+     trace.SetBinContent(j+1,obincontent+mbincontent);
 
    }
   }

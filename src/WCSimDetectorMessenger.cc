@@ -183,6 +183,8 @@ WCSimDetectorMessenger::~WCSimDetectorMessenger()
   delete tubeCmd;
   delete distortionCmd;
   delete WCSimDir;
+  
+  delete WCConstruct;
 }
 
 void WCSimDetectorMessenger::SetNewValue(G4UIcommand* command,G4String newValue)

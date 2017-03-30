@@ -134,6 +134,34 @@ WCSimDetectorConstruction::~WCSimDetectorConstruction(){
     delete flappds.at(i);
   }
   flappds.clear();
+  
+  // MRD objects... 
+  // rotation matrices
+  delete noRot;
+  delete rotatedmatx;
+  delete upmtx;
+  delete downmtx;
+  delete rightmtx;
+  delete leftmtx;
+  
+  // optical surfaces and materials properties tables
+  delete scintSurface_op;
+  delete MPTmylarSurface;
+  delete lgSurface_op;
+  delete lgsurf_MPT;
+  
+  // logical border surfaces
+  for(auto surface : bordersurfaces){
+    delete surface;
+  }
+  bordersurfaces.clear();
+  
+  // visualisation attributes
+    for(auto visatt : mrdvisattributes){
+    delete visatt;
+  }
+  mrdvisattributes.clear();
+  
 }
 
 G4VPhysicalVolume* WCSimDetectorConstruction::Construct()

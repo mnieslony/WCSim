@@ -15,6 +15,7 @@
 #include "WCSimLAPPDpulseCluster.hh"
 #include "TObject.h"
 #include "TH1.h"
+#include "TFile.h"
 #include "TRandom3.h"
 #include "WCSimLAPPDInfo.hh"
 #include "WCSimLAPPDObject.hh"
@@ -29,7 +30,7 @@ public:
   void ReInitialize() { DigiHitMapLAPPD.clear(); TriggerTimes.clear(); }
   
   void AddSinglePhotonTrace(double trans, double para, double time);
-  TH1D* GetTrace(int CHnumber, int parity, double starttime, double samplesize, int numsamples, double thenoise);
+  TH1D GetTrace(int CHnumber, int parity, double starttime, double samplesize, int numsamples, double thenoise);
   int FindStripNumber(double trans);
   double StripCoordinate(int stripnumber);
   WCSimLAPPDpulseCluster* GetPulseCluster() {return _pulseCluster;}
@@ -52,6 +53,9 @@ public:
 	
   WCSimWCDigitsCollection*  DigitsCollection;  
   WCSimDetectorConstruction* myDetector;
+  
+  static TFile tf;
+  static int lappobjectcounter;
  
   private:
   //relevant to a particular event
@@ -73,7 +77,6 @@ public:
   
   //ClassDef(WCSimWCLAPPD,0)
 };
-  
 
 /*class WCSimWCLAPPD : public G4VDigitizerModule
 {

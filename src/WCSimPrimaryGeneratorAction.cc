@@ -400,6 +400,7 @@ void WCSimPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 			metadata->SetBranchAddress("inputFluxName",&nufluxfilenameval,&nufluxfilenameBranch);
 #ifndef NO_GENIE
 			geniedata->SetBranchAddress("gmcrec",&genierecordval,&genierecordBranch);
+			genierecordBranch->SetAutoDelete(kTRUE);
 #else 
 			genierecordBranch=(TBranch*)1;
 #endif
