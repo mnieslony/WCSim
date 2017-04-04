@@ -24,7 +24,6 @@ G4ClassificationOfNewTrack WCSimStackingAction::ClassifyNewTrack
 {
   
   G4String WCIDCollectionName = DetConstruct->GetIDCollectionName();
-  G4String WCIDCollectionName2 = DetConstruct->GetIDCollectionName2();
   G4ClassificationOfNewTrack classification    = fWaiting;
   G4ParticleDefinition*      particleType      = aTrack->GetDefinition();
 
@@ -67,21 +66,6 @@ G4ClassificationOfNewTrack WCSimStackingAction::ClassifyNewTrack
 	}
     }
   
-  //----------- for lappds ----------
-  /*if( WCIDCollectionName2 =="ANNIEp2-glassFaceWCONLYLAPPDS"){
-  // Make sure it is an optical photon
-  if( particleType == G4OpticalPhoton::OpticalPhotonDefinition() )
-    {
-      G4float photonWavelength = (2.0*M_PI*197.3)/(aTrack->GetTotalEnergy()/CLHEP::eV);
-      G4float ratio = 1./(1.0-0.25);
-      G4float wavelengthQE = 0;
-      if(aTrack->GetCreatorProcess()==NULL) {
-	wavelengthQE  = 0.3;
-	if( G4UniformRand() > wavelengthQE )
-	  classification = fKill;
-      }
-    }*/
-
   return classification;
 }
 

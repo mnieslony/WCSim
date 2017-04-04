@@ -79,21 +79,23 @@ G4LogicalVolume* WCSimDetectorConstruction::ConstructCylinder()
   // the radii are measured to the center of the surfaces
   // (tangent distance). Thus distances between the corner and the center are bigger.
   
-  //WCLength    = WCIDHeight + 2*2.3*m;	//jl145 - reflects top veto blueprint, cf. Farshid Feyzi
-  //WCRadius    = (WCIDDiameter/2. + WCBlackSheetThickness + 1.5*m)/cos(dPhi/2.) ; // TODO: OD 
-  // modify for ANNIE - much more compact, smaller excess <<< this accounts for extra volume around PMT faces!
-  WCLength    = WCIDHeight + 5.*cm;	// arbitrary additional space?
-  //WCRadius    = (WCIDDiameter/2. + WCBlackSheetThickness + 20*cm)/cos(dPhi/2.); 
-  // this is known - set in DetectorConfigs
-  //G4cout<<"innerAnnulusRadius= "<<innerAnnulusRadius<<" outerAnnulusRadius= "<<outerAnnulusRadius<<G4endl;
+  if(!isANNIE){
+    WCLength    = WCIDHeight + 2*2.3*m;	//jl145 - reflects top veto blueprint, cf. Farshid Feyzi
+    WCRadius    = (WCIDDiameter/2. + WCBlackSheetThickness + 1.5*m)/cos(dPhi/2.) ; // TODO: OD 
+    
+  // now we know the extend of the detector and are able to tune the tolerance
+  G4GeometryManager::GetInstance()->SetWorldMaximumExtent(WCLength > WCRadius ? WCLength : WCRadius);
+  G4cout << "Computed tolerance = "
+         << G4GeometryTolerance::GetInstance()->GetSurfaceTolerance()/mm
+         << " mm" << G4endl;
+  } else {
+    // modify for ANNIE - much more compact, smaller excess <<< this accounts for extra volume around PMT faces!
+    WCLength    = WCIDHeight + 5.*cm;	// arbitrary additional space?
+    //WCRadius    = (WCIDDiameter/2. + WCBlackSheetThickness + 20*cm)/cos(dPhi/2.); 
+    // this is known - set in DetectorConfigs
+    //G4cout<<"innerAnnulusRadius= "<<innerAnnulusRadius<<" outerAnnulusRadius= "<<outerAnnulusRadius<<G4endl;
+  }
   
- 
-//  // now we know the extend of the detector and are able to tune the tolerance
-//  G4GeometryManager::GetInstance()->SetWorldMaximumExtent(WCLength > WCRadius ? WCLength : WCRadius);
-//  G4cout << "Computed tolerance = "
-//         << G4GeometryTolerance::GetInstance()->GetSurfaceTolerance()/mm
-//         << " mm" << G4endl;
-
   //Decide if adding Gd
   water = "Water";
   if (WCAddGd)
@@ -106,17 +108,14 @@ G4LogicalVolume* WCSimDetectorConstruction::ConstructCylinder()
 
   // The water barrel is placed in an tubs of air
   
-//  G4Tubs* solidWC = new G4Tubs("WC",
-//			       0.0*m,
-//			       WCRadius+2.*m, 
-//			       .5*WCLength+4.2*m,	//jl145 - per blueprint
-//			       0.*deg,
-//			       360.*deg);
-
+  G4double WChalfheightexcess;
+  //jl145 - per blueprint for SK, less for ANNIE
+  (!isANNIE) ? WChalfheightexcess=4.2*m : WChalfheightexcess=2.*cm; 
+  
   G4Tubs* solidWC = new G4Tubs("WC",
 			       0.0*m,
-			       WCRadius+2.*cm,
-			       .5*WCLength+2.*cm,	// smaller excess for ANNIE
+			       WCRadius+2.*m, 
+			       .5*WCLength+WChalfheightexcess,
 			       0.*deg,
 			       360.*deg);
   
@@ -134,19 +133,15 @@ G4LogicalVolume* WCSimDetectorConstruction::ConstructCylinder()
   //-----------------------------------------------------
   // everything else is contained in this water tubs
   //-----------------------------------------------------
-//  G4Tubs* solidWCBarrel = new G4Tubs("WCBarrel",
-//				     0.0*m,
-//				     WCRadius+1.*m, // add a bit of extra space
-//				     .5*WCLength,  //jl145 - per blueprint
-//				     0.*deg,
-//				     360.*deg);
-				     
+  G4double WCradiusexcess;
+  (!isANNIE) ? WCradiusexcess=1.*m : WCradiusexcess=0.*m;
+  
   G4Tubs* solidWCBarrel = new G4Tubs("WCBarrel",
-  				     0.0*m,
-  				     WCRadius,		// why excess here?
-  				     0.5*WCLength,
-  				     0.*deg,
-  				     360.*deg);
+				     0.0*m,
+				     WCRadius+WCradiusexcess, // add a bit of extra space
+				     .5*WCLength,  //jl145 - per blueprint
+				     0.*deg,
+				     360.*deg);
   
   G4LogicalVolume* logicWCBarrel = 
     new G4LogicalVolume(solidWCBarrel,
@@ -647,7 +642,8 @@ else {
   // The PMT glass is the sensitive volume in this new configuration.
 
   G4LogicalVolume* logicWCPMT = ConstructPMT(WCPMTName, WCIDCollectionName, "tank");
-  G4LogicalVolume* logicWCLAPPD = ConstructLAPPD(WCLAPPDName, WCIDCollectionName2);//WCIDCollectionName2);
+  G4LogicalVolume* logicWCLAPPD=0;
+  if(isANNIE) logicWCLAPPD = ConstructLAPPD(WCLAPPDName, WCIDCollectionName2);//WCIDCollectionName2);
 
   /*These lines of code will give color and volume to the PMTs if it hasn't been set in WCSimConstructPMT.cc.
 I recommend setting them in WCSimConstructPMT.cc. 
@@ -660,7 +656,7 @@ If used here, uncomment the SetVisAttributes(WClogic) line, and comment out the 
 
     //logicWCPMT->SetVisAttributes(WClogic);
 	logicWCPMT->SetVisAttributes(G4VisAttributes::Invisible);
-	logicWCLAPPD->SetVisAttributes(G4VisAttributes::Invisible);
+	if(logicWCLAPPD) logicWCLAPPD->SetVisAttributes(G4VisAttributes::Invisible);
 
   //jl145------------------------------------------------
   // Add top veto PMTs
@@ -714,22 +710,25 @@ If used here, uncomment the SetVisAttributes(WClogic) line, and comment out the 
   G4RotationMatrix* WCPMTRotation = new G4RotationMatrix;
   WCPMTRotation->rotateY(90.*deg);
 
-  G4double barrelCellWidth = 2.*WCIDRadius*tan(dPhi/2.)*0.9;    // multiply by 0.9 to squeeze pmts closer
+  G4double compressionfactor;
+  (!isANNIE) ? compressionfactor=1.0 : compressionfactor=0.9;
+  // squeeze PMTs closer to prevent geometry overlap in ANNIE
+  G4double barrelCellWidth = 2.*WCIDRadius*tan(dPhi/2.)*compressionfactor;
   G4double horizontalSpacing   = barrelCellWidth/WCPMTperCellHorizontal;
   G4double verticalSpacing     = barrelCellHeight/WCPMTperCellVertical;
 
   for(G4double i = 0; i < WCPMTperCellHorizontal; i++){
     for(G4double j = 0; j < WCPMTperCellVertical; j++){
-//      G4ThreeVector PMTPosition =  G4ThreeVector(WCIDRadius,                      // configuration 4 across at cell bottom
-//						 -barrelCellWidth/2.+(i+0.5)*horizontalSpacing,
-//						 -barrelCellHeight/2.+(j+0.5)*verticalSpacing
-//						 -(verticalSpacing/4.));
-//      G4ThreeVector PMTPosition =  G4ThreeVector(WCIDRadius,                      // configuration 2 rows of 2 at cell edges
-//						 -barrelCellWidth/2.+ (((((int)i)%2)*3)+0.5)*horizontalSpacing,
-//						 -barrelCellHeight/2.+(((((int)i)%2)*2)+1)*(verticalSpacing/4.));
-      G4ThreeVector PMTPosition =  G4ThreeVector(WCIDRadius,                      // configuration 2 rows of 2 at cell edges
-						 -barrelCellWidth/2.+ (((i>1)*2)+0.5)*horizontalSpacing,
-						 -barrelCellHeight/2.+(((((int)i)%2)*2)+1)*(verticalSpacing/4.));
+    G4ThreeVector PMTPosition;
+      if(!isANNIE){
+        PMTPosition =  G4ThreeVector(WCIDRadius,
+                                                  -barrelCellWidth/2.+(i+0.5)*horizontalSpacing,
+                                                  -barrelCellHeight/2.+(j+0.5)*verticalSpacing);
+      } else {
+        PMTPosition =  G4ThreeVector(WCIDRadius,   // configuration 2 rows of 2 at cell edges
+                                         -barrelCellWidth/2.+ (((i>1)*2)+0.5)*horizontalSpacing,
+                                         -barrelCellHeight/2.+(((((int)i)%2)*2)+1)*(verticalSpacing/4.));
+      }
 
   //G4cout<<"PMT position: "<<WCIDRadius<<","<<-barrelCellWidth/2.+(i+0.5)*horizontalSpacing<<","<<-barrelCellHeight/2.+(j+0.5)*verticalSpacing<<G4endl;
 
@@ -756,8 +755,8 @@ If used here, uncomment the SetVisAttributes(WClogic) line, and comment out the 
   G4double barrelCellWidth2 = 2.*WCIDRadius*tan(dPhi/2.)*0.9;
   //G4double horizontalSpacingLAPPD   = barrelCellWidth/WCPMTperCellHorizontal;
   //G4double verticalSpacingLAPPD     = barrelCellHeight/WCPMTperCellVertical;
-  G4double horizontalSpacingLAPPD   = barrelCellWidth/WCLAPPDperCellHorizontal;
-  G4double verticalSpacingLAPPD     = barrelCellHeight/WCLAPPDperCellVertical;
+  G4double horizontalSpacingLAPPD   = ((isANNIE) ? barrelCellWidth/WCLAPPDperCellHorizontal : 0);
+  G4double verticalSpacingLAPPD     = ((isANNIE) ? barrelCellHeight/WCLAPPDperCellVertical : 0);
 
   // G4cout<<"barrelCellWidth2= "<<barrelCellWidth2<<" barrelCellHeight2= "<<barrelCellHeight2<< " horizontalSpacingLAPPD= "<<horizontalSpacingLAPPD<<" verticalSpacingLAPPD= "<<verticalSpacingLAPPD<<G4endl;
 
@@ -1266,7 +1265,8 @@ G4LogicalVolume* WCSimDetectorConstruction::ConstructCaps(G4int zflip)
   // -----------------------------------------------------
   
 	G4LogicalVolume* logicWCPMT = ConstructPMT(WCPMTName, WCIDCollectionName, "tank");
-	G4LogicalVolume* logicWCLAPPD = ConstructLAPPD(WCLAPPDName, WCIDCollectionName2);
+	G4LogicalVolume* logicWCLAPPD;
+	if(isANNIE) logicWCLAPPD = ConstructLAPPD(WCLAPPDName, WCIDCollectionName2);
 	
 	// If using RayTracer and want to view the detector without caps, comment out the top and bottom PMT's
 
@@ -1298,7 +1298,7 @@ G4LogicalVolume* WCSimDetectorConstruction::ConstructCaps(G4int zflip)
       //	- 2.0 * WCBarrelEffRadius * sqrt(xoffset*xoffset+yoffset*yoffset)
       //	+ WCBarrelEffRadius*WCBarrelEffRadius;
       //      if ( (comp > WCPMTRadius*WCPMTRadius) && ((sqrt(xoffset*xoffset + yoffset*yoffset) + WCPMTRadius) < WCCapEdgeLimit) ) {
-     if( (i%2==0 && j%2==0) || (i%2!=0 && j%2!=0) ){
+     if((isANNIE)&&((i%2==0 && j%2==0)||(i%2!=0 && j%2!=0))){
        if (((sqrt(xoffset*xoffset + yoffset*yoffset) + WCLAPPDRadius) < WCCapEdgeLimit + WCLAPPDRadius ) ) {
         //G4cout<<"LAPPD at: "<<i<<" j= "<<j<<" cellpos= "<<cellpos<<G4endl;
         //add LAPPDs in cap:
@@ -1360,19 +1360,22 @@ G4LogicalVolume* WCSimDetectorConstruction::ConstructCaps(G4int zflip)
 */
   G4cout << "total on cap: " << icopy <<" total lappds on cap "<<icopylappd<< "\n";
   G4cout << "Coverage was calculated to be: " << (icopy*WCPMTRadius*WCPMTRadius/(WCIDRadius*WCIDRadius)) << "\n";
-  G4cout << "LAPPD Coverage was calculated to be: " << (icopylappd*WCLAPPDRadius*WCLAPPDRadius/(WCIDRadius*WCIDRadius)) << "\n";
+  if(isANNIE) G4cout << "LAPPD Coverage was calculated to be: " << (icopylappd*WCLAPPDRadius*WCLAPPDRadius/(WCIDRadius*WCIDRadius)) << "\n";
 
     ///////////////   Barrel PMT placement
   G4RotationMatrix* WCPMTRotation = new G4RotationMatrix;
   WCPMTRotation->rotateY(90.*deg);
 
-  G4double barrelCellWidth = 2.*WCIDRadius*tan(dPhi/2.)*0.9;
+  G4double compressionfactor;
+  (!isANNIE) ? compressionfactor=1.0 : compressionfactor=0.9;
+  // squeeze PMTs closer to prevent geometry overlap in ANNIE
+  G4double barrelCellWidth = 2.*WCIDRadius*tan(dPhi/2.)*compressionfactor;
   G4double horizontalSpacing   = barrelCellWidth/WCPMTperCellHorizontal;
   G4double verticalSpacing     = barrelCellHeight/WCPMTperCellVertical;
 
   for(G4double i = 0; i < WCPMTperCellHorizontal; i++){
     for(G4double j = 0; j < WCPMTperCellVertical; j++){
-	if(((int)i)%2==0){
+	if((!isANNIE)||(((int)i)%2==0)){
       G4ThreeVector PMTPosition =  G4ThreeVector(WCIDRadius,
 						 -barrelCellWidth/2.+(i+0.5)*horizontalSpacing,
 						 (-barrelCellHeight/2.+(j+0.5)*verticalSpacing)*zflip);

@@ -339,14 +339,16 @@ void WCSimWCSD::EndOfEvent(G4HCofThisEvent*)
   if (verboseLevel>0) 
   { 
     G4int numHits = hitsCollection->entries();
-    G4int numHitslappd = hitsCollectionlappd->entries();
+    G4int numHitslappd = ((hitsCollectionlappd) ? hitsCollectionlappd->entries() : 0);
 
     G4cout << "There are " << numHits << " hits in the "<<detectorElement<<" : "<< G4endl;
     G4cout << "There are " << numHitslappd << " hits in the WC-LAPPDs: " << G4endl;
     for (G4int i=0; i < numHits; i++) 
       (*hitsCollection)[i]->Print();
-    for (G4int ii=0; ii < numHitslappd; ii++) 
-      (*hitsCollectionlappd)[ii]->Print();
-  } 
+    if(hitsCollectionlappd){
+      for (G4int ii=0; ii < numHitslappd; ii++) 
+        (*hitsCollectionlappd)[ii]->Print();
+    }
+  }
 }
 

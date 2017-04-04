@@ -91,8 +91,10 @@ WCSimEventAction::WCSimEventAction(WCSimRunAction* myRun,
   //create dark noise module
   WCSimWCAddDarkNoise* WCDNM = new WCSimWCAddDarkNoise("WCDarkNoise", detectorConstructor, "tank");
   DMman->AddNewModule(WCDNM);
-
+  
+  isANNIE = detectorConstructor->GetIsANNIE();
   // Repeat for MRD
+  if(isANNIE){
 #ifdef HYPER_VERBOSITY
   G4cout<<"WCSimEventAction::WCSimEventAction ☆ making new WCSimWCPMT for mrd with name WCReadoutPMT_MRD"<<G4endl;
 #endif
@@ -125,6 +127,7 @@ WCSimEventAction::WCSimEventAction(WCSimRunAction* myRun,
   lappdhit_edep = new G4double[klappdhitnmax];    // how much energy was deposited?
   lappdhit_objnum = new G4int[klappdhitnmax];     // which geometry object was hit?
   //lappdhit_copynum = new G4int[klappdhitnmax];    // which copy was hit?
+  }
 
 }
 
@@ -132,6 +135,7 @@ WCSimEventAction::~WCSimEventAction()
 {
   delete DAQMessenger;
   
+  if(isANNIE){
   // Actions to cleanup LAPPD truth hits:
   // ====================================
    if(LAPPDfile){LAPPDfile->Close(); delete LAPPDfile; LAPPDfile=0;}
@@ -144,6 +148,7 @@ WCSimEventAction::~WCSimEventAction()
    delete[] lappdhit_trackID;
    delete[] lappdhit_edep;
    delete[] lappdhit_objnum;
+   }
 }
 
 void WCSimEventAction::CreateDAQInstances()
@@ -186,6 +191,7 @@ void WCSimEventAction::CreateDAQInstances()
     exit(-1);
   }
 
+  if(isANNIE){
   // Repeat for MRD & FACC //
   if(DigitizerChoice=="SKI"){
     // Repeat for MRD
@@ -207,6 +213,7 @@ void WCSimEventAction::CreateDAQInstances()
   // repeat for facc
   WCSimWCTriggerOnTankDigits* WCTM_FACC = new WCSimWCTriggerOnTankDigits("WCReadout_FACC", detectorConstructor, DAQMessenger, "facc");
   DMman->AddNewModule(WCTM_FACC);
+  }
 
   ConstructedDAQClasses = true;
 }
@@ -218,7 +225,7 @@ void WCSimEventAction::BeginOfEventAction(const G4Event* evt)
     CreateDAQInstances();
   
   // equivalent of beginrunaction using event id
-  if(evt->GetEventID()==0){ CreateNewLAPPDFile(); }
+  if(isANNIE&&(evt->GetEventID()==0)){ CreateNewLAPPDFile(); }
 }
 
 void WCSimEventAction::EndOfEventAction(const G4Event* evt)
@@ -253,18 +260,13 @@ void WCSimEventAction::EndOfEventAction(const G4Event* evt)
 
   G4String WCIDCollectionName = detectorConstructor->GetIDCollectionName();
   G4int collectionID;
-  WCSimWCHitsCollection* WCHClappd = 0;
-  G4String WCIDCollectionName2 = detectorConstructor->GetIDCollectionName2();
-  G4int collectionID2;
-  std::vector<int> objnumv;
+
   G4cout<<"-------------------------> I'm in event: event_id: "<<event_id<<G4endl;
   if (HCE)
   { 
     collectionID = SDman->GetCollectionID(WCIDCollectionName);
     WCHC = (WCSimWCHitsCollection*)HCE->GetHC(collectionID);
     //G4cout<<WCIDCollectionName<<" has "<<WCHC->entries()<<" entries"<<G4endl;
-    collectionID2 = SDman->GetCollectionID(WCIDCollectionName2);
-    WCHClappd = (WCSimWCHitsCollection*)HCE->GetHC(collectionID2);
     //G4cout<<"-----------name= "<<name<<" name2= "<<name2<<"--------"<<G4endl;
   } else {G4cerr<<"Could not find hit colletion of event!"<<G4endl;}
   /** used if save raw hits is enabled in preprocessor - WCHC is a member variable used in FillRootEvent() */
@@ -278,96 +280,17 @@ void WCSimEventAction::EndOfEventAction(const G4Event* evt)
   // ----------------------------------------------------------------------
   //  Get Digitized Hit Collection
   // ----------------------------------------------------------------------
-  //G4cout<<"WCIDCollectionName= "<<WCIDCollectionName<<" WCIDCollectionName2= "<<WCIDCollectionName2<<G4endl;
-  //G4cout<<"____________ WCHC->entries()= "<<int(WCHC->entries())<<G4endl;
-  //G4cout<<"____________ WCHClappd->entries()= "<<int(WCHClappd->entries())<<G4endl;
-  //if(WCHClappd->entries()>0.){ G4cout<<"GOTIT!!!!!!"<<G4endl; }
-  for (G4int ii=0; ii< WCHClappd->entries() ;ii++){
-    //G4cout<<"total pe @ LAPPDs: "<< (*WCHClappd)[ii]->GetTotalPe() << G4endl;
-    G4int   lappdID         = (*WCHClappd)[ii]->GetTubeID();
-    objnumv.push_back(lappdID);
-  }
   
-  //--------- STORE lappd HITS -------------
- //  //=========================================
-  lappdevt=evt->GetEventID();
-  G4double totalEnergy2 = 0.;
-  G4int numberOfHits2 = WCHClappd->GetSize();
-  //G4cout << "&&&&  A total of " << numberOfHits2 << " hits on lappd were recorded!" << G4endl;
-  if (WCHClappd!=0) {
-    G4int totalpes_perevt = 0; G4int lappd_numhits0=0;
-    for (G4int hitnum=0; hitnum<numberOfHits2; hitnum++) {
-       lappd_numhits0++;
-       WCSimWCHit* aHit = (*WCHClappd)[hitnum];
-       G4ThreeVector hitPos = aHit->GetPos();
-       hitPosx=hitPos.x();
-       hitPosy=hitPos.y();
-       hitPosz=hitPos.z();
-       //hitParticleName = aHit->GetParticleName();
-       hitTrackID = aHit->GetTrackID();
-       for (G4int ip =0; ip < (*WCHClappd)[hitnum]->GetTotalPe(); ip++){
-       //hitPartCode = aHit->GetParticleID();
-         lappdhit_process[hitnum] = hitProcessCode;
-         double strip_coorx = ((*WCHClappd)[hitnum]->GetStripPosition(ip).x());
-         double strip_coory = ((*WCHClappd)[hitnum]->GetStripPosition(ip).y());
-         double strip_coorz = ((*WCHClappd)[hitnum]->GetStripPosition(ip).z());
-         double strip_coort;
-         try{
-           strip_coort = aHit->GetTime(ip);
-         } 
-         catch (...){
-           G4cerr<<"Error in WCSimEventAction::EndOfEventAction() calling WCSimWCHit::GetTime "<<G4endl;
-           //assert(false);
-           strip_coort = -997.;
-         }
-         //G4cout<<"totalpes_perevt= "<<totalpes_perevt<<"--->GetStripPosition= "<<(*WCHClappd)[hitnum]->GetStripPosition(ip)<<" strip_coorx= "<<strip_coorx<<" strip_coory= "<<strip_coory<<G4endl;
-         lappdhit_stripcoorx.push_back(strip_coorx);
-         lappdhit_stripcoory.push_back(strip_coory);
-         lappdhit_stripcoorz.push_back(strip_coorz);
-         lappdhit_stripcoort.push_back(strip_coort);
-         totalpes_perevt++;
-       }
-       //hitPartCode = ConvertParticleNameToCode(hitParticleName); // or use hitParticleID - from PDGEncoding?
-       //hitProcessName = aHit->GetProcessName();
-       //hitProcessCode = ConvertProcessNameToCode(hitProcessName);
-       //if(hitProcessCode<0){G4cout<<"lappd hit process unaccounted"<<G4endl;}
-       hitEdep = (*WCHClappd)[hitnum]->GetTotalPe();  //aHit->GetEdeposit();
-       //hitCopyNum = aHit->GetCopyNum();
-       //hitPhysical = (std::string)aHit->GetPhysical();
-       // aHit->Print();
-       lappdhit_x[hitnum] = hitPosx;
-       lappdhit_y[hitnum] = hitPosy;
-       lappdhit_z[hitnum] = hitPosz;
-       lappdhit_particleID[hitnum] = hitPartCode;
-       lappdhit_trackID[hitnum] = hitTrackID;
-       lappdhit_edep[hitnum] = hitEdep;
-       //lappdhit_copynum[hitnum] = hitCopyNum;
-       lappdhit_objnum[hitnum] = (objnumv[hitnum]);
-       //G4cout<<"lappdhit_objnum[hitnum] = "<<lappdhit_objnum[hitnum]<<G4endl;
-    }
-    lappd_numhits = lappd_numhits0;
-    lappdhit_totalpes_perevt = totalpes_perevt;
-    //G4cout<<"lappd_numhits= "<<lappd_numhits<<" lappdhit_totalpes_perevt= "<<lappdhit_totalpes_perevt<<G4endl;
-    //LAPPDtree ->Fill();
-    /*for(int m=0; m<totalpes_perevt; m++){
-      G4cout<<"tellme: "<<lappdhit_stripcoorx[m]<<","<<lappdhit_stripcoory[m]<<","<<lappdhit_stripcoorz[m]<<G4endl;
-     }*/
-  }
-
   // Get a pointer to the Digitizing Module Manager
   G4DigiManager* DMman = G4DigiManager::GetDMpointer();
-
+  
   // Get a pointer to the WC PMT module
   WCSimWCPMT* WCDMPMT =
     (WCSimWCPMT*)DMman->FindDigitizerModule("WCReadoutPMT");
- 
+  
   // new MFechner, aug 2006
   // need to clear up the old info inside PMT
   WCDMPMT->ReInitialize();
- 
-  WCSimWCLAPPD* WCDMLAPPD =
-    (WCSimWCLAPPD*)DMman->FindDigitizerModule("WCReadoutLAPPD");
-  WCDMLAPPD->ReInitialize();
   
 #ifdef TIME_DAQ_STEPS
   TStopwatch* ms = new TStopwatch();
@@ -377,8 +300,6 @@ void WCSimEventAction::EndOfEventAction(const G4Event* evt)
   //Convert the hits to PMT pulse
   G4cout<<"Dititizing WCDMPMT"<<G4endl;
   WCDMPMT->Digitize();
-  G4cout<<"Digizing WCDMLAPPD"<<G4endl;
-  WCDMLAPPD->Digitize();
   
   // Do the Dark Noise, then Digitization, then Trigger
   // First, add Dark noise hits before digitizing
@@ -430,215 +351,309 @@ void WCSimEventAction::EndOfEventAction(const G4Event* evt)
    // Get the digitized collection for the WC
    G4int WCDCID = DMman->GetDigiCollectionID("WCDigitizedCollection");
    WCSimWCTriggeredDigitsCollection * WCDC = (WCSimWCTriggeredDigitsCollection*) DMman->GetDigiCollection(WCDCID);
-
-   //----- for lappds -----
-   G4int WCDChitsIDlappd = DMman->GetDigiCollectionID("WCRawLAPPDSignalCollection");
-   WCSimWCDigitsCollection * WCDC_hitslappd = (WCSimWCDigitsCollection*) DMman->GetDigiCollection(WCDChitsIDlappd);
   
-   // Get the digitized collection for the WC
-   G4int WCDCIDlappd = DMman->GetDigiCollectionID("WCDigitizedCollectionLAPPD");
-   WCSimWCTriggeredDigitsCollection * WCDClappd = (WCSimWCTriggeredDigitsCollection*) DMman->GetDigiCollection(WCDCIDlappd);
-  //-------------
-
-  //--------- LAPPDs -----------
-  if (WCDC_hitslappd)
-  {
-    //add the truth raw hits
-    // Both the pre- and post-PMT smearing hit times are accessible
-    // Choose to save just the pre-smeared times for now
-   #ifdef _SAVE_RAW_HITS_VERBOSE
-    G4cout<<"RAW HITS"<<G4endl;
-   #endif
-   // wcsimrootevent->SetNumTubesHit(WCDC_hitslappd->entries());
-  // std::vector<float> truetime2, smeartime2;
-  // std::vector<int>   primaryParentID2;
-   double hit_time_smear, hit_time_true;
-   int hit_parentid; G4int id0=0;
-   //loop over the DigitsCollection
-   for(int idigi = 0; idigi < WCDC_hitslappd->entries(); idigi++) {
-      int digi_tubeid = (*WCDC_hitslappd)[idigi]->GetTubeID();
-      //G4cout<<"digi_lappdid= "<<digi_tubeid<<"/"<<(*WCDC_hitslappd)[idigi]->GetTotalPe()<<G4endl;
-      lappdhit_totalpes_perlappd2.push_back((*WCDC_hitslappd)[idigi]->GetTotalPe());
-
-      for(G4int id = 0; id < (*WCDC_hitslappd)[idigi]->GetTotalPe(); id++){
-        id0++;
-        hit_time_true  = (*WCDC_hitslappd)[idigi]->GetPreSmearTime(id);
-        hit_parentid = (*WCDC_hitslappd)[idigi]->GetParentID(id);
-        //G4cout<<"0___LAPPD idigi= "<<idigi<<" id= "<<id<<"/"<<(*WCDC_hitslappd)[idigi]->GetTotalPe()<<G4endl;
-        //G4cout<<"id0= "<<id0<<" hit_time_true= "<<hit_time_true<<" hit_parentid= "<<hit_parentid<<G4endl;
-        lappdhit_truetime2.push_back(hit_time_true);
-        lappdhit_primaryParentID2.push_back(hit_parentid);
-        ////---strip number and digitised hits-----
-        int stripno = (*WCDC_hitslappd)[idigi]->GetStripNo(id);
-        lappdhit_stripnum.push_back(stripno);
-        //G4cout<<"LAPPD idigi= "<<idigi<<" id= "<<id<<" stripno= "<<stripno<<G4endl;
-        std::map<int,double> stripno_peak=(*WCDC_hitslappd)[idigi]->GetNeighStripNo(id);
-        int stiphit=0;
-        for(std::map<int,double>::iterator m1=stripno_peak.begin(); m1!=stripno_peak.end(); ++m1){
-           //G4cout<<"DIGImap____"<<(m1)->first<<","<<(m1)->second<<G4endl;
-           stiphit++;
-           lappdhit_neighstripnum.push_back( (m1)->first );
-           lappdhit_neighstrippeak.push_back( (m1)->second );
-        }
-        stripno_peak.clear();
-        //G4cout<<"We had "<<stiphit<<" neighbouring strips hit!"<<G4endl;
-        lappdhit_NoOfneighstripsHit.push_back(stiphit);
-       
-        std::map<int,double> stripno_time=(*WCDC_hitslappd)[idigi]->GetNeighStripTime(id);
-        for(std::map<int,double>::iterator m2=stripno_time.begin(); m2!=stripno_time.end(); ++m2){
-          //G4cout<<"DIGItime____"<<(m2)->first<<","<<(m2)->second<<G4endl;
-          lappdhit_neighstrip_time.push_back( (m2)->second );
-        }
-        stripno_time.clear();
-        std::map<int,double> stripno_lefttime=(*WCDC_hitslappd)[idigi]->GetNeighStripLeftTime(id);
-        for(std::map<int,double>::iterator m3=stripno_lefttime.begin(); m3!=stripno_lefttime.end(); ++m3){
-          //G4cout<<"DIGIlefttime____"<<(m3)->first<<","<<(m3)->second<<G4endl;
-          lappdhit_neighstrip_lefttime.push_back( (m3)->second );
-        }
-        stripno_lefttime.clear();
-        std::map<int,double> stripno_righttime=(*WCDC_hitslappd)[idigi]->GetNeighStripRightTime(id);
-        for(std::map<int,double>::iterator m4=stripno_righttime.begin(); m4!=stripno_righttime.end(); ++m4){
-          //G4cout<<"DIGIrighttime____"<<(m4)->first<<","<<(m4)->second<<G4endl;
-          lappdhit_neighstrip_righttime.push_back( (m4)->second );
-        }
-        stripno_righttime.clear();
-        //-------
-        ////#ifdef _SAVE_RAW_HITS_VERBOSE
-        hit_time_smear = (*WCDC_hitslappd)[idigi]->GetTime(id);
-        lappdhit_smeartime2.push_back(hit_time_smear);
-        //G4cout<<"hit_time_smear= "<<hit_time_smear<<G4endl;
-       //#endif
-      }//id
-   #ifdef _SAVE_RAW_HITS_VERBOSE
-      if(digi_tubeid < NPMTS_VERBOSE) {
-        G4cout << "Adding " << truetime2.size()
-               << " Cherenkov hits in tube " << digi_tubeid
-               << " with truetime:smeartime:primaryparentID";
-        for(G4int id = 0; id < truetime2.size(); id++) {
-           G4cout << " " << truetime[id]
-                  << ":" << smeartime[id]
-                  << ":" << primaryParentID[id];
-        }//id
-       G4cout << G4endl;
+  /*
+  // To use Do like This:
+  // -------------------
+  if(WCDC){
+    for (G4int i=0; i < WCDC->entries(); i++) {
+      G4int   tubeID         = (*WCDC)[i]->GetTubeID();
+      G4float photoElectrons = (*WCDC)[i]->GetPe(i);
+      //	 G4cout << "time " << i << " " <<time << G4endl; 
+      //	 G4cout << "tubeID " << i << " " <<tubeID << G4endl; 
+      //	 G4cout << "Pe " << i << " " <<photoElectrons << G4endl; 
+      //   (*WCDC)[i]->Print();
+    }
+  }
+  */
+  
+  WCSimWCDigitsCollection* WCDC_hits_MRD;
+  WCSimWCTriggeredDigitsCollection* WCDC_MRD;
+  WCSimWCDigitsCollection* WCDC_hits_FACC;
+  WCSimWCTriggeredDigitsCollection* WCDC_FACC;
+  if(isANNIE){
+    WCSimWCHitsCollection* WCHClappd = 0;
+    G4String WCIDCollectionName2 = detectorConstructor->GetIDCollectionName2();
+    G4int collectionID2;
+    collectionID2 = SDman->GetCollectionID(WCIDCollectionName2);
+    WCHClappd = (WCSimWCHitsCollection*)HCE->GetHC(collectionID2);
+    std::vector<int> objnumv;
+    
+    // ----------------------------------------------------------------------
+    //  Get Digitized Hit Collection
+    // ----------------------------------------------------------------------
+    //G4cout<<"WCIDCollectionName= "<<WCIDCollectionName<<" WCIDCollectionName2= "<<WCIDCollectionName2<<G4endl;
+    //G4cout<<"____________ WCHC->entries()= "<<int(WCHC->entries())<<G4endl;
+    //G4cout<<"____________ WCHClappd->entries()= "<<int(WCHClappd->entries())<<G4endl;
+    //if(WCHClappd->entries()>0.){ G4cout<<"GOTIT!!!!!!"<<G4endl; }
+    for (G4int ii=0; ii< WCHClappd->entries() ;ii++){
+      //G4cout<<"total pe @ LAPPDs: "<< (*WCHClappd)[ii]->GetTotalPe() << G4endl;
+      G4int   lappdID         = (*WCHClappd)[ii]->GetTubeID();
+      objnumv.push_back(lappdID);
+    }
+    //--------- STORE lappd HITS -------------
+    //=========================================
+    lappdevt=evt->GetEventID();
+    G4double totalEnergy2 = 0.;
+    G4int numberOfHits2 = WCHClappd->GetSize();
+    //G4cout << "&&&&  A total of " << numberOfHits2 << " hits on lappd were recorded!" << G4endl;
+    if (WCHClappd!=0) {
+      G4int totalpes_perevt = 0; G4int lappd_numhits0=0;
+      for (G4int hitnum=0; hitnum<numberOfHits2; hitnum++) {
+         lappd_numhits0++;
+         WCSimWCHit* aHit = (*WCHClappd)[hitnum];
+         G4ThreeVector hitPos = aHit->GetPos();
+         hitPosx=hitPos.x();
+         hitPosy=hitPos.y();
+         hitPosz=hitPos.z();
+         //hitParticleName = aHit->GetParticleName();
+         hitTrackID = aHit->GetTrackID();
+         for (G4int ip =0; ip < (*WCHClappd)[hitnum]->GetTotalPe(); ip++){
+         //hitPartCode = aHit->GetParticleID();
+           lappdhit_process[hitnum] = hitProcessCode;
+           double strip_coorx = ((*WCHClappd)[hitnum]->GetStripPosition(ip).x());
+           double strip_coory = ((*WCHClappd)[hitnum]->GetStripPosition(ip).y());
+           double strip_coorz = ((*WCHClappd)[hitnum]->GetStripPosition(ip).z());
+           double strip_coort;
+           try{
+             strip_coort = aHit->GetTime(ip);
+           } 
+           catch (...){
+             G4cerr<<"Error in WCSimEventAction::EndOfEventAction() calling WCSimWCHit::GetTime "<<G4endl;
+             //assert(false);
+             strip_coort = -997.;
+           }
+           //G4cout<<"totalpes_perevt= "<<totalpes_perevt<<"--->GetStripPosition= "
+           //      <<(*WCHClappd)[hitnum]->GetStripPosition(ip)
+           //      <<" strip_coorx= "<<strip_coorx<<" strip_coory= "<<strip_coory<<G4endl;
+           lappdhit_stripcoorx.push_back(strip_coorx);
+           lappdhit_stripcoory.push_back(strip_coory);
+           lappdhit_stripcoorz.push_back(strip_coorz);
+           lappdhit_stripcoort.push_back(strip_coort);
+           totalpes_perevt++;
+         }
+         //hitPartCode = ConvertParticleNameToCode(hitParticleName); // or use hitParticleID - from PDGEncoding?
+         //hitProcessName = aHit->GetProcessName();
+         //hitProcessCode = ConvertProcessNameToCode(hitProcessName);
+         //if(hitProcessCode<0){G4cout<<"lappd hit process unaccounted"<<G4endl;}
+         hitEdep = (*WCHClappd)[hitnum]->GetTotalPe();  //aHit->GetEdeposit();
+         //hitCopyNum = aHit->GetCopyNum();
+         //hitPhysical = (std::string)aHit->GetPhysical();
+         //aHit->Print();
+         lappdhit_x[hitnum] = hitPosx;
+         lappdhit_y[hitnum] = hitPosy;
+         lappdhit_z[hitnum] = hitPosz;
+         lappdhit_particleID[hitnum] = hitPartCode;
+         lappdhit_trackID[hitnum] = hitTrackID;
+         lappdhit_edep[hitnum] = hitEdep;
+         //lappdhit_copynum[hitnum] = hitCopyNum;
+         lappdhit_objnum[hitnum] = (objnumv[hitnum]);
+         //G4cout<<"lappdhit_objnum[hitnum] = "<<lappdhit_objnum[hitnum]<<G4endl;
       }
+      lappd_numhits = lappd_numhits0;
+      lappdhit_totalpes_perevt = totalpes_perevt;
+      
+      //G4cout<<"lappd_numhits= "<<lappd_numhits<<" lappdhit_totalpes_perevt = "<<lappdhit_totalpes_perevt<<G4endl;
+      //LAPPDtree ->Fill();
+      /*
+      for(int m=0; m<totalpes_perevt; m++){
+        G4cout<<"tellme: "<<lappdhit_stripcoorx[m]<<","<<lappdhit_stripcoory[m]<<","<<lappdhit_stripcoorz[m]<<G4endl; 
+      }
+      */
+    }
+    
+    WCSimWCLAPPD* WCDMLAPPD = (WCSimWCLAPPD*)DMman->FindDigitizerModule("WCReadoutLAPPD");
+    WCDMLAPPD->ReInitialize();
+    
+    G4cout<<"Digizing WCDMLAPPD"<<G4endl;
+    WCDMLAPPD->Digitize();
+    
+    G4int WCDChitsIDlappd = DMman->GetDigiCollectionID("WCRawLAPPDSignalCollection");
+    WCSimWCDigitsCollection * WCDC_hitslappd = (WCSimWCDigitsCollection*) DMman->GetDigiCollection(WCDChitsIDlappd);
+    
+    // Get the digitized collection for the WC
+    G4int WCDCIDlappd = DMman->GetDigiCollectionID("WCDigitizedCollectionLAPPD");
+    WCSimWCTriggeredDigitsCollection * WCDClappd = (WCSimWCTriggeredDigitsCollection*) DMman->GetDigiCollection(WCDCIDlappd);
+    
+    if (WCDC_hitslappd) {
+     // add the truth raw hits
+#ifdef _SAVE_RAW_HITS_VERBOSE
+     G4cout<<"RAW HITS"<<G4endl;
 #endif
-     
-      /*smeartime2.clear();
-      truetime2.clear();
-      primaryParentID2.clear();*/
-    }//idigi
-   }
-  LAPPDtree->Fill();
-  LAPPDfile->cd();
-  LAPPDfile->Write("",TObject::kOverwrite);
-  lappdhit_NoOfneighstripsHit.clear();
-  lappdhit_stripcoorx.clear();
-  lappdhit_stripcoory.clear();
-  lappdhit_stripcoorz.clear();
-  lappdhit_stripcoort.clear();
-  lappdhit_totalpes_perlappd2.clear();
-  objnumv.clear();
-  lappdhit_smeartime2.clear();
-  lappdhit_truetime2.clear();
-  lappdhit_primaryParentID2.clear();
-  lappdhit_stripnum.clear();
-  lappdhit_neighstripnum.clear();
-  lappdhit_neighstrippeak.clear();
-  lappdhit_neighstrip_time.clear();
-  lappdhit_neighstrip_lefttime.clear();
-  lappdhit_neighstrip_righttime.clear();
-  
-   //___________________________
-   /*   
-   // To use Do like This:
-   // --------------------
-   if(WCDC) 
-     for (G4int i=0; i < WCDC->entries(); i++) 
-       {
-	 G4int   tubeID         = (*WCDC)[i]->GetTubeID();
-	 G4float photoElectrons = (*WCDC)[i]->GetPe(i);
-	 //	 G4cout << "time " << i << " " <<time << G4endl; 
-	 //	 G4cout << "tubeID " << i << " " <<tubeID << G4endl; 
-	 //	 G4cout << "Pe " << i << " " <<photoElectrons << G4endl; 
-	 //   (*WCDC)[i]->Print();
-       }
-   */
-  // Repeat the steps for the MRD and FACC
-  G4cout<<G4endl<<G4endl;
-  G4String WCMRDCollectionName = detectorConstructor->GetMRDCollectionName();
-  if(HCE){
-  collectionID = SDman->GetCollectionID(WCMRDCollectionName);
-  WCSimWCHitsCollection* WCHC_MRD = (WCSimWCHitsCollection*)HCE->GetHC(collectionID);
-#ifdef HYPER_VERBOSITY
-    G4cout<<"WCSimEventAction::EndOfEventAction ☆ (WCSimWCHitsCollection*)"<<WCMRDCollectionName
-          <<" has "<<WCHC_MRD->entries()<<" entries"<<G4endl;
+     // wcsimrootevent->SetNumTubesHit(WCDC_hitslappd->entries());
+     // std::vector<float> truetime2, smeartime2;
+     // std::vector<int>   primaryParentID2;
+     double hit_time_smear, hit_time_true;
+     int hit_parentid; G4int id0=0;
+     //loop over the DigitsCollection
+     for(int idigi = 0; idigi < WCDC_hitslappd->entries(); idigi++) {
+        int digi_tubeid = (*WCDC_hitslappd)[idigi]->GetTubeID();
+        //G4cout<<"digi_lappdid= "<<digi_tubeid<<"/"<<(*WCDC_hitslappd)[idigi]->GetTotalPe()<<G4endl;
+        lappdhit_totalpes_perlappd2.push_back((*WCDC_hitslappd)[idigi]->GetTotalPe());
+        
+        for(G4int id = 0; id < (*WCDC_hitslappd)[idigi]->GetTotalPe(); id++){
+          id0++;
+          hit_time_true  = (*WCDC_hitslappd)[idigi]->GetPreSmearTime(id);
+          hit_parentid = (*WCDC_hitslappd)[idigi]->GetParentID(id);
+          //G4cout<<"0___LAPPD idigi= "<<idigi<<" id= "<<id<<"/"<<(*WCDC_hitslappd)[idigi]->GetTotalPe()<<G4endl;
+          //G4cout<<"id0= "<<id0<<" hit_time_true= "<<hit_time_true<<" hit_parentid= "<<hit_parentid<<G4endl;
+          lappdhit_truetime2.push_back(hit_time_true);
+          lappdhit_primaryParentID2.push_back(hit_parentid);
+          ////---strip number and digitised hits-----
+          int stripno = (*WCDC_hitslappd)[idigi]->GetStripNo(id);
+          lappdhit_stripnum.push_back(stripno);
+          //G4cout<<"LAPPD idigi= "<<idigi<<" id= "<<id<<" stripno= "<<stripno<<G4endl;
+          std::map<int,double> stripno_peak=(*WCDC_hitslappd)[idigi]->GetNeighStripNo(id);
+          int stiphit=0;
+          for(std::map<int,double>::iterator m1=stripno_peak.begin(); m1!=stripno_peak.end(); ++m1){
+             //G4cout<<"DIGImap____"<<(m1)->first<<","<<(m1)->second<<G4endl;
+             stiphit++;
+             lappdhit_neighstripnum.push_back( (m1)->first );
+             lappdhit_neighstrippeak.push_back( (m1)->second );
+          }
+          stripno_peak.clear();
+          //G4cout<<"We had "<<stiphit<<" neighbouring strips hit!"<<G4endl;
+          lappdhit_NoOfneighstripsHit.push_back(stiphit);
+         
+          std::map<int,double> stripno_time=(*WCDC_hitslappd)[idigi]->GetNeighStripTime(id);
+          for(std::map<int,double>::iterator m2=stripno_time.begin(); m2!=stripno_time.end(); ++m2){
+            //G4cout<<"DIGItime____"<<(m2)->first<<","<<(m2)->second<<G4endl;
+            lappdhit_neighstrip_time.push_back( (m2)->second );
+          }
+          stripno_time.clear();
+          std::map<int,double> stripno_lefttime=(*WCDC_hitslappd)[idigi]->GetNeighStripLeftTime(id);
+          for(std::map<int,double>::iterator m3=stripno_lefttime.begin(); m3!=stripno_lefttime.end(); ++m3){
+            //G4cout<<"DIGIlefttime____"<<(m3)->first<<","<<(m3)->second<<G4endl;
+            lappdhit_neighstrip_lefttime.push_back( (m3)->second );
+          }
+          stripno_lefttime.clear();
+          std::map<int,double> stripno_righttime=(*WCDC_hitslappd)[idigi]->GetNeighStripRightTime(id);
+          for(std::map<int,double>::iterator m4=stripno_righttime.begin(); m4!=stripno_righttime.end(); ++m4){
+            //G4cout<<"DIGIrighttime____"<<(m4)->first<<","<<(m4)->second<<G4endl;
+            lappdhit_neighstrip_righttime.push_back( (m4)->second );
+          }
+          stripno_righttime.clear();
+          //-------
+          hit_time_smear = (*WCDC_hitslappd)[idigi]->GetTime(id);
+          lappdhit_smeartime2.push_back(hit_time_smear);
+          //G4cout<<"hit_time_smear= "<<hit_time_smear<<G4endl;
+        } //id
+#ifdef _SAVE_RAW_HITS_VERBOSE
+        if(digi_tubeid < NPMTS_VERBOSE) {
+          G4cout << "Adding " << truetime2.size()
+                 << " Cherenkov hits in tube " << digi_tubeid
+                 << " with truetime:smeartime:primaryparentID";
+          for(G4int id = 0; id < truetime2.size(); id++) {
+             G4cout << " " << truetime[id]
+                    << ":" << smeartime[id]
+                    << ":" << primaryParentID[id];
+          }//id
+         G4cout << G4endl;
+        }
 #endif
-  }
-  WCSimWCPMT* WCDMPMT_MRD = (WCSimWCPMT*)DMman->FindDigitizerModule("WCReadoutPMT_MRD");
-  if(WCDMPMT_MRD==0){G4cerr<<"WCReadoutPMT_MRD digitzer module not found!"<<G4endl;}
-  WCDMPMT_MRD->ReInitialize();
-#ifdef HYPER_VERBOSITY
-  G4cout<<"WCSimEventAction::EndOfEventAction ☆ Calling Digitize on (WCSimWCPMT*)WCReadoutPMT_MRD"<<G4endl;
-#endif
-  WCDMPMT_MRD->Digitize();
-  WCSimWCAddDarkNoise* WCDNM_MRD = (WCSimWCAddDarkNoise*)DMman->FindDigitizerModule("WCDarkNoise_MRD");
-  if(WCDNM_MRD==0){G4cerr<<"WCDarkNoise_MRD dark noise module not found!"<<G4endl;}
-#ifdef HYPER_VERBOSITY
-  G4cout<<"WCSimEventAction::EndOfEventAction ☆ Calling AddDarkNoise on (WCSimWCAddDarkNoise*)WCDarkNoise_MRD"<<G4endl;
-#endif
-  WCDNM_MRD->AddDarkNoise();
-  WCSimWCDigitizerBase* WCDM_MRD = (WCSimWCDigitizerBase*)DMman->FindDigitizerModule("WCReadoutDigits_MRD");
-  if(WCDM_MRD==0){G4cerr<<"WCReadoutDigits_MRD digitizer module not found!"<<G4endl;}
-#ifdef HYPER_VERBOSITY
-  G4cout<<"WCSimEventAction::EndOfEventAction ☆ Calling Digitize on (WCSimWCDigitizerBase*)WCReadoutDigits_MRD"<<G4endl;
-#endif
-  WCDM_MRD->Digitize();
-  WCSimWCTriggerBase* WCTM_MRD = (WCSimWCTriggerBase*)DMman->FindDigitizerModule("WCReadout_MRD");
-  if(WCTM_MRD==0){G4cerr<<"WCReadout_MRD trigger module not found!"<<G4endl;}
-  WCTM_MRD->SetDarkRate(WCDNM_MRD->GetDarkRate());
-#ifdef HYPER_VERBOSITY
-  G4cout<<"WCSimEventAction::EndOfEventAction ☆ Calling Digitize on (WCSimWCTriggerBase*)WCReadout_MRD"<<G4endl;
-#endif
-  WCTM_MRD->Digitize();
-  /** these are retrieved to pass to FillRootEvent() */
-#ifdef HYPER_VERBOSITY
-  G4cout<<"WCSimEventAction::EndOfEventAction ☆ retrieving raw hits (WCSimWCDigitsCollection*)WCRawPMTSignalCollection_MRD for FillRootEvent, which has ";
-#endif
-  G4int WCDChitsID_MRD = DMman->GetDigiCollectionID("WCRawPMTSignalCollection_MRD");
-  WCSimWCDigitsCollection * WCDC_hits_MRD = (WCSimWCDigitsCollection*) DMman->GetDigiCollection(WCDChitsID_MRD);
-#ifdef HYPER_VERBOSITY
-  if(WCDC_hits_MRD){G4cout<<WCDC_hits_MRD->entries();} else {G4cout<<"no";} G4cout<<" entries"<<G4endl;
-  G4cout<<"WCSimEventAction::EndOfEventAction ☆ retrieving readout hits (WCSimWCTriggeredDigitsCollection*)WCDigitizedCollection_MRD for FillRootEvent, which has ";
-#endif
-  G4int WCDCID_MRD = DMman->GetDigiCollectionID("WCDigitizedCollection_MRD");
-  WCSimWCTriggeredDigitsCollection * WCDC_MRD = (WCSimWCTriggeredDigitsCollection*) DMman->GetDigiCollection(WCDCID_MRD);
-#ifdef HYPER_VERBOSITY
-  if(WCDC_hits_MRD){G4cout<<WCDC_MRD->entries();} else {G4cout<<"no";} G4cout<<" entries"<<G4endl;
-#endif
-  ///////////////////////////////
-  // Repeat for FACC
-  G4cout<<G4endl<<G4endl;
-  G4String WCFACCCollectionName = detectorConstructor->GetFACCCollectionName();
-  if(HCE){
-  collectionID = SDman->GetCollectionID(WCFACCCollectionName);
-  WCSimWCHitsCollection* WCHC_FACC = (WCSimWCHitsCollection*)HCE->GetHC(collectionID);
-  }
-  WCSimWCPMT* WCDMPMT_FACC = (WCSimWCPMT*)DMman->FindDigitizerModule("WCReadoutPMT_FACC");
-  WCDMPMT_FACC->ReInitialize();
-  WCDMPMT_FACC->Digitize();
-  WCSimWCAddDarkNoise* WCDNM_FACC = (WCSimWCAddDarkNoise*)DMman->FindDigitizerModule("WCDarkNoise_FACC");
-  WCDNM_FACC->AddDarkNoise();
-  WCSimWCDigitizerBase* WCDM_FACC = (WCSimWCDigitizerBase*)DMman->FindDigitizerModule("WCReadoutDigits_FACC");
-  WCDM_FACC->Digitize();
-  WCSimWCTriggerBase* WCTM_FACC = (WCSimWCTriggerBase*)DMman->FindDigitizerModule("WCReadout_FACC");
-  WCTM_FACC->SetDarkRate(WCDNM_FACC->GetDarkRate());
-  WCTM_FACC->Digitize();
-  G4int WCDChitsID_FACC = DMman->GetDigiCollectionID("WCRawPMTSignalCollection_FACC");
-  WCSimWCDigitsCollection * WCDC_hits_FACC = (WCSimWCDigitsCollection*) DMman->GetDigiCollection(WCDChitsID_FACC);
-  G4int WCDCID_FACC = DMman->GetDigiCollectionID("WCDigitizedCollection_FACC");
-  WCSimWCTriggeredDigitsCollection * WCDC_FACC = (WCSimWCTriggeredDigitsCollection*) DMman->GetDigiCollection(WCDCID_FACC);
-  /////////////////////////////////////////////////////
-
+        /*
+        smeartime2.clear();
+        truetime2.clear();
+        primaryParentID2.clear();
+        */
+      } //idigi
+    }
+    LAPPDtree->Fill();
+    LAPPDfile->cd();
+    LAPPDfile->Write("",TObject::kOverwrite);
+    lappdhit_NoOfneighstripsHit.clear();
+    lappdhit_stripcoorx.clear();
+    lappdhit_stripcoory.clear();
+    lappdhit_stripcoorz.clear();
+    lappdhit_stripcoort.clear();
+    lappdhit_totalpes_perlappd2.clear();
+    objnumv.clear();
+    lappdhit_smeartime2.clear();
+    lappdhit_truetime2.clear();
+    lappdhit_primaryParentID2.clear();
+    lappdhit_stripnum.clear();
+    lappdhit_neighstripnum.clear();
+    lappdhit_neighstrippeak.clear();
+    lappdhit_neighstrip_time.clear();
+    lappdhit_neighstrip_lefttime.clear();
+    lappdhit_neighstrip_righttime.clear();
+    
+    // Repeat the steps for the MRD and FACC
+    G4cout<<G4endl<<G4endl;
+    G4String WCMRDCollectionName = detectorConstructor->GetMRDCollectionName();
+    if(HCE){
+    collectionID = SDman->GetCollectionID(WCMRDCollectionName);
+    WCSimWCHitsCollection* WCHC_MRD = (WCSimWCHitsCollection*)HCE->GetHC(collectionID);
+  #ifdef HYPER_VERBOSITY
+      G4cout<<"WCSimEventAction::EndOfEventAction ☆ (WCSimWCHitsCollection*)"<<WCMRDCollectionName
+            <<" has "<<WCHC_MRD->entries()<<" entries"<<G4endl;
+  #endif
+    }
+    WCSimWCPMT* WCDMPMT_MRD = (WCSimWCPMT*)DMman->FindDigitizerModule("WCReadoutPMT_MRD");
+    if(WCDMPMT_MRD==0){G4cerr<<"WCReadoutPMT_MRD digitzer module not found!"<<G4endl;}
+    WCDMPMT_MRD->ReInitialize();
+  #ifdef HYPER_VERBOSITY
+    G4cout<<"WCSimEventAction::EndOfEventAction ☆ Calling Digitize on (WCSimWCPMT*)WCReadoutPMT_MRD"<<G4endl;
+  #endif
+    WCDMPMT_MRD->Digitize();
+    WCSimWCAddDarkNoise* WCDNM_MRD = (WCSimWCAddDarkNoise*)DMman->FindDigitizerModule("WCDarkNoise_MRD");
+    if(WCDNM_MRD==0){G4cerr<<"WCDarkNoise_MRD dark noise module not found!"<<G4endl;}
+  #ifdef HYPER_VERBOSITY
+    G4cout<<"WCSimEventAction::EndOfEventAction ☆ Calling AddDarkNoise on (WCSimWCAddDarkNoise*)WCDarkNoise_MRD"<<G4endl;
+  #endif
+    WCDNM_MRD->AddDarkNoise();
+    WCSimWCDigitizerBase* WCDM_MRD = (WCSimWCDigitizerBase*)DMman->FindDigitizerModule("WCReadoutDigits_MRD");
+    if(WCDM_MRD==0){G4cerr<<"WCReadoutDigits_MRD digitizer module not found!"<<G4endl;}
+  #ifdef HYPER_VERBOSITY
+    G4cout<<"WCSimEventAction::EndOfEventAction ☆ Calling Digitize on (WCSimWCDigitizerBase*)WCReadoutDigits_MRD"<<G4endl;
+  #endif
+    WCDM_MRD->Digitize();
+    WCSimWCTriggerBase* WCTM_MRD = (WCSimWCTriggerBase*)DMman->FindDigitizerModule("WCReadout_MRD");
+    if(WCTM_MRD==0){G4cerr<<"WCReadout_MRD trigger module not found!"<<G4endl;}
+    WCTM_MRD->SetDarkRate(WCDNM_MRD->GetDarkRate());
+  #ifdef HYPER_VERBOSITY
+    G4cout<<"WCSimEventAction::EndOfEventAction ☆ Calling Digitize on (WCSimWCTriggerBase*)WCReadout_MRD"<<G4endl;
+  #endif
+    WCTM_MRD->Digitize();
+    /** these are retrieved to pass to FillRootEvent() */
+  #ifdef HYPER_VERBOSITY
+    G4cout<<"WCSimEventAction::EndOfEventAction ☆ retrieving raw hits (WCSimWCDigitsCollection*)WCRawPMTSignalCollection_MRD for FillRootEvent, which has ";
+  #endif
+    G4int WCDChitsID_MRD = DMman->GetDigiCollectionID("WCRawPMTSignalCollection_MRD");
+    WCDC_hits_MRD = (WCSimWCDigitsCollection*) DMman->GetDigiCollection(WCDChitsID_MRD);
+  #ifdef HYPER_VERBOSITY
+    if(WCDC_hits_MRD){G4cout<<WCDC_hits_MRD->entries();} else {G4cout<<"no";} G4cout<<" entries"<<G4endl;
+    G4cout<<"WCSimEventAction::EndOfEventAction ☆ retrieving readout hits (WCSimWCTriggeredDigitsCollection*)WCDigitizedCollection_MRD for FillRootEvent, which has ";
+  #endif
+    G4int WCDCID_MRD = DMman->GetDigiCollectionID("WCDigitizedCollection_MRD");
+    WCDC_MRD = (WCSimWCTriggeredDigitsCollection*) DMman->GetDigiCollection(WCDCID_MRD);
+  #ifdef HYPER_VERBOSITY
+    if(WCDC_hits_MRD){G4cout<<WCDC_MRD->entries();} else {G4cout<<"no";} G4cout<<" entries"<<G4endl;
+  #endif
+    ///////////////////////////////
+    // Repeat for FACC
+    G4cout<<G4endl<<G4endl;
+    G4String WCFACCCollectionName = detectorConstructor->GetFACCCollectionName();
+    if(HCE){
+    collectionID = SDman->GetCollectionID(WCFACCCollectionName);
+    WCSimWCHitsCollection* WCHC_FACC = (WCSimWCHitsCollection*)HCE->GetHC(collectionID);
+    }
+    WCSimWCPMT* WCDMPMT_FACC = (WCSimWCPMT*)DMman->FindDigitizerModule("WCReadoutPMT_FACC");
+    WCDMPMT_FACC->ReInitialize();
+    WCDMPMT_FACC->Digitize();
+    WCSimWCAddDarkNoise* WCDNM_FACC = (WCSimWCAddDarkNoise*)DMman->FindDigitizerModule("WCDarkNoise_FACC");
+    WCDNM_FACC->AddDarkNoise();
+    WCSimWCDigitizerBase* WCDM_FACC = (WCSimWCDigitizerBase*)DMman->FindDigitizerModule("WCReadoutDigits_FACC");
+    WCDM_FACC->Digitize();
+    WCSimWCTriggerBase* WCTM_FACC = (WCSimWCTriggerBase*)DMman->FindDigitizerModule("WCReadout_FACC");
+    WCTM_FACC->SetDarkRate(WCDNM_FACC->GetDarkRate());
+    WCTM_FACC->Digitize();
+    G4int WCDChitsID_FACC = DMman->GetDigiCollectionID("WCRawPMTSignalCollection_FACC");
+    WCDC_hits_FACC = (WCSimWCDigitsCollection*) DMman->GetDigiCollection(WCDChitsID_FACC);
+    G4int WCDCID_FACC = DMman->GetDigiCollectionID("WCDigitizedCollection_FACC");
+    WCDC_FACC = (WCSimWCTriggeredDigitsCollection*) DMman->GetDigiCollection(WCDCID_FACC);
+    /////////////////////////////////////////////////////
+    
   // ----------------------------------------------------------------------
   //  Get Event Information
   // ----------------------------------------------------------------------
@@ -648,6 +663,8 @@ void WCSimEventAction::EndOfEventAction(const G4Event* evt)
   G4cout<<" !!! Genie not loaded!!! Primary interaction information will not be filled! !!!"<<G4endl;
   G4cout<<" !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"<<G4endl;
 #endif
+  }
+  
   G4int         mode     = generatorAction->GetMode();				// neut interaction code
   G4int         nvtxs   = generatorAction->GetNvtxs();				// always 1
   G4ThreeVector vtxs[MAX_N_PRIMARIES];								// interaction vertices of the neutrino
@@ -912,20 +929,23 @@ void WCSimEventAction::EndOfEventAction(const G4Event* evt)
 		WCDC_hits,
 		WCDC,
 		"tank");
-G4cout<<"Filling MRD Root Event"<<G4endl;
+		
+	if(isANNIE){
+  G4cout<<"Filling MRD Root Event"<<G4endl;
   FillRootEvent(event_id,
 		jhfNtuple,
 		trajectoryContainer,
 		WCDC_hits_MRD,
 		WCDC_MRD,
 		"mrd");
-G4cout<<"Filling FACC Root Event"<<G4endl;
+  G4cout<<"Filling FACC Root Event"<<G4endl;
   FillRootEvent(event_id,
 		jhfNtuple,
 		trajectoryContainer,
 		WCDC_hits_FACC,
 		WCDC_FACC,
 		"facc");
+	}
   
   TTree* tree = GetRunAction()->GetTree();
   TBranch* tankeventbranch = tree->GetBranch("wcsimrootevent");
@@ -941,7 +961,7 @@ G4cout<<"Filling FACC Root Event"<<G4endl;
   G4cout<<"events generated so far: "<<(GetRunAction()->GetNumberOfEventsGenerated())<<G4endl;
   if(event_id%10000==0&&event_id!=0){
     GetRunAction()->CreateNewOutputFile(); // careful: we should maintain 1:1:1 files genie:g4dirt:wcsim
-    CreateNewLAPPDFile(); // this must always come *after* the runaction version
+    if(isANNIE) CreateNewLAPPDFile(); // this must always come *after* the runaction version
   }
   
   G4cout<<"############# WCSIM FINISH END OF EVENT ACTION  ################"<<G4endl;
@@ -976,7 +996,6 @@ G4int WCSimEventAction::WCSimEventFindStartingVolume(G4ThreeVector vtx)
     else if (vtxVolumeName == "WCBox")
       vtxvol = -2;
     else if (vtxVolumeName.contains("PMT") ||
-         vtxVolumeName.contains("LAPPD") ||
          vtxVolumeName.contains("Cap") ||
          vtxVolumeName.contains("Cell"))
       vtxvol = 11;
@@ -992,12 +1011,6 @@ G4int WCSimEventAction::WCSimEventFindStartingVolume(G4ThreeVector vtx)
     vtxvol = 0;
   else if ( vtxVolumeName == "catcher" )
     vtxvol = 40;
-  else if ( vtxVolumeName.contains("Veto") || vtxVolumeName.contains("veto") || vtxVolumeName.contains("FACC") )
-    vtxvol = 50;
-  else if ( vtxVolumeName.contains("MRD") || vtxVolumeName.contains("phys") || vtxVolumeName.contains("aluStruct") )
-    vtxvol = 60;
-    // not sure what depth name goes to. "aircavity_phys" is in both facc and mrd pmts...
-    // this would mistakenly put vertices in facc pmt cavities into the mrd.
   
   if(vtxvol<0){
     //G4cout<<"############# unkown vertex volume: "<<vtxVolumeName<<" ################"<<G4endl;
@@ -1017,7 +1030,6 @@ G4int WCSimEventAction::WCSimEventFindStoppingVolume(G4String stopVolumeName)
     else if (stopVolumeName == "WCBox")
       stopvol = -2;
     else if (stopVolumeName.contains("PMT") ||
-             stopVolumeName.contains("LAPPD") ||
              stopVolumeName.contains("Cap") ||
              stopVolumeName.contains("Cell"))
       stopvol = 11;
@@ -1048,12 +1060,6 @@ G4int WCSimEventAction::WCSimEventFindStoppingVolume(G4String stopVolumeName)
     stopvol = 0;
   else if ( stopVolumeName == "catcher" )
     stopvol = 40;
-  else if ( stopVolumeName.contains("Veto") || stopVolumeName.contains("veto") || stopVolumeName.contains("FACC") )
-    stopvol = 50;
-  else if ( stopVolumeName.contains("MRD") || stopVolumeName.contains("phys") || stopVolumeName.contains("aluStruct") )
-    stopvol = 60;
-    // not sure what depth name goes to. "aircavity_phys" is in both facc and mrd pmts...
-    // this would mistakenly put vertices in facc pmt cavities into the mrd.
 
   if(stopvol<0){
     //G4cout<<"############# unkown vertex volume: "<<stopVolumeName<<" ################"<<G4endl;
@@ -1258,10 +1264,14 @@ void WCSimEventAction::FillRootEvent(G4int event_id,
       G4ThreeVector Start  = aa->GetPosition();
 
       G4String stopVolumeName = trj->GetStoppingVolume()->GetName();
-      //G4int    stopvol     = WCSimEventFindStoppingVolume(stopVolumeName);
-      //G4int    startvol    = WCSimEventFindStartingVolume(Start);
-      G4int    stopvol     = WCSimEventFindVertexVolume(Stop);
-      G4int    startvol    = WCSimEventFindVertexVolume(Start);
+      G4int    stopvol, startvol;
+      if(!isANNIE){
+        stopvol     = WCSimEventFindStoppingVolume(stopVolumeName);
+        startvol    = WCSimEventFindStartingVolume(Start);
+      } else {
+        stopvol     = WCSimEventFindVertexVolume(Stop);
+        startvol    = WCSimEventFindVertexVolume(Start);
+      }
 
       G4double ttime = trj->GetGlobalTime(); 
 

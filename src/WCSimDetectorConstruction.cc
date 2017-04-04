@@ -30,7 +30,7 @@ hash_map<std::string, int, hash<std::string> > WCSimDetectorConstruction::mrdtub
 hash_map<std::string, int, hash<std::string> > WCSimDetectorConstruction::facctubeLocationMap;
 hash_map<std::string, int, hash<std::string> > WCSimDetectorConstruction::lappdLocationMap;
 
-WCSimDetectorConstruction::WCSimDetectorConstruction(G4int DetConfig,WCSimTuningParameters* WCSimTuningPars):WCSimTuningParams(WCSimTuningPars)
+WCSimDetectorConstruction::WCSimDetectorConstruction(G4int DetConfig,WCSimTuningParameters* WCSimTuningPars):WCSimTuningParams(WCSimTuningPars), noRot(0), rotatedmatx(0), upmtx(0), downmtx(0), rightmtx(0), leftmtx(0), scintSurface_op(0), MPTmylarSurface(0), lgSurface_op(0), lgsurf_MPT(0)
 {
 	
   // Decide if (only for the case of !1kT detector) should be upright or horizontal
@@ -72,10 +72,10 @@ WCSimDetectorConstruction::WCSimDetectorConstruction(G4int DetConfig,WCSimTuning
   // Set the default WC geometry.  This can be changed later.
   //-----------------------------------------------------
 
-  //SetSuperKGeometry();
+  SetSuperKGeometry();
   //SetHyperKGeometry();
   //SetANNIEPhase1Geometry();
-  SetANNIEPhase2Geometry();
+  //SetANNIEPhase2Geometry();
 
   //----------------------------------------------------- 
   // Set whether or not Pi0-specific info is saved
@@ -137,18 +137,18 @@ WCSimDetectorConstruction::~WCSimDetectorConstruction(){
   
   // MRD objects... 
   // rotation matrices
-  delete noRot;
-  delete rotatedmatx;
-  delete upmtx;
-  delete downmtx;
-  delete rightmtx;
-  delete leftmtx;
+  if(noRot) delete noRot;
+  if(rotatedmatx) delete rotatedmatx;
+  if(upmtx) delete upmtx;
+  if(downmtx) delete downmtx;
+  if(rightmtx) delete rightmtx;
+  if(leftmtx) delete leftmtx;
   
   // optical surfaces and materials properties tables
-  delete scintSurface_op;
-  delete MPTmylarSurface;
-  delete lgSurface_op;
-  delete lgsurf_MPT;
+  if(scintSurface_op) delete scintSurface_op;
+  if(MPTmylarSurface) delete MPTmylarSurface;
+  if(lgSurface_op) delete lgSurface_op;
+  if(lgsurf_MPT) delete lgsurf_MPT;
   
   // logical border surfaces
   for(auto surface : bordersurfaces){

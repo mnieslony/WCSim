@@ -46,6 +46,7 @@ libWCSimRoot.so : $(ROOTOBJS)
 	@echo Compiling libWCSimRoot.so with GNUMakefile_root ...
 	@if [ ! -d $(G4TMPDIR) ] ; then mkdir $(G4TMPDIR) ; echo mkdir $(G4TMPDIR) ;fi
 	@$(CXX) -shared -O $^ -o $(ROOTSO) $(ROOTLIBS)
+	@cp src/WCSimRootDict_rdict.pcm $(G4WORKDIR)
 
 #./src/WCSimRootDict.cc : $(ROOTSRC)
 #	@echo Compiling rootcint ...
@@ -66,8 +67,8 @@ $(G4TMPDIR)/%.o: src/%.cc
 clean :
 	@rm -f $(G4TMPDIR)/*.o
 	@rm -f ./src/WCSimRootDict.cc
-	@rm libWCSimRoot.so
-	@rm libWCSimRoot.rootmap 
-	@rm WCSimRootDict_rdict.pcm 
-	@rm src/WCSimRootDict_rdict.pcm
+	@rm -f libWCSimRoot.so
+	@rm -f libWCSimRoot.rootmap 
+	@rm -f WCSimRootDict_rdict.pcm 
+	@rm -f src/WCSimRootDict_rdict.pcm
 

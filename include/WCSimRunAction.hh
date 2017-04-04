@@ -88,6 +88,7 @@ private:
 
   WCSimRunActionMessenger* messenger;
   int ntuples;  // 1 for ntuples to be written
+  G4bool isANNIE;
 };
 
 #endif

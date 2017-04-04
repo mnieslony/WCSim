@@ -149,7 +149,7 @@ public:
   }
   WCSimLAPPDObject* GetLAPPDPointer(G4String CollectionName2){
     LAPPDptr = CollectionNameMap2[CollectionName2];
-    if (LAPPDptr == NULL) {G4cout << CollectionName2 << " is not a recognized hit collection. Exiting WCSim." << G4endl; exit(1);}
+    if (LAPPDptr==NULL) {G4cout << CollectionName2 << " is not a recognized hit collection. Exiting WCSim." << G4endl; exit(1);}
     return LAPPDptr;
   }
  //______________________ 
@@ -555,6 +555,7 @@ private:
   G4double GetFACCPMTRadius()     {return FACCPMTRadius;}
   G4String GetMRDCollectionName(){return WCMRDCollectionName;}
   G4String GetFACCCollectionName(){return WCFACCCollectionName;}
+  G4bool GetIsANNIE(){return isANNIE;}
 //  private:
 
   G4bool isANNIE;

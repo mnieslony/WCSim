@@ -26,12 +26,13 @@
 int pawc_[500000];                // Declare the PAWC common
 struct ntupleStruct jhfNtuple;
 
-WCSimRunAction::WCSimRunAction(WCSimDetectorConstruction* test)
+WCSimRunAction::WCSimRunAction(WCSimDetectorConstruction* test) : wcsimrootsuperevent_mrd(0), wcsimrootsuperevent_facc(0)
 {
   ntuples = 1;
 
   // Messenger to allow IO options
   wcsimdetector = test;
+  isANNIE=wcsimdetector->GetIsANNIE();
   messenger = new WCSimRunActionMessenger(this);
   OutputFileNum=-1;
   WCSimTree=0;
@@ -61,12 +62,14 @@ void WCSimRunAction::BeginOfRunAction(const G4Run* aRun)
 
   // Create the events to store in the output tree
   wcsimrootsuperevent = new WCSimRootEvent(); //empty list
-  wcsimrootsuperevent_mrd = new WCSimRootEvent();
-  wcsimrootsuperevent_facc = new WCSimRootEvent();
   //  wcsimrootsuperevent->AddSubEvent(); // make at least one event
   wcsimrootsuperevent->Initialize(); // make at least one event
-  wcsimrootsuperevent_mrd->Initialize();
-  wcsimrootsuperevent_facc->Initialize();
+  if(isANNIE){
+    wcsimrootsuperevent_mrd = new WCSimRootEvent();
+    wcsimrootsuperevent_facc = new WCSimRootEvent();
+    wcsimrootsuperevent_mrd->Initialize();
+    wcsimrootsuperevent_facc->Initialize();
+  }
   
   // Create the Root file and output tree
   CreateNewOutputFile();
@@ -96,8 +99,10 @@ void WCSimRunAction::CreateNewOutputFile(){
   Int_t bufsize = 64000;
   //  TBranch *branch = tree->Branch("wcsimrootsuperevent", "Jhf2kmrootsuperevent", &wcsimrootsuperevent, bufsize,0);
   wcsimrooteventbranch = tree->Branch("wcsimrootevent", "WCSimRootEvent", &wcsimrootsuperevent, bufsize,2);
-  wcsimrooteventbranch_mrd = tree->Branch("wcsimrootevent_mrd", "WCSimRootEvent", &wcsimrootsuperevent_mrd, bufsize,2);
-  wcsimrooteventbranch_facc = tree->Branch("wcsimrootevent_facc", "WCSimRootEvent", &wcsimrootsuperevent_facc, bufsize,2);
+  if(isANNIE){
+    wcsimrooteventbranch_mrd = tree->Branch("wcsimrootevent_mrd", "WCSimRootEvent", &wcsimrootsuperevent_mrd, bufsize,2);
+    wcsimrooteventbranch_facc = tree->Branch("wcsimrootevent_facc", "WCSimRootEvent", &wcsimrootsuperevent_facc, bufsize,2);
+  }
   
   // Geometry tree - store a copy in each output file (a bit redundant but safer and doesn't take much space)
   geoTree = new TTree("wcsimGeoT","WCSim Geometry Tree");
@@ -129,8 +134,8 @@ void WCSimRunAction::EndOfRunAction(const G4Run* aRun)
   // is taken care of by the file close
 
   delete wcsimrootsuperevent; wcsimrootsuperevent=0;
-  delete wcsimrootsuperevent_mrd; wcsimrootsuperevent_mrd=0;
-  delete wcsimrootsuperevent_facc; wcsimrootsuperevent_facc=0;
+  if(wcsimrootsuperevent_mrd) delete wcsimrootsuperevent_mrd; wcsimrootsuperevent_mrd=0;
+  if(wcsimrootsuperevent_facc) delete wcsimrootsuperevent_facc; wcsimrootsuperevent_facc=0;
   delete wcsimrootgeom; wcsimrootgeom=0;
 
 }
@@ -178,19 +183,10 @@ void WCSimRunAction::FillGeoTree(){
 
   pmtradius = wcsimdetector->GetPMTSize1();
   numpmt = wcsimdetector->GetTotalNumPmts();
-  lappdradius = wcsimdetector->GetLAPPDSize1();
-  numlappd = wcsimdetector->GetTotalNumLAPPDs();
-  mrdpmtradius = wcsimdetector->GetMRDPMTRadius();
-  nummrdpmts = wcsimdetector->GetTotalNumMrdPmts();
-  faccpmtradius = wcsimdetector->GetFACCPMTRadius();
-  numfaccpmts = wcsimdetector->GetTotalNumFaccPmts();
   
   orientation = 0;
   
   wcsimrootgeom-> SetWCPMTRadius(pmtradius);
-  wcsimrootgeom-> SetWCLAPPDRadius(lappdradius);
-  wcsimrootgeom-> SetMRDPMTRadius(mrdpmtradius);
-  wcsimrootgeom-> SetFACCPMTRadius(faccpmtradius);
   wcsimrootgeom-> SetOrientation(orientation);
   
   G4ThreeVector offset1= wcsimdetector->GetWCOffset();
@@ -217,71 +213,92 @@ void WCSimRunAction::FillGeoTree(){
     G4cout << "Mismatch between number of pmts and pmt list in geofile.txt!!"<<G4endl;
     G4cout << fpmts->size() <<" vs. "<< numpmt <<G4endl;
   }
-   
-  std::vector<WCSimLAPPDInfo*> *flappds = wcsimdetector->Get_LAPPDs();
-  WCSimLAPPDInfo *lappd;
-  for (unsigned int i=0;i!=flappds->size();i++){
-    lappd = ((WCSimLAPPDInfo*)flappds->at(i));
-    pos[0] = (Float_t)lappd->Get_transx();
-    pos[1] = (Float_t)lappd->Get_transy();
-    pos[2] = (Float_t)lappd->Get_transz();
-    rot[0] = (Float_t)lappd->Get_orienx();
-    rot[1] = (Float_t)lappd->Get_orieny();
-    rot[2] = (Float_t)lappd->Get_orienz();
-    lappdNo = lappd->Get_lappdid();
-    cylLoc = lappd->Get_cylocation();
-    wcsimrootgeom-> SetLAPPD(i,lappdNo,cylLoc,rot,pos);
-    //G4cout<<"lappd= "<<lappdNo<<" at position: "<<pos[0]<<","<<pos[1]<<","<<pos[2]<<G4endl;
-  }
-  if (flappds->size() != (unsigned int)numlappd) {
-    G4cout << "Mismatch between number of lappds and lappd list in geofile.txt!!"<<G4endl;
-    G4cout << flappds->size() <<" vs. "<< numlappd <<G4endl;
-  }
-  
-  // mrd pmts
-  fpmts = wcsimdetector->Get_MrdPmts();
-  for (unsigned int i=0;i!=fpmts->size();i++){
-    pmt = ((WCSimPmtInfo*)fpmts->at(i));
-    pos[0] = (Float_t)pmt->Get_transx();
-    pos[1] = (Float_t)pmt->Get_transy();
-    pos[2] = (Float_t)pmt->Get_transz();
-    rot[0] = (Float_t)pmt->Get_orienx();
-    rot[1] = (Float_t)pmt->Get_orieny();
-    rot[2] = (Float_t)pmt->Get_orienz();
-    tubeNo = pmt->Get_tubeid();
-    cylLoc = pmt->Get_cylocation();
-    wcsimrootgeom-> SetPMT(i,tubeNo,cylLoc,rot,pos);
-  }
-  if (fpmts->size() != (unsigned int)nummrdpmts) {
-    G4cout << "Mismatch between number of mrd pmts and pmt list in geofile.txt!!"<<G4endl;
-    G4cout << fpmts->size() <<" vs. "<< nummrdpmts <<G4endl;
-  }
-  
-  //facc pmts
-  fpmts = wcsimdetector->Get_FaccPmts();
-  for (unsigned int i=0;i!=fpmts->size();i++){
-    pmt = ((WCSimPmtInfo*)fpmts->at(i));
-    pos[0] = (Float_t)pmt->Get_transx();
-    pos[1] = (Float_t)pmt->Get_transy();
-    pos[2] = (Float_t)pmt->Get_transz();
-    rot[0] = (Float_t)pmt->Get_orienx();
-    rot[1] = (Float_t)pmt->Get_orieny();
-    rot[2] = (Float_t)pmt->Get_orienz();
-    tubeNo = pmt->Get_tubeid();
-    cylLoc = pmt->Get_cylocation();
-    wcsimrootgeom-> SetPMT(i,tubeNo,cylLoc,rot,pos);
-  }
-  if (fpmts->size() != (unsigned int)numfaccpmts) {
-    G4cout << "Mismatch between number of facc pmts and pmt list in geofile.txt!!"<<G4endl;
-    G4cout << fpmts->size() <<" vs. "<< numfaccpmts <<G4endl;
-  }
-
-  // G4cout <<"#lappds: "<<flappds->size() <<" vs. "<< numlappd <<G4endl;
   
   wcsimrootgeom-> SetWCNumPMT(numpmt);
-  wcsimrootgeom-> SetWCNumLAPPD(numlappd);
-  wcsimrootgeom-> SetWCNumMrdPMT(nummrdpmts);
-  wcsimrootgeom-> SetWCNumFaccPMT(numfaccpmts);
+  
+  if(isANNIE){
+    lappdradius = wcsimdetector->GetLAPPDSize1();
+    numlappd = wcsimdetector->GetTotalNumLAPPDs();
+    mrdpmtradius = wcsimdetector->GetMRDPMTRadius();
+    nummrdpmts = wcsimdetector->GetTotalNumMrdPmts();
+    faccpmtradius = wcsimdetector->GetFACCPMTRadius();
+    numfaccpmts = wcsimdetector->GetTotalNumFaccPmts();
+    
+    wcsimrootgeom-> SetWCLAPPDRadius(lappdradius);
+    wcsimrootgeom-> SetMRDPMTRadius(mrdpmtradius);
+    wcsimrootgeom-> SetFACCPMTRadius(faccpmtradius);
+  
+    std::vector<WCSimLAPPDInfo*> *flappds = wcsimdetector->Get_LAPPDs();
+    WCSimLAPPDInfo *lappd;
+    for (unsigned int i=0;i!=flappds->size();i++){
+      lappd = ((WCSimLAPPDInfo*)flappds->at(i));
+      pos[0] = (Float_t)lappd->Get_transx();
+      pos[1] = (Float_t)lappd->Get_transy();
+      pos[2] = (Float_t)lappd->Get_transz();
+      rot[0] = (Float_t)lappd->Get_orienx();
+      rot[1] = (Float_t)lappd->Get_orieny();
+      rot[2] = (Float_t)lappd->Get_orienz();
+      lappdNo = lappd->Get_lappdid();
+      cylLoc = lappd->Get_cylocation();
+      wcsimrootgeom-> SetLAPPD(i,lappdNo,cylLoc,rot,pos);
+      //G4cout<<"lappd= "<<lappdNo<<" at position: "<<pos[0]<<","<<pos[1]<<","<<pos[2]<<G4endl;
+    }
+    if (flappds->size() != (unsigned int)numlappd) {
+      G4cout << "Mismatch between number of lappds and lappd list in geofile.txt!!"<<G4endl;
+      G4cout << flappds->size() <<" vs. "<< numlappd <<G4endl;
+    }
+    
+    // mrd pmts
+    fpmts = wcsimdetector->Get_MrdPmts();
+    for (unsigned int i=0;i!=fpmts->size();i++){
+      pmt = ((WCSimPmtInfo*)fpmts->at(i));
+      pos[0] = (Float_t)pmt->Get_transx();
+      pos[1] = (Float_t)pmt->Get_transy();
+      pos[2] = (Float_t)pmt->Get_transz();
+      rot[0] = (Float_t)pmt->Get_orienx();
+      rot[1] = (Float_t)pmt->Get_orieny();
+      rot[2] = (Float_t)pmt->Get_orienz();
+      tubeNo = pmt->Get_tubeid();
+      cylLoc = pmt->Get_cylocation();
+      wcsimrootgeom-> SetPMT(i,tubeNo,cylLoc,rot,pos);
+    }
+    if (fpmts->size() != (unsigned int)nummrdpmts) {
+      G4cout << "Mismatch between number of mrd pmts and pmt list in geofile.txt!!"<<G4endl;
+      G4cout << fpmts->size() <<" vs. "<< nummrdpmts <<G4endl;
+    }
+    
+    //facc pmts
+    fpmts = wcsimdetector->Get_FaccPmts();
+    for (unsigned int i=0;i!=fpmts->size();i++){
+      pmt = ((WCSimPmtInfo*)fpmts->at(i));
+      pos[0] = (Float_t)pmt->Get_transx();
+      pos[1] = (Float_t)pmt->Get_transy();
+      pos[2] = (Float_t)pmt->Get_transz();
+      rot[0] = (Float_t)pmt->Get_orienx();
+      rot[1] = (Float_t)pmt->Get_orieny();
+      rot[2] = (Float_t)pmt->Get_orienz();
+      tubeNo = pmt->Get_tubeid();
+      cylLoc = pmt->Get_cylocation();
+      wcsimrootgeom-> SetPMT(i,tubeNo,cylLoc,rot,pos);
+    }
+    if (fpmts->size() != (unsigned int)numfaccpmts) {
+      G4cout << "Mismatch between number of facc pmts and pmt list in geofile.txt!!"<<G4endl;
+      G4cout << fpmts->size() <<" vs. "<< numfaccpmts <<G4endl;
+    }
+
+    // G4cout <<"#lappds: "<<flappds->size() <<" vs. "<< numlappd <<G4endl;
+  
+    wcsimrootgeom-> SetWCNumLAPPD(numlappd);
+    wcsimrootgeom-> SetWCNumMrdPMT(nummrdpmts);
+    wcsimrootgeom-> SetWCNumFaccPMT(numfaccpmts);
+  } else {
+    wcsimrootgeom-> SetWCLAPPDRadius(0.);
+    wcsimrootgeom-> SetMRDPMTRadius(0.);
+    wcsimrootgeom-> SetFACCPMTRadius(0.);
+    wcsimrootgeom-> SetWCNumLAPPD(0);
+    wcsimrootgeom-> SetWCNumMrdPMT(0);
+    wcsimrootgeom-> SetWCNumFaccPMT(0);
+  }
   
   // debugging
 //  Float_t thecylrad = wcsimrootgeom->GetWCCylRadius();

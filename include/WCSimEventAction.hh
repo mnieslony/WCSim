@@ -47,6 +47,7 @@ public:
   WCSimRunAction* GetRunAction(){return runAction;}
   void SetDigitizerChoice(G4String digitizer) { DigitizerChoice = digitizer; }
   void SetTriggerChoice  (G4String trigger)   { TriggerChoice   = trigger;   }
+  G4bool isANNIE;
   void CreateNewLAPPDFile();
 
 private:

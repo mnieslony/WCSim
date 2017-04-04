@@ -261,12 +261,14 @@ void WCSimDetectorConstruction::DumpGeometryTableToFile()
   geoFile<<G4endl;
   geoFile <<" PMTs:"<< setw(10)<<totalNumPMTs;
   geoFile << setw(8)<<WCPMTSize << setw(4)  <<G4endl;
-  geoFile <<"LAPPDs:"<< setw(10)<<totalNumLAPPDs;
-  geoFile << setw(8)<<WCLAPPDSize << setw(4)  <<G4endl;
-  geoFile <<"MRDPMTs:"<< setw(10)<<totalNumMrdPMTs;
-  geoFile << setw(8)<<MRDPMTRadius/CLHEP::cm << setw(4)  <<G4endl;
-  geoFile <<"FACCPMTs:"<< setw(10)<<totalNumFaccPMTs;
-  geoFile << setw(8)<<FACCPMTRadius/CLHEP::cm << setw(4)  <<G4endl;
+  if(isANNIE){
+    geoFile <<"LAPPDs:"<< setw(10)<<totalNumLAPPDs;
+    geoFile << setw(8)<<WCLAPPDSize << setw(4)  <<G4endl;
+    geoFile <<"MRDPMTs:"<< setw(10)<<totalNumMrdPMTs;
+    geoFile << setw(8)<<MRDPMTRadius/CLHEP::cm << setw(4)  <<G4endl;
+    geoFile <<"FACCPMTs:"<< setw(10)<<totalNumFaccPMTs;
+    geoFile << setw(8)<<FACCPMTRadius/CLHEP::cm << setw(4)  <<G4endl;
+  }
 
   geoFile << setw(8)<< WCOffset(0)<< setw(8)<<WCOffset(1)<<
     setw(8) << WCOffset(2)<<G4endl;
@@ -297,14 +299,23 @@ void WCSimDetectorConstruction::DumpGeometryTableToFile()
 
     // Figure out if pmt is on top/bottom or barrel
     // print key: 0-top, 1-barrel, 2-bottom
-//    if (pmtOrientation*newTransform.getTranslation() > 0)//veto pmt
-//    {cylLocation=3;}  // disable for annie, some pmts are getting marked as veto...??
-    if (pmtOrientation.y()==1.0)//bottom   //SWITCH Z TO Y FOR ANNIE
-    {cylLocation=2;}
-    else if (pmtOrientation.y()==-1.0)//top     // SWITCH Z TO Y FOR ANNIE
-    {cylLocation=0;}
-    else // barrel
-    {cylLocation=1;}
+    if(!isANNIE){  // disable for annie, some pmts are getting marked as veto...??
+      if (pmtOrientation*newTransform.getTranslation() > 0)//veto pmt
+        {cylLocation=3;}
+      else if (pmtOrientation.z()==1.0)//bottom
+        {cylLocation=2;}
+      else if (pmtOrientation.z()==-1.0)//top
+        {cylLocation=0;}
+      else // barrel
+        {cylLocation=1;}
+    } else {
+      if (pmtOrientation.y()==1.0)//bottom   //SWITCH Z TO Y FOR ANNIE
+        {cylLocation=2;}
+      else if (pmtOrientation.y()==-1.0)//top     // SWITCH Z TO Y FOR ANNIE
+        {cylLocation=0;}
+      else // barrel
+        {cylLocation=1;}
+    }
     
     geoFile.precision(9);
     geoFile <<"PMTs:"<< setw(4) << tubeID 
@@ -330,6 +341,7 @@ void WCSimDetectorConstruction::DumpGeometryTableToFile()
 
   }
   
+  if(isANNIE){
   geoFile<<"<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<\n";
   // Record locations of MRD and FACC PMTs, both to file and to fmrdpmts and ffaccpmts variables
   for (unsigned int i=0;i<fmrdpmts.size();i++){
@@ -451,6 +463,7 @@ void WCSimDetectorConstruction::DumpGeometryTableToFile()
 					      lappdID);
      flappds.push_back(new_lappd);
 
+  }
   }
   geoFile.close();
 
