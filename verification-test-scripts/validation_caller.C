@@ -202,6 +202,16 @@
     c1->cd(3);
     times2->Draw("SAME");
     
+    comparisonfile->cd();
+    c1->cd();
+    cd->SaveAs("comparisonplots.png");
+    hits1->Write();
+    hits2->Write();
+    charge1->Write();
+    charge2->Write();
+    time1->Write();
+    time2->Write();
+    
   } else {
     
     tree->SetEntries(1);

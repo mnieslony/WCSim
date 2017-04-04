@@ -335,7 +335,7 @@ void WCSimPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
     
     
     G4ThreeVector dir  = P.unit();
-    G4double E         = std::sqrt((P.dot(P))+(CLHEP::m*CLHEP::m));
+    G4double E         = std::sqrt((P.dot(P))+(m*m));
 
 //     particleGun->SetParticleEnergy(E);
 //     particleGun->SetParticlePosition(vtx);
