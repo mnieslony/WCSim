@@ -84,13 +84,13 @@ void WCSimWCPMT::Digitize()
   G4String WCCollectionName;
   G4String DigitsCollectionName;
   if(detectorElement=="tank"){
-    DigitsCollectionName="WCDigitizedCollection";
+    DigitsCollectionName="WCDigitizedCollectionPMT";
     WCCollectionName = myDetector->GetIDCollectionName();
   } else if(detectorElement=="mrd"){
-    DigitsCollectionName="WCDigitizedCollection_MRD";
+    DigitsCollectionName="WCDigitizedCollection_MRDPMT";
     WCCollectionName = myDetector->GetMRDCollectionName();
   } else if(detectorElement=="facc"){
-    DigitsCollectionName="WCDigitizedCollection_FACC";
+    DigitsCollectionName="WCDigitizedCollection_FACCPMT";
     WCCollectionName = myDetector->GetFACCCollectionName();
   }
   DigitsCollection = new WCSimWCDigitsCollection (DigitsCollectionName,collectionName[0]);
