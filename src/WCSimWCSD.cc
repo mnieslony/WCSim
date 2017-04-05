@@ -214,8 +214,8 @@ G4bool WCSimWCSD::ProcessHits(G4Step* aStep, G4TouchableHistory*)
     }else if (fdet->GetLAPPD_QE_Method()==3){
       ratio = 1./(1.-0.25);
       photonQE = fdet->GetLAPPDQE(volumeName, wavelength,1,240,660,ratio);
-    }
-  }else{ photonQE=0.3; }
+    }else{ photonQE=0.3; }
+  }
 
   
   if (G4UniformRand() <= photonQE){
