@@ -19,6 +19,7 @@
 
 void WCSimSteppingAction::UserSteppingAction(const G4Step* aStep)
 {
+  return;	// disable while investigating differences in validation plots.
   //DISTORTION must be used ONLY if INNERTUBE or INNERTUBEBIG has been defined in BidoneDetectorConstruction.cc
   
 //  const G4Event* evt = G4RunManager::GetRunManager()->GetCurrentEvent();
