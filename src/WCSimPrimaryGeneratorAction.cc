@@ -682,9 +682,9 @@ void WCSimPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 		nvtxs = 1;
 		npar = -1;                                              // ? not used.
 		for(int i=0; i<nvtxs; i++){                             // we only ever have 1 neutrino intx
-			vtxsvol[i] = -10;                                   // looked up in EndOfEventAction
-			vtxs[i] = G4ThreeVector(-999., -999., -999.);
-			beampdgs[i] = -999;
+			vtxsvol[i] = -10;                               // looked up in EndOfEventAction
+			vtxs[i] = G4ThreeVector(-999., -999., -999.);   // this is the NEUTRINO info
+			beampdgs[i] = -999;                             // NOT THE PRIMARY PARTICLE INFO
 			beamenergies[i] = -999.;
 			beamdirs[i] = G4ThreeVector(-999., -999., -999.);
 			targetpdgs[i] = -999;
