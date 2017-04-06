@@ -18,6 +18,11 @@ tmp/
 #ignore run results
 wcsim.root
 
+#ignore validation files
+verification-test-scripts/annie/wcsimtest.root
+verification-test-scripts/comparisonfile.root
+verification-test-scripts/upstream/wcsimtest.root
+
 #ignore geometry???????????????????
 geofile.txt
 

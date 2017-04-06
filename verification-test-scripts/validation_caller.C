@@ -204,13 +204,13 @@
     
     comparisonfile->cd();
     c1->cd();
-    cd->SaveAs("comparisonplots.png");
+    comparisonfile->SaveAs("comparisonplots.png");
     hits1->Write();
     hits2->Write();
     charge1->Write();
     charge2->Write();
-    time1->Write();
-    time2->Write();
+    times1->Write();
+    times2->Write();
     
   } else {
     

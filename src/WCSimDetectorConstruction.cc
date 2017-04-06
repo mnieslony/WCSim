@@ -72,10 +72,10 @@ WCSimDetectorConstruction::WCSimDetectorConstruction(G4int DetConfig,WCSimTuning
   // Set the default WC geometry.  This can be changed later.
   //-----------------------------------------------------
 
-  SetSuperKGeometry();
+  //SetSuperKGeometry();
   //SetHyperKGeometry();
   //SetANNIEPhase1Geometry();
-  //SetANNIEPhase2Geometry();
+  SetANNIEPhase2Geometry();
 
   //----------------------------------------------------- 
   // Set whether or not Pi0-specific info is saved
