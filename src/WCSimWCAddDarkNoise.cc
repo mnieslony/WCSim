@@ -24,11 +24,8 @@
 #include <cstring>
 
 #ifndef WCSIMWCADDDARKNOISE_VERBOSE
-//#define WCSIMWCADDDARKNOISE_VERBOSE
-#endif
-
-#ifndef NPMTS_VERBOSE
-//#define NPMTS_VERBOSE 10
+#define WCSIMWCADDDARKNOISE_VERBOSE
+#define NPMTS_VERBOSE 10
 #endif
 
 #ifndef HYPER_VERBOSITY
@@ -107,7 +104,7 @@ void WCSimWCAddDarkNoise::AddDarkNoise(){
   WCSimWCDigitsCollection* WCHCPMT =
     (WCSimWCDigitsCollection*)(DigiMan->GetDigiCollection(WCHCID));
 #ifdef HYPER_VERBOSITY
-  if(detectorElement=="mrd"){G4cout<<"WCSimWCAddDarkNoise::AddDarkNoise ☆ retrieved hit collection (WCSimWCDigitsCollection*)"<<thecollectionName<<" which has "<<WCHCPMT->entries()<<" entries"<<G4endl;}
+  if(detectorElement=="tank"){G4cout<<"WCSimWCAddDarkNoise::AddDarkNoise ☆ retrieved hit collection (WCSimWCDigitsCollection*)"<<thecollectionName<<" which has "<<WCHCPMT->entries()<<" entries"<<G4endl;}
 #endif
   G4String thetriggertype="";
   if(detectorElement=="mrd"){	// check to see if this detector element uses the tank for triggering
@@ -125,7 +122,7 @@ void WCSimWCAddDarkNoise::AddDarkNoise(){
     WCHCPMT_tank = (WCSimWCDigitsCollection*)(DigiMan->GetDigiCollection(WCHCID_tank));
         (WCSimWCDigitsCollection*)(DigiMan->GetDigiCollection(WCHCID));
 #ifdef HYPER_VERBOSITY
-        if(detectorElement=="mrd"){ G4cout<<"WCSimWCAddDarkNoise::AddDarkNoise ☆ retrieved hit collection (WCSimWCDigitsCollection*)WCRawPMTSignalCollection for finding dark noise windows, which has "<<WCHCPMT_tank->entries()<<" entries"<<G4endl;}
+        if(detectorElement=="tank"){ G4cout<<"WCSimWCAddDarkNoise::AddDarkNoise ☆ retrieved hit collection (WCSimWCDigitsCollection*)WCRawPMTSignalCollection for finding dark noise windows, which has "<<WCHCPMT_tank->entries()<<" entries"<<G4endl;}
 #endif
   }
   
@@ -136,7 +133,7 @@ void WCSimWCAddDarkNoise::AddDarkNoise(){
         WCSimWCAddDarkNoise* WCDNM_tank = (WCSimWCAddDarkNoise*)DigiMan->FindDigitizerModule("WCDarkNoise");
         int DarkWindow_tank = WCDNM_tank->GetDarkWindow();
 #ifdef HYPER_VERBOSITY
-        if(detectorElement=="mrd"){
+        if(detectorElement=="tank"){
         G4cout<<"WCSimWCAddDarkNoise::AddDarkNoise ☆ calling FindDarkNoiseRanges() with tank raw collection and darkwindow size"<<G4endl;}
 #endif
         FindDarkNoiseRanges(WCHCPMT_tank,DarkWindow_tank);
@@ -151,13 +148,13 @@ void WCSimWCAddDarkNoise::AddDarkNoise(){
     //loop over pairs which represent ranges.
     //Add noise to those ranges
 #ifdef HYPER_VERBOSITY
-    if(detectorElement=="mrd"){
+    if(detectorElement=="tank"){
     G4cout<<"WCSimWCAddDarkNoise::AddDarkNoise ☆ adding dark noise hits in "<<result.size()<<" window(s) around found digits."<<G4endl;}
 #endif
     int windowfordarknoise=0;
     for(std::vector<std::pair<float, float> >::iterator it2 = result.begin(); it2 != result.end(); it2++) {
 #ifdef HYPER_VERBOSITY
-      if(detectorElement=="mrd"){
+      if(detectorElement=="tank"){
       G4cout<<"WCSimWCAddDarkNoise::AddDarkNoise ☆ adding dark noise in window "<<windowfordarknoise<<G4endl; windowfordarknoise++;}
 #endif
       AddDarkNoiseBeforeDigi(WCHCPMT,it2->first,it2->second);
@@ -175,7 +172,7 @@ void WCSimWCAddDarkNoise::AddDarkNoiseBeforeDigi(WCSimWCDigitsCollection* WCHCPM
 
     G4int number_entries = WCHCPMT->entries();
 #ifdef HYPER_VERBOSITY
-    if(detectorElement=="mrd"){
+    if(detectorElement=="tank"){
     G4cout<<"WCSimWCAddDarkNoise::AddDarkNoiseBeforeDigi ☆ adding dark noise to collection of "<<number_entries<<" entries"<<G4endl;}
 #endif
     G4int thenum_pmts;
@@ -242,7 +239,7 @@ void WCSimWCAddDarkNoise::AddDarkNoiseBeforeDigi(WCSimWCDigitsCollection* WCHCPM
     }
     WCSimWCPMT* WCPMT = (WCSimWCPMT*)DMman->FindDigitizerModule(thewcpmtname);
 #ifdef HYPER_VERBOSITY
-    if(detectorElement=="mrd"){G4cout<<"WCSimWCAddDarkNoise::AddDarkNoiseBeforeDigi ☆ getting (WCSimWCPMT*)"<<thewcpmtname<<G4endl;}
+    if(detectorElement=="tank"){G4cout<<"WCSimWCAddDarkNoise::AddDarkNoiseBeforeDigi ☆ getting (WCSimWCPMT*)"<<thewcpmtname<<G4endl;}
 #endif
    
     //average number of PMTs with noise
@@ -260,7 +257,7 @@ void WCSimWCAddDarkNoise::AddDarkNoiseBeforeDigi(WCSimWCDigitsCollection* WCHCPM
       thecollectionName="WCRawPMTSignalCollection_FACC";
     }
 #ifdef HYPER_VERBOSITY
-    if(detectorElement=="mrd"){G4cout<<"WCSimWCAddDarkNoise::AddDarkNoiseBeforeDigi ☆ adding "<<nnoispmt<<" dark hits to "<<thecollectionName<<G4endl;}
+    if(detectorElement=="tank"){G4cout<<"WCSimWCAddDarkNoise::AddDarkNoiseBeforeDigi ☆ adding "<<nnoispmt<<" dark hits to "<<thecollectionName<<G4endl;}
 #endif
     
 #ifdef WCSIMWCADDDARKNOISE_VERBOSE
@@ -292,7 +289,7 @@ void WCSimWCAddDarkNoise::AddDarkNoiseBeforeDigi(WCSimWCDigitsCollection* WCHCPM
 	    //G4cout<<"1 "<<(G4LogicalVolumeStore::GetInstance()->GetVolume("glassFaceWCPMT"))->GetName()<<"\n";
 	    //G4cout<<"2 "<<(*WCHCPMT)[0]->GetLogicalVolume()->GetName()<<"\n";
 	    ahit->SetTrackID(-1);
-	    ahit->SetParentID(PMTindex[noise_pmt], -1);
+	    ahit->SetParentID(PMTindex[noise_pmt], -555);	//-1
 	    // Set the position and rotation of the pmt
 	    Float_t hit_pos[3];
 	    Float_t hit_rot[3];
@@ -331,7 +328,7 @@ void WCSimWCAddDarkNoise::AddDarkNoiseBeforeDigi(WCSimWCDigitsCollection* WCHCPM
 	  (*WCHCPMT)[ list[noise_pmt]-1 ]->SetPe(PMTindex[noise_pmt],pe);
 	  (*WCHCPMT)[ list[noise_pmt]-1 ]->SetTime(PMTindex[noise_pmt],current_time);
 	  (*WCHCPMT)[ list[noise_pmt]-1 ]->SetPreSmearTime(PMTindex[noise_pmt],current_time); //presmear==postsmear for dark noise
-	  (*WCHCPMT)[ list[noise_pmt]-1 ]->SetParentID(PMTindex[noise_pmt],-1);
+	  (*WCHCPMT)[ list[noise_pmt]-1 ]->SetParentID(PMTindex[noise_pmt],-555);	//-1
 	  PMTindex[noise_pmt]++;
 #ifdef WCSIMWCADDDARKNOISE_VERBOSE
 	  if(noise_pmt < NPMTS_VERBOSE)
@@ -363,7 +360,7 @@ void WCSimWCAddDarkNoise::FindDarkNoiseRanges(WCSimWCDigitsCollection* WCHCPMT, 
     }
   }
 #ifdef HYPER_VERBOSITY
-  if(detectorElement=="mrd"){
+  if(detectorElement=="tank"){
   G4cout<<"WCSimWCAddDarkNoise::FindDarkNoiseRanges ☆ "<<ranges.size()<<" windows around digits found before pruning."<<G4endl;}
 #endif
   //we need to ensure that the ranges found above are sorted first

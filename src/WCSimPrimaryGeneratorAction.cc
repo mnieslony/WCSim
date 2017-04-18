@@ -31,7 +31,7 @@
 #endif
 
 // when loading dirt primaries, skip entries that are from upstream rock interactions. 
-#ifdef ONLY_TANK_EVENTS
+#ifndef ONLY_TANK_EVENTS
 #define ONLY_TANK_EVENTS
 #endif
 
@@ -380,6 +380,7 @@ void WCSimPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 		loadbeamentry:
 		if(loadNewPrimaries){ LoadNewPrimaries(); }	// update TChain if a new file is loaded by messenger
 		//inputdata has already had tree loaded at the end of last event's GeneratePrimaries call
+		//localEntry will already be the value of the NEXT entry
 		metadata->LoadTree(inputEntry);
 		
 		Int_t nextTreeNumber = inputdata->GetTreeNumber();
@@ -439,6 +440,22 @@ void WCSimPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 		genieentryBranch->GetEntry(localEntry);
 		nufluxfilenameBranch->GetEntry(localEntry);
 		
+#ifdef ONLY_TANK_EVENTS
+		if(strcmp(numatval,"TankWater")!=0){ // nu intx not in tank
+		G4cout<<"---------------SKIPPING NON-TANK ENTRY----------------"<<G4endl;
+		inputEntry++; 
+		localEntry = inputdata->LoadTree(inputEntry);
+		if(localEntry<0){
+			// get the pointer to the UI manager
+			G4UImanager* UI = G4UImanager::GetUIpointer();
+			UI->ApplyCommand("/run/abort 0");	// abort without processing current event
+			G4cout<<"@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#"<<G4endl;
+			G4cout<<"@#@#@#@#@#@#@#@#@#@ REACHED END OF INPUT FILE! #@#@#@#@#@#@#@#@#@#@#@#"<<G4endl;
+			G4cout<<"@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#"<<G4endl;
+		} else { goto loadbeamentry; } // load the next entry
+		}
+#endif
+		
 #ifndef NO_GENIE
 		Long64_t genielocalEntry = geniedata->LoadTree(genieentrybranchval);
 		// load the appropriate genie entry. we assume 1:1 correspondance of genie:g4dirt files.
@@ -459,10 +476,6 @@ void WCSimPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 		G4cout<<"The origin interaction was a "<<(parttype->GetParticleName())<<" at ("<<nuvtxtval<<","<<nuvtxxval<<","<<nuvtxyval<<","<<nuvtxzval<<") in "<<nupvval<<" "<<numatval<<G4endl;
 		G4cout<<"This entry has "<<ntankbranchval<<" primaries"<<G4endl;
 		nvtxs=ntankbranchval;
-		
-#ifdef ONLY_TANK_EVENTS
-		if(strcmp(numatval,"TankWater")!=0){ inputEntry++; goto: loadbeamentry; } // nu intx not in tank
-#endif
 		
 		if(vtxxbranchval){delete[] vtxxbranchval;}
 		if(vtxybranchval){delete[] vtxybranchval;}
@@ -526,7 +539,19 @@ void WCSimPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 		for(int i=0;i<ntankbranchval;i++){
 			if(nuprimarybranchval[i]==1){ primariesinthisentry=true; break; }
 		}
-		if(!primariesinthisentry){ inputEntry++; goto: loadbeamentry; } // not genie primaries...
+		if(!primariesinthisentry){ // not genie primaries... (this shouldn't happen)
+		G4cout<<"---------------SKIPPING NON-TANK ENTRY----------------"<<G4endl;
+		inputEntry++;
+		localEntry = inputdata->LoadTree(inputEntry);
+		if(localEntry<0){
+			// get the pointer to the UI manager
+			G4UImanager* UI = G4UImanager::GetUIpointer();
+			UI->ApplyCommand("/run/abort 0");	// abort without processing current event
+			G4cout<<"@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#"<<G4endl;
+			G4cout<<"@#@#@#@#@#@#@#@#@#@ REACHED END OF INPUT FILE! #@#@#@#@#@#@#@#@#@#@#@#"<<G4endl;
+			G4cout<<"@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#"<<G4endl;
+		} else { goto loadbeamentry; } // load the next entry
+		}
 #endif
 		// First the genie information (largely unused as not currently stored in wcsim output)
 		// ===========================
