@@ -691,10 +691,10 @@ void WCSimEventAction::EndOfEventAction(const G4Event* evt)
      vtxs[u]      = generatorAction->GetVtx(u);
      //vtxsvol[u]   = WCSimEventFindStartingVolume(vtxs[u]);
      vtxsvol[u]   = WCSimEventFindVertexVolume(vtxs[u]);
-     jhfNtuple.vtxs[u][0] = vtxs[u][0]/cm;    // interaction vertex
-     jhfNtuple.vtxs[u][1] = vtxs[u][1]/cm;    // interaction vertex
-     jhfNtuple.vtxs[u][2] = vtxs[u][2]/cm;    // interaction vertex
-     jhfNtuple.vtxsvol[u] = vtxsvol[u];       // looked up at start of EndOfEventAction
+     jhfNtuple.vtxs[u][0] = vtxs[u][0]/CLHEP::cm;    // interaction vertex
+     jhfNtuple.vtxs[u][1] = vtxs[u][1]/CLHEP::cm;    // interaction vertex
+     jhfNtuple.vtxs[u][2] = vtxs[u][2]/CLHEP::cm;    // interaction vertex
+     jhfNtuple.vtxsvol[u] = vtxsvol[u];              // looked up at start of EndOfEventAction
      /* !! jhfNtuple.vtxs & jhfNtuple.vtxsvol arrays have half as many elements as others in jhfNtuple!! */
      
      /////////////////////////////////
@@ -722,12 +722,12 @@ void WCSimEventAction::EndOfEventAction(const G4Event* evt)
      jhfNtuple.pdir[npar][0] = beamenergy*beamdir[0]; // momentum-vector 
      jhfNtuple.pdir[npar][1] = beamenergy*beamdir[1]; // momentum-vector 
      jhfNtuple.pdir[npar][2] = beamenergy*beamdir[2]; // momentum-vector 
-     jhfNtuple.start[npar][0] = 0./cm;                // start is BNB target
-     jhfNtuple.start[npar][0] = 0./cm;                // start is BNB target
-     jhfNtuple.start[npar][0] = 0./cm;                // start is BNB target
-     jhfNtuple.stop[npar][0] = vtxs[u][0]/cm;         // stopping point (neutrino intx vertex)
-     jhfNtuple.stop[npar][1] = vtxs[u][1]/cm;         // stopping point (neutrino intx vertex)
-     jhfNtuple.stop[npar][2] = vtxs[u][2]/cm;         // stopping point (neutrino intx vertex)
+     jhfNtuple.start[npar][0] = 0./CLHEP::cm;         // start is BNB target
+     jhfNtuple.start[npar][0] = 0./CLHEP::cm;         // start is BNB target
+     jhfNtuple.start[npar][0] = 0./CLHEP::cm;         // start is BNB target
+     jhfNtuple.stop[npar][0] = vtxs[u][0]/CLHEP::cm;  // stopping point (neutrino intx vertex)
+     jhfNtuple.stop[npar][1] = vtxs[u][1]/CLHEP::cm;  // stopping point (neutrino intx vertex)
+     jhfNtuple.stop[npar][2] = vtxs[u][2]/CLHEP::cm;  // stopping point (neutrino intx vertex)
      jhfNtuple.parent[npar] = 0;                      // primary
 
      npar++;
@@ -772,9 +772,9 @@ void WCSimEventAction::EndOfEventAction(const G4Event* evt)
      jhfNtuple.pdir[npar][0]  = targetpmag*targetdir[0];        // momentum-vector 
      jhfNtuple.pdir[npar][1]  = targetpmag*targetdir[1];        // momentum-vector 
      jhfNtuple.pdir[npar][2]  = targetpmag*targetdir[2];        // momentum-vector 
-     jhfNtuple.start[npar][0] = vtxs[u][0]/cm;                  // starting point (neutrino intx vertex)
-     jhfNtuple.start[npar][1] = vtxs[u][1]/cm;                  // starting point (neutrino intx vertex)
-     jhfNtuple.start[npar][2] = vtxs[u][2]/cm;                  // starting point (neutrino intx vertex)
+     jhfNtuple.start[npar][0] = vtxs[u][0]/CLHEP::cm;           // starting point (neutrino intx vertex)
+     jhfNtuple.start[npar][1] = vtxs[u][1]/CLHEP::cm;           // starting point (neutrino intx vertex)
+     jhfNtuple.start[npar][2] = vtxs[u][2]/CLHEP::cm;           // starting point (neutrino intx vertex)
      jhfNtuple.stop[npar][0]  = 0./cm;                          // stopping point (for target nucleus, N/A)
      jhfNtuple.stop[npar][1]  = 0./cm;                          // stopping point (for target nucleus, N/A)
      jhfNtuple.stop[npar][2]  = 0./cm;                          // stopping point (for target nucleus, N/A)

@@ -472,7 +472,7 @@ void WCSimPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 #endif
 		
 		G4ParticleDefinition* parttype = particleTable->FindParticle(nupdgval);
-		TLorentzVector neutrinovertex(nuvtxtval*1000000000., nuvtxxval*100., nuvtxyval*100., nuvtxzval*100.);	// position in m, times in s, convert to cm and ns
+		TLorentzVector neutrinovertex(nuvtxtval*CLHEP::s, nuvtxxval*CLHEP::m, nuvtxyval*CLHEP::m, nuvtxzval*CLHEP::m);	// position in m, times in s, convert to cm and ns
 		G4cout<<"The origin interaction was a "<<(parttype->GetParticleName())<<" at ("<<nuvtxtval*1000000000.<<","<<nuvtxxval*100.<<","<<nuvtxyval*100.<<","<<nuvtxzval*100.<<")[ns, cm] in "<<nupvval<<" "<<numatval<<G4endl;
 		G4cout<<"This entry has "<<ntankbranchval<<" primaries"<<G4endl;
 		nvtxs=ntankbranchval;
@@ -662,7 +662,7 @@ void WCSimPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 		for(int i=0; i<nvtxs; i++){                             // we only ever have 1 neutrino intx
 			vtxsvol[i] = -10;                               // looked up in EndOfEventAction
 			// neutrino vertices are stored in m not cm
-			vtxs[i] = G4ThreeVector(nuvtxxval*100., nuvtxyval*100., nuvtxzval*100.);
+			vtxs[i] = G4ThreeVector(nuvtxxval*CLHEP::m, nuvtxyval*CLHEP::m, nuvtxzval*CLHEP::m);
 			beampdgs[i] = probepdg;
 			beamenergies[i] = probeenergy;
 			targetpdgs[i] = targetnucleuspdg;
@@ -699,10 +699,10 @@ void WCSimPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 		//G4cout<<"Looping over primaries"<<G4endl;
 		for(int i=0;i<ntankbranchval;i++){
 			//G4cout<<"Loading details of primary "<<i<<G4endl;
-			vtxxval=vtxxbranchval[i]*cm;
-			vtxyval=vtxybranchval[i]*cm;
-			vtxzval=vtxzbranchval[i]*cm;
-			vtxtval=vtxtbranchval[i]*ns;
+			vtxxval=vtxxbranchval[i]*CLHEP::cm;
+			vtxyval=vtxybranchval[i]*CLHEP::cm;
+			vtxzval=vtxzbranchval[i]*CLHEP::cm;
+			vtxtval=vtxtbranchval[i]*CLHEP::ns;
 			pxval=pxbranchval[i]*GeV;
 			pyval=pybranchval[i]*GeV;
 			pzval=pzbranchval[i]*GeV;
