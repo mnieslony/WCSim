@@ -56,6 +56,13 @@ public: // with description
   inline G4String GetCreatorProcessName() const {
     return creatorProcess;
   }
+  inline G4String GetCurrentProcess() const {
+    return thisStepsProcess;
+  }
+  inline G4String GetLastProcess() const {
+    return lastStepsProcess;
+  }
+  
   
   inline G4double GetGlobalTime() const
   { return globalTime; }
@@ -107,6 +114,9 @@ public: // with description
   G4bool SaveIt;
   G4String creatorProcess;
   G4double                  globalTime;
+  
+  G4String                   thisStepsProcess;
+  G4String                   lastStepsProcess;
 };
 
 /***            TEMP  : M FECHNER ***********

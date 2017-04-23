@@ -193,6 +193,14 @@
 #/gps/ene/intercept 1
 ## disable adjusting NDigits trigger for average occupancy, since noise is disabled for Bonsai
 #/DAQ/TriggerNDigits/AdjustForNoise false
+## disable dark noise for bonsai. Need to set detectorelement first!
+#/DarkRate/SetDetectorElement tank
+#/DarkRate/SetDarkRate 0 kHz
+## shouldn't be necessary - bonsai only looks at tank events...
+#/DarkRate/SetDetectorElement mrd
+#/DarkRate/SetDarkRate 0 kHz
+#/DarkRate/SetDetectorElement facc
+#/DarkRate/SetDarkRate 0 kHz
 
 # set up visualization view for debugging photons - 
 # should be associated with changes store in branch photonbouncedebug

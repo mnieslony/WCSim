@@ -472,8 +472,8 @@ void WCSimPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 #endif
 		
 		G4ParticleDefinition* parttype = particleTable->FindParticle(nupdgval);
-		TLorentzVector neutrinovertex(nuvtxtval, nuvtxxval, nuvtxyval, nuvtxzval);
-		G4cout<<"The origin interaction was a "<<(parttype->GetParticleName())<<" at ("<<nuvtxtval<<","<<nuvtxxval<<","<<nuvtxyval<<","<<nuvtxzval<<") in "<<nupvval<<" "<<numatval<<G4endl;
+		TLorentzVector neutrinovertex(nuvtxtval*1000000000., nuvtxxval*100., nuvtxyval*100., nuvtxzval*100.);	// position in m, times in s, convert to cm and ns
+		G4cout<<"The origin interaction was a "<<(parttype->GetParticleName())<<" at ("<<nuvtxtval*1000000000.<<","<<nuvtxxval*100.<<","<<nuvtxyval*100.<<","<<nuvtxzval*100.<<")[ns, cm] in "<<nupvval<<" "<<numatval<<G4endl;
 		G4cout<<"This entry has "<<ntankbranchval<<" primaries"<<G4endl;
 		nvtxs=ntankbranchval;
 		
@@ -540,7 +540,7 @@ void WCSimPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 			if(nuprimarybranchval[i]==1){ primariesinthisentry=true; break; }
 		}
 		if(!primariesinthisentry){ // not genie primaries... (this shouldn't happen)
-		G4cout<<"---------------SKIPPING NON-TANK ENTRY----------------"<<G4endl;
+		//G4cout<<"---------------SKIPPING NON-TANK ENTRY----------------"<<G4endl;
 		inputEntry++;
 		localEntry = inputdata->LoadTree(inputEntry);
 		if(localEntry<0){
@@ -661,7 +661,8 @@ void WCSimPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 		npar = -1;                                              // ? not used.
 		for(int i=0; i<nvtxs; i++){                             // we only ever have 1 neutrino intx
 			vtxsvol[i] = -10;                               // looked up in EndOfEventAction
-			vtxs[i] = G4ThreeVector(nuvtxxval, nuvtxyval, nuvtxzval);
+			// neutrino vertices are stored in m not cm
+			vtxs[i] = G4ThreeVector(nuvtxxval*100., nuvtxyval*100., nuvtxzval*100.);
 			beampdgs[i] = probepdg;
 			beamenergies[i] = probeenergy;
 			targetpdgs[i] = targetnucleuspdg;

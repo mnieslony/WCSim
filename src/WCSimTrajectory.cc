@@ -18,7 +18,7 @@ WCSimTrajectory::WCSimTrajectory()
   :  positionRecord(0), fTrackID(0), fParentID(0),
      PDGEncoding( 0 ), PDGCharge(0.0), ParticleName(""),
      initialMomentum( G4ThreeVector() ),SaveIt(false),creatorProcess(""),
-     globalTime(0.0)
+     globalTime(0.0),thisStepsProcess(""),lastStepsProcess("")
 {;}
 
 WCSimTrajectory::WCSimTrajectory(const G4Track* aTrack)
@@ -45,9 +45,14 @@ WCSimTrajectory::WCSimTrajectory(const G4Track* aTrack)
     {
       const G4VProcess* tempproc = aTrack->GetCreatorProcess();
       creatorProcess = tempproc->GetProcessName();
+      thisStepsProcess=creatorProcess;
     }
   else 
-    creatorProcess = "";
+    {
+      creatorProcess = "";
+      thisStepsProcess=creatorProcess;
+    }
+  lastStepsProcess="";
 }
 
 WCSimTrajectory::WCSimTrajectory(WCSimTrajectory & right):G4VTrajectory()
@@ -64,6 +69,8 @@ WCSimTrajectory::WCSimTrajectory(WCSimTrajectory & right):G4VTrajectory()
   stoppingVolume = right.stoppingVolume;
   SaveIt = right.SaveIt;
   creatorProcess = right.creatorProcess;
+  thisStepsProcess = right.thisStepsProcess;
+  lastStepsProcess = right.lastStepsProcess;
 
   for(size_t i=0;i<right.positionRecord->size();i++)
   {
@@ -175,6 +182,17 @@ void WCSimTrajectory::AppendStep(const G4Step* aStep)
 {
   positionRecord->push_back( new G4TrajectoryPoint(aStep->GetPostStepPoint()->
 						   GetPosition() ));
+  lastStepsProcess=thisStepsProcess;
+  G4String theProcess;
+  if(aStep->GetPostStepPoint()->GetProcessDefinedStep() != 0){
+    if(aStep->GetPostStepPoint()->GetProcessDefinedStep()->GetProcessName()!=""){
+      thisStepsProcess = aStep->GetPostStepPoint()->GetProcessDefinedStep()->GetProcessName();
+    } else {
+      thisStepsProcess = "MysteryProcess";
+    }
+  } else {
+    thisStepsProcess="Undefined";
+  }
 }
 
 G4ParticleDefinition* WCSimTrajectory::GetParticleDefinition()

@@ -19,7 +19,7 @@
 
 void WCSimSteppingAction::UserSteppingAction(const G4Step* aStep)
 {
-  return;	// disable while investigating differences in validation plots.
+  //return;    // disable while investigating differences in validation plots.
   //DISTORTION must be used ONLY if INNERTUBE or INNERTUBEBIG has been defined in BidoneDetectorConstruction.cc
   
 //  const G4Event* evt = G4RunManager::GetRunManager()->GetCurrentEvent();
@@ -71,7 +71,7 @@ void WCSimSteppingAction::UserSteppingAction(const G4Step* aStep)
    //G4cout<<"optical photon StepStatus is          "<<thePostPoint->GetStepStatus()<<G4endl
    //      <<"               fExpectedNextStatus is "<<fExpectedNextStatus<<G4endl
    //      <<"               boundaryStatus is      "<<boundary->GetStatus()<<G4endl;
-   if ( track->GetCurrentStepNumber() > 500 ){
+   if ( track->GetCurrentStepNumber() > 50000 ){   // 50k steps: sufficiently generous?
      track->SetTrackStatus(fStopAndKill); 
      G4cout<<"killing broken photon "<<++numbrokenphotons<<G4endl;
      return;
@@ -93,6 +93,7 @@ void WCSimSteppingAction::UserSteppingAction(const G4Step* aStep)
           FatalException,ed,
           "Something is wrong with the surface normal or geometry");*/
           track->SetTrackStatus(fStopAndKill);
+          fExpectedNextStatus=Undefined;
           return;
         }
       }

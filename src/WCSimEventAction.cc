@@ -1209,8 +1209,8 @@ void WCSimEventAction::FillRootEvent(G4int event_id,
   std::set<int> pionList;
   std::set<int> antipionList;
   std::set<int> primaryList;
-  std::set<int> neutronlist;
-  std::set<int> protonlist;
+  std::set<int> neutronList;
+  std::set<int> protonList;
 
   // Pi0 specific variables
   Float_t pi0Vtx[3];
@@ -1240,14 +1240,37 @@ void WCSimEventAction::FillRootEvent(G4int event_id,
     if ( trj->GetPDGEncoding() == -13 ) antimuonList.insert(trj->GetTrackID());
     if ( trj->GetPDGEncoding() == 211 ) pionList.insert(trj->GetTrackID());
     if ( trj->GetPDGEncoding() == -211 ) antipionList.insert(trj->GetTrackID());
-    if ( trj->GetPDGEncoding() == 2212 ) protonlist.insert(trj->GetTrackID());
-    if ( trj->GetPDGEncoding() == 2112 ) neutronlist.insert(trj->GetTrackID());
+    if ( trj->GetPDGEncoding() == 2212 ) protonList.insert(trj->GetTrackID());
+    if ( trj->GetPDGEncoding() == 2112 ) neutronList.insert(trj->GetTrackID());
 
     if( trj->GetParentID() == 0 ) primaryList.insert(trj->GetTrackID());
 
     // Process primary tracks or the secondaries from pizero or muons...
 
-    if ( trj->GetSaveFlag() )
+    // we want to record tracks for neutrons. But we don't want many tracks representing the same neutron,
+    // which geant has a habit of doing. so, only record neutrons with an end process of ncapture. 
+    // we may need to override scintillation process, as it can sometimes obscure the true end process.
+    // (G4Scintillation is always invoked, and is applied to all particles except photons and short lived)
+    bool ignoreneutron=false;
+    if(isANNIE){
+      G4int trajectorypdg = trj->GetPDGEncoding();
+      if(trajectorypdg==2112){
+        G4String theProcess = trj->GetCurrentProcess();
+        G4ThreeVector StopVtx = trj->GetStoppingPoint();
+        G4int stopvolint= WCSimEventFindVertexVolume(StopVtx);
+        if(theProcess=="Scintillation"&&(stopvolint==10)){   // fake "scintillation" process.
+          theProcess = trj->GetLastProcess();
+        }
+        if(theProcess!="nCapture"||stopvolint!=10){
+          ignoreneutron=true;
+          //G4cout<<"NOT STORING NEUTRON TRACK, STOPPED IN VOL INDEX "<<stopvolint<<" WITH PROCESS "<<theProcess<<G4endl;
+        } else {
+          //G4cout<<"STORING NEUTRON TRACK, STOPPED IN VOL INDEX "<<stopvolint<<" WITH PROCESS "<<theProcess<<", created with process "<<trj->GetCreatorProcessName()<<G4endl;
+        }
+      }
+    }
+    
+    if ( trj->GetSaveFlag() && !ignoreneutron)
     {
       // initial point of the trajectory
       G4TrajectoryPoint* aa =   (G4TrajectoryPoint*)trj->GetPoint(0) ;   
@@ -1293,8 +1316,12 @@ void WCSimEventAction::FillRootEvent(G4int event_id,
 	parentType = -211;
       } else if (pionList.count(trj->GetParentID()) ) {
 	parentType = 211;
+//      } else if (protonList.count(trj->GetParentID()) ) {
+//	parentType = 2212;
+//      } else if (neutronList.count(trj->GetParentID()) ) {
+//	parentType = 2112;
       } else if (primaryList.count(trj->GetParentID()) ) {
-	parentType = 1;	// 	secondary - it's parent is in the list of primaries. Note this might not work.
+	parentType = 1;    // secondary - it's parent is in the list of primaries. Note this might not work.
 	// because unless it's parent has been processed first, it won't yet be in the list of primaries.
       } else {  // no identified parent, but not a primary
 	parentType = 999;
