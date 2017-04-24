@@ -355,17 +355,21 @@ void WCSimPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
       G4ThreeVector P   =anEvent->GetPrimaryVertex()->GetPrimary()->GetMomentum();
       G4ThreeVector vtx =anEvent->GetPrimaryVertex()->GetPosition();
       G4int pdg         =anEvent->GetPrimaryVertex()->GetPrimary()->GetPDGcode();
+      G4double m       =anEvent->GetPrimaryVertex()->GetPrimary()->GetMass();
       
       G4ThreeVector dir  = P.unit();
-      G4double E         = std::sqrt((P.dot(P)));
+      G4double E         = std::sqrt((P.dot(P))+(m*m));
       
       SetVtx(vtx);	// required to store the true vertex for Bonsai!
       SetBeamEnergy(E);
       SetBeamDir(dir);
       SetBeamPDG(pdg);
       G4ParticleDefinition* parttype = particleTable->FindParticle(pdg);
+      G4String particlename;
+      (parttype) ? particlename=parttype->GetParticleName() : particlename=std::to_string(pdg);
       
-      G4cout<<"generating 'laser' "<<E/GeV<<"GeV "<<parttype->GetParticleName()
+      
+      G4cout<<"generating 'laser' "<<E/GeV<<"GeV "<<particlename
             <<" event at ("<<vtx.x()/cm<<","<<vtx.y()/cm<<","<<vtx.z()/cm<<")";
       G4Navigator* theNavigator = G4TransportationManager::GetTransportationManager()->GetNavigatorForTracking();
       G4VPhysicalVolume* primaryPV = theNavigator->LocateGlobalPointAndSetup(vtx);
