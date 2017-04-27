@@ -479,7 +479,6 @@ void WCSimPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 		TLorentzVector neutrinovertex(nuvtxtval*CLHEP::s, nuvtxxval*CLHEP::m, nuvtxyval*CLHEP::m, nuvtxzval*CLHEP::m);	// position in m, times in s, convert to cm and ns
 		G4cout<<"The origin interaction was a "<<(parttype->GetParticleName())<<" at ("<<nuvtxtval*1000000000.<<","<<nuvtxxval*100.<<","<<nuvtxyval*100.<<","<<nuvtxzval*100.<<")[ns, cm] in "<<nupvval<<" "<<numatval<<G4endl;
 		G4cout<<"This entry has "<<ntankbranchval<<" primaries"<<G4endl;
-		nvtxs=ntankbranchval;
 		
 		if(vtxxbranchval){delete[] vtxxbranchval;}
 		if(vtxybranchval){delete[] vtxybranchval;}
@@ -544,17 +543,17 @@ void WCSimPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 			if(nuprimarybranchval[i]==1){ primariesinthisentry=true; break; }
 		}
 		if(!primariesinthisentry){ // not genie primaries... (this shouldn't happen)
-		//G4cout<<"---------------SKIPPING NON-TANK ENTRY----------------"<<G4endl;
-		inputEntry++;
-		localEntry = inputdata->LoadTree(inputEntry);
-		if(localEntry<0){
-			// get the pointer to the UI manager
-			G4UImanager* UI = G4UImanager::GetUIpointer();
-			UI->ApplyCommand("/run/abort 0");	// abort without processing current event
-			G4cout<<"@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#"<<G4endl;
-			G4cout<<"@#@#@#@#@#@#@#@#@#@ REACHED END OF INPUT FILE! #@#@#@#@#@#@#@#@#@#@#@#"<<G4endl;
-			G4cout<<"@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#"<<G4endl;
-		} else { goto loadbeamentry; } // load the next entry
+			//G4cout<<"---------------SKIPPING NON-TANK ENTRY----------------"<<G4endl;
+			inputEntry++;
+			localEntry = inputdata->LoadTree(inputEntry);
+			if(localEntry<0){
+				// get the pointer to the UI manager
+				G4UImanager* UI = G4UImanager::GetUIpointer();
+				UI->ApplyCommand("/run/abort 0");	// abort without processing current event
+				G4cout<<"@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#"<<G4endl;
+				G4cout<<"@#@#@#@#@#@#@#@#@#@ REACHED END OF INPUT FILE! #@#@#@#@#@#@#@#@#@#@#@#"<<G4endl;
+				G4cout<<"@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#"<<G4endl;
+			} else { goto loadbeamentry; } // load the next entry
 		}
 #endif
 		// First the genie information (largely unused as not currently stored in wcsim output)
@@ -727,7 +726,12 @@ void WCSimPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 			G4VPhysicalVolume* primaryPV = theNavigator->LocateGlobalPointAndSetup(thevtx); 
 			G4cout<<" in "<< primaryPV->GetName()<<G4endl;
 			
-			particleGun->SetParticleDefinition( particleTable->FindParticle(pdgval) );	//FindParticle finds by either name or pdg.
+			G4ParticleDefinition* partDef = particleTable->FindParticle(pdgval);
+			if(!partDef){
+				G4cerr << "skipping primary with PDG " << pdgval << G4endl;
+				continue;
+			}
+			particleGun->SetParticleDefinition(pdgval);	//FindParticle finds by either name or pdg.
 			particleGun->SetParticleEnergy(eval*MeV);
 			particleGun->SetParticlePosition(thevtx);
 			particleGun->SetParticleTime(vtxtval);
