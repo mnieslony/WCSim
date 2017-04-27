@@ -726,12 +726,11 @@ void WCSimPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 			G4VPhysicalVolume* primaryPV = theNavigator->LocateGlobalPointAndSetup(thevtx); 
 			G4cout<<" in "<< primaryPV->GetName()<<G4endl;
 			
-			G4ParticleDefinition* partDef = particleTable->FindParticle(pdgval);
-			if(!partDef){
+			if(!parttype){
 				G4cerr << "skipping primary with PDG " << pdgval << G4endl;
 				continue;
 			}
-			particleGun->SetParticleDefinition(pdgval);	//FindParticle finds by either name or pdg.
+			particleGun->SetParticleDefinition(parttype);
 			particleGun->SetParticleEnergy(eval*MeV);
 			particleGun->SetParticlePosition(thevtx);
 			particleGun->SetParticleTime(vtxtval);
