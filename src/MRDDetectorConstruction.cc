@@ -512,13 +512,12 @@ void WCSimDetectorConstruction::ComputePaddleTransformation (const G4int copyNo,
 		G4ThreeVector origin(Xposition,Yposition,Zposition);
 #ifdef PRINT_MRD_POSITION
 		if(paddlenum==0){ 
-			G4double mrdstart = mrdZoffset-(mrdZlen/2.);
 			char space = ' ';
 			std::string panelnumstring = std::to_string(panelnum);
 			panelnumstring.resize(2,space);
 			G4cout<<"########## MRD scintillator layer "<< panelnumstring;
 			(ishpaddle) ? G4cout<<" (H)" : G4cout<<" (V)";
-			G4cout<<" at z="<<((Zposition+mrdstart-(scintfullzlen/2.))/cm)<<" ##########"<<G4endl;
+			G4cout<<" at z="<<((mrdZoffset+Zposition-(scintfullzlen/2.))/cm)<<" ##########"<<G4endl;
 		}
 		G4cout<<"PMT "<<copyNo<<" : Orientation ";
 		(ishpaddle) ? G4cout<<"H" : G4cout<<"V";
@@ -527,13 +526,13 @@ void WCSimDetectorConstruction::ComputePaddleTransformation (const G4int copyNo,
 		if(ishpaddle){
 			G4cout<<Xposition-(scinthfullylen/2.)<<"→"<<Xposition+(scinthfullylen/2.)<<", ";
 			G4cout<<Yposition-(scintfullxlen/2.)<<"→"<<Yposition+(scintfullxlen/2.)<<", ";
-			G4cout<<Zposition-(scintfullzlen/2.)+mrdZoffset-(mrdZlen/2.)<<"→"
-						<<Zposition+(scintfullzlen/2.)+mrdZoffset-(mrdZlen/2.)<<")"<<G4endl;
+			G4cout<<Zposition-(scintfullzlen/2.)+mrdZoffset<<"→"
+						<<Zposition+(scintfullzlen/2.)+mrdZoffset<<")"<<G4endl;
 		} else {
 			G4cout<<Xposition-(scintfullxlen/2.)<<"→"<<Xposition+(scintfullxlen/2.)<<", ";
 			G4cout<<Yposition-(scinthfullylen/2.)<<"→"<<Yposition+(scinthfullylen/2.)<<", ";
-			G4cout<<Zposition-(scintfullzlen/2.)+mrdZoffset-(mrdZlen/2.)<<"→"
-						<<Zposition+(scintfullzlen/2.)+mrdZoffset-(mrdZlen/2.)<<")"<<G4endl;
+			G4cout<<Zposition-(scintfullzlen/2.)+mrdZoffset<<"→"
+						<<Zposition+(scintfullzlen/2.)+mrdZoffset<<")"<<G4endl;
 		}
 #endif
 		physVol->SetTranslation(origin);
