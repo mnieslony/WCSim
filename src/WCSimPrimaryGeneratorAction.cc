@@ -356,6 +356,7 @@ void WCSimPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
       G4double m       =anEvent->GetPrimaryVertex()->GetPrimary()->GetMass();
       G4ThreeVector vtx =anEvent->GetPrimaryVertex()->GetPosition();
       G4int pdg         =anEvent->GetPrimaryVertex()->GetPrimary()->GetPDGcode();
+      G4double m       =anEvent->GetPrimaryVertex()->GetPrimary()->GetMass();
       
       G4ThreeVector dir  = P.unit();
       G4double E         = std::sqrt((P.dot(P))+(m*m));
@@ -365,8 +366,11 @@ void WCSimPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
       SetBeamDir(dir);
       SetBeamPDG(pdg);
       G4ParticleDefinition* parttype = particleTable->FindParticle(pdg);
+      G4String particlename;
+      (parttype) ? particlename=parttype->GetParticleName() : particlename=std::to_string(pdg);
       
-      G4cout<<"generating 'laser' "<<E/GeV<<"GeV "<<parttype->GetParticleName()
+      
+      G4cout<<"generating 'laser' "<<E/GeV<<"GeV "<<particlename
             <<" event at ("<<vtx.x()/cm<<","<<vtx.y()/cm<<","<<vtx.z()/cm<<")";
       G4Navigator* theNavigator = G4TransportationManager::GetTransportationManager()->GetNavigatorForTracking();
       G4VPhysicalVolume* primaryPV = theNavigator->LocateGlobalPointAndSetup(vtx);
@@ -476,7 +480,6 @@ void WCSimPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 		TLorentzVector neutrinovertex(nuvtxtval*CLHEP::s, nuvtxxval*CLHEP::m, nuvtxyval*CLHEP::m, nuvtxzval*CLHEP::m);	// position in m, times in s, convert to cm and ns
 		G4cout<<"The origin interaction was a "<<(parttype->GetParticleName())<<" at ("<<nuvtxtval*1000000000.<<","<<nuvtxxval*100.<<","<<nuvtxyval*100.<<","<<nuvtxzval*100.<<")[ns, cm] in "<<nupvval<<" "<<numatval<<G4endl;
 		G4cout<<"This entry has "<<ntankbranchval<<" primaries"<<G4endl;
-		nvtxs=ntankbranchval;
 		
 		if(vtxxbranchval){delete[] vtxxbranchval;}
 		if(vtxybranchval){delete[] vtxybranchval;}
@@ -541,17 +544,17 @@ void WCSimPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 			if(nuprimarybranchval[i]==1){ primariesinthisentry=true; break; }
 		}
 		if(!primariesinthisentry){ // not genie primaries... (this shouldn't happen)
-		//G4cout<<"---------------SKIPPING NON-TANK ENTRY----------------"<<G4endl;
-		inputEntry++;
-		localEntry = inputdata->LoadTree(inputEntry);
-		if(localEntry<0){
-			// get the pointer to the UI manager
-			G4UImanager* UI = G4UImanager::GetUIpointer();
-			UI->ApplyCommand("/run/abort 0");	// abort without processing current event
-			G4cout<<"@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#"<<G4endl;
-			G4cout<<"@#@#@#@#@#@#@#@#@#@ REACHED END OF INPUT FILE! #@#@#@#@#@#@#@#@#@#@#@#"<<G4endl;
-			G4cout<<"@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#"<<G4endl;
-		} else { goto loadbeamentry; } // load the next entry
+			//G4cout<<"---------------SKIPPING NON-TANK ENTRY----------------"<<G4endl;
+			inputEntry++;
+			localEntry = inputdata->LoadTree(inputEntry);
+			if(localEntry<0){
+				// get the pointer to the UI manager
+				G4UImanager* UI = G4UImanager::GetUIpointer();
+				UI->ApplyCommand("/run/abort 0");	// abort without processing current event
+				G4cout<<"@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#"<<G4endl;
+				G4cout<<"@#@#@#@#@#@#@#@#@#@ REACHED END OF INPUT FILE! #@#@#@#@#@#@#@#@#@#@#@#"<<G4endl;
+				G4cout<<"@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#"<<G4endl;
+			} else { goto loadbeamentry; } // load the next entry
 		}
 #endif
 		// First the genie information (largely unused as not currently stored in wcsim output)
@@ -715,14 +718,8 @@ void WCSimPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 			G4ThreeVector thepdir = G4ThreeVector(pxval, pyval, pzval);
 			thepdir.unit();		// normalise to unit vector
 			
-			if(keval==0){keval+=(pow(1.,-6.))*eV; eval+=(pow(1.,-6.))*eV; thepdir=G4ThreeVector(0.,0.,1.);}
-			parttype = particleTable->FindParticle(pdgval);
-			if(nuprimaryval==1){G4cout<<"genie primary ";} else {G4cout<<"genie secondary ";}
-			G4cout<<eval/GeV<<" GeV ";
-			if(parttype==0){G4cout<<"PDG: "<<pdgval;} else {G4cout<<parttype->GetParticleName();}
-			G4Navigator* theNavigator = G4TransportationManager::GetTransportationManager()->GetNavigatorForTracking();
-			G4VPhysicalVolume* primaryPV = theNavigator->LocateGlobalPointAndSetup(thevtx); 
-			G4cout<<" in "<< primaryPV->GetName()<<G4endl;
+			// correct for cases where keval == 0 by giving them a little boost
+			if(keval==0){keval+=1.*eV; eval+=1.*eV; thepdir=G4ThreeVector(0.,0.,1.);}
 			
 			//must handle the case of an ion speratly from other particles
 			//check PDG code if we have an ion: PDG code format for ions ±10LZZZAAAI
@@ -739,17 +736,33 @@ void WCSimPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 				strZ[3]='\0';
 				A=atoi(strA);
 				Z=atoi(strZ);
-				G4ParticleDefinition* ion =  G4IonTable::GetIonTable()->GetIon(Z, A, 0.);
-				if(ion){
-					particleGun->SetParticleDefinition(ion);
+				parttype =  G4IonTable::GetIonTable()->GetIon(Z, A, 0.);
+				if(parttype){
+					particleGun->SetParticleDefinition(parttype);
 					particleGun->SetParticleCharge(0);
+				} else {
+					G4cerr << "skipping primary with PDG " << pdgval << G4endl;
+					continue;
+				}
+			} else {
+				//not ion
+				parttype = particleTable->FindParticle(pdgval);
+				particleGun->SetParticleDefinition();
+				if(parttype){
+					particleGun->SetParticleDefinition(parttype);
+				} else {
+					G4cerr << "skipping primary with PDG " << pdgval << G4endl;
+					continue;
 				}
 			}
-			else {
-				//not ion
-				particleGun->SetParticleDefinition(particleTable->FindParticle(pdgval));
-			}
-			particleGun->SetParticleEnergy(eval*MeV);       // kinetic energy
+			if(nuprimaryval==1){G4cout<<"genie primary ";} else {G4cout<<"genie secondary ";}
+			G4cout<<keval/GeV<<" GeV ";
+			if(parttype==0){G4cout<<"PDG: "<<pdgval;} else {G4cout<<parttype->GetParticleName();}
+			G4Navigator* theNavigator = G4TransportationManager::GetTransportationManager()->GetNavigatorForTracking();
+			G4VPhysicalVolume* primaryPV = theNavigator->LocateGlobalPointAndSetup(thevtx); 
+			G4cout<<" in "<< primaryPV->GetName()<<G4endl;
+			
+			particleGun->SetParticleEnergy(keval);       // !!!kinetic!!! energy
 			particleGun->SetParticlePosition(thevtx);
 			particleGun->SetParticleTime(vtxtval);
 			particleGun->SetParticleMomentumDirection(thepdir);

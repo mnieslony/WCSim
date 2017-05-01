@@ -169,7 +169,7 @@ void WCSimDarkRateMessenger::SetNewValue(G4UIcommand* command,G4String newValue)
 
 void WCSimDarkRateMessenger::AddDarkRateInstance(WCSimWCAddDarkNoise* darkratepoint, G4String detectorElementin){
   if(darknoiseptrs.count(detectorElementin)>0){
-    G4cout<<"new dark rate messenger for existing detector Element "<<detectorElementin<<G4endl;
+    G4cerr<<"new dark rate messenger for existing detector Element "<<detectorElementin<<G4endl;
   } else {
     G4cout<<"added "<<detectorElementin<<" to the DarkRateMessenger"<<G4endl;
     darknoiseptrs.insert(std::pair<std::string,WCSimWCAddDarkNoise*>(detectorElementin,darkratepoint));
@@ -185,7 +185,7 @@ void WCSimDarkRateMessenger::RemoveDarkRateInstance(G4String detectorElementin){
     darknoiseptrs.erase(thepointer);
     if(darknoiseptrs.size()==0){ delete this; }
   } else {
-    G4cout<<"Attempt to remove nonexistant element "<<detectorElementin<<" from DarkRateMessenger!"<<G4endl;
+    G4cerr<<"Attempt to remove nonexistant element "<<detectorElementin<<" from DarkRateMessenger!"<<G4endl;
   }
 }
 
