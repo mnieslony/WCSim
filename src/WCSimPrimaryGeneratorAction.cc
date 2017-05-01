@@ -353,11 +353,12 @@ void WCSimPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
       MyGPS->GeneratePrimaryVertex(anEvent);
       
       G4ThreeVector P   =anEvent->GetPrimaryVertex()->GetPrimary()->GetMomentum();
+      G4double m       =anEvent->GetPrimaryVertex()->GetPrimary()->GetMass();
       G4ThreeVector vtx =anEvent->GetPrimaryVertex()->GetPosition();
       G4int pdg         =anEvent->GetPrimaryVertex()->GetPrimary()->GetPDGcode();
       
       G4ThreeVector dir  = P.unit();
-      G4double E         = std::sqrt((P.dot(P)));
+      G4double E         = std::sqrt((P.dot(P))+(m*m));
       
       SetVtx(vtx);	// required to store the true vertex for Bonsai!
       SetBeamEnergy(E);
@@ -723,12 +724,36 @@ void WCSimPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 			G4VPhysicalVolume* primaryPV = theNavigator->LocateGlobalPointAndSetup(thevtx); 
 			G4cout<<" in "<< primaryPV->GetName()<<G4endl;
 			
-			particleGun->SetParticleDefinition( particleTable->FindParticle(pdgval) );	//FindParticle finds by either name or pdg.
-			particleGun->SetParticleEnergy(eval*MeV);
+			//must handle the case of an ion speratly from other particles
+			//check PDG code if we have an ion: PDG code format for ions ±10LZZZAAAI
+			char strPDG[11];
+			char strA[10]={0};
+			char strZ[10]={0};
+			long int A=0,Z=0;
+			if(abs(pdgval) >= 1000000000){
+				//ion
+				sprintf(strPDG,"%i",abs(pdgval));
+				strncpy(strZ, &strPDG[3], 3);
+				strncpy(strA, &strPDG[6], 3);
+				strA[3]='\0';
+				strZ[3]='\0';
+				A=atoi(strA);
+				Z=atoi(strZ);
+				G4ParticleDefinition* ion =  G4IonTable::GetIonTable()->GetIon(Z, A, 0.);
+				if(ion){
+					particleGun->SetParticleDefinition(ion);
+					particleGun->SetParticleCharge(0);
+				}
+			}
+			else {
+				//not ion
+				particleGun->SetParticleDefinition(particleTable->FindParticle(pdgval));
+			}
+			particleGun->SetParticleEnergy(eval*MeV);       // kinetic energy
 			particleGun->SetParticlePosition(thevtx);
 			particleGun->SetParticleTime(vtxtval);
 			particleGun->SetParticleMomentumDirection(thepdir);
-			particleGun->GeneratePrimaryVertex(anEvent);	//anEvent provided by G4 when invoking the method
+			particleGun->GeneratePrimaryVertex(anEvent);    //anEvent provided by G4 when invoking the method
 			//G4cout<<"Vertex set"<<G4endl;
 		}
 		
