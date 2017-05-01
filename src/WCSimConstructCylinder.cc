@@ -779,15 +779,14 @@ If used here, uncomment the SetVisAttributes(WClogic) line, and comment out the 
 						 -barrelCellHeight2/2.+(((((int)i)%2)*2)-1)*(verticalSpacingLAPPD/4.));
 	 
       G4VPhysicalVolume* physiWCBarrelLAPPD =
-		new G4PVPlacement(WCLAPPDRotation,              // its rotation
-						  LAPPDPosition, 
-						  logicWCLAPPD,                // its logical volume
-						  "WCLAPPD",             // its name
-						  logicWCBarrelCell,  // its mother volume
-						  false,                     // no boolean operations
-						  //(int)(i*WCPMTperCellVertical+j),
-						  (int)(i*WCLAPPDperCellVertical+j),
-						  true);                       
+		new G4PVPlacement(WCLAPPDRotation,                      // its rotation
+						  LAPPDPosition,                        // its position
+						  logicWCLAPPD,                         // its logical volume
+						  "WCLAPPD",                            // its name
+						  logicWCBarrelCell,                    // its mother volume
+						  false,                                // no boolean operations
+						  (int)(i*WCLAPPDperCellVertical+j),    // a unique copy number
+						  false);                               // don't check overlaps
 	  
 	  // logicWCPMT->GetDaughter(0),physiCapPMT is the glass face. If you add more 
 	  // daugter volumes to the PMTs (e.g. a acryl cover) you have to check, if
@@ -1306,11 +1305,12 @@ G4LogicalVolume* WCSimDetectorConstruction::ConstructCaps(G4int zflip)
         G4VPhysicalVolume* physiCapLAPPD =
             new G4PVPlacement(WCCapPMTRotation,
                               cellposlappd,                   // its position
-                              logicWCLAPPD,                // its logical volume
-                              "WCPMT", // its name 
-                              logicWCCap,         // its mother volume
-                              false,                 // no boolean os
-                              icopylappd);               // every PMT need a unique id.
+                              logicWCLAPPD,                   // its logical volume
+                              "WCLAPPD",                      // its name 
+                              logicWCCap,                     // its mother volume
+                              false,                          // no boolean os
+                              icopylappd,                     // every LAPPD need a unique copy id
+                              false);                         // don't check overlaps
          icopylappd++;
        }
      } else {
@@ -1320,10 +1320,10 @@ G4LogicalVolume* WCSimDetectorConstruction::ConstructCaps(G4int zflip)
 	  new G4PVPlacement(WCCapPMTRotation,
 			    cellpos,                   // its position
 			    logicWCPMT,                // its logical volume
-			    "WCPMT", // its name 
-			    logicWCCap,         // its mother volume
-			    false,                 // no boolean os
-			    icopy);               // every PMT need a unique id.
+			    "WCPMT",                   // its name 
+			    logicWCCap,                // its mother volume
+			    false,                     // no boolean os
+			    icopy);                    // every PMT need a unique id.
 	
  // logicWCPMT->GetDaughter(0),physiCapPMT is the glass face. If you add more 
     // daugter volumes to the PMTs (e.g. a acryl cover) you have to check, if
@@ -1348,11 +1348,12 @@ G4LogicalVolume* WCSimDetectorConstruction::ConstructCaps(G4int zflip)
          G4VPhysicalVolume* physiCapLAPPD =
             new G4PVPlacement(WCCapPMTRotation,
                               cellpos,                   // its position
-                              logicWCLAPPD,                // its logical volume
-                              "WCPMT", // its name 
-                              logicWCCap,         // its mother volume
-                              false,                 // no boolean os
-                              icopylappd);               // every PMT need a unique id.
+                              logicWCLAPPD,              // its logical volume
+                              "WCLAPPD",                 // its name 
+                              logicWCCap,                // its mother volume
+                              false,                     // no boolean os
+                              icopylappd,                // every PMT need a unique id.
+                              false);                    // don't check overlaps
          icopylappd++;
        }
     }
@@ -1395,13 +1396,13 @@ G4LogicalVolume* WCSimDetectorConstruction::ConstructCaps(G4int zflip)
 						 (-barrelCellHeight/2.+(j+0.5)*verticalSpacing)*zflip);
 		G4VPhysicalVolume* physiWCBarrelBorderLAPPD =
 		new G4PVPlacement(WCPMTRotation,                      // its rotation
-				  PMTPosition,
-				  logicWCLAPPD,                // its logical volume
-				  "WCLAPPD",             // its name
-				  logicWCBarrelBorderCell,         // its mother volume
-				  false,                     // no boolean operations
-				  (int)(i*WCPMTperCellVertical+j)
-				  ,true);                      // no particular field
+				  PMTPosition,                                // its position
+				  logicWCLAPPD,                               // its logical volume
+				  "WCLAPPD",                                  // its name
+				  logicWCBarrelBorderCell,                    // its mother volume
+				  false,                                      // no boolean operations
+				  (int)(i*WCPMTperCellVertical+j),            // a unique copy number for the LAPPD
+				  false);                                     // don't check overlaps
 	}
 
 
