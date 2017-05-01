@@ -356,7 +356,6 @@ void WCSimPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
       G4double m       =anEvent->GetPrimaryVertex()->GetPrimary()->GetMass();
       G4ThreeVector vtx =anEvent->GetPrimaryVertex()->GetPosition();
       G4int pdg         =anEvent->GetPrimaryVertex()->GetPrimary()->GetPDGcode();
-      G4double m       =anEvent->GetPrimaryVertex()->GetPrimary()->GetMass();
       
       G4ThreeVector dir  = P.unit();
       G4double E         = std::sqrt((P.dot(P))+(m*m));
@@ -747,7 +746,6 @@ void WCSimPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 			} else {
 				//not ion
 				parttype = particleTable->FindParticle(pdgval);
-				particleGun->SetParticleDefinition();
 				if(parttype){
 					particleGun->SetParticleDefinition(parttype);
 				} else {
