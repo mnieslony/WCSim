@@ -19,6 +19,7 @@
 #include "G4SolidStore.hh"
 #include "G4GDMLParser.hh"
 #include "G4PhysicalConstants.hh"
+#include "G4SystemOfUnits.hh"
 
 std::map<int, G4Transform3D> WCSimDetectorConstruction::tubeIDMap;
 std::map<int, G4Transform3D> WCSimDetectorConstruction::mrdtubeIDMap;
@@ -377,4 +378,12 @@ void WCSimDetectorConstruction::UpdateCylinderGeometry()
   WCCapEdgeLimit        = WCIDDiameter/2.0 - WCPMTRadius;
   G4cout << "Cylinder height " << cylinderTank_Height << "mm, diameter " << cylinderTank_Diameter << "mm, coverage "
          << cylinderTank_Coverage << "% with " << cylinderTank_PMTType << "." << G4endl;
+}
+
+void WCSimDetectorConstruction::SaveOptionsToOutput(WCSimRootOptions * wcopt)
+{
+  wcopt->SetDetectorName(WCDetectorName);
+  wcopt->SetSavePi0(pi0Info_isSaved);
+  wcopt->SetPMTQEMethod(PMT_QE_Method);
+  wcopt->SetPMTCollEff(PMT_Coll_Eff);
 }

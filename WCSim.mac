@@ -1,4 +1,4 @@
-# Sampe setup macro with no visualization
+# Sample setup macro with no visualization
 
 /run/verbose 0
 /tracking/verbose 0
@@ -75,6 +75,7 @@
 
 ## select the input nuance-formatted vector file
 ## you can of course use your own
+#/mygen/generator muline
 #/mygen/vecfile inputvectorfile
 #/mygen/vecfile h2o.2km.001-009x3_G4.kin
 #/mygen/vecfile mu+.out
@@ -86,7 +87,7 @@
 #/DAQ/Trigger NoTrigger
 
 #grab the other DAQ options (thresholds, timing windows, etc.)
-/control/execute daq.mac
+/control/execute macros/daq.mac
 
 
 # default dark noise frequency (and conversion factor) is PMT property (NEW), set in the code.
@@ -131,20 +132,32 @@
 
 
 #Uncomment one of the lines below if you want to use the OGLSX or RayTracer visualizer
-#/control/execute visOGLSX.mac
-#/control/execute visRayTracer.mac
+#/control/execute macros/visOGLSX.mac
+#/control/execute macros/visRayTracer.mac
 
 /mygen/generator beam	# retrieve input primaries from GENIE output files
 
 # Or you can use the G4 Particle Gun
-#/mygen/generator normal
+# for a full list of /gun/ commands see:
+# http://geant4.web.cern.ch/geant4/G4UsersDocuments/UsersGuides/ForApplicationDeveloper/html/Control/UIcommands/_gun_.html
+#/mygen/generator gun
 #/gun/particle e-
 ##/gun/particle pi0
 #/gun/energy 500 MeV
 #/gun/direction 1 0 0 
 #/gun/position 0 0 0  
 
-#/mygen/generator normal
+# Or you can use the G4 General Particle Source
+# you can do a lot more with this than a monoenergetic, monodirectional, single-particle gun
+# for a full list of /gps/ commands see:
+# https://geant4.web.cern.ch/geant4/UserDocumentation/UsersGuides/ForApplicationDeveloper/html/ch02s07.html
+#/mygen/generator gps
+#/gps/particle e-
+#/gps/energy 500 MeV
+#/gps/direction 1 0 0
+#/gps/position 0 0 0
+
+#/mygen/generator gun
 #/gun/particle opticalphoton
 #/gun/energy 3 eV
 #/gun/polarization 0.7 0.4 0.2
@@ -168,13 +181,19 @@
 ##in WCSimTrackingAction
 
 # Use a muon gun for testing scintillator elements
-#/mygen/generator normal
+#/mygen/generator gun
 #/gun/particle mu-
 #/gun/energy 5 GeV
 #/gun/direction 0 0 1
 #/gun/position 50 50 -500 mm
 
 # use laser for bonsai 
+# This is equivalent to the gps command, (except that the gps particle energies are saved ignoring their mass)<< not true:
+# masses are included for bonsai, which uses laser source with e-...  for photons the mass will be 0 anyway! 
+# is there any point keeping both?
+# for a full list of /gps/ commands see:
+# https://geant4.web.cern.ch/geant4/UserDocumentation/UsersGuides/ForApplicationDeveloper/html/ch02s07.html
+# It is also used for laser calibration simulation
 #/mygen/generator laser
 #/gps/particle e-
 ##/gps/particle pi0
@@ -189,7 +208,12 @@
 ## place source at centre of tank
 #/gps/pos/centre 0 -14.46 168.1 cm
 #/gps/ang/type iso
+##/gps/ang/mintheta 0 deg
+##/gps/ang/maxtheta 30 deg
+##/gps/ang/minphi 0 deg
+##/gps/ang/maxphi 360 deg
 #/gps/energy 10 MeV
+##/gps/energy 2.505 eV   # optical photon energies for laser calibration
 #/gps/ene/type Mono
 #/gps/ene/gradient 0
 #/gps/ene/intercept 1
@@ -232,7 +256,7 @@
 # set the offset from the start of the tchain at which to start reading primaries in
 #/mygen/primariesoffset 10000
 # these will be set in the mac file (contents updated by a batch file):
-/control/execute setRandomParameters.mac
+/control/execute macros/setRandomParameters.mac
 
 ## change the name of the output root file, default = wcsim (the .root is appended internally)
 /WCSimIO/RootFile wcsim

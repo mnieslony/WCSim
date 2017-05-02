@@ -15,6 +15,7 @@
 #include "G4Tubs.hh"
 #include "G4Sphere.hh"
 #include "G4SystemOfUnits.hh"
+#include "G4PhysicalConstants.hh"
 
 #include <sstream>
 #include <iomanip>

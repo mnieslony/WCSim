@@ -19,6 +19,7 @@
 #include "Ntuple/NtpMCEventRecord.h"
 #include "Interaction/Interaction.h"
 #endif
+#include "WCSimRootOptions.hh"
 
 class WCSimDetectorConstruction;
 class G4ParticleGun;
@@ -68,6 +69,10 @@ public:
   G4double GetYDir() {return yDir;};
   G4double GetZDir() {return zDir;};
 
+  G4String GetGeneratorTypeString();
+  
+  void SaveOptionsToOutput(WCSimRootOptions * wcopt);
+
 private:
   WCSimDetectorConstruction*      myDetector;
   G4ParticleGun*                  particleGun;
@@ -76,9 +81,10 @@ private:
   
   // Variables set by the messenger
   G4bool   useMulineEvt;
-  G4bool   useNormalEvt;
+  G4bool   useGunEvt;
   G4bool   useLaserEvt;  //T. Akiri: Laser flag
   G4bool   useBeamEvt;
+  G4bool   useGPSEvt;
   std::fstream inputFile;
   G4String vectorFileName;
   G4bool   GenerateVertexInRock;
@@ -132,8 +138,8 @@ public:
   inline void SetMulineEvtGenerator(G4bool choice) { useMulineEvt = choice; }
   inline G4bool IsUsingMulineEvtGenerator() { return useMulineEvt; }
 
-  inline void SetNormalEvtGenerator(G4bool choice) { useNormalEvt = choice; }
-  inline G4bool IsUsingNormalEvtGenerator()  { return useNormalEvt; }
+  inline void SetGunEvtGenerator(G4bool choice) { useGunEvt = choice; }
+  inline G4bool IsUsingGunEvtGenerator()  { return useGunEvt; }
 
   //T. Akiri: Addition of function for the laser flag
   inline void SetLaserEvtGenerator(G4bool choice) { useLaserEvt = choice; }
@@ -141,6 +147,9 @@ public:
   
   inline void SetBeamEvtGenerator(G4bool choice) { useBeamEvt = choice; }
   inline G4bool IsUsingBeamEvtGenerator()  { return useBeamEvt; }
+
+  inline void SetGPSEvtGenerator(G4bool choice) { useGPSEvt = choice; }
+  inline G4bool IsUsingGPSEvtGenerator()  { return useGPSEvt; }
 
   inline void OpenVectorFile(G4String fileName) 
   {

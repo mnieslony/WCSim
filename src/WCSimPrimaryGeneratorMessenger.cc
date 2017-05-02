@@ -14,11 +14,11 @@ WCSimPrimaryGeneratorMessenger::WCSimPrimaryGeneratorMessenger(WCSimPrimaryGener
   genCmd = new G4UIcmdWithAString("/mygen/generator",this);
   genCmd->SetGuidance("Select primary generator.");
   //T. Akiri: Addition of laser
-  genCmd->SetGuidance(" Available generators : muline, normal, laser, beam");
+  genCmd->SetGuidance(" Available generators : muline, gun, laser, gps, beam");
   genCmd->SetParameterName("generator",true);
   genCmd->SetDefaultValue("beam");	// previously muline
   //T. Akiri: Addition of laser
-  genCmd->SetCandidates("muline normal laser beam");
+  genCmd->SetCandidates("muline gun laser gps beam");
 
   fileNameCmd = new G4UIcmdWithAString("/mygen/vecfile",this);
   fileNameCmd->SetGuidance("Select the file of vectors.");
@@ -60,33 +60,46 @@ void WCSimPrimaryGeneratorMessenger::SetNewValue(G4UIcommand * command,G4String 
     {
       G4cout<<"Setting generator source to muline"<<G4endl;
       myAction->SetMulineEvtGenerator(true);
-      myAction->SetNormalEvtGenerator(false);
+      myAction->SetGunEvtGenerator(false);
       myAction->SetLaserEvtGenerator(false);
       myAction->SetBeamEvtGenerator(false);
+      myAction->SetGPSEvtGenerator(false);
     }
-    else if ( newValue == "normal")
+    else if ( newValue == "gun")
     {
-      G4cout<<"Setting generator source to normal"<<G4endl;
+      G4cout<<"Setting generator source to gun"<<G4endl;
       myAction->SetMulineEvtGenerator(false);
-      myAction->SetNormalEvtGenerator(true);
+      myAction->SetGunEvtGenerator(true);
       myAction->SetLaserEvtGenerator(false);
       myAction->SetBeamEvtGenerator(false);
+      myAction->SetGPSEvtGenerator(false);
     }
     else if ( newValue == "laser")   //T. Akiri: Addition of laser
     {
       G4cout<<"Setting generator source to laser"<<G4endl;
       myAction->SetMulineEvtGenerator(false);
-      myAction->SetNormalEvtGenerator(false);
+      myAction->SetGunEvtGenerator(false);
       myAction->SetLaserEvtGenerator(true);
       myAction->SetBeamEvtGenerator(false);
+      myAction->SetGPSEvtGenerator(false);
     }
     else if ( newValue == "beam")
     {
       G4cout<<"Setting generator source to beam"<<G4endl;
       myAction->SetMulineEvtGenerator(false);
-      myAction->SetNormalEvtGenerator(false);
+      myAction->SetGunEvtGenerator(false);
       myAction->SetLaserEvtGenerator(false);
       myAction->SetBeamEvtGenerator(true);
+      myAction->SetGPSEvtGenerator(false);
+    }
+    else if ( newValue == "gps")
+    {
+      G4cout<<"Setting generator source to gps"<<G4endl;
+      myAction->SetMulineEvtGenerator(false);
+      myAction->SetGunEvtGenerator(false);
+      myAction->SetLaserEvtGenerator(false);
+      myAction->SetBeamEvtGenerator(false);
+      myAction->SetGPSEvtGenerator(true);
     }
   }
 
@@ -125,12 +138,14 @@ G4String WCSimPrimaryGeneratorMessenger::GetCurrentValue(G4UIcommand* command)
   {
     if(myAction->IsUsingMulineEvtGenerator())
       { cv = "muline"; }
-    else if(myAction->IsUsingNormalEvtGenerator())
-      { cv = "normal"; }
+    else if(myAction->IsUsingGunEvtGenerator())
+      { cv = "gun"; }
     else if(myAction->IsUsingLaserEvtGenerator())
       { cv = "laser"; }   //T. Akiri: Addition of laser
     else if(myAction->IsUsingBeamEvtGenerator())
       { cv = "beam"; }
+    else if(myAction->IsUsingGPSEvtGenerator())
+      { cv = "gps"; }
   }
   
   return cv;

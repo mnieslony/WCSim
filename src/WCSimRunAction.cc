@@ -26,7 +26,7 @@
 int pawc_[500000];                // Declare the PAWC common
 struct ntupleStruct jhfNtuple;
 
-WCSimRunAction::WCSimRunAction(WCSimDetectorConstruction* test) : wcsimrootsuperevent_mrd(0), wcsimrootsuperevent_facc(0)
+WCSimRunAction::WCSimRunAction(WCSimDetectorConstruction* test, WCSimRandomParameters* rand) : wcsimrootsuperevent_mrd(0), wcsimrootsuperevent_facc(0), wcsimrandomparameters(rand)
 {
   ntuples = 1;
 
@@ -37,6 +37,7 @@ WCSimRunAction::WCSimRunAction(WCSimDetectorConstruction* test) : wcsimrootsuper
   OutputFileNum=-1;
   WCSimTree=0;
 
+  wcsimrootoptions = new WCSimRootOptions();
 }
 
 WCSimRunAction::~WCSimRunAction()
@@ -91,25 +92,31 @@ void WCSimRunAction::CreateNewOutputFile(){
   hfile->SetCompressionLevel(2);
 
   // Event tree
-  TTree* tree = new TTree("wcsimT","WCSim Tree");
+  WCSimTree = new TTree("wcsimT","WCSim Tree");
 
-  SetTree(tree);
   Int_t branchStyle = 1; //new style by default
   TTree::SetBranchStyle(branchStyle);
   Int_t bufsize = 64000;
-  //  TBranch *branch = tree->Branch("wcsimrootsuperevent", "Jhf2kmrootsuperevent", &wcsimrootsuperevent, bufsize,0);
-  wcsimrooteventbranch = tree->Branch("wcsimrootevent", "WCSimRootEvent", &wcsimrootsuperevent, bufsize,2);
+  //  TBranch *branch = WCSimTree->Branch("wcsimrootsuperevent", "Jhf2kmrootsuperevent", &wcsimrootsuperevent, bufsize,0);
+  wcsimrooteventbranch = WCSimTree->Branch("wcsimrootevent", "WCSimRootEvent", &wcsimrootsuperevent, bufsize,2);
   if(isANNIE){
-    wcsimrooteventbranch_mrd = tree->Branch("wcsimrootevent_mrd", "WCSimRootEvent", &wcsimrootsuperevent_mrd, bufsize,2);
-    wcsimrooteventbranch_facc = tree->Branch("wcsimrootevent_facc", "WCSimRootEvent", &wcsimrootsuperevent_facc, bufsize,2);
+    wcsimrooteventbranch_mrd = WCSimTree->Branch("wcsimrootevent_mrd", "WCSimRootEvent", &wcsimrootsuperevent_mrd, bufsize,2);
+    wcsimrooteventbranch_facc = WCSimTree->Branch("wcsimrootevent_facc", "WCSimRootEvent", &wcsimrootsuperevent_facc, bufsize,2);
   }
   
   // Geometry tree - store a copy in each output file (a bit redundant but safer and doesn't take much space)
   geoTree = new TTree("wcsimGeoT","WCSim Geometry Tree");
-  SetGeoTree(geoTree);
   wcsimrootgeom = new WCSimRootGeom();
   TBranch *geoBranch = geoTree->Branch("wcsimrootgeom", "WCSimRootGeom", &wcsimrootgeom, bufsize,0);
   FillGeoTree();
+
+  // Options tree
+  optionsTree = new TTree("wcsimRootOptionsT","WCSim Options Tree");
+  optionsTree->Branch("wcsimrootoptions", "WCSimRootOptions", &wcsimrootoptions, bufsize, 0);
+
+  //set detector & random options
+  wcsimdetector->SaveOptionsToOutput(wcsimrootoptions);
+  wcsimrandomparameters->SaveOptionsToOutput(wcsimrootoptions);
 }
 
 void WCSimRunAction::EndOfRunAction(const G4Run* aRun)
@@ -127,6 +134,11 @@ void WCSimRunAction::EndOfRunAction(const G4Run* aRun)
 //  G4cout << (float(numberOfTimesCatcherHit)/float(numberOfEventsGenerated))*100.
 //        << "% through-going (hit Catcher)" << G4endl;
 
+  //Write the options tree
+  G4cout << "EndOfRunAction" << G4endl;
+  optionsTree->Fill();
+  optionsTree->Write();
+  
   // Close the Root file at the end of the run
   CloseOutputFile();
 
@@ -357,6 +369,5 @@ void WCSimRunAction::FillGeoTree(){
   // end debugging
   
   geoTree->Fill();
-  TFile* hfile = geoTree->GetCurrentFile();
-  hfile->Write(); 
+  geoTree->Write();
 }

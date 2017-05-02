@@ -108,13 +108,14 @@ G4LogicalVolume* WCSimDetectorConstruction::ConstructCylinder()
 
   // The water barrel is placed in an tubs of air
   
-  G4double WChalfheightexcess;
+  G4double WChalfheightexcess, WCradialexcess;
   //jl145 - per blueprint for SK, less for ANNIE
   (!isANNIE) ? WChalfheightexcess=4.2*m : WChalfheightexcess=2.*cm; 
+  (!isANNIE) ? WCradialexcess=2.0*m : WCradialexcess=1.*cm;            // MRD and FACC are very close to the tank!
   
   G4Tubs* solidWC = new G4Tubs("WC",
 			       0.0*m,
-			       WCRadius+2.*m, 
+			       WCRadius+WCradialexcess, 
 			       .5*WCLength+WChalfheightexcess,
 			       0.*deg,
 			       360.*deg);

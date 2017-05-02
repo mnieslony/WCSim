@@ -26,6 +26,7 @@
 #include "G4DigiManager.hh"
 #include "G4UnitsTable.hh"
 #include "G4SystemOfUnits.hh"
+#include "G4PhysicalConstants.hh"
 #include "G4UIcmdWith3VectorAndUnit.hh"
 
 #include <set>
@@ -78,7 +79,7 @@ WCSimEventAction::WCSimEventAction(WCSimRunAction* myRun,
 				   WCSimPrimaryGeneratorAction* myGenerator)
   :runAction(myRun), generatorAction(myGenerator), 
    detectorConstructor(myDetector),
-   ConstructedDAQClasses(false), LAPPDfile(0)
+   ConstructedDAQClasses(false), LAPPDfile(0), SavedOptions(false)
 {
   DAQMessenger = new WCSimWCDAQMessenger(this);
 
@@ -966,6 +967,21 @@ void WCSimEventAction::EndOfEventAction(const G4Event* evt)
   
   G4cout<<"############# WCSIM FINISH END OF EVENT ACTION  ################"<<G4endl;
 
+  //save DAQ options here. This ensures that when the user selects a default option
+  // (e.g. with -99), the saved option value in the output reflects what was run
+  if(!SavedOptions) {
+    WCSimRootOptions * wcsimopt = runAction->GetRootOptions();
+    //Dark noise
+    WCDNM->SaveOptionsToOutput(wcsimopt);
+    //Digitizer
+    WCDM->SaveOptionsToOutput(wcsimopt);
+    //Trigger
+    WCTM->SaveOptionsToOutput(wcsimopt);
+    //Generator
+    generatorAction->SaveOptionsToOutput(wcsimopt);
+    
+    SavedOptions = true;
+  }
 }
 
 G4int WCSimEventAction::WCSimEventFindStartingVolume(G4ThreeVector vtx)

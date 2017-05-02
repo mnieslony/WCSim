@@ -433,6 +433,8 @@ void WCSimWCTriggerBase::FillDigitsCollection(WCSimWCDigitsCollection* WCDCPMT, 
   }
 
   std::vector<int> triggerstoremove;	// when using trigger on tank, remove triggers if they have no hits.
+  //make sure the triggers are in time order
+  SortTriggersByTime();
   //Loop over trigger times
   for(unsigned int itrigger = 0; itrigger < TriggerTimes.size(); itrigger++) {
     TriggerType_t triggertype = TriggerTypes[itrigger];
@@ -445,6 +447,18 @@ void WCSimWCTriggerBase::FillDigitsCollection(WCSimWCDigitsCollection* WCDCPMT, 
     //these are the boundary of the trigger gate: we want to add all digits within these bounds to the output collection
     float lowerbound = triggertime + GetPreTriggerWindow(triggertype);
     float upperbound = triggertime + GetPostTriggerWindow(triggertype);
+    //need to check for double-counting - check if the previous upperbound is above the lowerbound
+    if(itrigger) {
+      float upperbound_previous = TriggerTimes[itrigger - 1] + GetPostTriggerWindow(TriggerTypes[itrigger - 1]);
+      if(upperbound_previous > lowerbound) {
+	//also need to check whether the previous upperbound is above the lowerbound
+	//(different trigger windows for different trigger types can mean this trigger is completely contained within another)
+	// if it is, we skip it
+	if(upperbound_previous >= upperbound)
+	  continue;
+	lowerbound = upperbound_previous;
+      }
+    }
 
 #ifdef WCSIMWCTRIGGER_VERBOSE
     G4cout << "Saving trigger " << itrigger << " of type " << WCSimEnumerations::EnumAsString(triggertype)
@@ -543,6 +557,22 @@ void WCSimWCTriggerBase::FillDigitsCollection(WCSimWCDigitsCollection* WCDCPMT, 
 
 }
 
+void WCSimWCTriggerBase::SaveOptionsToOutput(WCSimRootOptions * wcopt)
+{
+  wcopt->SetTriggerClassName(triggerClassName);;
+  wcopt->SetMultiDigitsPerTrigger(multiDigitsPerTrigger);;
+  //ndigits
+  wcopt->SetNDigitsThreshold(ndigitsThreshold);;
+  wcopt->SetNDigitsWindow(ndigitsWindow);;
+  wcopt->SetNDigitsAdjustForNoise(ndigitsAdjustForNoise);;
+  wcopt->SetNDigitsPreTriggerWindow(ndigitsPreTriggerWindow);;
+  wcopt->SetNDigitsPostTriggerWindow(ndigitsPostTriggerWindow);;
+  //savefailures
+  wcopt->SetSaveFailuresMode(saveFailuresMode);;
+  wcopt->SetSaveFailuresTime(saveFailuresTime);;
+  wcopt->SetSaveFailuresPreTriggerWindow(saveFailuresPreTriggerWindow);;
+  wcopt->SetSaveFailuresPostTriggerWindow(saveFailuresPostTriggerWindow);;
+}
 
 
 

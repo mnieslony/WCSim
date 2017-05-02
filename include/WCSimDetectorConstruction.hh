@@ -6,6 +6,7 @@
 #include "WCSimPMTObject.hh"
 #include "WCSimLAPPDInfo.hh"
 #include "WCSimLAPPDObject.hh"
+#include "WCSimRootOptions.hh"
 
 #include "G4Transform3D.hh"
 #include "G4VUserDetectorConstruction.hh"
@@ -73,7 +74,9 @@ public:
 
   WCSimDetectorConstruction(G4int DetConfig,WCSimTuningParameters* WCSimTuningPars);
   ~WCSimDetectorConstruction();
-  
+
+  void SaveOptionsToOutput(WCSimRootOptions * wcopt);
+
   G4VPhysicalVolume* Construct();
 
   // Related to the WC geometry

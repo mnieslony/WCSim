@@ -8,6 +8,7 @@
 #include "WCSimTrackInformation.hh"
 #include "G4TransportationManager.hh"
 #include "G4SystemOfUnits.hh"
+#include "G4PhysicalConstants.hh"
 #include <algorithm>
 
 WCSimTrackingAction::WCSimTrackingAction()

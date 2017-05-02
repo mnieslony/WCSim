@@ -65,3 +65,5 @@
 #/vis/filtering/trajectories/originVolumeFilter-0/add MRDalus
 #/vis/filtering/trajectories/originVolumeFilter-0/verbose false
 
+# Default background for OGLSX is black, can change it here (but muons are white)
+#/vis/viewer/set/background 0 0 0 1

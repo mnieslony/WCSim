@@ -14,6 +14,7 @@
 #include "WCSimDetectorConstruction.hh"
 #include "WCSimPmtInfo.hh"
 #include "G4SystemOfUnits.hh"
+#include "G4PhysicalConstants.hh"
 
 #include <vector>
 // for memset

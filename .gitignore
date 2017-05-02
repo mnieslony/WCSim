@@ -7,6 +7,7 @@ make.rootcint.result
 make.result
 bin/
 tmp/
+doxygen/
 
 #ignore gedit backups
 *~
@@ -14,6 +15,7 @@ tmp/
 #ignore build products
 *.d
 *.o
+*.so
 
 #ignore run results
 wcsim.root
@@ -23,7 +25,7 @@ verification-test-scripts/annie/wcsimtest.root
 verification-test-scripts/comparisonfile.root
 verification-test-scripts/upstream/wcsimtest.root
 
-#ignore geometry???????????????????
+#ignore geometry output
 geofile.txt
 
 #ignore root dictionary files. automatically generated.
@@ -44,3 +46,14 @@ CMakeLists.txt   # different location of ROOT & GEANT install
 GNUmakefile_full # different location of ROOT & GEANT install
 sourceme
 WCSim.mac        # gpvm version shouldn't show visualisation
+
+#ignore compiled ROOT scripts
+*_C.d
+*_C.so
+*_cxx.d
+*_cxx.so
+*_cc.d
+*_cc.so
+
+##ignore compiled python scripts
+*.pyc

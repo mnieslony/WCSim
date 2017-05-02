@@ -9,7 +9,9 @@
 #include "TTree.h"
 #include "WCSimRootEvent.hh"
 #include "WCSimRootGeom.hh"
+#include "WCSimRootOptions.hh"
 #include "WCSimDetectorConstruction.hh"
+#include "WCSimRandomParameters.hh"
 
 class G4Run;
 class WCSimRunActionMessenger;
@@ -17,7 +19,7 @@ class WCSimRunActionMessenger;
 class WCSimRunAction : public G4UserRunAction
 {
 public:
-  WCSimRunAction(WCSimDetectorConstruction*);
+  WCSimRunAction(WCSimDetectorConstruction*, WCSimRandomParameters*);
   ~WCSimRunAction();
 
 public:
@@ -35,6 +37,7 @@ public:
     else if(detectorElement=="facc") return wcsimrooteventbranch_facc;
     else G4cout<<"Unkown detector element"<<G4endl;}
   TTree* GetGeoTree(){return geoTree;}
+  TTree* GetOptionsTree(){return optionsTree;}
   WCSimRootGeom* GetRootGeom(){return wcsimrootgeom;}
   WCSimRootEvent* GetRootEvent(G4String detectorElement){
     if(detectorElement=="tank") return wcsimrootsuperevent;
@@ -52,6 +55,7 @@ public:
     if(detectorElement=="mrd") wcsimrootsuperevent_mrd=revent;
     if(detectorElement=="facc") wcsimrootsuperevent_facc=revent;}
   void SetRootGeom(WCSimRootGeom* rgeom){wcsimrootgeom=rgeom;}
+  WCSimRootOptions* GetRootOptions(){return wcsimrootoptions;}
   int  GetNumberOfEventsGenerated() { return numberOfEventsGenerated;}
   int  GetNtuples(){return ntuples;}
   G4int GetOutputFileNum(){return OutputFileNum;}
@@ -75,11 +79,14 @@ private:
   TBranch* wcsimrooteventbranch_mrd;
   TBranch* wcsimrooteventbranch_facc;
   TTree* geoTree;
+  TTree* optionsTree;
   WCSimRootEvent* wcsimrootsuperevent;
   WCSimRootEvent* wcsimrootsuperevent_mrd;
   WCSimRootEvent* wcsimrootsuperevent_facc;
   WCSimRootGeom* wcsimrootgeom;
+  WCSimRootOptions* wcsimrootoptions;
   WCSimDetectorConstruction* wcsimdetector;
+  WCSimRandomParameters* wcsimrandomparameters;
 
   int numberOfEventsGenerated;
   int numberOfTimesWaterTubeHit;

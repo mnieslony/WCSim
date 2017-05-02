@@ -99,6 +99,7 @@ ${CMAKE_CURRENT_SOURCE_DIR}/include/WCSimPmtInfo.hh
 ${CMAKE_CURRENT_SOURCE_DIR}/include/WCSimLAPPDInfo.hh
 ${CMAKE_CURRENT_SOURCE_DIR}/include/WCSimLAPPDpulse.hh
 ${CMAKE_CURRENT_SOURCE_DIR}/include/WCSimLAPPDpulseCluster.hh
+${CMAKE_CURRENT_SOURCE_DIR}/include/WCSimRootOptions.hh
 ${CMAKE_CURRENT_SOURCE_DIR}/include/WCSimEnumerations.hh LINKDEF
 ${CMAKE_CURRENT_SOURCE_DIR}/include/WCSimRootLinkDef.hh)
 
@@ -106,7 +107,7 @@ ${CMAKE_CURRENT_SOURCE_DIR}/include/WCSimRootLinkDef.hh)
 add_library(WCSimRoot SHARED ./src/WCSimRootEvent.cc ./src/WCSimRootGeom.cc
 ./src/WCSimPmtInfo.cc ./src/WCSimEnumerations.cc ./src/WCSimRootDict.cxx
 ./src/WCSimLAPPDInfo.cc ./src/WCSimLAPPDpulse.cc
-./src/WCSimLAPPDpulseCluster.cc
+./src/WCSimLAPPDpulseCluster.cc ./src/WCSimRootOptions.cc 
 )
 target_link_libraries(WCSimRoot  ${ROOT_LIBRARIES})
 
@@ -151,19 +152,18 @@ target_link_libraries(WCSim ${Geant4_LIBRARIES} ${ROOT_LIBRARIES} ${Genie_LIBRAR
 
 #----------------------------------------------------------------------------
 # Copy all scripts to the build directory, i.e. the directory in which we
-# build B1. This is so that we can run the executable directly because it
+# build WCSim. This is so that we can run the executable directly because it
 # relies on these scripts being in the current working directory.
 #
 set(WCSIM_SCRIPTS
-  jobOptions2.mac
-  jobOptions.mac
+  macros/jobOptions.mac
   WCSim.mac
-  daq.mac
-  visOGLSX.mac
-  visRayTracer.mac
-  tuning_parameters.mac
-  primaries_directory.mac
-  setRandomParameters.mac
+  macros/daq.mac
+  macros/visOGLSX.mac
+  macros/visRayTracer.mac
+  macros/tuning_parameters.mac
+  macros/primaries_directory.mac
+  macros/setRandomParameters.mac
   WCSimRootDict_rdict.pcm
   pulsecharacteristics.root
   )

@@ -61,6 +61,7 @@ private:
   G4String DigitizerChoice;
   G4String TriggerChoice;
   bool     ConstructedDAQClasses;
+  bool     SavedOptions;
   
   // Additions for truth hit readout of LAPPDs
   //==========================================
