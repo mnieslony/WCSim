@@ -135,7 +135,7 @@
 #/control/execute macros/visOGLSX.mac
 #/control/execute macros/visRayTracer.mac
 
-/mygen/generator beam	# retrieve input primaries from GENIE output files
+#/mygen/generator beam	# retrieve input primaries from GENIE output files
 
 # Or you can use the G4 Particle Gun
 # for a full list of /gun/ commands see:
@@ -202,6 +202,7 @@
 #/gps/pos/radius 1.5 m   # 1.524 in WCSim::DetectorConfigs
 #/gps/pos/halfz 1.97 m   # 1.98m in WCSim::DetectorConfigs
 ##/gps/pos/confine WCBarrel
+##cylinders are defined with the z axis as the axis of the cylinder
 ##rotate the cylinder to align with ANNIE's y-parallel tank
 #/gps/pos/rot1 1 0 0
 #/gps/pos/rot2 0 0 1
@@ -241,6 +242,31 @@
 #/gps/ene/gradient 0
 #/gps/ene/intercept 1
 
+## muon gun events shot just before the front face of the MRD, used to establish range vs energy at various angles of entry
+/mygen/generator gps
+/gps/particle mu-
+/gps/pos/type Plane
+/gps/pos/shape Rectangle
+/gps/pos/halfx 10 cm  # have a 20cm*20cm plane, so we have a little variation in entry point, but aren't too close to edges
+/gps/pos/halfy 10 cm  # note we end up rotating the plane of 
+# place source at centre of tank in x/y, but on the front face of the MRD in z
+/gps/pos/centre 0 -14.46 324.5 cm   # MRD front face at z=325.5cm
+##planes are oriented in the x-y plane, so we need to rotate in the same way as per the cylinder
+##rotate the square be parallel to the front face of the MRD (not true??)
+##/gps/pos/rot1 1 0 0
+##/gps/pos/rot2 0 0 1
+#to generate a 10 deg cone of equally likely directions about the z axis, use the following
+# see http://nngroup.physics.sunysb.edu/captain/reference/master/detSim/dox/detSimGPS.html for details
+/gps/ang/type iso
+#/gps/ang/mintheta 10 deg  # limit to a 10 degree cone in +z dir
+/gps/ang/mintheta 90 deg   # limit to positive z directions(!)
+/gps/ene/type Lin    # uniform energy spread
+/gps/ene/gradient 0  # gradient 0 means probability distrib is flat: all energies in range are equally likely
+/gps/ene/intercept 1
+#The gradient is specified in MeV^{-1}. The intercept is a pure number.
+/gps/ene/min 100 MeV
+/gps/ene/max 2500 MeV
+
 # set up visualization view for debugging photons - 
 # should be associated with changes store in branch photonbouncedebug
 #/vis/viewer/set/viewpointThetaPhi 0 0
@@ -259,10 +285,11 @@
 /control/execute macros/setRandomParameters.mac
 
 ## change the name of the output root file, default = wcsim (the .root is appended internally)
-/WCSimIO/RootFile wcsim
+#/WCSimIO/RootFile wcsim
 #/WCSimIO/RootFile ANNIEtest_10MeV_Uni_Iso  # for bonsai
+/WCSimIO/RootFile ANNIEtest_MRD_muon_sample  # for MRD range vs energy estimation
 
-#/run/beamOn 10000
+#/run/beamOn 10
 # should run 10000 events for bonsai
 
 #exit
