@@ -150,6 +150,18 @@ void WCSimTrackingAction::PostUserTrackingAction(const G4Track* aTrack)
     G4cout<<" in "<<aTrack->GetVolume()->GetName()<<G4endl; 
   }
   line++;
+  
+  /*
+  if( (aTrack->GetParentID()==0) // primary particle
+      && (abs(aTrack->GetDefinition()->GetPDGEncoding())==13) ){ // is a muon
+      G4ThreeVector endpos = aTrack->GetPosition();
+      WCSimTrajectory* trj = (WCSimTrajectory*)fpTrackingManager->GimmeTrajectory();
+      G4TrajectoryPoint* startpnt = (G4TrajectoryPoint*)trj->GetPoint(0);
+      G4ThreeVector startpos  = startpnt->GetPosition();
+      G4cout<<"Primary muon started at ("<<startpos.x()<<", "<<startpos.y()<<", "<<startpos.z()<<")"
+            <<"and ended at ("<<endpos.x()<<", "<<endpos.y()<<", "<<endpos.z()<<")"<<G4endl;
+  }
+  */
 }
 
 

@@ -205,15 +205,25 @@ void WCSimEventAction::CreateDAQInstances()
     WCSimWCDigitizerSKI* WCDM_FACC = new WCSimWCDigitizerSKI("WCReadoutDigits_FACC", detectorConstructor, DAQMessenger, "facc");
     DMman->AddNewModule(WCDM_FACC);
   }
-  // whatever the choice of tank trigger style is, MRD and FACC read out whatever digits are within tank trigger windows
 #ifdef HYPER_VERBOSITY
   G4cout<<"WCSimEventAction::CreateDAQInstances ☆ making new WCSimWCTriggerOnTankDigits for mrd with name WCReadout_MRD"<<G4endl;
 #endif
-  WCSimWCTriggerOnTankDigits* WCTM_MRD = new WCSimWCTriggerOnTankDigits("WCReadout_MRD", detectorConstructor, DAQMessenger, "mrd");
-  DMman->AddNewModule(WCTM_MRD);
-  // repeat for facc
-  WCSimWCTriggerOnTankDigits* WCTM_FACC = new WCSimWCTriggerOnTankDigits("WCReadout_FACC", detectorConstructor, DAQMessenger, "facc");
-  DMman->AddNewModule(WCTM_FACC);
+  if(TriggerChoice == "NoTrigger") {
+    // for 'NoTrigger' trigger, which just reads out all hits/digits, need to use the same for MRD/FACC.
+    // Usef for things like MRD testing, where we fire muons into the MRD and have no associated tank event.
+    WCSimWCTriggerNoTrigger* WCTM_MRD = new WCSimWCTriggerNoTrigger("WCReadout_MRD", detectorConstructor, DAQMessenger, "mrd");
+    DMman->AddNewModule(WCTM_MRD);
+    // repeat for facc
+    WCSimWCTriggerNoTrigger* WCTM_FACC = new WCSimWCTriggerNoTrigger("WCReadout_FACC", detectorConstructor, DAQMessenger, "facc");
+    DMman->AddNewModule(WCTM_FACC);
+  } else {
+  // for a legit tank trigger style, MRD and FACC read out whatever digits are within tank trigger windows
+    WCSimWCTriggerOnTankDigits* WCTM_MRD = new WCSimWCTriggerOnTankDigits("WCReadout_MRD", detectorConstructor, DAQMessenger, "mrd");
+    DMman->AddNewModule(WCTM_MRD);
+    // repeat for facc
+    WCSimWCTriggerOnTankDigits* WCTM_FACC = new WCSimWCTriggerOnTankDigits("WCReadout_FACC", detectorConstructor, DAQMessenger, "facc");
+    DMman->AddNewModule(WCTM_FACC);
+  }
   }
 
   ConstructedDAQClasses = true;

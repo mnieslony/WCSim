@@ -792,7 +792,7 @@ void WCSimPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
       
       G4ThreeVector P   =anEvent->GetPrimaryVertex()->GetPrimary()->GetMomentum();
       G4ThreeVector vtx =anEvent->GetPrimaryVertex()->GetPosition();
-      G4double m        =anEvent->GetPrimaryVertex()->GetPrimary()->GetMass();
+      G4double m        =anEvent->GetPrimaryVertex()->GetPrimary()->GetMass(); // this is rest mass
       G4int pdg         =anEvent->GetPrimaryVertex()->GetPrimary()->GetPDGcode();
       
       G4ThreeVector dir  = P.unit();
@@ -802,6 +802,17 @@ void WCSimPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
       SetBeamEnergy(E);
       SetBeamDir(dir);
       SetBeamPDG(pdg);
+            
+      double tote = anEvent->GetPrimaryVertex()->GetPrimary()->GetTotalEnergy();
+      double ke = anEvent->GetPrimaryVertex()->GetPrimary()->GetKineticEnergy();
+      
+      G4ParticleDefinition* parttype = particleTable->FindParticle(pdg);
+      G4String particlename;
+      particlename = (parttype!=0) ? (std::string(parttype->GetParticleName())) : (std::to_string(pdg));
+      G4cout<<"Generating primary "<<particlename<<" with total energy "
+            <<tote/MeV<<"MeV and kinetic energy "<<ke/MeV
+            <<"MeV at ("<<vtx.x()<<", "<<vtx.y()<<", "<<vtx.z()<<") in direction ("
+            <<dir.x()<<", "<<dir.y()<<", "<<dir.z()<<") "<<G4endl;
     }
 }
 
