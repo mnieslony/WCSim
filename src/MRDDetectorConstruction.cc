@@ -9,7 +9,7 @@
 //===============================================================================================================
 
 #ifndef PRINT_MRD_POSITION
-//#define PRINT_MRD_POSITION
+#define PRINT_MRD_POSITION
 #endif
 
 #include "G4Material.hh"
@@ -486,12 +486,12 @@ void WCSimDetectorConstruction::ComputePaddleTransformation (const G4int copyNo,
 		if (ishpaddle){
 			// horizontal panel
 			if (paddlenum%2==0){
-				Xposition=((scinthfullylen+scintbordergap)/2); 										// offset by +half length so one end is at x=0
+				Xposition=((scinthfullylen+scintbordergap)/2.); 										// offset by +half length so one end is at x=0
 			} else {
-				Xposition=-((scinthfullylen+scintbordergap)/2);										// offset by -half length so one end is at x=0
+				Xposition=-((scinthfullylen+scintbordergap)/2.);										// offset by -half length so one end is at x=0
 			}
 			Yposition = pairnum*(scintfullxlen+scintbordergap); 								// individual offset by pair number
-			Yposition = Yposition - 0.5*(((scintfullxlen+scintbordergap)/2)*numpaddlesperpanelh)+(scintfullxlen/2);
+			Yposition = Yposition - 0.5*(((scintfullxlen+scintbordergap)*(numpaddlesperpanelh/2.))-scintbordergap)+(scintfullxlen/2);
 			// shift whole set by 1/2 total X extent to shift center back to X=0: HalfLength cancels doubed num of paddles
 			rotmtx=rotatedmatx;
 		} else {
@@ -504,7 +504,7 @@ void WCSimDetectorConstruction::ComputePaddleTransformation (const G4int copyNo,
 			// for vertical panels need to shift Y for each pair
 			Xposition = pairnum*(scintfullxlen+scintbordergap); 	// individual offset by pair number
 			// shift whole set by 1/2 total Y extent to shift center back to Y=0: HalfLength cancels doubed num of paddles
-			Xposition = Xposition - 0.5*(((scintfullxlen+scintbordergap)/2)*numpaddlesperpanelv)+(scintfullxlen/2); 
+			Xposition = Xposition - 0.5*(((scintfullxlen+scintbordergap)*(numpaddlesperpanelv/2.))-scintbordergap)+(scintfullxlen/2); 
 			
 			rotmtx=0;							// don't rotate vertical panels
 		}
@@ -522,18 +522,16 @@ void WCSimDetectorConstruction::ComputePaddleTransformation (const G4int copyNo,
 		G4cout<<"PMT "<<copyNo<<" : Orientation ";
 		(ishpaddle) ? G4cout<<"H" : G4cout<<"V";
 		G4cout<<" : Layer "<<panelnum;
-		G4cout<<" : Origin ("<<Xposition<<","<<Yposition<<","<<Zposition<<") : Extent (";
+		G4cout<<" : Origin ("<<Xposition<<","<<Yposition<<","<<(Zposition+(scintfullzlen/2.)+mrdZoffset)<<") : Extent (";
 		if(ishpaddle){
 			G4cout<<Xposition-(scinthfullylen/2.)<<"→"<<Xposition+(scinthfullylen/2.)<<", ";
 			G4cout<<Yposition-(scintfullxlen/2.)<<"→"<<Yposition+(scintfullxlen/2.)<<", ";
-			G4cout<<Zposition-(scintfullzlen/2.)+mrdZoffset<<"→"
-						<<Zposition+(scintfullzlen/2.)+mrdZoffset<<")"<<G4endl;
 		} else {
 			G4cout<<Xposition-(scintfullxlen/2.)<<"→"<<Xposition+(scintfullxlen/2.)<<", ";
-			G4cout<<Yposition-(scinthfullylen/2.)<<"→"<<Yposition+(scinthfullylen/2.)<<", ";
-			G4cout<<Zposition-(scintfullzlen/2.)+mrdZoffset<<"→"
-						<<Zposition+(scintfullzlen/2.)+mrdZoffset<<")"<<G4endl;
+			G4cout<<Yposition-(scintvfullylen/2.)<<"→"<<Yposition+(scintvfullylen/2.)<<", ";
 		}
+		G4cout<<Zposition-(scintfullzlen/2.)+mrdZoffset<<"→"
+					<<Zposition+(scintfullzlen/2.)+mrdZoffset<<")"<<G4endl;
 #endif
 		physVol->SetTranslation(origin);
 		physVol->SetRotation(rotmtx);
@@ -614,7 +612,7 @@ void WCSimDetectorConstruction::ComputeTaperTransformation (const G4int copyNo, 
 			}
 			// Y offset exactly the same as paddles
 			Yposition = pairnum*(scintfullxlen+scintbordergap);
-			Yposition = Yposition - 0.5*(((scintfullxlen+scintbordergap)/2)*numpaddlesperpanelh)+(scintfullxlen/2); 
+			Yposition = Yposition - 0.5*(((scintfullxlen+scintbordergap)*(numpaddlesperpanelh/2))-scintbordergap)+(scintfullxlen/2); 
 		} else {
 		// vertical panel
 			if(selector==0){
@@ -643,7 +641,7 @@ void WCSimDetectorConstruction::ComputeTaperTransformation (const G4int copyNo, 
 				}
 			}
 			Xposition = pairnum*(scintfullxlen+scintbordergap);
-			Xposition = Xposition - 0.5*(((scintfullxlen+scintbordergap)/2)*numpaddlesperpanelv)+(scintfullxlen/2); 
+			Xposition = Xposition - 0.5*(((scintfullxlen+scintbordergap)*(numpaddlesperpanelv/2))-scintbordergap)+(scintfullxlen/2); 
 		}
 
 		G4ThreeVector origin(Xposition,Yposition,Zposition);
