@@ -3,6 +3,12 @@
 /run/verbose 0
 /tracking/verbose 0
 /hits/verbose 0
+/process/em/verbose 0
+/process/had/particle_hp/verbose 0
+/process/had/cascade/verbose 0
+/process/verbose 0
+/process/setVerbose 0
+/run/initialize
 
 ## select the geometry
 # Default config if you do nothing is currently SuperK
@@ -41,7 +47,8 @@
 #/WCSim/EggShapedHyperK/waterTank_Length 247500. mm # Equivalent length for 1 partition
 
 # switch geometry to ANNIE
-/WCSim/WCgeom ANNIEp2
+#/WCSim/WCgeom ANNIEp2   ## version with 200 PMTs and 200 LAPPDs
+#/WCSim/WCgeom ANNIEp2v2  ## version with realistic PMT content, no LAPPDs <<< it's already called by default
 
 # Surface detector
 #/WCSim/WCgeom Cylinder
@@ -62,8 +69,10 @@
 # distribution. This option is in particular important for the WLS
 # 3. The last option means all the QE are applied at the detector
 # Good for the low energy running.
-/WCSim/PMTQEMethod     Stacking_Only
-/WCSim/LAPPDQEMethod   Stacking_Only
+#/WCSim/PMTQEMethod     Stacking_Only
+/WCSim/PMTQEMethod      Multi_Tank_Types
+#/WCSim/LAPPDQEMethod   Stacking_Only
+/WCSim/LAPPDQEMethod    Multi_Tank_Types
 #/WCSim/PMTQEMethod     Stacking_And_SensitiveDetector
 #/WCSim/PMTQEMethod     SensitiveDetector_Only
 
@@ -290,7 +299,7 @@
 #/WCSimIO/RootFile ANNIEtest_10MeV_Uni_Iso  # for bonsai
 #/WCSimIO/RootFile ANNIEtest_MRD_muon_sample  # for MRD range vs energy estimation
 
-#/run/beamOn 10
+#/run/beamOn 1
 # should run 10000 events for bonsai
 
 #exit

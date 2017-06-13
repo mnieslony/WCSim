@@ -47,6 +47,8 @@ G4float WCSimDetectorConstruction::GetPMTQE(G4String CollectionName, G4float Pho
     }
   }
   
+  if(CollectionName!="WCIDCollectionNameIsUnused"){
+  
   WCSimPMTObject *PMT;
   PMT = GetPMTPointer(CollectionName);
   G4float *wavelength;
@@ -73,6 +75,28 @@ G4float WCSimDetectorConstruction::GetPMTQE(G4String CollectionName, G4float Pho
   wavelengthQE = wavelengthQE *ratio;
   
   return wavelengthQE;
+  
+  } else {
+    G4double wavelengthQE = 0;
+    
+    // do a loop over PMTs. If requesting the maxQE, use the max of any tank type
+    G4float maxQE;
+    for(auto acollection : WCTankCollectionNames){
+        WCSimPMTObject *PMT = GetPMTPointer(acollection);
+        G4float thismaxQE = PMT->GetmaxQE();
+        if(thismaxQE>maxQE) maxQE=thismaxQE;
+    }
+    
+    if (flag == 1){
+      // this shouldn't be used - if using WCTankCollectionNames, use PMT_QE_Method=4.
+      G4cerr<<"Call to GetPMTQE for wavelength-specific QE for WCIDCollectionName."<<G4endl;
+      wavelengthQE = 0;
+    }else if (flag == 0){
+      wavelengthQE = maxQE; 
+    }
+    wavelengthQE = wavelengthQE *ratio;
+    return wavelengthQE;
+  }
 }
 
 

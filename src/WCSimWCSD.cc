@@ -39,11 +39,11 @@ WCSimWCSD::~WCSimWCSD() {}
 void WCSimWCSD::Initialize(G4HCofThisEvent* HCE)
 {
   // Make a new hits collection. With the name we set in the constructor
-  if(collectionName[0]!= "ANNIEp2-glassFaceWCONLYLAPPDS"){
+  if(collectionName[0]!= fdet->GetIDCollectionName2()){
     hitsCollection = new WCSimWCHitsCollection
-      (SensitiveDetectorName,collectionName[0]); }
+      (SensitiveDetectorName,collectionName[0]);
   //G4cout<<"collectionName[0]= ******* "<<collectionName[0]<<G4endl;
-  if(collectionName[0]== "ANNIEp2-glassFaceWCONLYLAPPDS"){
+  } else{
     hitsCollectionlappd = new WCSimWCHitsCollection
       (SensitiveDetectorName,collectionName[0]);
   }
@@ -58,10 +58,9 @@ void WCSimWCSD::Initialize(G4HCofThisEvent* HCE)
   }  
   // Add it to the Hit collection of this event.
 
-  if(collectionName[0]!= "ANNIEp2-glassFaceWCONLYLAPPDS"){
+  if(collectionName[0]!= fdet->GetIDCollectionName2()){
     HCE->AddHitsCollection( HCID, hitsCollection ); 
-  }
-  if(collectionName[0]== "ANNIEp2-glassFaceWCONLYLAPPDS"){
+  } else {
     HCE->AddHitsCollection( HCID, hitsCollectionlappd ); 
   }
 
@@ -123,18 +122,6 @@ G4bool WCSimWCSD::ProcessHits(G4Step* aStep, G4TouchableHistory*)
   if ( particleDefinition != G4OpticalPhoton::OpticalPhotonDefinition()){
     return false;
   }
-  G4String WCCollectionName;
-  if(detectorElement=="tank"){
-    if(collectionName[0]=="ANNIEp2-glassFaceWCONLYLAPPDS"){
-  	WCCollectionName = fdet->GetIDCollectionName2();
-    } else {
-  	WCCollectionName = fdet->GetIDCollectionName();
-    }
-  } else if (detectorElement=="mrd"){
-  	WCCollectionName = fdet->GetMRDCollectionName();
-  } else if (detectorElement=="facc"){
-  	WCCollectionName = fdet->GetFACCCollectionName();
-  }
   // M Fechner : too verbose
   //  if (aStep->GetTrack()->GetTrackStatus() == fAlive)G4cout << "status is fAlive\n";
   if ((aStep->GetTrack()->GetTrackStatus() == fAlive )
@@ -156,15 +143,13 @@ G4bool WCSimWCSD::ProcessHits(G4Step* aStep, G4TouchableHistory*)
 //    tubeTag << theMother->GetName() << ":";
 
 //  tubeTag << thePhysical->GetName(); 
-  if(collectionName[0]!= "ANNIEp2-glassFaceWCONLYLAPPDS"){
+  if(collectionName[0]!= fdet->GetIDCollectionName2()){
     for (G4int i = theTouchable->GetHistoryDepth()-1 ; i >= 0; i--){
       tubeTag << ":" << theTouchable->GetVolume(i)->GetName();
       tubeTag << "-" << theTouchable->GetCopyNumber(i);
     }
     //  tubeTag << ":" << theTouchable->GetVolume(i)->GetCopyNo(); 
-  }
-  
-  if(collectionName[0]== "ANNIEp2-glassFaceWCONLYLAPPDS"){
+  } else {
     for (G4int ii = theTouchable->GetHistoryDepth()-1 ; ii >= 0; ii--){
       lappdTag << ":" << theTouchable->GetVolume(ii)->GetName();
       lappdTag << "-" << theTouchable->GetCopyNumber(ii);
@@ -194,29 +179,36 @@ G4bool WCSimWCSD::ProcessHits(G4Step* aStep, G4TouchableHistory*)
   G4float ratio = 1.;
   G4float maxQE;
   G4float photonQE;
-  if(volumeName != "ANNIEp2-glassFaceWCONLYLAPPDS"){
+  if(volumeName != fdet->GetIDCollectionName2()){
   if (fdet->GetPMT_QE_Method()==1){
     photonQE = 1.1;
   }else if (fdet->GetPMT_QE_Method()==2){
-    maxQE = fdet->GetPMTQE(WCCollectionName,wavelength,0,240,660,ratio);
+    maxQE = fdet->GetPMTQE(volumeName,wavelength,0,240,660,ratio);
     photonQE = fdet->GetPMTQE(volumeName, wavelength,1,240,660,ratio);
     photonQE = photonQE/maxQE;
   }else if (fdet->GetPMT_QE_Method()==3){
     ratio = 1./(1.-0.25);
     photonQE = fdet->GetPMTQE(volumeName, wavelength,1,240,660,ratio);
+  }else if (fdet->GetPMT_QE_Method()==4){
+    maxQE = fdet->GetPMTQE(fdet->GetIDCollectionName(), wavelength,0,240,660,ratio);
+    photonQE = fdet->GetPMTQE(volumeName, wavelength,1,240,660,ratio);
+    photonQE = photonQE/maxQE;
   }else{ photonQE=0.3; }
-  }
+  } else {
   //----- for lappds -------
-  if(volumeName=="ANNIEp2-glassFaceWCONLYLAPPDS"){
     if (fdet->GetLAPPD_QE_Method()==1){
       photonQE = 1.1;
     }else if (fdet->GetLAPPD_QE_Method()==2){
-      maxQE = fdet->GetLAPPDQE(WCCollectionName,wavelength,0,240,660,ratio);
+      maxQE = fdet->GetLAPPDQE(volumeName,wavelength,0,240,660,ratio);
       photonQE = fdet->GetLAPPDQE(volumeName, wavelength,1,240,660,ratio);
       photonQE = photonQE/maxQE;
     }else if (fdet->GetLAPPD_QE_Method()==3){
       ratio = 1./(1.-0.25);
       photonQE = fdet->GetLAPPDQE(volumeName, wavelength,1,240,660,ratio);
+    }else if (fdet->GetLAPPD_QE_Method()==4){
+      maxQE = fdet->GetPMTQE(fdet->GetIDCollectionName(), wavelength,0,240,660,ratio);
+      photonQE = fdet->GetLAPPDQE(volumeName, wavelength,1,240,660,ratio);
+      photonQE = photonQE/maxQE;
     }else{ photonQE=0.3; }
   }
 
@@ -228,7 +220,8 @@ G4bool WCSimWCSD::ProcessHits(G4Step* aStep, G4TouchableHistory*)
      G4double local_z = localPosition.z();
      theta_angle = acos(fabs(local_z)/sqrt(pow(local_x,2)+pow(local_y,2)+pow(local_z,2)))/3.1415926*180.;
      
-     if(volumeName != "ANNIEp2-glassFaceWCONLYLAPPDS"){
+     if(volumeName != fdet->GetIDCollectionName2()){
+       // for pmts
        effectiveAngularEfficiency = fdet->GetPMTCollectionEfficiency(theta_angle, volumeName);
        if (G4UniformRand() <= effectiveAngularEfficiency || fdet->UsePMT_Coll_Eff()==0){
          //Retrieve the pointer to the appropriate hit collection. Since volumeName is the same as the SD name, this works. 
@@ -270,10 +263,8 @@ G4bool WCSimWCSD::ProcessHits(G4Step* aStep, G4TouchableHistory*)
 	   
          }
        }
-     }//for pmts
+     } else {
      //__________ lappd _________
-      if(volumeName=="ANNIEp2-glassFaceWCONLYLAPPDS"){
-       
        effectiveAngularEfficiency2 = fdet->GetLAPPDCollectionEfficiency(theta_angle, volumeName);
        if (G4UniformRand() <= effectiveAngularEfficiency2 || fdet->UseLAPPD_Coll_Eff()==0){
        //Retrieve the pointer to the appropriate hit collection. Since volumeName is the same as the SD name, this works. 

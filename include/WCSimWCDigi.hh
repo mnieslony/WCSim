@@ -124,7 +124,7 @@ public:
     }
     catch (...) {
       G4cerr<<"Exception occurred while attempting to use WCSimWCDigi::GetTime to retrieve time for pe "
-            << gate << " from map of times. The time map has entries:" << G4endl;
+            << gate << " from map of times. The time map has "<<time.size()<<" entries:" << G4endl;
       for (auto& x: time){
         try{
           G4cerr << x.first << ": ";

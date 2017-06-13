@@ -38,7 +38,13 @@ G4ClassificationOfNewTrack WCSimStackingAction::ClassifyNewTrack
       G4float ratio = 1./(1.0-0.25);
       G4float wavelengthQE = 0;
       if(aTrack->GetCreatorProcess()==NULL) {
+        // not sure why primary photons should be treated differently here... ?
+        if (DetConstruct->GetPMT_QE_Method()!=4){
 	wavelengthQE  = DetConstruct->GetPMTQE(WCIDCollectionName,photonWavelength,1,240,660,ratio);
+	} else {
+	// we have to override this: for PMT_QE_Method==4 there's no wavelength-specific value
+	wavelengthQE  = DetConstruct->GetPMTQE(WCIDCollectionName,photonWavelength,0,240,660,ratio);
+	}
 	if( G4UniformRand() > wavelengthQE ) {
 	  classification = fKill;
 	  // G4cout<<"stage 0 PMTS.."<<G4endl;
@@ -56,7 +62,7 @@ G4ClassificationOfNewTrack WCSimStackingAction::ClassifyNewTrack
 	  G4float wavelengthQE = 0;
 	  if (DetConstruct->GetPMT_QE_Method()==1){
 	    wavelengthQE  = DetConstruct->GetPMTQE(WCIDCollectionName,photonWavelength,1,240,660,ratio);
-	  }else if (DetConstruct->GetPMT_QE_Method()==2){
+	  }else if (DetConstruct->GetPMT_QE_Method()==2||DetConstruct->GetPMT_QE_Method()==4){
 	    wavelengthQE  = DetConstruct->GetPMTQE(WCIDCollectionName,photonWavelength,0,240,660,ratio);
 	  }else if (DetConstruct->GetPMT_QE_Method()==3){
 	    wavelengthQE = 1.1;

@@ -93,16 +93,28 @@ public:
   void UpdateGeometry();
   void SetANNIEPhase1Geometry(); //phase 1 geometry - just 60 PMTs on bottom, with NCV.
   void SetANNIEPhase2Geometry(); // phase 2 geometry - 60 PMTs on bottom, top, and 200 PMTs around barrel.
+  void SetANNIEPhase2Geometryv2(); // phase 2 geometry - with realistic PMT types
+  
+  G4int    GetTotalNumPmts(G4String key){
+    if(std::find(WCTankCollectionNames.begin(), WCTankCollectionNames.end(), key)!=WCTankCollectionNames.end())
+      return GetTubesInCollection(key).size();
+    return -1;                                                                              // ✩
+  }
+  G4String GetTubeCollection(Int_t tubeID){return WCTubeCollectionMap.at(tubeID);}          // ✩
+  std::vector<G4String> GetIDCollectionNames(){return WCTankCollectionNames;}               // ✩
+  std::vector<Int_t> GetTubesInCollection(G4String CollectionName){                         // ✩
+    return TubeIdsByCollection.at(CollectionName);
+  }
   
 
   G4String GetDetectorName()      {return WCDetectorName;}
   G4double GetWaterTubeLength()   {return WCLength;}
   G4double GetWaterTubePosition() {return WCPosition;}
-  G4double GetPMTSize()           {return WCPMTRadius;}
-  G4String GetPMTName()           {return WCPMTName;}
+  G4double GetPMTSize()           {return WCPMTRadius;} // ⚠ not used
+  G4String GetPMTName()           {return WCPMTName;}   // ⚠ not used
   G4int    GetMyConfiguration()   {return myConfiguration;}
   G4double GetGeo_Dm(G4int);
-  G4int    GetTotalNumPmts() {return totalNumPMTs;}
+  G4int    GetTotalNumPmts() {return totalNumPMTs;}     // ⚠
   G4int    GetTotalNumMrdPmts() {return totalNumMrdPMTs;}
   G4int    GetTotalNumFaccPmts() {return totalNumFaccPMTs;}
   G4int    GetTotalNumLAPPDs() {return totalNumLAPPDs;}
@@ -212,7 +224,7 @@ public:
   std::vector<WCSimPmtInfo*>* Get_Pmts() {return &fpmts;}
   std::vector<WCSimLAPPDInfo*>* Get_LAPPDs() {return &flappds;}
 
-  G4String GetIDCollectionName(){return WCIDCollectionName;}
+  G4String GetIDCollectionName(){return WCIDCollectionName;} // ⚠
 	G4String GetIDCollectionName2(){return WCIDCollectionName2;}
 
  
@@ -327,12 +339,17 @@ private:
   
   // Hit collection name parameters
   G4String WCDetectorName;
-  G4String WCIDCollectionName;
+  G4String WCIDCollectionName; // ⚠
   G4String WCODCollectionName;
 	G4String WCIDCollectionName2;
+  std::map<G4String, G4String> WCPMTNameMap;              // ✩
+  std::map<G4String, G4double> WCPMTRadiusMap;            // ✩
+  std::map<G4String, std::vector<int> > TubeIdsByCollection; // ✩ Store all tubeIDs in each collection
+  std::map<Int_t, G4String> WCTubeCollectionMap;             // ✩ Map a tubeID to the collection it's in
+  std::vector<G4String> WCTankCollectionNames;               // ✩
 
   // WC PMT parameters
-  G4String WCPMTName;
+  G4String WCPMTName; // ⚠
   typedef std::pair<G4String, G4String> PMTKey_t;
   typedef std::map<PMTKey_t, G4LogicalVolume*> PMTMap_t;
 
@@ -346,8 +363,8 @@ private:
 
   // WC geometry parameters
 
-  G4double WCPMTRadius;
-  G4double WCPMTExposeHeight;
+  G4double WCPMTRadius;       // ⚠
+  G4double WCPMTExposeHeight; // ⚠
   G4double WCBarrelPMTOffset;
 
   G4double WCLAPPDRadius;
@@ -498,9 +515,9 @@ private:
 
   std::ofstream geoFile;   // File for text output
 
-  G4int totalNumPMTs;      // The number of PMTs for this configuration     
+  G4int totalNumPMTs;       // ⚠ The number of PMTs for this configuration     
   G4double WCCylInfo[3];    // Info for the geometry tree: radius & length or mail box, length, width and depth
-  G4double WCPMTSize;       // Info for the geometry tree: pmt size
+  G4double WCPMTSize;       // ⚠ Info for the geometry tree: pmt size
   G4ThreeVector WCOffset;   // Info for the geometry tree: WC center offset
 
   G4int totalNumLAPPDs; 

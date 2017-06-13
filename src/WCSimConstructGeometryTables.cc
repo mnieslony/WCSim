@@ -159,17 +159,20 @@ void WCSimDetectorConstruction::DescribeAndRegisterPMT(G4VPhysicalVolume* aPV ,i
       lappdLocationMap[LAPPDTag] = totalNumLAPPDs;
    }
    
-  if (thepvname== WCIDCollectionName ||thepvname== WCODCollectionName ||thepvname== WCMRDCollectionName ||thepvname== WCFACCCollectionName) 
+  auto tankcollit = std::find(WCTankCollectionNames.begin(), WCTankCollectionNames.end(), thepvname);
+  bool istankpmt = (tankcollit!=WCTankCollectionNames.end()); 
+  if (thepvname== WCIDCollectionName ||thepvname== WCODCollectionName ||thepvname== WCMRDCollectionName ||thepvname== WCFACCCollectionName || istankpmt) 
     {
 
     // First increment the number of PMTs in the tank.
-    if(thepvname==WCIDCollectionName||thepvname==WCODCollectionName){
+    if(thepvname==WCIDCollectionName||thepvname==WCODCollectionName||istankpmt){
       totalNumPMTs++;  
     } else if(thepvname==WCMRDCollectionName){
       totalNumMrdPMTs++;
     } else if(thepvname==WCFACCCollectionName){
       totalNumFaccPMTs++;
     }
+    WCTubeCollectionMap.emplace(std::make_pair(totalNumPMTs, thepvname));
     
     // Put the location of this tube into the location map so we can find
     // its ID later.  It is coded by its tubeTag string.
@@ -180,7 +183,7 @@ void WCSimDetectorConstruction::DescribeAndRegisterPMT(G4VPhysicalVolume* aPV ,i
       tubeTag += ":" + replicaNoString[i];
     // G4cout << tubeTag << G4endl;
     
-    if(thepvname==WCIDCollectionName){
+    if( thepvname==WCIDCollectionName || istankpmt){
     if ( tubeLocationMap.find(tubeTag) != tubeLocationMap.end() ) {
         G4cerr << "Repeated tube tag: " << tubeTag << G4endl;
         G4cerr << "Assigned to both tube #" << tubeLocationMap[tubeTag] << " and #" << totalNumPMTs << G4endl;
@@ -290,7 +293,7 @@ void WCSimDetectorConstruction::DumpGeometryTableToFile()
   flappds.clear();
 
   // Grab the tube information from the tubeID Map and dump to file.
-  for ( int tubeID = 1; tubeID <= totalNumPMTs; tubeID++){
+  for ( int tubeID = 1; tubeID <= tubeIDMap.size(); tubeID++){
     G4Transform3D newTransform = tubeIDMap[tubeID];
 
     // Get tube orientation vector
@@ -318,6 +321,10 @@ void WCSimDetectorConstruction::DumpGeometryTableToFile()
         {cylLocation=1;}
     }
     
+    G4String thistubescollectionname = GetTubeCollection(tubeID);
+    WCSimPMTObject* PMT = GetPMTPointer(thistubescollectionname);
+    G4String pmtName = PMT->GetPMTName();
+    
     geoFile.precision(9);
     geoFile <<"PMTs:"<< setw(4) << tubeID 
  	    << " " << setw(8) << newTransform.getTranslation().getX()/CLHEP::cm
@@ -327,6 +334,7 @@ void WCSimDetectorConstruction::DumpGeometryTableToFile()
 	    << " " << setw(7) << pmtOrientation.y()
 	    << " " << setw(7) << pmtOrientation.z()
  	    << " " << setw(3) << cylLocation
+ 	    << " " << setw(3) << pmtName
  	    << G4endl;
      
      WCSimPmtInfo *new_pmt = new WCSimPmtInfo(cylLocation,

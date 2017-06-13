@@ -31,6 +31,7 @@ WCSimDetectorMessenger::WCSimDetectorMessenger(WCSimDetectorConstruction* WCSimD
 			  "EggShapedHyperK_withHPD\n"
 			  "ANNIEp1\n"
 			  "ANNIEp2\n"
+			  "ANNIEp2v2\n"
 			  );
   PMTConfig->SetParameterName("PMTConfig", false);
   PMTConfig->SetCandidates("SuperK "
@@ -47,6 +48,7 @@ WCSimDetectorMessenger::WCSimDetectorMessenger(WCSimDetectorConstruction* WCSimD
 			  "EggShapedHyperK_withHPD "
 			  "ANNIEp1 "
 			  "ANNIEp2 "
+			  "ANNIEp2v2"
 			  );
   PMTConfig->AvailableForStates(G4State_PreInit, G4State_Idle);
 
@@ -82,11 +84,13 @@ WCSimDetectorMessenger::WCSimDetectorMessenger(WCSimDetectorConstruction* WCSimD
   PMTQEMethod->SetGuidance("Available options are:\n"
 			     "Stacking_Only\n"
 			     "Stacking_And_SensitiveDetector\n"
-			     "SensitiveDetector_Only\n");
+			     "SensitiveDetector_Only\n"
+			     "Multi_Tank_Types\n");
   PMTQEMethod->SetParameterName("PMTQEMethod", false);
   PMTQEMethod->SetCandidates("Stacking_Only "
 			     "Stacking_And_SensitiveDetector "
-			     "SensitiveDetector_Only ");
+			     "SensitiveDetector_Only "
+			     "Multi_Tank_Types ");
   PMTQEMethod->AvailableForStates(G4State_PreInit, G4State_Idle);
   //-------------
   LAPPDQEMethod = new G4UIcmdWithAString("/WCSim/LAPPDQEMethod", this);
@@ -94,11 +98,13 @@ WCSimDetectorMessenger::WCSimDetectorMessenger(WCSimDetectorConstruction* WCSimD
   LAPPDQEMethod->SetGuidance("Available options are:\n"
 			     "Stacking_Only\n"
 			     "Stacking_And_SensitiveDetector\n"
-			     "SensitiveDetector_Only\n");
+			     "SensitiveDetector_Only\n"
+			     "Multi_Tank_Types\n");
   LAPPDQEMethod->SetParameterName("LAPPDQEMethod", false);
   LAPPDQEMethod->SetCandidates("Stacking_Only "
 			       "Stacking_And_SensitiveDetector "
-			       "SensitiveDetector_Only ");
+			       "SensitiveDetector_Only "
+			       "Multi_Tank_Types ");
   LAPPDQEMethod->AvailableForStates(G4State_PreInit, G4State_Idle);
   //________
 
@@ -223,6 +229,8 @@ void WCSimDetectorMessenger::SetNewValue(G4UIcommand* command,G4String newValue)
 		  WCSimDetector->SetANNIEPhase1Geometry();
 		} else if (newValue == "ANNIEp2") {
 		  WCSimDetector->SetANNIEPhase2Geometry();
+		} else if (newValue == "ANNIEp2v2") {
+		  WCSimDetector->SetANNIEPhase2Geometryv2();
 		} else {
 		  G4cout << "That geometry choice not defined!" << G4endl;
 		}
@@ -250,6 +258,9 @@ void WCSimDetectorMessenger::SetNewValue(G4UIcommand* command,G4String newValue)
 	  }else if (newValue == "SensitiveDetector_Only"){
 	    WCSimDetector->SetPMT_QE_Method(3);
 	    G4cout << "3";
+	  }else if (newValue == "Multi_Tank_Types"){
+	    WCSimDetector->SetPMT_QE_Method(4);
+	    G4cout << "4";
 	  }else{
 	    
 	  }
@@ -266,6 +277,9 @@ void WCSimDetectorMessenger::SetNewValue(G4UIcommand* command,G4String newValue)
 	  }else if (newValue == "SensitiveDetector_Only"){
 	    WCSimDetector->SetLAPPD_QE_Method(3);
 	    G4cout << "3";
+	  }else if (newValue == "Multi_Tank_Types"){
+	    WCSimDetector->SetLAPPD_QE_Method(4);
+	    G4cout << "4";
 	  }else{
 	    
 	  }

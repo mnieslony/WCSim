@@ -270,17 +270,18 @@ void WCSimEventAction::EndOfEventAction(const G4Event* evt)
   WCSimWCHitsCollection* WCHC = 0;
 
   G4String WCIDCollectionName = detectorConstructor->GetIDCollectionName();
+  std::vector<G4String> tankcollectionnames = detectorConstructor->GetIDCollectionNames();
+  if(tankcollectionnames.size()==0) tankcollectionnames.push_back(WCIDCollectionName);
   G4int collectionID;
 
   G4cout<<"-------------------------> I'm in event: event_id: "<<event_id<<G4endl;
   if (HCE)
-  { 
-    collectionID = SDman->GetCollectionID(WCIDCollectionName);
+  {
+  for(auto atankcollectionname : tankcollectionnames){
+    collectionID = SDman->GetCollectionID(atankcollectionname);
     WCHC = (WCSimWCHitsCollection*)HCE->GetHC(collectionID);
-    //G4cout<<WCIDCollectionName<<" has "<<WCHC->entries()<<" entries"<<G4endl;
+    //G4cout<<atankcollectionname<<" has "<<WCHC->entries()<<" entries"<<G4endl;
     //G4cout<<"-----------name= "<<name<<" name2= "<<name2<<"--------"<<G4endl;
-  } else {G4cerr<<"Could not find hit colletion of event!"<<G4endl;}
-  /** used if save raw hits is enabled in preprocessor - WCHC is a member variable used in FillRootEvent() */
   
   // To use Do like This:
   // --------------------
@@ -291,6 +292,9 @@ void WCSimEventAction::EndOfEventAction(const G4Event* evt)
   // ----------------------------------------------------------------------
   //  Get Digitized Hit Collection
   // ----------------------------------------------------------------------
+  }
+  } else {G4cerr<<"Could not find hit colletion of event!"<<G4endl;}
+  /** used if save raw hits is enabled in preprocessor - WCHC is a member variable used in FillRootEvent() */
   
   // Get a pointer to the Digitizing Module Manager
   G4DigiManager* DMman = G4DigiManager::GetDMpointer();
@@ -383,6 +387,7 @@ void WCSimEventAction::EndOfEventAction(const G4Event* evt)
   WCSimWCDigitsCollection* WCDC_hits_FACC;
   WCSimWCTriggeredDigitsCollection* WCDC_FACC;
   if(isANNIE){
+    if(detectorConstructor->GetTotalNumLAPPDs()!=0){
     WCSimWCHitsCollection* WCHClappd = 0;
     G4String WCIDCollectionName2 = detectorConstructor->GetIDCollectionName2();
     G4int collectionID2;
@@ -588,6 +593,8 @@ void WCSimEventAction::EndOfEventAction(const G4Event* evt)
     lappdhit_neighstrip_time.clear();
     lappdhit_neighstrip_lefttime.clear();
     lappdhit_neighstrip_righttime.clear();
+    
+    } // end of if TotalNumLAPPDs!=0
     
     // Repeat the steps for the MRD and FACC
     G4cout<<G4endl<<G4endl;

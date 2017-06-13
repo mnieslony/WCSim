@@ -301,4 +301,64 @@ public:
   G4float  GetDarkRateConversionFactor();
 };
 
+class PMT_R5912 : public WCSimPMTObject
+{
+public:
+PMT_R5912();
+~PMT_R5912();
+
+public:
+  G4String GetPMTName(); 
+  G4double GetExposeHeight(); 
+  G4double GetRadius();
+  G4float* Getqpe();
+  G4float* GetQE();
+  G4float* GetQEWavelength();
+  G4float  GetmaxQE();
+  float    HitTimeSmearing(float);
+  G4double GetPMTGlassThickness();
+  G4float  GetDarkRate();
+  G4float  GetDarkRateConversionFactor();
+};
+
+class PMT_D784KFLB : public WCSimPMTObject
+{
+public:
+PMT_D784KFLB();
+~PMT_D784KFLB();
+
+public:
+  G4String GetPMTName(); 
+  G4double GetExposeHeight(); 
+  G4double GetRadius();
+  G4float* Getqpe();
+  G4float* GetQE();
+  G4float* GetQEWavelength();
+  G4float  GetmaxQE();
+  float    HitTimeSmearing(float);
+  G4double GetPMTGlassThickness();
+  G4float  GetDarkRate();
+  G4float  GetDarkRateConversionFactor();
+};
+
+class PMT_R7081 : public WCSimPMTObject
+{
+public:
+PMT_R7081();
+~PMT_R7081();
+
+public:
+  G4String GetPMTName(); 
+  G4double GetExposeHeight(); 
+  G4double GetRadius();
+  G4float* Getqpe();
+  G4float* GetQE();
+  G4float* GetQEWavelength();
+  G4float  GetmaxQE();
+  float    HitTimeSmearing(float);
+  G4double GetPMTGlassThickness();
+  G4float  GetDarkRate();
+  G4float  GetDarkRateConversionFactor();
+};
+
 #endif

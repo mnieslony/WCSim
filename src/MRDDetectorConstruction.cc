@@ -9,7 +9,7 @@
 //===============================================================================================================
 
 #ifndef PRINT_MRD_POSITION
-#define PRINT_MRD_POSITION
+//#define PRINT_MRD_POSITION
 #endif
 
 #include "G4Material.hh"

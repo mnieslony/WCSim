@@ -44,6 +44,7 @@ namespace std {} using namespace std;
 #include "/home/marc/LinuxSystemFiles/WCSim/gitver/wcsim/include/WCSimLAPPDInfo.hh"
 #include "/home/marc/LinuxSystemFiles/WCSim/gitver/wcsim/include/WCSimLAPPDpulse.hh"
 #include "/home/marc/LinuxSystemFiles/WCSim/gitver/wcsim/include/WCSimLAPPDpulseCluster.hh"
+#include "/home/marc/LinuxSystemFiles/WCSim/gitver/wcsim/include/WCSimRootOptions.hh"
 #include "/home/marc/LinuxSystemFiles/WCSim/gitver/wcsim/include/WCSimEnumerations.hh"
 
 // Header files passed via #pragma extra_include
@@ -317,7 +318,7 @@ namespace ROOT {
       ::WCSimRootGeom *ptr = 0;
       static ::TVirtualIsAProxy* isa_proxy = new ::TInstrumentedIsAProxy< ::WCSimRootGeom >(0);
       static ::ROOT::TGenericClassInfo 
-         instance("WCSimRootGeom", ::WCSimRootGeom::Class_Version(), "WCSimRootGeom.hh", 52,
+         instance("WCSimRootGeom", ::WCSimRootGeom::Class_Version(), "WCSimRootGeom.hh", 53,
                   typeid(::WCSimRootGeom), ::ROOT::Internal::DefineBehavior(ptr, ptr),
                   &::WCSimRootGeom::Dictionary, isa_proxy, 4,
                   sizeof(::WCSimRootGeom) );
@@ -349,7 +350,7 @@ namespace ROOT {
       ::WCSimRootPMT *ptr = 0;
       static ::TVirtualIsAProxy* isa_proxy = new ::TInstrumentedIsAProxy< ::WCSimRootPMT >(0);
       static ::ROOT::TGenericClassInfo 
-         instance("WCSimRootPMT", ::WCSimRootPMT::Class_Version(), "WCSimRootGeom.hh", 20,
+         instance("WCSimRootPMT", ::WCSimRootPMT::Class_Version(), "WCSimRootGeom.hh", 21,
                   typeid(::WCSimRootPMT), ::ROOT::Internal::DefineBehavior(ptr, ptr),
                   &::WCSimRootPMT::Dictionary, isa_proxy, 4,
                   sizeof(::WCSimRootPMT) );
@@ -415,7 +416,7 @@ namespace ROOT {
       ::WCSimEnumerations *ptr = 0;
       static ::TVirtualIsAProxy* isa_proxy = new ::TIsAProxy(typeid(::WCSimEnumerations));
       static ::ROOT::TGenericClassInfo 
-         instance("WCSimEnumerations", "WCSimEnumerations.hh", 20,
+         instance("WCSimEnumerations", "WCSimEnumerations.hh", 26,
                   typeid(::WCSimEnumerations), ::ROOT::Internal::DefineBehavior(ptr, ptr),
                   &WCSimEnumerations_Dictionary, isa_proxy, 4,
                   sizeof(::WCSimEnumerations) );
@@ -443,6 +444,38 @@ namespace ROOT {
    static void WCSimEnumerations_TClassManip(TClass* ){
    }
 
+} // end of namespace ROOT
+
+namespace ROOT {
+   static void *new_WCSimRootOptions(void *p = 0);
+   static void *newArray_WCSimRootOptions(Long_t size, void *p);
+   static void delete_WCSimRootOptions(void *p);
+   static void deleteArray_WCSimRootOptions(void *p);
+   static void destruct_WCSimRootOptions(void *p);
+
+   // Function generating the singleton type initializer
+   static TGenericClassInfo *GenerateInitInstanceLocal(const ::WCSimRootOptions*)
+   {
+      ::WCSimRootOptions *ptr = 0;
+      static ::TVirtualIsAProxy* isa_proxy = new ::TInstrumentedIsAProxy< ::WCSimRootOptions >(0);
+      static ::ROOT::TGenericClassInfo 
+         instance("WCSimRootOptions", ::WCSimRootOptions::Class_Version(), "WCSimRootOptions.hh", 22,
+                  typeid(::WCSimRootOptions), ::ROOT::Internal::DefineBehavior(ptr, ptr),
+                  &::WCSimRootOptions::Dictionary, isa_proxy, 4,
+                  sizeof(::WCSimRootOptions) );
+      instance.SetNew(&new_WCSimRootOptions);
+      instance.SetNewArray(&newArray_WCSimRootOptions);
+      instance.SetDelete(&delete_WCSimRootOptions);
+      instance.SetDeleteArray(&deleteArray_WCSimRootOptions);
+      instance.SetDestructor(&destruct_WCSimRootOptions);
+      return &instance;
+   }
+   TGenericClassInfo *GenerateInitInstance(const ::WCSimRootOptions*)
+   {
+      return GenerateInitInstanceLocal((::WCSimRootOptions*)0);
+   }
+   // Static variable to force the class initialization
+   static ::ROOT::TGenericClassInfo *_R__UNIQUE_(Init) = GenerateInitInstanceLocal((const ::WCSimRootOptions*)0x0); R__UseDummy(_R__UNIQUE_(Init));
 } // end of namespace ROOT
 
 namespace ROOT {
@@ -919,6 +952,41 @@ TClass *WCSimPmtInfo::Dictionary()
 TClass *WCSimPmtInfo::Class()
 {
    if (!fgIsA.load()) { R__LOCKGUARD2(gInterpreterMutex); fgIsA = ::ROOT::GenerateInitInstanceLocal((const ::WCSimPmtInfo*)0x0)->GetClass(); }
+   return fgIsA;
+}
+
+//______________________________________________________________________________
+atomic_TClass_ptr WCSimRootOptions::fgIsA(0);  // static to hold class pointer
+
+//______________________________________________________________________________
+const char *WCSimRootOptions::Class_Name()
+{
+   return "WCSimRootOptions";
+}
+
+//______________________________________________________________________________
+const char *WCSimRootOptions::ImplFileName()
+{
+   return ::ROOT::GenerateInitInstanceLocal((const ::WCSimRootOptions*)0x0)->GetImplFileName();
+}
+
+//______________________________________________________________________________
+int WCSimRootOptions::ImplFileLine()
+{
+   return ::ROOT::GenerateInitInstanceLocal((const ::WCSimRootOptions*)0x0)->GetImplFileLine();
+}
+
+//______________________________________________________________________________
+TClass *WCSimRootOptions::Dictionary()
+{
+   fgIsA = ::ROOT::GenerateInitInstanceLocal((const ::WCSimRootOptions*)0x0)->GetClass();
+   return fgIsA;
+}
+
+//______________________________________________________________________________
+TClass *WCSimRootOptions::Class()
+{
+   if (!fgIsA.load()) { R__LOCKGUARD2(gInterpreterMutex); fgIsA = ::ROOT::GenerateInitInstanceLocal((const ::WCSimRootOptions*)0x0)->GetClass(); }
    return fgIsA;
 }
 
@@ -1412,6 +1480,39 @@ namespace ROOT {
 } // end of namespace ROOT for class ::WCSimEnumerations
 
 //______________________________________________________________________________
+void WCSimRootOptions::Streamer(TBuffer &R__b)
+{
+   // Stream an object of class WCSimRootOptions.
+
+   if (R__b.IsReading()) {
+      R__b.ReadClassBuffer(WCSimRootOptions::Class(),this);
+   } else {
+      R__b.WriteClassBuffer(WCSimRootOptions::Class(),this);
+   }
+}
+
+namespace ROOT {
+   // Wrappers around operator new
+   static void *new_WCSimRootOptions(void *p) {
+      return  p ? new(p) ::WCSimRootOptions : new ::WCSimRootOptions;
+   }
+   static void *newArray_WCSimRootOptions(Long_t nElements, void *p) {
+      return p ? new(p) ::WCSimRootOptions[nElements] : new ::WCSimRootOptions[nElements];
+   }
+   // Wrapper around operator delete
+   static void delete_WCSimRootOptions(void *p) {
+      delete ((::WCSimRootOptions*)p);
+   }
+   static void deleteArray_WCSimRootOptions(void *p) {
+      delete [] ((::WCSimRootOptions*)p);
+   }
+   static void destruct_WCSimRootOptions(void *p) {
+      typedef ::WCSimRootOptions current_t;
+      ((current_t*)p)->~current_t();
+   }
+} // end of namespace ROOT for class ::WCSimRootOptions
+
+//______________________________________________________________________________
 void WCSimLAPPDInfo::Streamer(TBuffer &R__b)
 {
    // Stream an object of class WCSimLAPPDInfo.
@@ -1502,6 +1603,132 @@ namespace ROOT {
       ((current_t*)p)->~current_t();
    }
 } // end of namespace ROOT for class ::WCSimLAPPDpulseCluster
+
+namespace ROOT {
+   static TClass *vectorlEvectorlEintgRsPgR_Dictionary();
+   static void vectorlEvectorlEintgRsPgR_TClassManip(TClass*);
+   static void *new_vectorlEvectorlEintgRsPgR(void *p = 0);
+   static void *newArray_vectorlEvectorlEintgRsPgR(Long_t size, void *p);
+   static void delete_vectorlEvectorlEintgRsPgR(void *p);
+   static void deleteArray_vectorlEvectorlEintgRsPgR(void *p);
+   static void destruct_vectorlEvectorlEintgRsPgR(void *p);
+
+   // Function generating the singleton type initializer
+   static TGenericClassInfo *GenerateInitInstanceLocal(const vector<vector<int> >*)
+   {
+      vector<vector<int> > *ptr = 0;
+      static ::TVirtualIsAProxy* isa_proxy = new ::TIsAProxy(typeid(vector<vector<int> >));
+      static ::ROOT::TGenericClassInfo 
+         instance("vector<vector<int> >", -2, "vector", 214,
+                  typeid(vector<vector<int> >), ::ROOT::Internal::DefineBehavior(ptr, ptr),
+                  &vectorlEvectorlEintgRsPgR_Dictionary, isa_proxy, 0,
+                  sizeof(vector<vector<int> >) );
+      instance.SetNew(&new_vectorlEvectorlEintgRsPgR);
+      instance.SetNewArray(&newArray_vectorlEvectorlEintgRsPgR);
+      instance.SetDelete(&delete_vectorlEvectorlEintgRsPgR);
+      instance.SetDeleteArray(&deleteArray_vectorlEvectorlEintgRsPgR);
+      instance.SetDestructor(&destruct_vectorlEvectorlEintgRsPgR);
+      instance.AdoptCollectionProxyInfo(TCollectionProxyInfo::Generate(TCollectionProxyInfo::Pushback< vector<vector<int> > >()));
+      return &instance;
+   }
+   // Static variable to force the class initialization
+   static ::ROOT::TGenericClassInfo *_R__UNIQUE_(Init) = GenerateInitInstanceLocal((const vector<vector<int> >*)0x0); R__UseDummy(_R__UNIQUE_(Init));
+
+   // Dictionary for non-ClassDef classes
+   static TClass *vectorlEvectorlEintgRsPgR_Dictionary() {
+      TClass* theClass =::ROOT::GenerateInitInstanceLocal((const vector<vector<int> >*)0x0)->GetClass();
+      vectorlEvectorlEintgRsPgR_TClassManip(theClass);
+   return theClass;
+   }
+
+   static void vectorlEvectorlEintgRsPgR_TClassManip(TClass* ){
+   }
+
+} // end of namespace ROOT
+
+namespace ROOT {
+   // Wrappers around operator new
+   static void *new_vectorlEvectorlEintgRsPgR(void *p) {
+      return  p ? ::new((::ROOT::Internal::TOperatorNewHelper*)p) vector<vector<int> > : new vector<vector<int> >;
+   }
+   static void *newArray_vectorlEvectorlEintgRsPgR(Long_t nElements, void *p) {
+      return p ? ::new((::ROOT::Internal::TOperatorNewHelper*)p) vector<vector<int> >[nElements] : new vector<vector<int> >[nElements];
+   }
+   // Wrapper around operator delete
+   static void delete_vectorlEvectorlEintgRsPgR(void *p) {
+      delete ((vector<vector<int> >*)p);
+   }
+   static void deleteArray_vectorlEvectorlEintgRsPgR(void *p) {
+      delete [] ((vector<vector<int> >*)p);
+   }
+   static void destruct_vectorlEvectorlEintgRsPgR(void *p) {
+      typedef vector<vector<int> > current_t;
+      ((current_t*)p)->~current_t();
+   }
+} // end of namespace ROOT for class vector<vector<int> >
+
+namespace ROOT {
+   static TClass *vectorlEstringgR_Dictionary();
+   static void vectorlEstringgR_TClassManip(TClass*);
+   static void *new_vectorlEstringgR(void *p = 0);
+   static void *newArray_vectorlEstringgR(Long_t size, void *p);
+   static void delete_vectorlEstringgR(void *p);
+   static void deleteArray_vectorlEstringgR(void *p);
+   static void destruct_vectorlEstringgR(void *p);
+
+   // Function generating the singleton type initializer
+   static TGenericClassInfo *GenerateInitInstanceLocal(const vector<string>*)
+   {
+      vector<string> *ptr = 0;
+      static ::TVirtualIsAProxy* isa_proxy = new ::TIsAProxy(typeid(vector<string>));
+      static ::ROOT::TGenericClassInfo 
+         instance("vector<string>", -2, "vector", 214,
+                  typeid(vector<string>), ::ROOT::Internal::DefineBehavior(ptr, ptr),
+                  &vectorlEstringgR_Dictionary, isa_proxy, 0,
+                  sizeof(vector<string>) );
+      instance.SetNew(&new_vectorlEstringgR);
+      instance.SetNewArray(&newArray_vectorlEstringgR);
+      instance.SetDelete(&delete_vectorlEstringgR);
+      instance.SetDeleteArray(&deleteArray_vectorlEstringgR);
+      instance.SetDestructor(&destruct_vectorlEstringgR);
+      instance.AdoptCollectionProxyInfo(TCollectionProxyInfo::Generate(TCollectionProxyInfo::Pushback< vector<string> >()));
+      return &instance;
+   }
+   // Static variable to force the class initialization
+   static ::ROOT::TGenericClassInfo *_R__UNIQUE_(Init) = GenerateInitInstanceLocal((const vector<string>*)0x0); R__UseDummy(_R__UNIQUE_(Init));
+
+   // Dictionary for non-ClassDef classes
+   static TClass *vectorlEstringgR_Dictionary() {
+      TClass* theClass =::ROOT::GenerateInitInstanceLocal((const vector<string>*)0x0)->GetClass();
+      vectorlEstringgR_TClassManip(theClass);
+   return theClass;
+   }
+
+   static void vectorlEstringgR_TClassManip(TClass* ){
+   }
+
+} // end of namespace ROOT
+
+namespace ROOT {
+   // Wrappers around operator new
+   static void *new_vectorlEstringgR(void *p) {
+      return  p ? ::new((::ROOT::Internal::TOperatorNewHelper*)p) vector<string> : new vector<string>;
+   }
+   static void *newArray_vectorlEstringgR(Long_t nElements, void *p) {
+      return p ? ::new((::ROOT::Internal::TOperatorNewHelper*)p) vector<string>[nElements] : new vector<string>[nElements];
+   }
+   // Wrapper around operator delete
+   static void delete_vectorlEstringgR(void *p) {
+      delete ((vector<string>*)p);
+   }
+   static void deleteArray_vectorlEstringgR(void *p) {
+      delete [] ((vector<string>*)p);
+   }
+   static void destruct_vectorlEstringgR(void *p) {
+      typedef vector<string> current_t;
+      ((current_t*)p)->~current_t();
+   }
+} // end of namespace ROOT for class vector<string>
 
 namespace ROOT {
    static TClass *vectorlEintgR_Dictionary();
@@ -1629,6 +1856,69 @@ namespace ROOT {
    }
 } // end of namespace ROOT for class vector<float>
 
+namespace ROOT {
+   static TClass *maplEintcOintgR_Dictionary();
+   static void maplEintcOintgR_TClassManip(TClass*);
+   static void *new_maplEintcOintgR(void *p = 0);
+   static void *newArray_maplEintcOintgR(Long_t size, void *p);
+   static void delete_maplEintcOintgR(void *p);
+   static void deleteArray_maplEintcOintgR(void *p);
+   static void destruct_maplEintcOintgR(void *p);
+
+   // Function generating the singleton type initializer
+   static TGenericClassInfo *GenerateInitInstanceLocal(const map<int,int>*)
+   {
+      map<int,int> *ptr = 0;
+      static ::TVirtualIsAProxy* isa_proxy = new ::TIsAProxy(typeid(map<int,int>));
+      static ::ROOT::TGenericClassInfo 
+         instance("map<int,int>", -2, "map", 96,
+                  typeid(map<int,int>), ::ROOT::Internal::DefineBehavior(ptr, ptr),
+                  &maplEintcOintgR_Dictionary, isa_proxy, 0,
+                  sizeof(map<int,int>) );
+      instance.SetNew(&new_maplEintcOintgR);
+      instance.SetNewArray(&newArray_maplEintcOintgR);
+      instance.SetDelete(&delete_maplEintcOintgR);
+      instance.SetDeleteArray(&deleteArray_maplEintcOintgR);
+      instance.SetDestructor(&destruct_maplEintcOintgR);
+      instance.AdoptCollectionProxyInfo(TCollectionProxyInfo::Generate(TCollectionProxyInfo::MapInsert< map<int,int> >()));
+      return &instance;
+   }
+   // Static variable to force the class initialization
+   static ::ROOT::TGenericClassInfo *_R__UNIQUE_(Init) = GenerateInitInstanceLocal((const map<int,int>*)0x0); R__UseDummy(_R__UNIQUE_(Init));
+
+   // Dictionary for non-ClassDef classes
+   static TClass *maplEintcOintgR_Dictionary() {
+      TClass* theClass =::ROOT::GenerateInitInstanceLocal((const map<int,int>*)0x0)->GetClass();
+      maplEintcOintgR_TClassManip(theClass);
+   return theClass;
+   }
+
+   static void maplEintcOintgR_TClassManip(TClass* ){
+   }
+
+} // end of namespace ROOT
+
+namespace ROOT {
+   // Wrappers around operator new
+   static void *new_maplEintcOintgR(void *p) {
+      return  p ? ::new((::ROOT::Internal::TOperatorNewHelper*)p) map<int,int> : new map<int,int>;
+   }
+   static void *newArray_maplEintcOintgR(Long_t nElements, void *p) {
+      return p ? ::new((::ROOT::Internal::TOperatorNewHelper*)p) map<int,int>[nElements] : new map<int,int>[nElements];
+   }
+   // Wrapper around operator delete
+   static void delete_maplEintcOintgR(void *p) {
+      delete ((map<int,int>*)p);
+   }
+   static void deleteArray_maplEintcOintgR(void *p) {
+      delete [] ((map<int,int>*)p);
+   }
+   static void destruct_maplEintcOintgR(void *p) {
+      typedef map<int,int> current_t;
+      ((current_t*)p)->~current_t();
+   }
+} // end of namespace ROOT for class map<int,int>
+
 namespace {
   void TriggerDictionaryInitialization_WCSimRootDict_Impl() {
     static const char* headers[] = {
@@ -1638,6 +1928,7 @@ namespace {
 "/home/marc/LinuxSystemFiles/WCSim/gitver/wcsim/include/WCSimLAPPDInfo.hh",
 "/home/marc/LinuxSystemFiles/WCSim/gitver/wcsim/include/WCSimLAPPDpulse.hh",
 "/home/marc/LinuxSystemFiles/WCSim/gitver/wcsim/include/WCSimLAPPDpulseCluster.hh",
+"/home/marc/LinuxSystemFiles/WCSim/gitver/wcsim/include/WCSimRootOptions.hh",
 "/home/marc/LinuxSystemFiles/WCSim/gitver/wcsim/include/WCSimEnumerations.hh",
 0
     };
@@ -1667,6 +1958,7 @@ class __attribute__((annotate(R"ATTRDUMP(WCSimRootEvent structure)ATTRDUMP"))) _
 class __attribute__((annotate(R"ATTRDUMP(WCSimPMT structure)ATTRDUMP"))) __attribute__((annotate("$clingAutoload$/home/marc/LinuxSystemFiles/WCSim/gitver/wcsim/include/WCSimRootGeom.hh")))  WCSimRootPMT;
 class __attribute__((annotate("$clingAutoload$/home/marc/LinuxSystemFiles/WCSim/gitver/wcsim/include/WCSimPmtInfo.hh")))  WCSimPmtInfo;
 class __attribute__((annotate("$clingAutoload$/home/marc/LinuxSystemFiles/WCSim/gitver/wcsim/include/WCSimRootEvent.hh")))  WCSimEnumerations;
+class __attribute__((annotate(R"ATTRDUMP(WCSimRootEvent structure)ATTRDUMP"))) __attribute__((annotate("$clingAutoload$/home/marc/LinuxSystemFiles/WCSim/gitver/wcsim/include/WCSimRootOptions.hh")))  WCSimRootOptions;
 class __attribute__((annotate("$clingAutoload$/home/marc/LinuxSystemFiles/WCSim/gitver/wcsim/include/WCSimLAPPDInfo.hh")))  WCSimLAPPDInfo;
 class __attribute__((annotate("$clingAutoload$/home/marc/LinuxSystemFiles/WCSim/gitver/wcsim/include/WCSimLAPPDpulse.hh")))  WCSimLAPPDpulse;
 class __attribute__((annotate("$clingAutoload$/home/marc/LinuxSystemFiles/WCSim/gitver/wcsim/include/WCSimLAPPDpulseCluster.hh")))  WCSimLAPPDpulseCluster;
@@ -1685,6 +1977,7 @@ class __attribute__((annotate("$clingAutoload$/home/marc/LinuxSystemFiles/WCSim/
 #include "/home/marc/LinuxSystemFiles/WCSim/gitver/wcsim/include/WCSimLAPPDInfo.hh"
 #include "/home/marc/LinuxSystemFiles/WCSim/gitver/wcsim/include/WCSimLAPPDpulse.hh"
 #include "/home/marc/LinuxSystemFiles/WCSim/gitver/wcsim/include/WCSimLAPPDpulseCluster.hh"
+#include "/home/marc/LinuxSystemFiles/WCSim/gitver/wcsim/include/WCSimRootOptions.hh"
 #include "/home/marc/LinuxSystemFiles/WCSim/gitver/wcsim/include/WCSimEnumerations.hh"
 
 #undef  _BACKWARD_BACKWARD_WARNING_H
@@ -1701,6 +1994,7 @@ class __attribute__((annotate("$clingAutoload$/home/marc/LinuxSystemFiles/WCSim/
 "WCSimRootEvent", payloadCode, "@",
 "WCSimRootEventHeader", payloadCode, "@",
 "WCSimRootGeom", payloadCode, "@",
+"WCSimRootOptions", payloadCode, "@",
 "WCSimRootPMT", payloadCode, "@",
 "WCSimRootPi0", payloadCode, "@",
 "WCSimRootTrack", payloadCode, "@",

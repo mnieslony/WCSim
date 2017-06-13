@@ -76,7 +76,8 @@ WCSimDetectorConstruction::WCSimDetectorConstruction(G4int DetConfig,WCSimTuning
   //SetSuperKGeometry();
   //SetHyperKGeometry();
   //SetANNIEPhase1Geometry();
-  SetANNIEPhase2Geometry();
+  //SetANNIEPhase2Geometry();
+  SetANNIEPhase2Geometryv2();
 
   //----------------------------------------------------- 
   // Set whether or not Pi0-specific info is saved
@@ -274,6 +275,16 @@ G4VPhysicalVolume* WCSimDetectorConstruction::Construct()
 		   &WCSimDetectorConstruction::GetWCGeom) ;
   DumpGeometryTableToFile();
   
+  for(auto apmt : WCTubeCollectionMap){
+    int tubeid = apmt.first;
+    G4String collectionname = apmt.second;
+    if(TubeIdsByCollection.count(collectionname)==0){
+      TubeIdsByCollection.emplace(collectionname,std::vector<int>{tubeid});
+    } else {
+      TubeIdsByCollection.at(collectionname).push_back(tubeid);
+    }
+  }
+  
   //G4cout<<"Writing GDML output file"<<G4endl;
   //G4String GDMLOutFilename = "anniegeomv3.gdml";
   //G4GDMLParser parser;  // Write GDML file
@@ -354,6 +365,21 @@ WCSimPMTObject *WCSimDetectorConstruction::CreatePMTObject(G4String PMTType, G4S
   }
   else if (PMTType == "PMT1cm"){
     WCSimPMTObject* PMT = new PMT1cm;
+    WCSimDetectorConstruction::SetPMTPointer(PMT, CollectionName);
+    return PMT;
+  }
+  else if (PMTType == "R7081"){
+    WCSimPMTObject* PMT = new PMT_R7081;
+    WCSimDetectorConstruction::SetPMTPointer(PMT, CollectionName);
+    return PMT;
+  }
+  else if (PMTType == "D784KFLB"){
+    WCSimPMTObject* PMT = new PMT_D784KFLB;
+    WCSimDetectorConstruction::SetPMTPointer(PMT, CollectionName);
+    return PMT;
+  }
+  else if (PMTType == "R5912"){
+    WCSimPMTObject* PMT = new PMT_R5912;
     WCSimDetectorConstruction::SetPMTPointer(PMT, CollectionName);
     return PMT;
   }

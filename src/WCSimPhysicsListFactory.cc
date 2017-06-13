@@ -1,5 +1,6 @@
 #include "WCSimPhysicsListFactory.hh"
-
+#include "G4NeutronHPManager.hh"
+#include "G4HadronicProcessStore.hh"
 #include "G4PhysicalConstants.hh"
 #include "G4SystemOfUnits.hh"
 
@@ -10,7 +11,7 @@
 WCSimPhysicsListFactory::WCSimPhysicsListFactory() :  G4VModularPhysicsList()
 {
  defaultCutValue = 1.0*mm;
- SetVerboseLevel(1);
+ SetVerboseLevel(0);
  
  PhysicsListName="NULL_LIST"; // default list is set in WCSimPhysicsListFactoryMessenger to FTFP_BERT
  factory = new G4PhysListFactory();
@@ -76,7 +77,10 @@ void WCSimPhysicsListFactory::InitializeList(){
   G4VModularPhysicsList* phys = 0;
 
   if (factory->IsReferencePhysList(PhysicsListName)) {
+    G4NeutronHPManager::GetInstance()->SetVerboseLevel(0);
+    G4HadronicProcessStore::Instance()->SetVerbose(0);
     phys=factory->GetReferencePhysList(PhysicsListName);
+    phys->SetVerboseLevel(0);
     for (G4int i = 0; ; ++i) {
       G4VPhysicsConstructor* elem =
         const_cast<G4VPhysicsConstructor*> (phys->GetPhysics(i));

@@ -42,7 +42,7 @@ WCSimWCPMT::WCSimWCPMT(G4String name,
   }
   DigiHitMapPMT.clear();
 #ifdef HYPER_VERBOSITY
-  if(detectorElement=="mrd"){G4cout<<"WCSimWCPMT::WCSimWCPMT ☆ recording collection name "<<collectionName[0]<<G4endl;}
+  G4cout<<"WCSimWCPMT::WCSimWCPMT ☆ recording collection name "<<collectionName[0]<<G4endl;
 #endif
 
 }
@@ -51,16 +51,8 @@ WCSimWCPMT::~WCSimWCPMT(){
  
 }
 
-G4double WCSimWCPMT::rn1pe(){
-  
-  WCSimPMTObject * PMT;
-  if(detectorElement=="tank"){
-  	PMT = myDetector->GetPMTPointer(myDetector->GetIDCollectionName());
-  } else if(detectorElement=="mrd"){ 
-  	PMT = myDetector->GetPMTPointer(myDetector->GetMRDCollectionName());
-  } else if(detectorElement=="facc"){
-  	PMT = myDetector->GetPMTPointer(myDetector->GetFACCCollectionName());
-  }
+G4double WCSimWCPMT::rn1pe(WCSimPMTObject* PMT){
+
   G4int i;
   G4double random = G4UniformRand();
   G4double random2 = G4UniformRand(); 
@@ -82,38 +74,51 @@ void WCSimWCPMT::Digitize()
 {
   // Create a DigitCollection and retrieve the appropriate hitCollection ID based on detectorElement
   G4String WCCollectionName;
+  std::vector<G4String> WCCollectionNames;
   G4String DigitsCollectionName;
   if(detectorElement=="tank"){
     DigitsCollectionName="WCDigitizedCollectionPMT";
-    WCCollectionName = myDetector->GetIDCollectionName();
+    WCCollectionNames = myDetector->GetIDCollectionNames();
   } else if(detectorElement=="mrd"){
     DigitsCollectionName="WCDigitizedCollection_MRDPMT";
     WCCollectionName = myDetector->GetMRDCollectionName();
+    WCCollectionNames.push_back(WCCollectionName);
   } else if(detectorElement=="facc"){
     DigitsCollectionName="WCDigitizedCollection_FACCPMT";
     WCCollectionName = myDetector->GetFACCCollectionName();
+    WCCollectionNames.push_back(WCCollectionName);
   }
   DigitsCollection = new WCSimWCDigitsCollection (DigitsCollectionName,collectionName[0]);
   
   G4DigiManager* DigiMan = G4DigiManager::GetDMpointer();
+  // now loop over all Sensitive Detector hits collections (possibly >1) and construct digits:
+  int itt=0;
+  for(auto aWCCollectionName : WCCollectionNames){
   // Get the hit collection ID from the name
-  G4int WCHCID = DigiMan->GetHitsCollectionID(WCCollectionName);
+  G4int WCHCID = DigiMan->GetHitsCollectionID(aWCCollectionName);
   WCSimWCHitsCollection* WCHC = (WCSimWCHitsCollection*)(DigiMan->GetHitsCollection(WCHCID));
 
 #ifdef HYPER_VERBOSITY
-  if(detectorElement=="mrd"){
-  G4cout<<"WCSimWCPMT::Digitize ☆ Making digits collection (WCSimWCDigitsCollection*)"<<DigitsCollectionName<<" for "<<detectorElement
-        <<" and calling MakePeCorrection on "<<WCCollectionName<<" to fill it."<<G4endl;}
+  if(itt==0) {
+    G4cout<<"WCSimWCPMT::Digitize ☆ Making digits collection (WCSimWCDigitsCollection*)"
+          <<DigitsCollectionName<<" for "<<detectorElement 
+          <<" and calling MakePeCorrection on "<<aWCCollectionName<<" to fill it."<<G4endl;
+  } else {
+    G4cout<<"WCSimWCPMT::Digitize ☆ Adding to digits collection (WCSimWCDigitsCollection*)"
+          <<DigitsCollectionName<<" for "<<detectorElement 
+          <<" by calling MakePeCorrection on "<<aWCCollectionName<<"."<<G4endl;
+  }
+  itt++;
 #endif
-
   if (WCHC) {
     MakePeCorrection(WCHC);
   }
 
+  }
+
 #ifdef HYPER_VERBOSITY
-  if(detectorElement=="mrd"){
   G4cout<<"WCSimWCPMT::Digitize ☆ Storing "<<DigitsCollectionName<<" for "<<detectorElement
-        <<", which has "<<DigitsCollection->entries()<<" entries"<<G4endl;}
+        <<", which has "<<DigitsCollection->entries()<<" entries"<<G4endl;
 #endif
 
   StoreDigiCollection(DigitsCollection);
@@ -123,21 +128,16 @@ void WCSimWCPMT::Digitize()
 
 void WCSimWCPMT::MakePeCorrection(WCSimWCHitsCollection* WCHC)
 { 
-  //Get the PMT info for hit time smearing
-  G4String WCCollectionName;
-  if(detectorElement=="tank"){
-  	WCCollectionName = myDetector->GetIDCollectionName();
-  } else if(detectorElement=="mrd"){
-  	WCCollectionName = myDetector->GetMRDCollectionName();
-  } else if(detectorElement=="facc"){
-  	WCCollectionName = myDetector->GetFACCCollectionName();
-  }
+  if(WCHC->entries()==0) return;
+  G4LogicalVolume* alogvol = (*WCHC)[0]->GetLogicalVolume();
+  G4String WCCollectionName = alogvol->GetName();
   
+  //Get the PMT info for hit time smearing
   WCSimPMTObject * PMT = myDetector->GetPMTPointer(WCCollectionName);
 
 #ifdef HYPER_VERBOSITY
-  if(detectorElement=="mrd"){G4cout<<"WCSimWCPMT::MakePeCorrection ☆ making PE correction for ";
-  if(WCHC){G4cout<<WCHC->entries();} else {G4cout<<"0";} G4cout<<" entries"<<G4endl;}
+  G4cout<<"WCSimWCPMT::MakePeCorrection ☆ making PE correction for ";
+  if(WCHC){G4cout<<WCHC->entries();} else {G4cout<<"0";} G4cout<<" entries"<<G4endl;
 #endif
   
   for (G4int i=0; i < WCHC->entries(); i++)
@@ -165,7 +165,7 @@ void WCSimWCPMT::MakePeCorrection(WCSimWCHitsCollection* WCHC)
 	      G4cout<<"Error in WCSimWCPMT::MakePeCorrection call of WCSimWCHit::GetTime()"<<G4endl;
 	      assert(false);
 	    }
-	    peSmeared = rn1pe();
+	    peSmeared = rn1pe(PMT);
 	    int parent_id = (*WCHC)[i]->GetParentID(ip);
 
 	    //apply time smearing

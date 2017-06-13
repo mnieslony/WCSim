@@ -12,6 +12,7 @@
 
 #include "TObject.h"
 #include "TClonesArray.h"
+#include <map>
 
 class TDirectory;
 
@@ -62,6 +63,11 @@ private:
 
   Float_t                fWCPMTRadius; // Radius of PMT
   Int_t                  fWCNumPMT;   // Number of PMTs
+  std::vector<Float_t>   fWCPMTRadiusvec; // Vector of tank PMT radii, if more than one type
+  std::vector<Int_t>     fWCNumPMTvec; // Vector of number of PMTs of each type, if more than one
+  std::map<int, int>     fWCTubeIdvsColIndex; // maps a tubeID (key) to the index in fWCPMTRadiusvec etc.
+  std::vector<std::vector<int> > fWCTubeIdsByCollection; // for a collection index (outer) to the TubeIDs in it
+  std::vector<std::string> fWCPMTNamevec; // Vector of the PMT names associated with each collection
   Float_t                fWCLAPPDRadius; // Radius of LAPPD
   Int_t                  fWCNumLAPPD;   // Number of LAPPDs
   Float_t                fMRDPMTRadius; // Radius of MRD PMTs
@@ -104,6 +110,16 @@ public:
   void  SetPMT(Int_t i, Int_t tubeno, Int_t cyl_loc, Float_t rot[3], Float_t pos[3], bool expand=true);
   void  SetLAPPD(Int_t i, Int_t lappdno, Int_t cyl_loc, Float_t rot[3], Float_t pos[3], bool expand=true);
   void  SetOrientation(Int_t o) {fOrientation = o;}
+  void  AddPmtRadius(Float_t theradius){fWCPMTRadiusvec.push_back(theradius);}
+  void  AddPmtTypeCount(Int_t thenum){fWCNumPMTvec.push_back(thenum);}
+  void  AddPmtName(std::string thename){fWCPMTNamevec.push_back(thename);}
+  void  SetTubeIdType(int tubeNo, int index){
+    fWCTubeIdvsColIndex.emplace(std::make_pair(tubeNo,index));
+    if(index>=fWCTubeIdsByCollection.size()){
+      fWCTubeIdsByCollection.resize(index+1,std::vector<int>{});
+    }
+    fWCTubeIdsByCollection.at(index).push_back(tubeNo);
+  }
 
   Float_t GetWCCylRadius() const {return fWCCylRadius;}
   Float_t GetWCCylLength() const {return fWCCylLength;}
@@ -113,6 +129,26 @@ public:
 
   Int_t GetWCNumPMT() const {return fWCNumPMT;}
   Float_t GetWCPMTRadius() const {return fWCPMTRadius;}
+  Float_t GetWCPMTRadiusAt(Int_t index){
+    if(index>=fWCPMTRadiusvec.size()) return -1;
+    return fWCPMTRadiusvec.at(index);
+  }
+  std::string GetWCPMTNameAt(Int_t index){
+    if(index>=fWCPMTNamevec.size()) return "INDEX_OUT_OF_BOUNDS";
+    return fWCPMTNamevec.at(index);
+  }
+  Int_t GetWCNumPMTsAt(Int_t index){
+    if(index>=fWCNumPMTvec.size()) return -1;
+    return fWCNumPMTvec.at(index);
+  }
+  Int_t GetTubeIndex(Int_t tubeId){
+    if(tubeId>=fWCTubeIdvsColIndex.size()) return -1;
+    return fWCTubeIdvsColIndex.at(tubeId);
+  }
+  std::vector<int> GetTubesInCollection(int collectionindex){
+    if(collectionindex>=fWCTubeIdsByCollection.size()) return std::vector<int>{};
+    return fWCTubeIdsByCollection.at(collectionindex);
+  }
   Int_t GetWCNumLAPPD() const {return fWCNumLAPPD;}
   Float_t GetWCLAPPDRadius() const {return fWCLAPPDRadius;}
   Int_t GetWCNumMRDPMT() const {return fWCNumMrdPMT;}

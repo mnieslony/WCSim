@@ -192,9 +192,23 @@ void WCSimRunAction::FillGeoTree(){
       wcsimrootgeom-> SetWCCylLength(cylinfo[2]);
   }
 
-
+  std::vector<G4String> tankcollectionnames = wcsimdetector->GetIDCollectionNames();
+  if(tankcollectionnames.size()==0){
+  numpmt=0;
+  for(auto acollectionname : tankcollectionnames){
+    WCSimPMTObject* PMT = wcsimdetector->GetPMTPointer(acollectionname);
+    Float_t pmtSize = PMT->GetRadius()/CLHEP::cm;
+    wcsimrootgeom->AddPmtRadius(pmtSize);
+    G4String thepmtname = PMT->GetPMTName();
+    wcsimrootgeom->AddPmtName(thepmtname);
+    Int_t pmtcount = wcsimdetector->GetTotalNumPmts(acollectionname);
+    wcsimrootgeom->AddPmtTypeCount(pmtcount);
+    numpmt+=pmtcount;
+  }
+  } else {
+    numpmt = wcsimdetector->GetTotalNumPmts();
+  }
   pmtradius = wcsimdetector->GetPMTSize1();
-  numpmt = wcsimdetector->GetTotalNumPmts();
   
   orientation = 0;
   
@@ -220,6 +234,15 @@ void WCSimRunAction::FillGeoTree(){
     tubeNo = pmt->Get_tubeid();
     cylLoc = pmt->Get_cylocation();
     wcsimrootgeom-> SetPMT(i,tubeNo,cylLoc,rot,pos);
+    if(tankcollectionnames.size()!=0){
+      G4String thistubescollectionname = wcsimdetector->GetTubeCollection(tubeNo);
+      auto it = std::find(tankcollectionnames.begin(), tankcollectionnames.end(), thistubescollectionname);
+      int thecollectionindex=-1;
+      if(it!=tankcollectionnames.end()){
+        thecollectionindex = std::distance(tankcollectionnames.begin(), it);
+      }
+      wcsimrootgeom->SetTubeIdType(tubeNo, thecollectionindex);
+    }
   }
   if (fpmts->size() != (unsigned int)numpmt) {
     G4cout << "Mismatch between number of pmts and pmt list in geofile.txt!!"<<G4endl;

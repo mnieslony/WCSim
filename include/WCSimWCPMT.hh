@@ -31,7 +31,7 @@ public:
   // void SetConversion(double iconvrate){ ConvRate = iconvrate; }
   //  static G4double GetLongTime() { return LongTime;}
   
-  G4double rn1pe();
+  G4double rn1pe(WCSimPMTObject* PMT);
   G4double peSmeared;
   // double ConvRate; // kHz
   std::vector<G4double> TriggerTimes;

@@ -27,13 +27,16 @@ public:
   //As it inherits from G4VDigitizerModule it needs a digitize class.  Not used
   void Digitize() { }
   void SetDarkRate(double idarkrate){ PMTDarkRate = idarkrate; }
-  double GetDarkRate() { return PMTDarkRate; }
+  double GetDarkRate() {
+    double arate = (EffectivePMTDarkRate==-99) ? PMTDarkRate : EffectivePMTDarkRate;
+    return arate;
+  }
   void SetConversion(double iconvrate){ ConvRate = iconvrate; }
   void SetDarkMode(int imode){DarkMode = imode;}
   void SetDarkHigh(int idarkhigh){DarkHigh = idarkhigh;}
   void SetDarkLow(int idarklow){DarkLow = idarklow;}
   void SetDarkWindow(int idarkwindow){DarkWindow = idarkwindow;}
-  int GetDarkWindow(){return DarkWindow;}
+  double GetDarkWindow(){return DarkWindow;}
   void SaveOptionsToOutput(WCSimRootOptions * wcopt);
 
 private:
@@ -42,7 +45,10 @@ private:
 
   WCSimDarkRateMessenger *DarkRateMessenger;
   double PMTDarkRate; // kHz
+  std::map<std::string, double> PMTDarkRateMap; // ✩
+  double EffectivePMTDarkRate; // ✩
   double ConvRate; // kHz
+  std::map<std::string, double> ConvRateMap; // ✩
   double DarkHigh; //ns
   double DarkLow; //ns
   double DarkWindow; //ns
