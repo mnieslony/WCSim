@@ -135,7 +135,7 @@
 #/control/execute macros/visOGLSX.mac
 #/control/execute macros/visRayTracer.mac
 
-/mygen/generator beam	# retrieve input primaries from GENIE output files
+#/mygen/generator beam	# retrieve input primaries from GENIE output files
 
 # Or you can use the G4 Particle Gun
 # for a full list of /gun/ commands see:
@@ -268,6 +268,27 @@
 #/gps/ene/max 2500 MeV
 #/DAQ/Trigger NoTrigger  # >>>DISABLE NDigits TRIGGER<<< and enable NoTrigger to records everything even w/o a tank event
 
+/mygen/generator laser
+/gps/particle mu-
+#/gps/particle pi0
+/gps/pos/type Volume
+/gps/pos/shape Cylinder
+/gps/pos/radius 1.5 m   # 1.524 in WCSim::DetectorConfigs
+/gps/pos/halfz 1.97 m   # 1.98m in WCSim::DetectorConfigs
+#cylinders are defined with the z axis as the axis of the cylinder
+#rotate the cylinder to align with ANNIE's y-parallel tank
+/gps/pos/rot1 1 0 0
+/gps/pos/rot2 0 0 1
+# place source at centre of tank
+/gps/pos/centre 0 -14.46 168.1 cm
+/gps/ang/type iso
+/gps/ene/type Lin    # uniform energy spread
+/gps/ene/gradient 0  # gradient (MeV^{-1}) = 0: all energies equally likely
+/gps/ene/intercept 1 # The intercept is a pure number.
+/gps/ene/min 100 MeV
+/gps/ene/max 2500 MeV
+#/DAQ/Trigger NDigits # normal NDigits 'cut' left on
+
 # set up visualization view for debugging photons - 
 # should be associated with changes store in branch photonbouncedebug
 #/vis/viewer/set/viewpointThetaPhi 0 0
@@ -286,11 +307,12 @@
 /control/execute macros/setRandomParameters.mac
 
 ## change the name of the output root file, default = wcsim (the .root is appended internally)
-/WCSimIO/RootFile wcsim
+#/WCSimIO/RootFile wcsim
 #/WCSimIO/RootFile ANNIEtest_10MeV_Uni_Iso  # for bonsai
 #/WCSimIO/RootFile ANNIEtest_MRD_muon_sample  # for MRD range vs energy estimation
+/WCSimIO/RootFile wcsim_Muon_Tank_Sample_killed # for measuring # digits vs energy loss in tank
 
-#/run/beamOn 10
+/run/beamOn 10000
 # should run 10000 events for bonsai
 
 #exit

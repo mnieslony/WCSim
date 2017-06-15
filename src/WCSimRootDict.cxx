@@ -44,6 +44,7 @@ namespace std {} using namespace std;
 #include "/home/marc/LinuxSystemFiles/WCSim/gitver/wcsim/include/WCSimLAPPDInfo.hh"
 #include "/home/marc/LinuxSystemFiles/WCSim/gitver/wcsim/include/WCSimLAPPDpulse.hh"
 #include "/home/marc/LinuxSystemFiles/WCSim/gitver/wcsim/include/WCSimLAPPDpulseCluster.hh"
+#include "/home/marc/LinuxSystemFiles/WCSim/gitver/wcsim/include/WCSimRootOptions.hh"
 #include "/home/marc/LinuxSystemFiles/WCSim/gitver/wcsim/include/WCSimEnumerations.hh"
 
 // Header files passed via #pragma extra_include
@@ -61,8 +62,8 @@ namespace ROOT {
       ::WCSimRootCherenkovDigiHit *ptr = 0;
       static ::TVirtualIsAProxy* isa_proxy = new ::TInstrumentedIsAProxy< ::WCSimRootCherenkovDigiHit >(0);
       static ::ROOT::TGenericClassInfo 
-         instance("WCSimRootCherenkovDigiHit", ::WCSimRootCherenkovDigiHit::Class_Version(), "WCSimRootEvent.hh", 127,
-                  typeid(::WCSimRootCherenkovDigiHit), ::ROOT::Internal::DefineBehavior(ptr, ptr),
+         instance("WCSimRootCherenkovDigiHit", ::WCSimRootCherenkovDigiHit::Class_Version(), "WCSimRootEvent.hh", 140,
+                  typeid(::WCSimRootCherenkovDigiHit), DefineBehavior(ptr, ptr),
                   &::WCSimRootCherenkovDigiHit::Dictionary, isa_proxy, 4,
                   sizeof(::WCSimRootCherenkovDigiHit) );
       instance.SetNew(&new_WCSimRootCherenkovDigiHit);
@@ -93,8 +94,8 @@ namespace ROOT {
       ::WCSimRootCherenkovHit *ptr = 0;
       static ::TVirtualIsAProxy* isa_proxy = new ::TInstrumentedIsAProxy< ::WCSimRootCherenkovHit >(0);
       static ::ROOT::TGenericClassInfo 
-         instance("WCSimRootCherenkovHit", ::WCSimRootCherenkovHit::Class_Version(), "WCSimRootEvent.hh", 85,
-                  typeid(::WCSimRootCherenkovHit), ::ROOT::Internal::DefineBehavior(ptr, ptr),
+         instance("WCSimRootCherenkovHit", ::WCSimRootCherenkovHit::Class_Version(), "WCSimRootEvent.hh", 98,
+                  typeid(::WCSimRootCherenkovHit), DefineBehavior(ptr, ptr),
                   &::WCSimRootCherenkovHit::Dictionary, isa_proxy, 4,
                   sizeof(::WCSimRootCherenkovHit) );
       instance.SetNew(&new_WCSimRootCherenkovHit);
@@ -125,8 +126,8 @@ namespace ROOT {
       ::WCSimRootCherenkovHitTime *ptr = 0;
       static ::TVirtualIsAProxy* isa_proxy = new ::TInstrumentedIsAProxy< ::WCSimRootCherenkovHitTime >(0);
       static ::ROOT::TGenericClassInfo 
-         instance("WCSimRootCherenkovHitTime", ::WCSimRootCherenkovHitTime::Class_Version(), "WCSimRootEvent.hh", 104,
-                  typeid(::WCSimRootCherenkovHitTime), ::ROOT::Internal::DefineBehavior(ptr, ptr),
+         instance("WCSimRootCherenkovHitTime", ::WCSimRootCherenkovHitTime::Class_Version(), "WCSimRootEvent.hh", 117,
+                  typeid(::WCSimRootCherenkovHitTime), DefineBehavior(ptr, ptr),
                   &::WCSimRootCherenkovHitTime::Dictionary, isa_proxy, 4,
                   sizeof(::WCSimRootCherenkovHitTime) );
       instance.SetNew(&new_WCSimRootCherenkovHitTime);
@@ -158,7 +159,7 @@ namespace ROOT {
       static ::TVirtualIsAProxy* isa_proxy = new ::TInstrumentedIsAProxy< ::WCSimRootTrack >(0);
       static ::ROOT::TGenericClassInfo 
          instance("WCSimRootTrack", ::WCSimRootTrack::Class_Version(), "WCSimRootEvent.hh", 25,
-                  typeid(::WCSimRootTrack), ::ROOT::Internal::DefineBehavior(ptr, ptr),
+                  typeid(::WCSimRootTrack), DefineBehavior(ptr, ptr),
                   &::WCSimRootTrack::Dictionary, isa_proxy, 4,
                   sizeof(::WCSimRootTrack) );
       instance.SetNew(&new_WCSimRootTrack);
@@ -189,8 +190,8 @@ namespace ROOT {
       ::WCSimRootEventHeader *ptr = 0;
       static ::TVirtualIsAProxy* isa_proxy = new ::TInstrumentedIsAProxy< ::WCSimRootEventHeader >(0);
       static ::ROOT::TGenericClassInfo 
-         instance("WCSimRootEventHeader", ::WCSimRootEventHeader::Class_Version(), "WCSimRootEvent.hh", 153,
-                  typeid(::WCSimRootEventHeader), ::ROOT::Internal::DefineBehavior(ptr, ptr),
+         instance("WCSimRootEventHeader", ::WCSimRootEventHeader::Class_Version(), "WCSimRootEvent.hh", 166,
+                  typeid(::WCSimRootEventHeader), DefineBehavior(ptr, ptr),
                   &::WCSimRootEventHeader::Dictionary, isa_proxy, 4,
                   sizeof(::WCSimRootEventHeader) );
       instance.SetNew(&new_WCSimRootEventHeader);
@@ -221,8 +222,8 @@ namespace ROOT {
       ::WCSimRootTrigger *ptr = 0;
       static ::TVirtualIsAProxy* isa_proxy = new ::TInstrumentedIsAProxy< ::WCSimRootTrigger >(0);
       static ::ROOT::TGenericClassInfo 
-         instance("WCSimRootTrigger", ::WCSimRootTrigger::Class_Version(), "WCSimRootEvent.hh", 206,
-                  typeid(::WCSimRootTrigger), ::ROOT::Internal::DefineBehavior(ptr, ptr),
+         instance("WCSimRootTrigger", ::WCSimRootTrigger::Class_Version(), "WCSimRootEvent.hh", 219,
+                  typeid(::WCSimRootTrigger), DefineBehavior(ptr, ptr),
                   &::WCSimRootTrigger::Dictionary, isa_proxy, 4,
                   sizeof(::WCSimRootTrigger) );
       instance.SetNew(&new_WCSimRootTrigger);
@@ -253,8 +254,8 @@ namespace ROOT {
       ::WCSimRootEvent *ptr = 0;
       static ::TVirtualIsAProxy* isa_proxy = new ::TInstrumentedIsAProxy< ::WCSimRootEvent >(0);
       static ::ROOT::TGenericClassInfo 
-         instance("WCSimRootEvent", ::WCSimRootEvent::Class_Version(), "WCSimRootEvent.hh", 335,
-                  typeid(::WCSimRootEvent), ::ROOT::Internal::DefineBehavior(ptr, ptr),
+         instance("WCSimRootEvent", ::WCSimRootEvent::Class_Version(), "WCSimRootEvent.hh", 352,
+                  typeid(::WCSimRootEvent), DefineBehavior(ptr, ptr),
                   &::WCSimRootEvent::Dictionary, isa_proxy, 4,
                   sizeof(::WCSimRootEvent) );
       instance.SetNew(&new_WCSimRootEvent);
@@ -285,8 +286,8 @@ namespace ROOT {
       ::WCSimRootPi0 *ptr = 0;
       static ::TVirtualIsAProxy* isa_proxy = new ::TInstrumentedIsAProxy< ::WCSimRootPi0 >(0);
       static ::ROOT::TGenericClassInfo 
-         instance("WCSimRootPi0", ::WCSimRootPi0::Class_Version(), "WCSimRootEvent.hh", 177,
-                  typeid(::WCSimRootPi0), ::ROOT::Internal::DefineBehavior(ptr, ptr),
+         instance("WCSimRootPi0", ::WCSimRootPi0::Class_Version(), "WCSimRootEvent.hh", 190,
+                  typeid(::WCSimRootPi0), DefineBehavior(ptr, ptr),
                   &::WCSimRootPi0::Dictionary, isa_proxy, 4,
                   sizeof(::WCSimRootPi0) );
       instance.SetNew(&new_WCSimRootPi0);
@@ -318,7 +319,7 @@ namespace ROOT {
       static ::TVirtualIsAProxy* isa_proxy = new ::TInstrumentedIsAProxy< ::WCSimRootGeom >(0);
       static ::ROOT::TGenericClassInfo 
          instance("WCSimRootGeom", ::WCSimRootGeom::Class_Version(), "WCSimRootGeom.hh", 52,
-                  typeid(::WCSimRootGeom), ::ROOT::Internal::DefineBehavior(ptr, ptr),
+                  typeid(::WCSimRootGeom), DefineBehavior(ptr, ptr),
                   &::WCSimRootGeom::Dictionary, isa_proxy, 4,
                   sizeof(::WCSimRootGeom) );
       instance.SetNew(&new_WCSimRootGeom);
@@ -350,7 +351,7 @@ namespace ROOT {
       static ::TVirtualIsAProxy* isa_proxy = new ::TInstrumentedIsAProxy< ::WCSimRootPMT >(0);
       static ::ROOT::TGenericClassInfo 
          instance("WCSimRootPMT", ::WCSimRootPMT::Class_Version(), "WCSimRootGeom.hh", 20,
-                  typeid(::WCSimRootPMT), ::ROOT::Internal::DefineBehavior(ptr, ptr),
+                  typeid(::WCSimRootPMT), DefineBehavior(ptr, ptr),
                   &::WCSimRootPMT::Dictionary, isa_proxy, 4,
                   sizeof(::WCSimRootPMT) );
       instance.SetNew(&new_WCSimRootPMT);
@@ -382,7 +383,7 @@ namespace ROOT {
       static ::TVirtualIsAProxy* isa_proxy = new ::TInstrumentedIsAProxy< ::WCSimPmtInfo >(0);
       static ::ROOT::TGenericClassInfo 
          instance("WCSimPmtInfo", ::WCSimPmtInfo::Class_Version(), "WCSimPmtInfo.hh", 14,
-                  typeid(::WCSimPmtInfo), ::ROOT::Internal::DefineBehavior(ptr, ptr),
+                  typeid(::WCSimPmtInfo), DefineBehavior(ptr, ptr),
                   &::WCSimPmtInfo::Dictionary, isa_proxy, 4,
                   sizeof(::WCSimPmtInfo) );
       instance.SetNew(&new_WCSimPmtInfo);
@@ -415,8 +416,8 @@ namespace ROOT {
       ::WCSimEnumerations *ptr = 0;
       static ::TVirtualIsAProxy* isa_proxy = new ::TIsAProxy(typeid(::WCSimEnumerations));
       static ::ROOT::TGenericClassInfo 
-         instance("WCSimEnumerations", "WCSimEnumerations.hh", 20,
-                  typeid(::WCSimEnumerations), ::ROOT::Internal::DefineBehavior(ptr, ptr),
+         instance("WCSimEnumerations", "WCSimEnumerations.hh", 26,
+                  typeid(::WCSimEnumerations), DefineBehavior(ptr, ptr),
                   &WCSimEnumerations_Dictionary, isa_proxy, 4,
                   sizeof(::WCSimEnumerations) );
       instance.SetNew(&new_WCSimEnumerations);
@@ -446,6 +447,38 @@ namespace ROOT {
 } // end of namespace ROOT
 
 namespace ROOT {
+   static void *new_WCSimRootOptions(void *p = 0);
+   static void *newArray_WCSimRootOptions(Long_t size, void *p);
+   static void delete_WCSimRootOptions(void *p);
+   static void deleteArray_WCSimRootOptions(void *p);
+   static void destruct_WCSimRootOptions(void *p);
+
+   // Function generating the singleton type initializer
+   static TGenericClassInfo *GenerateInitInstanceLocal(const ::WCSimRootOptions*)
+   {
+      ::WCSimRootOptions *ptr = 0;
+      static ::TVirtualIsAProxy* isa_proxy = new ::TInstrumentedIsAProxy< ::WCSimRootOptions >(0);
+      static ::ROOT::TGenericClassInfo 
+         instance("WCSimRootOptions", ::WCSimRootOptions::Class_Version(), "WCSimRootOptions.hh", 22,
+                  typeid(::WCSimRootOptions), DefineBehavior(ptr, ptr),
+                  &::WCSimRootOptions::Dictionary, isa_proxy, 4,
+                  sizeof(::WCSimRootOptions) );
+      instance.SetNew(&new_WCSimRootOptions);
+      instance.SetNewArray(&newArray_WCSimRootOptions);
+      instance.SetDelete(&delete_WCSimRootOptions);
+      instance.SetDeleteArray(&deleteArray_WCSimRootOptions);
+      instance.SetDestructor(&destruct_WCSimRootOptions);
+      return &instance;
+   }
+   TGenericClassInfo *GenerateInitInstance(const ::WCSimRootOptions*)
+   {
+      return GenerateInitInstanceLocal((::WCSimRootOptions*)0);
+   }
+   // Static variable to force the class initialization
+   static ::ROOT::TGenericClassInfo *_R__UNIQUE_(Init) = GenerateInitInstanceLocal((const ::WCSimRootOptions*)0x0); R__UseDummy(_R__UNIQUE_(Init));
+} // end of namespace ROOT
+
+namespace ROOT {
    static void *new_WCSimLAPPDInfo(void *p = 0);
    static void *newArray_WCSimLAPPDInfo(Long_t size, void *p);
    static void delete_WCSimLAPPDInfo(void *p);
@@ -459,7 +492,7 @@ namespace ROOT {
       static ::TVirtualIsAProxy* isa_proxy = new ::TInstrumentedIsAProxy< ::WCSimLAPPDInfo >(0);
       static ::ROOT::TGenericClassInfo 
          instance("WCSimLAPPDInfo", ::WCSimLAPPDInfo::Class_Version(), "WCSimLAPPDInfo.hh", 14,
-                  typeid(::WCSimLAPPDInfo), ::ROOT::Internal::DefineBehavior(ptr, ptr),
+                  typeid(::WCSimLAPPDInfo), DefineBehavior(ptr, ptr),
                   &::WCSimLAPPDInfo::Dictionary, isa_proxy, 4,
                   sizeof(::WCSimLAPPDInfo) );
       instance.SetNew(&new_WCSimLAPPDInfo);
@@ -489,7 +522,7 @@ namespace ROOT {
       static ::TVirtualIsAProxy* isa_proxy = new ::TInstrumentedIsAProxy< ::WCSimLAPPDpulse >(0);
       static ::ROOT::TGenericClassInfo 
          instance("WCSimLAPPDpulse", ::WCSimLAPPDpulse::Class_Version(), "WCSimLAPPDpulse.hh", 10,
-                  typeid(::WCSimLAPPDpulse), ::ROOT::Internal::DefineBehavior(ptr, ptr),
+                  typeid(::WCSimLAPPDpulse), DefineBehavior(ptr, ptr),
                   &::WCSimLAPPDpulse::Dictionary, isa_proxy, 4,
                   sizeof(::WCSimLAPPDpulse) );
       instance.SetDelete(&delete_WCSimLAPPDpulse);
@@ -519,7 +552,7 @@ namespace ROOT {
       static ::TVirtualIsAProxy* isa_proxy = new ::TInstrumentedIsAProxy< ::WCSimLAPPDpulseCluster >(0);
       static ::ROOT::TGenericClassInfo 
          instance("WCSimLAPPDpulseCluster", ::WCSimLAPPDpulseCluster::Class_Version(), "WCSimLAPPDpulseCluster.hh", 9,
-                  typeid(::WCSimLAPPDpulseCluster), ::ROOT::Internal::DefineBehavior(ptr, ptr),
+                  typeid(::WCSimLAPPDpulseCluster), DefineBehavior(ptr, ptr),
                   &::WCSimLAPPDpulseCluster::Dictionary, isa_proxy, 4,
                   sizeof(::WCSimLAPPDpulseCluster) );
       instance.SetNew(&new_WCSimLAPPDpulseCluster);
@@ -919,6 +952,41 @@ TClass *WCSimPmtInfo::Dictionary()
 TClass *WCSimPmtInfo::Class()
 {
    if (!fgIsA.load()) { R__LOCKGUARD2(gInterpreterMutex); fgIsA = ::ROOT::GenerateInitInstanceLocal((const ::WCSimPmtInfo*)0x0)->GetClass(); }
+   return fgIsA;
+}
+
+//______________________________________________________________________________
+atomic_TClass_ptr WCSimRootOptions::fgIsA(0);  // static to hold class pointer
+
+//______________________________________________________________________________
+const char *WCSimRootOptions::Class_Name()
+{
+   return "WCSimRootOptions";
+}
+
+//______________________________________________________________________________
+const char *WCSimRootOptions::ImplFileName()
+{
+   return ::ROOT::GenerateInitInstanceLocal((const ::WCSimRootOptions*)0x0)->GetImplFileName();
+}
+
+//______________________________________________________________________________
+int WCSimRootOptions::ImplFileLine()
+{
+   return ::ROOT::GenerateInitInstanceLocal((const ::WCSimRootOptions*)0x0)->GetImplFileLine();
+}
+
+//______________________________________________________________________________
+TClass *WCSimRootOptions::Dictionary()
+{
+   fgIsA = ::ROOT::GenerateInitInstanceLocal((const ::WCSimRootOptions*)0x0)->GetClass();
+   return fgIsA;
+}
+
+//______________________________________________________________________________
+TClass *WCSimRootOptions::Class()
+{
+   if (!fgIsA.load()) { R__LOCKGUARD2(gInterpreterMutex); fgIsA = ::ROOT::GenerateInitInstanceLocal((const ::WCSimRootOptions*)0x0)->GetClass(); }
    return fgIsA;
 }
 
@@ -1412,6 +1480,39 @@ namespace ROOT {
 } // end of namespace ROOT for class ::WCSimEnumerations
 
 //______________________________________________________________________________
+void WCSimRootOptions::Streamer(TBuffer &R__b)
+{
+   // Stream an object of class WCSimRootOptions.
+
+   if (R__b.IsReading()) {
+      R__b.ReadClassBuffer(WCSimRootOptions::Class(),this);
+   } else {
+      R__b.WriteClassBuffer(WCSimRootOptions::Class(),this);
+   }
+}
+
+namespace ROOT {
+   // Wrappers around operator new
+   static void *new_WCSimRootOptions(void *p) {
+      return  p ? new(p) ::WCSimRootOptions : new ::WCSimRootOptions;
+   }
+   static void *newArray_WCSimRootOptions(Long_t nElements, void *p) {
+      return p ? new(p) ::WCSimRootOptions[nElements] : new ::WCSimRootOptions[nElements];
+   }
+   // Wrapper around operator delete
+   static void delete_WCSimRootOptions(void *p) {
+      delete ((::WCSimRootOptions*)p);
+   }
+   static void deleteArray_WCSimRootOptions(void *p) {
+      delete [] ((::WCSimRootOptions*)p);
+   }
+   static void destruct_WCSimRootOptions(void *p) {
+      typedef ::WCSimRootOptions current_t;
+      ((current_t*)p)->~current_t();
+   }
+} // end of namespace ROOT for class ::WCSimRootOptions
+
+//______________________________________________________________________________
 void WCSimLAPPDInfo::Streamer(TBuffer &R__b)
 {
    // Stream an object of class WCSimLAPPDInfo.
@@ -1519,7 +1620,7 @@ namespace ROOT {
       static ::TVirtualIsAProxy* isa_proxy = new ::TIsAProxy(typeid(vector<int>));
       static ::ROOT::TGenericClassInfo 
          instance("vector<int>", -2, "vector", 214,
-                  typeid(vector<int>), ::ROOT::Internal::DefineBehavior(ptr, ptr),
+                  typeid(vector<int>), DefineBehavior(ptr, ptr),
                   &vectorlEintgR_Dictionary, isa_proxy, 0,
                   sizeof(vector<int>) );
       instance.SetNew(&new_vectorlEintgR);
@@ -1548,10 +1649,10 @@ namespace ROOT {
 namespace ROOT {
    // Wrappers around operator new
    static void *new_vectorlEintgR(void *p) {
-      return  p ? ::new((::ROOT::Internal::TOperatorNewHelper*)p) vector<int> : new vector<int>;
+      return  p ? ::new((::ROOT::TOperatorNewHelper*)p) vector<int> : new vector<int>;
    }
    static void *newArray_vectorlEintgR(Long_t nElements, void *p) {
-      return p ? ::new((::ROOT::Internal::TOperatorNewHelper*)p) vector<int>[nElements] : new vector<int>[nElements];
+      return p ? ::new((::ROOT::TOperatorNewHelper*)p) vector<int>[nElements] : new vector<int>[nElements];
    }
    // Wrapper around operator delete
    static void delete_vectorlEintgR(void *p) {
@@ -1582,7 +1683,7 @@ namespace ROOT {
       static ::TVirtualIsAProxy* isa_proxy = new ::TIsAProxy(typeid(vector<float>));
       static ::ROOT::TGenericClassInfo 
          instance("vector<float>", -2, "vector", 214,
-                  typeid(vector<float>), ::ROOT::Internal::DefineBehavior(ptr, ptr),
+                  typeid(vector<float>), DefineBehavior(ptr, ptr),
                   &vectorlEfloatgR_Dictionary, isa_proxy, 0,
                   sizeof(vector<float>) );
       instance.SetNew(&new_vectorlEfloatgR);
@@ -1611,10 +1712,10 @@ namespace ROOT {
 namespace ROOT {
    // Wrappers around operator new
    static void *new_vectorlEfloatgR(void *p) {
-      return  p ? ::new((::ROOT::Internal::TOperatorNewHelper*)p) vector<float> : new vector<float>;
+      return  p ? ::new((::ROOT::TOperatorNewHelper*)p) vector<float> : new vector<float>;
    }
    static void *newArray_vectorlEfloatgR(Long_t nElements, void *p) {
-      return p ? ::new((::ROOT::Internal::TOperatorNewHelper*)p) vector<float>[nElements] : new vector<float>[nElements];
+      return p ? ::new((::ROOT::TOperatorNewHelper*)p) vector<float>[nElements] : new vector<float>[nElements];
    }
    // Wrapper around operator delete
    static void delete_vectorlEfloatgR(void *p) {
@@ -1638,19 +1739,20 @@ namespace {
 "/home/marc/LinuxSystemFiles/WCSim/gitver/wcsim/include/WCSimLAPPDInfo.hh",
 "/home/marc/LinuxSystemFiles/WCSim/gitver/wcsim/include/WCSimLAPPDpulse.hh",
 "/home/marc/LinuxSystemFiles/WCSim/gitver/wcsim/include/WCSimLAPPDpulseCluster.hh",
+"/home/marc/LinuxSystemFiles/WCSim/gitver/wcsim/include/WCSimRootOptions.hh",
 "/home/marc/LinuxSystemFiles/WCSim/gitver/wcsim/include/WCSimEnumerations.hh",
 0
     };
     static const char* includePaths[] = {
-"/home/marc/LinuxSystemFiles/ROOT/root-6.06.04/build/include",
+"/home/marc/LinuxSystemFiles/ROOT/root-6.04.14/build/include",
 "/home/marc/LinuxSystemFiles/WCSim/gitver/wcsim/include",
 "/home/marc/LinuxSystemFiles/WCSim/gitver/wcsim/../shared/include",
-"/home/marc/LinuxSystemFiles/ROOT/root-6.06.04/build/include",
+"/home/marc/LinuxSystemFiles/ROOT/root-6.04.14/build/include",
 "/home/marc/LinuxSystemFiles/WCSim/gitver/build/",
 0
     };
-    static const char* fwdDeclCode = R"DICTFWDDCLS(
-#line 1 "WCSimRootDict dictionary forward declarations' payload"
+    static const char* fwdDeclCode = 
+R"DICTFWDDCLS(
 #pragma clang diagnostic ignored "-Wkeyword-compat"
 #pragma clang diagnostic ignored "-Wignored-attributes"
 #pragma clang diagnostic ignored "-Wreturn-type-c-linkage"
@@ -1667,12 +1769,12 @@ class __attribute__((annotate(R"ATTRDUMP(WCSimRootEvent structure)ATTRDUMP"))) _
 class __attribute__((annotate(R"ATTRDUMP(WCSimPMT structure)ATTRDUMP"))) __attribute__((annotate("$clingAutoload$/home/marc/LinuxSystemFiles/WCSim/gitver/wcsim/include/WCSimRootGeom.hh")))  WCSimRootPMT;
 class __attribute__((annotate("$clingAutoload$/home/marc/LinuxSystemFiles/WCSim/gitver/wcsim/include/WCSimPmtInfo.hh")))  WCSimPmtInfo;
 class __attribute__((annotate("$clingAutoload$/home/marc/LinuxSystemFiles/WCSim/gitver/wcsim/include/WCSimRootEvent.hh")))  WCSimEnumerations;
+class __attribute__((annotate(R"ATTRDUMP(WCSimRootEvent structure)ATTRDUMP"))) __attribute__((annotate("$clingAutoload$/home/marc/LinuxSystemFiles/WCSim/gitver/wcsim/include/WCSimRootOptions.hh")))  WCSimRootOptions;
 class __attribute__((annotate("$clingAutoload$/home/marc/LinuxSystemFiles/WCSim/gitver/wcsim/include/WCSimLAPPDInfo.hh")))  WCSimLAPPDInfo;
 class __attribute__((annotate("$clingAutoload$/home/marc/LinuxSystemFiles/WCSim/gitver/wcsim/include/WCSimLAPPDpulse.hh")))  WCSimLAPPDpulse;
 class __attribute__((annotate("$clingAutoload$/home/marc/LinuxSystemFiles/WCSim/gitver/wcsim/include/WCSimLAPPDpulseCluster.hh")))  WCSimLAPPDpulseCluster;
 )DICTFWDDCLS";
     static const char* payloadCode = R"DICTPAYLOAD(
-#line 1 "WCSimRootDict dictionary payload"
 
 #ifndef G__VECTOR_HAS_CLASS_ITERATOR
   #define G__VECTOR_HAS_CLASS_ITERATOR 1
@@ -1685,6 +1787,7 @@ class __attribute__((annotate("$clingAutoload$/home/marc/LinuxSystemFiles/WCSim/
 #include "/home/marc/LinuxSystemFiles/WCSim/gitver/wcsim/include/WCSimLAPPDInfo.hh"
 #include "/home/marc/LinuxSystemFiles/WCSim/gitver/wcsim/include/WCSimLAPPDpulse.hh"
 #include "/home/marc/LinuxSystemFiles/WCSim/gitver/wcsim/include/WCSimLAPPDpulseCluster.hh"
+#include "/home/marc/LinuxSystemFiles/WCSim/gitver/wcsim/include/WCSimRootOptions.hh"
 #include "/home/marc/LinuxSystemFiles/WCSim/gitver/wcsim/include/WCSimEnumerations.hh"
 
 #undef  _BACKWARD_BACKWARD_WARNING_H
@@ -1701,6 +1804,7 @@ class __attribute__((annotate("$clingAutoload$/home/marc/LinuxSystemFiles/WCSim/
 "WCSimRootEvent", payloadCode, "@",
 "WCSimRootEventHeader", payloadCode, "@",
 "WCSimRootGeom", payloadCode, "@",
+"WCSimRootOptions", payloadCode, "@",
 "WCSimRootPMT", payloadCode, "@",
 "WCSimRootPi0", payloadCode, "@",
 "WCSimRootTrack", payloadCode, "@",

@@ -30,16 +30,20 @@ private:
   Int_t   fIpnu;        
   Int_t   fFlag;        
   Float_t fM;
-  Float_t fP;
-  Float_t fE;
+  Float_t fP;       // start mom magnitude
+  Float_t fE;       // start E (relativistic inc. mass^2)
+  Float_t fP2;      // end mom magnitude
+  Float_t fE2;      // end E (relativistic inc. mass^2)
   Int_t   fStartvol;
   Int_t   fStopvol;
   Float_t fDir[3];
-  Float_t fPdir[3];
+  Float_t fPdir[3];  // start mom
+  Float_t fPdir2[3]; // end mom
   Float_t fStop[3];
   Float_t fStart[3];
   Int_t fParenttype;
-  Float_t fTime;
+  Float_t fTime;   // start time
+  Float_t fTime2;  // end time 
   Int_t fId;
 
 public:
@@ -49,14 +53,19 @@ public:
 		  Float_t m, 
 		  Float_t p, 
 		  Float_t E, 
+		  Float_t endE, 
+		  Float_t endP, 
 		  Int_t startvol, 
 		  Int_t stopvol, 
 		  Float_t dir[3], 
 		  Float_t pdir[3], 
+		  Float_t pdir2[3],
 		  Float_t stop[3], 
 		  Float_t start[3], 
 		  Int_t parenttype,
-		 Float_t time,Int_t id);
+		  Float_t time,
+		  Float_t endtime,
+		 Int_t id);
   
   virtual ~WCSimRootTrack() { }
 
@@ -65,14 +74,18 @@ public:
   Float_t   GetM() const { return fM;}
   Float_t   GetP() const { return fP;}
   Float_t   GetE() const { return fE;}
+  Float_t   GetEndE() const { return fE2;}
+  Float_t   GetEndP() const { return fP2;}
   Int_t     GetStartvol() { return fStartvol;}
   Int_t     GetStopvol() { return fStopvol;}
   Float_t   GetDir(Int_t i=0) {return (i<3) ? fDir[i] : 0;} 
   Float_t   GetPdir(Int_t i=0) {return (i<3) ? fPdir[i] : 0;}
+  Float_t   GetPdirEnd(Int_t i=0) {return (i<3) ? fPdir2[i] : 0;}
   Float_t   GetStop(Int_t i=0) {return (i<3) ? fStop[i] : 0;}
   Float_t   GetStart(Int_t i=0) {return (i<3) ? fStart[i] : 0;}
   Int_t     GetParenttype(/*Int_t i=0*/) {return fParenttype;}
   Float_t   GetTime() { return fTime;}
+  Float_t   GetStopTime() { return fTime2;}
   Int_t     GetId(){return fId;}
 
   ClassDef(WCSimRootTrack,1)  
@@ -299,14 +312,18 @@ public:
 				   Float_t m, 
 				   Float_t p, 
 				   Float_t E, 
+				   Float_t p2,
+				   Float_t E2,
 				   Int_t startvol, 
 				   Int_t stopvol, 
 				   Float_t dir[3], 
 				   Float_t pdir[3], 
+				   Float_t pdir2[3], 
 				   Float_t stop[3],
 				   Float_t start[3],
 				   Int_t parenttype,
 				   Float_t time,
+				   Float_t time2,
 				   Int_t id);
 
   TClonesArray        *GetTracks() const {return fTracks;}

@@ -20,6 +20,14 @@
 void WCSimSteppingAction::UserSteppingAction(const G4Step* aStep)
 {
   //return;    // disable while investigating differences in validation plots.
+
+  G4Track* track = aStep->GetTrack();
+  G4String thePostPV = aStep->GetPostStepPoint()->GetPhysicalVolume()->GetName();
+
+  // For estimating tank energy loss vs digits, need an accurate energy on tank exit - kill particle on
+  // tank exit,then end energy will be tank exit energy
+  if(thePostPV=="Hall"){ track->SetTrackStatus(fStopAndKill); return; }
+
   //DISTORTION must be used ONLY if INNERTUBE or INNERTUBEBIG has been defined in BidoneDetectorConstruction.cc
   
 //  const G4Event* evt = G4RunManager::GetRunManager()->GetCurrentEvent();
@@ -59,8 +67,6 @@ void WCSimSteppingAction::UserSteppingAction(const G4Step* aStep)
     }
   }
   
-  G4VPhysicalVolume* thePostPV = aStep->GetPostStepPoint()->GetPhysicalVolume();
-  G4Track* track = aStep->GetTrack();
   if ( track->GetCurrentStepNumber() == 1 ) fExpectedNextStatus = Undefined;
   if(!thePostPV){//out of world
     fExpectedNextStatus=Undefined;

@@ -134,9 +134,13 @@ void WCSimTrackingAction::PostUserTrackingAction(const G4Track* aTrack)
   
     G4ThreeVector currentPosition      = aTrack->GetPosition();
     G4VPhysicalVolume* currentVolume   = aTrack->GetVolume();
+    G4double currentTime = aTrack->GetGlobalTime();
+    G4ThreeVector currentMomentum = aTrack->GetMomentum();
 
     currentTrajectory->SetStoppingPoint(currentPosition);
     currentTrajectory->SetStoppingVolume(currentVolume);
+    currentTrajectory->SetStoppingTime(currentTime);
+    currentTrajectory->SetStoppingMomentum(currentMomentum);
 
     if (anInfo->isSaved())
       currentTrajectory->SetSaveFlag(true);// mark it for WCSimEventAction ;

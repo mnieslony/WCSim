@@ -20,8 +20,9 @@ G4Allocator<WCSimTrajectory> myTrajectoryAllocator;
 WCSimTrajectory::WCSimTrajectory()
   :  positionRecord(0), fTrackID(0), fParentID(0),
      PDGEncoding( 0 ), PDGCharge(0.0), ParticleName(""),
-     initialMomentum( G4ThreeVector() ),SaveIt(false),creatorProcess(""),
-     globalTime(0.0),thisStepsProcess(""),lastStepsProcess("")
+     initialMomentum( G4ThreeVector() ), finalMomentum( G4ThreeVector() ),
+     SaveIt(false),creatorProcess(""), 
+     globalTime(0.0), globalTimeEnd(0.), thisStepsProcess(""),lastStepsProcess("")
 {;}
 
 WCSimTrajectory::WCSimTrajectory(const G4Track* aTrack)
@@ -34,6 +35,8 @@ WCSimTrajectory::WCSimTrajectory(const G4Track* aTrack)
   fTrackID = aTrack->GetTrackID();
   fParentID = aTrack->GetParentID();
   initialMomentum = aTrack->GetMomentum();
+  finalMomentum = aTrack->GetMomentum();
+  globalTimeEnd = aTrack->GetGlobalTime();
   positionRecord = new TrajectoryPointContainer();
   // Following is for the first trajectory point
   positionRecord->push_back(new G4TrajectoryPoint(aTrack->GetPosition()));
@@ -66,6 +69,7 @@ WCSimTrajectory::WCSimTrajectory(WCSimTrajectory & right):G4VTrajectory()
   fTrackID = right.fTrackID;
   fParentID = right.fParentID;
   initialMomentum = right.initialMomentum;
+  finalMomentum = right.finalMomentum;
   positionRecord = new TrajectoryPointContainer();
   
   stoppingPoint  = right.stoppingPoint;
@@ -81,6 +85,7 @@ WCSimTrajectory::WCSimTrajectory(WCSimTrajectory & right):G4VTrajectory()
     positionRecord->push_back(new G4TrajectoryPoint(*rightPoint));
   }
   globalTime = right.globalTime;
+  globalTimeEnd = right.globalTimeEnd;
 }
 
 WCSimTrajectory::~WCSimTrajectory()
