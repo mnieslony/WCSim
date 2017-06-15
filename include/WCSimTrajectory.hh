@@ -53,6 +53,8 @@ public: // with description
    { return PDGEncoding; }
    inline G4ThreeVector GetInitialMomentum() const
    { return initialMomentum; }
+   inline G4ThreeVector GetFinalMomentum() const
+   { return finalMomentum; }
   inline G4String GetCreatorProcessName() const {
     return creatorProcess;
   }
@@ -66,6 +68,8 @@ public: // with description
   
   inline G4double GetGlobalTime() const
   { return globalTime; }
+  inline G4double GetGlobalTimeEnd() const
+  { return globalTimeEnd; }
   inline G4bool GetSaveFlag() const { return SaveIt; }
   inline void SetSaveFlag(G4bool value) { SaveIt = value; }
 
@@ -78,6 +82,10 @@ public: // with description
    { stoppingPoint = currentPosition;}
    inline void SetStoppingVolume(G4VPhysicalVolume* currentVolume)
    { stoppingVolume = currentVolume;}
+   inline void SetStoppingMomentum(G4ThreeVector& currentMomentum)
+   { finalMomentum = currentMomentum;}
+   inline void SetStoppingTime(G4double currentTime)
+   { globalTimeEnd = currentTime; }
 
 
 // Other member functions
@@ -105,6 +113,7 @@ public: // with description
   G4double                  PDGCharge;
   G4String                  ParticleName;
   G4ThreeVector             initialMomentum;
+  G4ThreeVector             finalMomentum;
 
   // These are new variables
   G4ThreeVector             stoppingPoint;
@@ -114,6 +123,7 @@ public: // with description
   G4bool SaveIt;
   G4String creatorProcess;
   G4double                  globalTime;
+  G4double                  globalTimeEnd;
   
   G4String                   thisStepsProcess;
   G4String                   lastStepsProcess;

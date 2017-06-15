@@ -1205,12 +1205,14 @@ void WCSimEventAction::FillRootEvent(G4int event_id,
   {
     float dir[3];
     float pdir[3];
+    float pdir2[3];
     float stop[3];
     float start[3];
     for (int l=0;l<3;l++)
     {
       dir[l]=jhfNtuple.dir[k][l];
       pdir[l]=jhfNtuple.pdir[k][l];
+      pdir2[l]=0.; // stopping momentum not stored in jhfNtuple
       stop[l]=jhfNtuple.stop[k][l];
       start[l]=jhfNtuple.start[k][l];
 	//G4cout<< "start[" << k << "][" << l <<"]: "<< jhfNtuple.start[k][l] <<G4endl;
@@ -1222,14 +1224,19 @@ void WCSimEventAction::FillRootEvent(G4int event_id,
 			      jhfNtuple.m[k], 
 			      jhfNtuple.p[k], 
 			      jhfNtuple.E[k], 
+			      -1.,  // stopping mommag not stored in jhfNtuple
+			      -1.,  // stopping E not stored in jhfNtuple
 			      jhfNtuple.startvol[k], 
 			      jhfNtuple.stopvol[k], 
 			      dir, 
 			      pdir, 
+			      pdir2,
 			      stop,
 			      start,
 			      jhfNtuple.parent[k],
-			     jhfNtuple.time[k],0); 
+			      jhfNtuple.time[k],
+			      -1.,  // not stored in jhfNtuple
+			      0); 
   }
 
   // the rest of the tracks come from WCSimTrajectory
@@ -1316,6 +1323,9 @@ void WCSimEventAction::FillRootEvent(G4int event_id,
       G4ThreeVector mom    = trj->GetInitialMomentum();
       G4double      mommag = mom.mag();
       G4double      energy = sqrt(mom.mag2() + mass*mass);
+      G4ThreeVector momend = trj->GetFinalMomentum();
+      G4double      mommagend = momend.mag();
+      G4double      energyend = sqrt(momend.mag2() + mass*mass);
       G4ThreeVector Stop   = trj->GetStoppingPoint();
       G4ThreeVector Start  = aa->GetPosition();
 
@@ -1330,6 +1340,7 @@ void WCSimEventAction::FillRootEvent(G4int event_id,
       }
 
       G4double ttime = trj->GetGlobalTime(); 
+      G4double ttimeend = trj->GetGlobalTimeEnd(); 
 
       G4int parentType=-999;
 
@@ -1367,12 +1378,14 @@ void WCSimEventAction::FillRootEvent(G4int event_id,
       // fill ntuple
       float dir[3];
       float pdir[3];
+      float pdir2[3];
       float stop[3];
       float start[3];
       for (int l=0;l<3;l++)
       {
 	dir[l]= mom[l]/mommag; // direction 
 	pdir[l]=mom[l];        // momentum-vector 
+	pdir2[l]=momend[l];    // end momentum-vector 
 	stop[l]=Stop[l]/CLHEP::cm; // stopping point 
 	start[l]=Start[l]/CLHEP::cm; // starting point 
 	//G4cout<<"part 2 start["<<l<<"]: "<< start[l] <<G4endl;
@@ -1395,14 +1408,19 @@ void WCSimEventAction::FillRootEvent(G4int event_id,
 				  mass, 
 				  mommag, 
 				  energy,
+				  mommagend, 
+				  energyend, 
 				  startvol, 
 				  stopvol, 
 				  dir, 
 				  pdir, 
+				  pdir2, 
 				  stop,
 				  start,
 				  parentType,
-				 ttime,id); 
+				  ttime,
+				  ttimeend,
+				  id); 
       }
       
       if (detectorConstructor->SavePi0Info() == true)

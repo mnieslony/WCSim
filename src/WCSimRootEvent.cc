@@ -241,14 +241,18 @@ WCSimRootTrack *WCSimRootTrigger::AddTrack(Int_t ipnu,
 					   Float_t m, 
 					   Float_t p, 
 					   Float_t E, 
+					   Float_t p2,
+					   Float_t E2,
 					   Int_t startvol, 
 					   Int_t stopvol, 
 					   Float_t dir[3], 
 					   Float_t pdir[3], 
+					   Float_t pdir2[3], 
 					   Float_t stop[3], 
 					   Float_t start[3],
 					   Int_t parenttype,
 					   Float_t time,
+					   Float_t time2,
 					   Int_t id)
 {
   // Add a new WCSimRootTrack to the list of tracks for this event.
@@ -264,14 +268,19 @@ WCSimRootTrack *WCSimRootTrigger::AddTrack(Int_t ipnu,
 					   m,
 					   p,
 					   E,
+					   p2,
+					   E2,
 					   startvol,
 					   stopvol,
 					   dir,
 					   pdir,
+					   pdir2,
 					   stop,
 					   start,
 					   parenttype,
-					  time,id);
+					   time,
+					   time2,
+					   id);
 
   return track;
 }
@@ -284,14 +293,19 @@ WCSimRootTrack::WCSimRootTrack(Int_t ipnu,
 				 Float_t m, 
 				 Float_t p, 
 				 Float_t E, 
+				 Float_t p2, 
+				 Float_t E2, 
 				 Int_t startvol, 
 				 Int_t stopvol, 
 				 Float_t dir[3], 
 				 Float_t pdir[3], 
+				 Float_t pdir2[3], 
 				 Float_t stop[3], 
 				 Float_t start[3],
 				 Int_t parenttype,
-			       Float_t time,Int_t id)
+				 Float_t time, 
+				 Float_t time2,
+				 Int_t id)
 {
 
   // Create a WCSimRootTrack object and fill it with stuff
@@ -301,6 +315,8 @@ WCSimRootTrack::WCSimRootTrack(Int_t ipnu,
   fM = m;
   fP = p;
   fE = E;
+  fP2 = p2;
+  fE2 = E2;
   fStartvol = startvol;
   fStopvol = stopvol;
   int i;
@@ -308,11 +324,13 @@ WCSimRootTrack::WCSimRootTrack(Int_t ipnu,
   {
     fDir[i] = dir[i]; 
     fPdir[i] = pdir[i]; 
+    fPdir2[i] = pdir2[i]; 
     fStop[i] = stop[i]; 
     fStart[i] = start[i];
   }
   fParenttype = parenttype;
   fTime = time;
+  fTime2 = time2;
   fId = id;
 }
 
