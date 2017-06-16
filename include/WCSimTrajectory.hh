@@ -82,7 +82,7 @@ public: // with description
    { stoppingPoint = currentPosition;}
    inline void SetStoppingVolume(G4VPhysicalVolume* currentVolume)
    { stoppingVolume = currentVolume;}
-   inline void SetStoppingMomentum(G4ThreeVector& currentMomentum)
+   inline void SetStoppingMomentum(G4ThreeVector currentMomentum)
    { finalMomentum = currentMomentum;}
    inline void SetStoppingTime(G4double currentTime)
    { globalTimeEnd = currentTime; }
