@@ -816,8 +816,8 @@ If used here, uncomment the SetVisAttributes(WClogic) line, and comment out the 
   G4double barrelCellWidth2 = 2.*WCIDRadius*tan(dPhi/2.)*0.9;
   //G4double horizontalSpacingLAPPD   = barrelCellWidth/WCPMTperCellHorizontal;
   //G4double verticalSpacingLAPPD     = barrelCellHeight/WCPMTperCellVertical;
-  G4double horizontalSpacingLAPPD   = ((isANNIE) ? barrelCellWidth/WCLAPPDperCellHorizontal : 0);
-  G4double verticalSpacingLAPPD     = ((isANNIE) ? barrelCellHeight/WCLAPPDperCellVertical : 0);
+  double horizontalSpacingLAPPD = ((WCDetectorName=="ANNIEp2") ? barrelCellWidth/WCLAPPDperCellHorizontal : 0);
+  double verticalSpacingLAPPD   = ((WCDetectorName=="ANNIEp2") ? barrelCellHeight/WCLAPPDperCellVertical : 0);
 
   // G4cout<<"barrelCellWidth2= "<<barrelCellWidth2<<" barrelCellHeight2= "<<barrelCellHeight2<< " horizontalSpacingLAPPD= "<<horizontalSpacingLAPPD<<" verticalSpacingLAPPD= "<<verticalSpacingLAPPD<<G4endl;
 

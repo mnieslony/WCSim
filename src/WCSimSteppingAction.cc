@@ -22,7 +22,8 @@ void WCSimSteppingAction::UserSteppingAction(const G4Step* aStep)
   //return;    // disable while investigating differences in validation plots.
 
   G4Track* track = aStep->GetTrack();
-  G4String thePostPV = aStep->GetPostStepPoint()->GetPhysicalVolume()->GetName();
+  G4VPhysicalVolume* thePostPVP = aStep->GetPostStepPoint()->GetPhysicalVolume();
+  G4String thePostPV = (thePostPVP) ? aStep->GetPostStepPoint()->GetPhysicalVolume()->GetName() : "No Vol";
 
   // For estimating tank energy loss vs digits, need an accurate energy on tank exit - kill particle on
   // tank exit,then end energy will be tank exit energy

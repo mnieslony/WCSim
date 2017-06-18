@@ -4,7 +4,6 @@
 /tracking/verbose 0
 /hits/verbose 0
 /process/em/verbose 0
-/process/had/particle_hp/verbose 0
 /process/had/cascade/verbose 0
 /process/verbose 0
 /process/setVerbose 0
@@ -325,3 +324,7 @@
 # should run 10000 events for bonsai
 
 #exit
+
+# for some reason this command works on my laptop and on the grid, but is not found on gpvm and aborts
+# execution of the macro. Stick it at the end - if it aborts, nothing else to do.
+#/process/had/particle_hp/verbose 0
