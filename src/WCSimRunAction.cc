@@ -233,7 +233,7 @@ void WCSimRunAction::FillGeoTree(){
     rot[2] = (Float_t)pmt->Get_orienz();
     tubeNo = pmt->Get_tubeid();
     cylLoc = pmt->Get_cylocation();
-    wcsimrootgeom-> SetPMT(i,tubeNo,cylLoc,rot,pos);
+    wcsimrootgeom-> SetPMT(i,tubeNo,cylLoc,rot,pos,(std::string)wcsimdetector->GetTubeCollection(tubeNo));
     if(tankcollectionnames.size()!=0){
       G4String thistubescollectionname = wcsimdetector->GetTubeCollection(tubeNo);
       auto it = std::find(tankcollectionnames.begin(), tankcollectionnames.end(), thistubescollectionname);
@@ -275,7 +275,7 @@ void WCSimRunAction::FillGeoTree(){
       rot[2] = (Float_t)lappd->Get_orienz();
       lappdNo = lappd->Get_lappdid();
       cylLoc = lappd->Get_cylocation();
-      wcsimrootgeom-> SetLAPPD(i,lappdNo,cylLoc,rot,pos);
+      wcsimrootgeom-> SetLAPPD(i,lappdNo,cylLoc,rot,pos,"LAPPD_v0");
       //G4cout<<"lappd= "<<lappdNo<<" at position: "<<pos[0]<<","<<pos[1]<<","<<pos[2]<<G4endl;
     }
     if (flappds->size() != (unsigned int)numlappd) {
