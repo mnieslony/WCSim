@@ -483,19 +483,41 @@ void WCSimEventAction::EndOfEventAction(const G4Event* evt)
       }
       */
     }
-    
+////////////////////
+// y  G4String WCMRDCollectionName = detectorConstructor->GetMRDCollectionName();
+// y  if(HCE){
+// y  collectionID = SDman->GetCollectionID(WCMRDCollectionName);
+// y  WCSimWCHitsCollection* WCHC_MRD = (WCSimWCHitsCollection*)HCE->GetHC(collectionID);
+// y  }
+// y  WCSimWCPMT* WCDMPMT_MRD = (WCSimWCPMT*)DMman->FindDigitizerModule("WCReadoutPMT_MRD");
+// y  if(WCDMPMT_MRD==0){G4cerr<<"WCReadoutPMT_MRD digitzer module not found!"<<G4endl;}
+// y  WCDMPMT_MRD->ReInitialize();
+// y  WCDMPMT_MRD->Digitize();   <<< constructs digit collection (1 digit per PMT containing all photon hits)
+// -------
+// n  WCSimWCAddDarkNoise* WCDNM_MRD = (WCSimWCAddDarkNoise*)DMman->FindDigitizerModule("WCDarkNoise_MRD");
+// n  if(WCDNM_MRD==0){G4cerr<<"WCDarkNoise_MRD dark noise module not found!"<<G4endl;}
+// n  WCDNM_MRD->AddDarkNoise(); <<< adds dark noise to digits collection, i.e. fake photon hits
+// n  WCSimWCDigitizerBase* WCDM_MRD = (WCSimWCDigitizerBase*)DMman->FindDigitizerModule("WCReadoutDigits_MRD");
+// n  if(WCDM_MRD==0){G4cerr<<"WCReadoutDigits_MRD digitizer module not found!"<<G4endl;}
+// n  WCDM_MRD->Digitize();      <<< clusters hits according to integration window (bunch of photons->digit)
+// n  WCSimWCTriggerBase* WCTM_MRD = (WCSimWCTriggerBase*)DMman->FindDigitizerModule("WCReadout_MRD");
+// n  if(WCTM_MRD==0){G4cerr<<"WCReadout_MRD trigger module not found!"<<G4endl;}
+// n  WCTM_MRD->SetDarkRate(WCDNM_MRD->GetDarkRate());
+// n  WCTM_MRD->Digitize();      <<< constructs triggered digit collection (separates digits per trigger)
+// n  /** these are retrieved to pass to FillRootEvent() */
+// y  G4int WCDChitsID_MRD = DMman->GetDigiCollectionID("WCRawPMTSignalCollection_MRD");
+// y  WCDC_hits_MRD = (WCSimWCDigitsCollection*) DMman->GetDigiCollection(WCDChitsID_MRD);
+// n  G4int WCDCID_MRD = DMman->GetDigiCollectionID("WCDigitizedCollection_MRD");
+// n  WCDC_MRD = (WCSimWCTriggeredDigitsCollection*) DMman->GetDigiCollection(WCDCID_MRD);
+////////////////////
     WCSimWCLAPPD* WCDMLAPPD = (WCSimWCLAPPD*)DMman->FindDigitizerModule("WCReadoutLAPPD");
     WCDMLAPPD->ReInitialize();
     
     G4cout<<"Digizing WCDMLAPPD"<<G4endl;
-    WCDMLAPPD->Digitize();
+    WCDMLAPPD->Digitize(); // fills WCRawLAPPDSignalCollection
     
     G4int WCDChitsIDlappd = DMman->GetDigiCollectionID("WCRawLAPPDSignalCollection");
     WCSimWCDigitsCollection * WCDC_hitslappd = (WCSimWCDigitsCollection*) DMman->GetDigiCollection(WCDChitsIDlappd);
-    
-    // Get the digitized collection for the WC
-    G4int WCDCIDlappd = DMman->GetDigiCollectionID("WCDigitizedCollectionLAPPD");
-    WCSimWCTriggeredDigitsCollection * WCDClappd = (WCSimWCTriggeredDigitsCollection*) DMman->GetDigiCollection(WCDCIDlappd);
     
     if (WCDC_hitslappd) {
      // add the truth raw hits
