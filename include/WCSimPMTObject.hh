@@ -301,11 +301,11 @@ public:
   G4float  GetDarkRateConversionFactor();
 };
 
-class PMT_R5912 : public WCSimPMTObject
+class PMT_R5912HQE : public WCSimPMTObject
 {
 public:
-PMT_R5912();
-~PMT_R5912();
+PMT_R5912HQE();
+~PMT_R5912HQE();
 
 public:
   G4String GetPMTName(); 

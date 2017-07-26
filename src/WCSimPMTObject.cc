@@ -2135,17 +2135,17 @@ G4float PMT1cm::GetDarkRateConversionFactor(){
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
-// R5912 - new 8" HQE for ANNIEp2v2, currently uses PMT10inchHQE values
+// R5912HQE - new 8" HQE for ANNIEp2v2, currently uses PMT10inchHQE values
 
-PMT_R5912::PMT_R5912(){}   // TODO  TODO  TODO - Set R5912 new 8" HQE PMT properties
-PMT_R5912::~PMT_R5912(){}
+PMT_R5912HQE::PMT_R5912HQE(){}   // TODO  TODO  TODO - Set R5912HQE new 8" HQE PMT properties
+PMT_R5912HQE::~PMT_R5912HQE(){}
 
-G4String PMT_R5912::GetPMTName() {G4String PMTName = "R5912"; return PMTName;}
-G4double PMT_R5912::GetExposeHeight() {return 91.6*CLHEP::mm;}
-G4double PMT_R5912::GetRadius() {return 101.6*CLHEP::mm;}
-G4double PMT_R5912::GetPMTGlassThickness() {return 0.55*CLHEP::cm;}
-G4float PMT_R5912::HitTimeSmearing(float Q) { 
-  float timingConstant = 1.890;
+G4String PMT_R5912HQE::GetPMTName() {G4String PMTName = "R5912HQE"; return PMTName;}
+G4double PMT_R5912HQE::GetExposeHeight() {return 91.6*CLHEP::mm;}
+G4double PMT_R5912HQE::GetRadius() {return 101.6*CLHEP::mm;}
+G4double PMT_R5912HQE::GetPMTGlassThickness() {return 0.55*CLHEP::cm;}
+G4float PMT_R5912HQE::HitTimeSmearing(float Q) { 
+  float timingConstant = 2.4; // TTS from datasheet
   float timingResolution = 0.33 + sqrt(timingConstant/Q); 
   // looking at SK's jitter function for 20" tubes
   if (timingResolution < 0.58) timingResolution=0.58;
@@ -2153,7 +2153,7 @@ G4float PMT_R5912::HitTimeSmearing(float Q) {
   return Smearing_factor;
 }
 
-G4float* PMT_R5912::Getqpe() //currently uses the same as 20inch
+G4float* PMT_R5912HQE::Getqpe() //currently uses the same as 20inch
    {
   static G4float qpe0[501]= {
     // 1
@@ -2272,26 +2272,26 @@ G4float* PMT_R5912::Getqpe() //currently uses the same as 20inch
    return qpe0;
   }
 
-G4float* PMT_R5912::GetQE(){
+G4float* PMT_R5912HQE::GetQE(){
  static G4float QE[20] =
    { 0.00, .0502, .2017, .2933, .3306, .3396, .3320, .3168, .2915, .2655, 
       .2268,  .1971, .1641, .1102, .0727, .0499, .0323, .0178, .0061, 0.00};
  return QE;
 }
-G4float* PMT_R5912::GetQEWavelength(){static G4float wavelength[20] = { 280., 300., 320., 340., 360., 380., 400., 420., 440., 460., 480., 500., 520., 540., 560., 580., 600., 620., 640., 660.};
+G4float* PMT_R5912HQE::GetQEWavelength(){static G4float wavelength[20] = { 280., 300., 320., 340., 360., 380., 400., 420., 440., 460., 480., 500., 520., 540., 560., 580., 600., 620., 640., 660.};
   return wavelength;}
 
-G4float  PMT_R5912::GetmaxQE(){
+G4float  PMT_R5912HQE::GetmaxQE(){
   const G4float maxQE = 0.3396;
   return maxQE;
 }
 
-G4float PMT_R5912::GetDarkRate(){
-  const G4float rate = 3*CLHEP::kilohertz;   //Ref??R5912 HQE?? (need verification)
+G4float PMT_R5912HQE::GetDarkRate(){
+  const G4float rate = 3*CLHEP::kilohertz;   //Ref??R5912HQE HQE?? (need verification)
   return rate;
 }
 
-G4float PMT_R5912::GetDarkRateConversionFactor(){
+G4float PMT_R5912HQE::GetDarkRateConversionFactor(){
   const G4float factor = 1.367;
   return factor;
 }
@@ -2307,7 +2307,7 @@ G4double PMT_D784KFLB::GetExposeHeight() {return 118.*CLHEP::mm;}
 G4double PMT_D784KFLB::GetRadius() {return 139.7*CLHEP::mm;}
 G4double PMT_D784KFLB::GetPMTGlassThickness() {return 0.55*CLHEP::cm;}
 G4float PMT_D784KFLB::HitTimeSmearing(float Q) {
-  float timingConstant = 2.0; 
+  float timingConstant = 1.98; 
   float timingResolution = 0.33 + sqrt(timingConstant/Q); 
   // looking at SK's jitter function for 20" tubes
   if (timingResolution < 0.58) timingResolution=0.58;
@@ -2469,7 +2469,7 @@ G4double PMT_R7081::GetExposeHeight() {return 117.*CLHEP::mm;}
 G4double PMT_R7081::GetRadius() {return 127.*CLHEP::mm;}
 G4double PMT_R7081::GetPMTGlassThickness() {return 0.55*CLHEP::cm;}
 float PMT_R7081::HitTimeSmearing(float Q) { 
-  float timingConstant = 2.0; 
+  float timingConstant = 3.2; 
   float timingResolution = 0.33 + sqrt(timingConstant/Q); 
   // looking at SK's jitter function for 20" tubes
   if (timingResolution < 0.58) timingResolution=0.58;

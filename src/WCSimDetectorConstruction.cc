@@ -378,8 +378,8 @@ WCSimPMTObject *WCSimDetectorConstruction::CreatePMTObject(G4String PMTType, G4S
     WCSimDetectorConstruction::SetPMTPointer(PMT, CollectionName);
     return PMT;
   }
-  else if (PMTType == "R5912"){
-    WCSimPMTObject* PMT = new PMT_R5912;
+  else if (PMTType == "R5912HQE"){
+    WCSimPMTObject* PMT = new PMT_R5912HQE;
     WCSimDetectorConstruction::SetPMTPointer(PMT, CollectionName);
     return PMT;
   }

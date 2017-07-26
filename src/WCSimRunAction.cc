@@ -20,6 +20,7 @@
 #include "WCSimRootGeom.hh"
 #include "WCSimPmtInfo.hh"
 #include "WCSimLAPPDInfo.hh"
+#include "WCSimLAPPDObject.hh"
 
 #include <vector>
 
@@ -265,6 +266,10 @@ void WCSimRunAction::FillGeoTree(){
   
     std::vector<WCSimLAPPDInfo*> *flappds = wcsimdetector->Get_LAPPDs();
     WCSimLAPPDInfo *lappd;
+    // Get LAPPD name
+    G4String WCIDCollectionName = wcsimdetector->GetIDCollectionName2();
+    WCSimLAPPDObject * LAPPD = wcsimdetector->GetLAPPDPointer(WCIDCollectionName);
+    std::string lappdname = LAPPD->GetLAPPDName();
     for (unsigned int i=0;i!=flappds->size();i++){
       lappd = ((WCSimLAPPDInfo*)flappds->at(i));
       pos[0] = (Float_t)lappd->Get_transx();
@@ -275,7 +280,7 @@ void WCSimRunAction::FillGeoTree(){
       rot[2] = (Float_t)lappd->Get_orienz();
       lappdNo = lappd->Get_lappdid();
       cylLoc = lappd->Get_cylocation();
-      wcsimrootgeom-> SetLAPPD(i,lappdNo,cylLoc,rot,pos,"LAPPD_v0");
+      wcsimrootgeom-> SetLAPPD(i,lappdNo,cylLoc,rot,pos,lappdname);
       //G4cout<<"lappd= "<<lappdNo<<" at position: "<<pos[0]<<","<<pos[1]<<","<<pos[2]<<G4endl;
     }
     if (flappds->size() != (unsigned int)numlappd) {

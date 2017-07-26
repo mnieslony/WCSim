@@ -136,10 +136,10 @@ void WCSimDetectorConstruction::SetANNIEPhase2Geometryv2()
   // the order in the maps is important due to hardcoded hacking in ConstructCylinder
   std::string WCIDCollectionName_R7081 = WCDetectorName +"-glassFaceWCPMT_R7081";
   std::string WCIDCollectionName_D784KFLB = WCDetectorName +"-glassFaceWCPMT_D784KFLB";
-  std::string WCIDCollectionName_R5912 = WCDetectorName +"-glassFaceWCPMT_R5912";
+  std::string WCIDCollectionName_R5912HQE = WCDetectorName +"-glassFaceWCPMT_R5912HQE";
   WCTankCollectionNames.push_back(WCIDCollectionName_R7081);     // 10" LUX/Watchboy
   WCTankCollectionNames.push_back(WCIDCollectionName_D784KFLB);  // 11" HQE LBNE
-  WCTankCollectionNames.push_back(WCIDCollectionName_R5912);     // 8"  HQE new
+  WCTankCollectionNames.push_back(WCIDCollectionName_R5912HQE);     // 8"  HQE new
   
   // other detector element collections
   WCMRDCollectionName = WCDetectorName +"-glassFaceWCPMT_MRD";
@@ -157,18 +157,18 @@ void WCSimDetectorConstruction::SetANNIEPhase2Geometryv2()
   G4double WCPMTExposeHeight_D784KFLB = PMT_D784KFLB->GetExposeHeight();
   G4double WCPMTRadius_D784KFLB = PMT_D784KFLB->GetRadius();
   
-  WCSimPMTObject* PMT_R5912 = CreatePMTObject("R5912", WCIDCollectionName_R5912);
-  G4String WCPMTName_R5912 = PMT_R5912->GetPMTName();
-  G4double WCPMTExposeHeight_R5912 = PMT_R5912->GetExposeHeight();
-  G4double WCPMTRadius_R5912 = PMT_R5912->GetRadius();
+  WCSimPMTObject* PMT_R5912HQE = CreatePMTObject("R5912HQE", WCIDCollectionName_R5912HQE);
+  G4String WCPMTName_R5912HQE = PMT_R5912HQE->GetPMTName();
+  G4double WCPMTExposeHeight_R5912HQE = PMT_R5912HQE->GetExposeHeight();
+  G4double WCPMTRadius_R5912HQE = PMT_R5912HQE->GetRadius();
   
   // store info in the maps
   WCPMTNameMap.emplace(WCIDCollectionName_R7081, WCPMTName_R7081);
   WCPMTNameMap.emplace(WCIDCollectionName_D784KFLB, WCPMTName_D784KFLB);
-  WCPMTNameMap.emplace(WCIDCollectionName_R5912, WCPMTName_R5912);
+  WCPMTNameMap.emplace(WCIDCollectionName_R5912HQE, WCPMTName_R5912HQE);
   WCPMTRadiusMap.emplace(WCIDCollectionName_R7081, WCPMTRadius_R7081);
   WCPMTRadiusMap.emplace(WCIDCollectionName_D784KFLB, WCPMTRadius_D784KFLB);
-  WCPMTRadiusMap.emplace(WCIDCollectionName_R5912, WCPMTRadius_R5912);
+  WCPMTRadiusMap.emplace(WCIDCollectionName_R5912HQE, WCPMTRadius_R5912HQE);
   WCPMTRadius = WCPMTRadius_D784KFLB;         // the LBNE PMTs are largest at 11"
   WCPMTExposeHeight = WCPMTRadius_D784KFLB;   // the largest expose height of barrel PMTs TODO << is it LBNE?
   

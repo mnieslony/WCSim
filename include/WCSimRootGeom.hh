@@ -140,9 +140,16 @@ public:
     if(index>=fWCPMTNamevec.size()) return "INDEX_OUT_OF_BOUNDS";
     return fWCPMTNamevec.at(index);
   }
+  std::vector<std::string> GetPMTNames(){
+    return fWCPMTNamevec;
+  }
   Int_t GetWCNumPMTsAt(Int_t index){
     if(index>=fWCNumPMTvec.size()) return -1;
     return fWCNumPMTvec.at(index);
+  }
+  std::vector<int> GetWCNumPmts(){
+    if(fWCNumPMTvec.size()) return fWCNumPMTvec;
+    return std::vector<int>{fWCNumPMT};
   }
   Int_t GetTubeIndex(Int_t tubeId){
     if(tubeId>=fWCTubeIdvsColIndex.size()) return -1;

@@ -774,7 +774,7 @@ If used here, uncomment the SetVisAttributes(WClogic) line, and comment out the 
 //                                         TOTAL: (40x  8" pmts) + 40x  10" pmts) 
 // PMTs are placed in the vector in the order their collections are defined - i.e. in the order they are 
 // declared in DetectorConfigs: 
-// {R7081 (10" WB/LUX : barrel+bottom), D784KFLB (11" LBNE : top), R5912 (8" HQE : barrel)}
+// {R7081 (10" WB/LUX : barrel+bottom), D784KFLB (11" LBNE : top), R5912HQE (8" HQE : barrel)}
         
         // position: vertically it's as normal for a cell
         double verticalposition = -barrelCellHeight/2.+(j+0.5)*verticalSpacing;

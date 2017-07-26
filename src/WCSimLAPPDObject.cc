@@ -73,7 +73,7 @@ G4float* WCSimLAPPDObject::GetCollectionEfficiencyArray(){
 LAPPD::LAPPD() {}
 LAPPD::~LAPPD(){}
 
-G4String LAPPD::GetLAPPDName() {G4String LAPPDName = "lappd"; return LAPPDName;}
+G4String LAPPD::GetLAPPDName() {G4String LAPPDName = "lappd_v1"; return LAPPDName;}
 G4double LAPPD::GetExposeHeight() {return .0092456*CLHEP::m;} // z dimension: LAPPD half height
 G4double LAPPD::GetRadius() {return  .1015*CLHEP::m;} //here the radius is x,y for the lappd (active area)
 G4double LAPPD::GetLAPPDGlassThickness() {return 0.001375*CLHEP::m;} //half the glass thickness becuse it will be substracted twice
