@@ -253,6 +253,7 @@ G4bool WCSimWCSD::ProcessHits(G4Step* aStep, G4TouchableHistory*)
 	     PMTHitMap[replicaNumber] = hitsCollection->insert( newHit );
 	     (*hitsCollection)[PMTHitMap[replicaNumber]-1]->AddPe(hitTime);
 	     (*hitsCollection)[PMTHitMap[replicaNumber]-1]->AddParentID(primParentID);
+	     (*hitsCollection)[PMTHitMap[replicaNumber]-1]->AddHitPos(worldPosition);
 	     
 	     //     if ( particleDefinition != G4OpticalPhoton::OpticalPhotonDefinition() )
 	     //       newHit->Print();
@@ -260,6 +261,7 @@ G4bool WCSimWCSD::ProcessHits(G4Step* aStep, G4TouchableHistory*)
          else {
 	   (*hitsCollection)[PMTHitMap[replicaNumber]-1]->AddPe(hitTime);
 	   (*hitsCollection)[PMTHitMap[replicaNumber]-1]->AddParentID(primParentID);
+	   (*hitsCollection)[PMTHitMap[replicaNumber]-1]->AddHitPos(worldPosition);
 	   
          }
        }
@@ -309,6 +311,7 @@ G4bool WCSimWCSD::ProcessHits(G4Step* aStep, G4TouchableHistory*)
 	   (*hitsCollectionlappd)[LAPPDHitMap[replicaNumber2]-1]->AddPe(hitTime);
 	   (*hitsCollectionlappd)[LAPPDHitMap[replicaNumber2]-1]->AddParentID(primParentID);
 	   (*hitsCollectionlappd)[LAPPDHitMap[replicaNumber2]-1]->AddStripPosition(localPosition);
+	   (*hitsCollectionlappd)[LAPPDHitMap[replicaNumber2]-1]->AddHitPos(worldPosition);
 	   //G4cout<<"hitTime= "<<hitTime<<" primParentID= "<<primParentID<<G4endl;
 	   //     if ( particleDefinition != G4OpticalPhoton::OpticalPhotonDefinition() )
 	   //       newHit->Print();
@@ -318,6 +321,7 @@ G4bool WCSimWCSD::ProcessHits(G4Step* aStep, G4TouchableHistory*)
 	 (*hitsCollectionlappd)[LAPPDHitMap[replicaNumber2]-1]->AddParentID(primParentID);
 	 //G4cout<<"add new localPosition : "<<localPosition(0)<<","<<localPosition(1)<<","<<localPosition(2)<<G4endl;
          (*hitsCollectionlappd)[LAPPDHitMap[replicaNumber2]-1]->AddStripPosition(localPosition);
+         (*hitsCollectionlappd)[LAPPDHitMap[replicaNumber2]-1]->AddHitPos(worldPosition);
  	 //G4cout<<"_________________________"<<G4endl;	
        }
      }

@@ -439,6 +439,9 @@ void WCSimEventAction::EndOfEventAction(const G4Event* evt)
              //assert(false);
              strip_coort = -997.;
            }
+           double global_coorx = ((*WCHClappd)[hitnum]->GetGlobalPos(ip).x());
+           double global_coory = ((*WCHClappd)[hitnum]->GetGlobalPos(ip).y());
+           double global_coorz = ((*WCHClappd)[hitnum]->GetGlobalPos(ip).z());
            //G4cout<<"totalpes_perevt= "<<totalpes_perevt<<"--->GetStripPosition= "
            //      <<(*WCHClappd)[hitnum]->GetStripPosition(ip)
            //      <<" strip_coorx= "<<strip_coorx<<" strip_coory= "<<strip_coory<<G4endl;
@@ -446,6 +449,9 @@ void WCSimEventAction::EndOfEventAction(const G4Event* evt)
            lappdhit_stripcoory.push_back(strip_coory);
            lappdhit_stripcoorz.push_back(strip_coorz);
            lappdhit_stripcoort.push_back(strip_coort);
+           lappdhit_globalcoorx.push_back(global_coorx);
+           lappdhit_globalcoory.push_back(global_coory);
+           lappdhit_globalcoorz.push_back(global_coorz);
            totalpes_perevt++;
          }
          //hitPartCode = ConvertParticleNameToCode(hitParticleName); // or use hitParticleID - from PDGEncoding?
@@ -582,6 +588,9 @@ void WCSimEventAction::EndOfEventAction(const G4Event* evt)
     lappdhit_stripcoory.clear();
     lappdhit_stripcoorz.clear();
     lappdhit_stripcoort.clear();
+    lappdhit_globalcoorx.clear();
+    lappdhit_globalcoory.clear();
+    lappdhit_globalcoorz.clear();
     lappdhit_totalpes_perlappd2.clear();
     objnumv.clear();
     lappdhit_smeartime2.clear();
@@ -1631,6 +1640,9 @@ void WCSimEventAction::CreateNewLAPPDFile(){
   LAPPDtree->Branch("lappdhit_stripcoory", &lappdhit_stripcoory);
   LAPPDtree->Branch("lappdhit_stripcoorz", &lappdhit_stripcoorz);
   LAPPDtree->Branch("lappdhit_stripcoort", &lappdhit_stripcoort);
+  LAPPDtree->Branch("lappdhit_globalcoorx", &lappdhit_globalcoorx);
+  LAPPDtree->Branch("lappdhit_globalcoory", &lappdhit_globalcoory);
+  LAPPDtree->Branch("lappdhit_globalcoorz", &lappdhit_globalcoorz);
   LAPPDtree->Branch("lappdhit_process",lappdhit_process,"lappdhit_process[lappd_numhits]/I");
   LAPPDtree->Branch("lappdhit_particleID",lappdhit_particleID,"lappdhit_particleID[lappd_numhits]/I");
   LAPPDtree->Branch("lappdhit_trackID",lappdhit_trackID,"lappdhit_trackID[lappd_numhits]/I");
