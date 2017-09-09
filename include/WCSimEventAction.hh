@@ -100,6 +100,9 @@ private:
   std::vector<double> lappdhit_stripcoory;  
   std::vector<double> lappdhit_stripcoorz;
   std::vector<double> lappdhit_stripcoort;
+  std::vector<double> lappdhit_globalcoorx;
+  std::vector<double> lappdhit_globalcoory; 
+  std::vector<double> lappdhit_globalcoorz;
   std::vector<float> lappdhit_truetime2, lappdhit_smeartime2;
   std::vector<int>   lappdhit_primaryParentID2;	
   std::vector<int> lappdhit_stripnum;

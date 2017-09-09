@@ -51,7 +51,8 @@ class WCSimWCHit : public G4VHit
   inline void* operator new(size_t);
   inline void  operator delete(void*);
   //map<double,G4ThreeVector> position;
-  std::vector<G4ThreeVector> position; 
+  std::vector<G4ThreeVector> position; // position within the local coordinates of this touchable
+  std::vector<G4ThreeVector> globalposition; // position of the hit within the world volume global coordinates
   
   void Draw();
   void Print();
@@ -86,8 +87,10 @@ class WCSimWCHit : public G4VHit
   G4int         GetTrackID()    { return trackID; };
   G4ThreeVector GetPos()        { return pos; };
   G4ThreeVector GetStripPosition(int i)  { return position.at(i);};
+  G4ThreeVector GetGlobalPos(int i) { return globalposition.at(i);};
   
   void AddStripPosition(G4ThreeVector pos) { position.push_back(pos); }
+  void AddHitPos(G4ThreeVector pos) { globalposition.push_back(pos); }
   G4int         GetTotalPe()    { return totalPe;};
   G4float       GetTime(int i)  { return time.at(i);};
   G4int         GetParentID(int i) { return primaryParentID.at(i);};
@@ -153,7 +156,7 @@ class WCSimWCHit : public G4VHit
   G4int            lappdID;
   G4int            trackID;
   G4double         edep;
-  G4ThreeVector    pos;
+  G4ThreeVector    pos; // position of the touchable within global coordinates
   G4RotationMatrix rot;
   G4LogicalVolume* pLogV;
 
