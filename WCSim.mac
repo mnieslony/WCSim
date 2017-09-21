@@ -200,7 +200,7 @@
 #/gps/pos/type Volume
 #/gps/pos/shape Cylinder
 #/gps/pos/radius 1.5 m   # 1.524 in WCSim::DetectorConfigs
-#/gps/pos/halfz 1.97 m   # 1.98m in WCSim::DetectorConfigs
+#/gps/pos/halfz 1.95 m   # 1.98m in WCSim::DetectorConfigs
 ##/gps/pos/confine WCBarrel
 ##cylinders are defined with the z axis as the axis of the cylinder
 ##rotate the cylinder to align with ANNIE's y-parallel tank
@@ -273,8 +273,8 @@
 #/gps/particle pi0
 /gps/pos/type Volume
 /gps/pos/shape Cylinder
-/gps/pos/radius 1.5 m   # 1.524 in WCSim::DetectorConfigs
-/gps/pos/halfz 1.97 m   # 1.98m in WCSim::DetectorConfigs
+/gps/pos/radius 1.7 m   # 1.524 in WCSim::DetectorConfigs
+/gps/pos/halfz 2.1 m   # 1.98m in WCSim::DetectorConfigs
 #cylinders are defined with the z axis as the axis of the cylinder
 #rotate the cylinder to align with ANNIE's y-parallel tank
 /gps/pos/rot1 1 0 0
