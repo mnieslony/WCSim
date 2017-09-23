@@ -22,11 +22,12 @@ void WCSimSteppingAction::UserSteppingAction(const G4Step* aStep)
   //return;    // disable while investigating differences in validation plots.
 
   G4Track* track = aStep->GetTrack();
-  G4String thePostPV = aStep->GetPostStepPoint()->GetPhysicalVolume()->GetName();
-
+  G4VPhysicalVolume* thePostPV = aStep->GetPostStepPoint()->GetPhysicalVolume();
+  
+  //G4String thePostPVname = thePostPV->GetName();
   // For estimating tank energy loss vs digits, need an accurate energy on tank exit - kill particle on
   // tank exit,then end energy will be tank exit energy
-  if(thePostPV=="Hall"){ track->SetTrackStatus(fStopAndKill); return; }
+  // if(thePostPVname=="Hall"){ track->SetTrackStatus(fStopAndKill); return; }
 
   //DISTORTION must be used ONLY if INNERTUBE or INNERTUBEBIG has been defined in BidoneDetectorConstruction.cc
   
@@ -55,7 +56,7 @@ void WCSimSteppingAction::UserSteppingAction(const G4Step* aStep)
   static G4ThreadLocal G4OpBoundaryProcess* boundary=NULL;
   //find the boundary process only once
   if(!boundary){
-    G4ProcessManager* pm = aStep->GetTrack()->GetDefinition()->GetProcessManager();
+    G4ProcessManager* pm = track->GetDefinition()->GetProcessManager();
     G4int nprocesses = pm->GetProcessListLength();
     G4ProcessVector* pv = pm->GetProcessList();
     G4int i;
@@ -67,7 +68,6 @@ void WCSimSteppingAction::UserSteppingAction(const G4Step* aStep)
     }
   }
   
-  if ( track->GetCurrentStepNumber() == 1 ) fExpectedNextStatus = Undefined;
   if(!thePostPV){//out of world
     fExpectedNextStatus=Undefined;
     return;
@@ -80,12 +80,15 @@ void WCSimSteppingAction::UserSteppingAction(const G4Step* aStep)
    if ( track->GetCurrentStepNumber() > 50000 ){   // 50k steps: sufficiently generous?
      track->SetTrackStatus(fStopAndKill); 
      G4cout<<"killing broken photon "<<++numbrokenphotons<<G4endl;
+     fExpectedNextStatus=Undefined;
      return;
    }
+   
+   if ( track->GetCurrentStepNumber() == 1 ) fExpectedNextStatus = Undefined;
+   
    if( aStep->GetPostStepPoint()->GetStepStatus()==fGeomBoundary){
      G4OpBoundaryProcessStatus boundaryStatus=boundary->GetStatus();
-     if(fExpectedNextStatus==StepTooSmall){
-        if(boundaryStatus!=StepTooSmall){
+     if((fExpectedNextStatus==StepTooSmall)&&(boundaryStatus!=StepTooSmall)){
           G4cout<<"error: poststeppoint volume is "
                 <<aStep->GetPostStepPoint()->GetPhysicalVolume()->GetName()
                 <<" prestep point is "
@@ -101,7 +104,6 @@ void WCSimSteppingAction::UserSteppingAction(const G4Step* aStep)
           track->SetTrackStatus(fStopAndKill);
           fExpectedNextStatus=Undefined;
           return;
-        }
       }
       fExpectedNextStatus=Undefined;
       switch(boundaryStatus){

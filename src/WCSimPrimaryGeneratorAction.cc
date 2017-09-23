@@ -361,7 +361,7 @@ void WCSimPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
       MyGPS->GeneratePrimaryVertex(anEvent);
       
       G4ThreeVector P   =anEvent->GetPrimaryVertex()->GetPrimary()->GetMomentum();
-      G4double m       =anEvent->GetPrimaryVertex()->GetPrimary()->GetMass();
+      G4double m       =anEvent->GetPrimaryVertex()->GetPrimary()->GetMass();  // this is rest mass
       G4ThreeVector vtx =anEvent->GetPrimaryVertex()->GetPosition();
       G4int pdg         =anEvent->GetPrimaryVertex()->GetPrimary()->GetPDGcode();
       
@@ -372,13 +372,17 @@ void WCSimPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
       SetBeamEnergy(E);
       SetBeamDir(dir);
       SetBeamPDG(pdg);
+      
+      double tote = anEvent->GetPrimaryVertex()->GetPrimary()->GetTotalEnergy();
+      double ke = anEvent->GetPrimaryVertex()->GetPrimary()->GetKineticEnergy();
+      
       G4ParticleDefinition* parttype = particleTable->FindParticle(pdg);
       G4String particlename;
-      (parttype) ? particlename=parttype->GetParticleName() : particlename=std::to_string(pdg);
-      
-      
-      G4cout<<"generating 'laser' "<<E/GeV<<"GeV "<<particlename
-            <<" event at ("<<vtx.x()/cm<<","<<vtx.y()/cm<<","<<vtx.z()/cm<<")";
+      particlename = (parttype!=0) ? (std::string(parttype->GetParticleName())) : (std::to_string(pdg));
+      G4cout<<"Generating laser primary "<<particlename<<" with total energy "
+            <<tote/MeV<<"MeV and kinetic energy "<<ke/MeV
+            <<"MeV at ("<<vtx.x()/cm<<","<<vtx.y()/cm<<","<<vtx.z()/cm<<") in direction ("
+            <<dir.x()<<", "<<dir.y()<<", "<<dir.z()<<") ";
       G4Navigator* theNavigator = G4TransportationManager::GetTransportationManager()->GetNavigatorForTracking();
       G4VPhysicalVolume* primaryPV = theNavigator->LocateGlobalPointAndSetup(vtx);
       std::string vtxvol = ( (primaryPV) ? primaryPV->GetName() : "<<no-primaryPV>>" );
