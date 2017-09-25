@@ -1,3 +1,4 @@
+/* vim:set noexpandtab tabstop=4 wrap */
 #include "WCSimPrimaryGeneratorAction.hh"
 #include "WCSimDetectorConstruction.hh"
 #include "WCSimPrimaryGeneratorMessenger.hh"
@@ -38,7 +39,7 @@
 
 // as help for reconstruction, a sample where light is only from muons, no other primary particles from the event.
 #ifndef ONLY_MUONS
-#define ONLY_MUONS
+//#define ONLY_MUONS
 #endif
 
 using std::vector;
