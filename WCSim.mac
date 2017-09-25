@@ -3,6 +3,11 @@
 /run/verbose 0
 /tracking/verbose 0
 /hits/verbose 0
+/process/em/verbose 0
+#/process/had/particle_hp/verbose 0
+/process/had/cascade/verbose 0
+/process/verbose 0
+/process/setVerbose 0
 
 ## select the geometry
 # Default config if you do nothing is currently SuperK
@@ -351,7 +356,7 @@
 #/WCSimIO/RootFile ANNIEtest_MRD_muon_sample  # for MRD range vs energy estimation
 /WCSimIO/RootFile wcsim_Muon_Tank_Sample_killed # for measuring # digits vs energy loss in tank
 
-/run/beamOn 10000
+#/run/beamOn 10000
 # should run 10000 events for bonsai
 
 #exit

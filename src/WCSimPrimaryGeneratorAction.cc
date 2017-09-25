@@ -433,12 +433,12 @@ void WCSimPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 			KEBranch=inputdata->GetBranch("kE");
 			pdgBranch=inputdata->GetBranch("pdgtank");
 			nuprimaryBranch=inputdata->GetBranch("primary");
-			entriesInThisTree = runBranch->GetEntries();
 		
 			if(runBranch==0||nTankBranch==0||vtxxBranch==0||vtxyBranch==0||vtxzBranch==0||vtxtBranch==0||pxBranch==0||pyBranch==0||pzBranch==0||EBranch==0||KEBranch==0||pdgBranch==0||nupdgBranch==0||nuvtxxBranch==0||nuvtxyBranch==0||nuvtxzBranch==0||nuvtxtBranch==0||nuPVBranch==0||nuvtxmatBranch==0||nuprimaryBranch==0||nufluxfilenameBranch==0||genierecordBranch==0){
 				G4cout<<"BRANCHES ARE ZOMBIES ARGH!"<<G4endl;
 			} else { G4cout<<"entries in this tree: "<<vtxxBranch->GetEntries()<<G4endl; }
 			
+			entriesInThisTree = runBranch->GetEntries();
 			treeNumber=nextTreeNumber;
 		}
 		
@@ -950,7 +950,6 @@ void WCSimPrimaryGeneratorAction::LoadNewPrimaries(){
 #else 
 	genierecordBranch=(TBranch*)1;
 #endif
-	entriesInThisTree = runBranch->GetEntries();
 	
 	vtxxBranch=inputdata->GetBranch("vx");
 	vtxyBranch=inputdata->GetBranch("vy");
@@ -968,6 +967,7 @@ void WCSimPrimaryGeneratorAction::LoadNewPrimaries(){
 		G4cout<<"BRANCHES ARE ZOMBIES ARGH!"<<G4endl;
 	}
 	
+	entriesInThisTree = runBranch->GetEntries();
 	inputEntry=primariesoffset;
 	primariesoffset=0;
 	runBranch->GetEntry(inputEntry);

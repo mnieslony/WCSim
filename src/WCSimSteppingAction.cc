@@ -25,7 +25,7 @@ void WCSimSteppingAction::UserSteppingAction(const G4Step* aStep)
   G4Track* track = aStep->GetTrack();
   G4VPhysicalVolume* thePostPV = aStep->GetPostStepPoint()->GetPhysicalVolume();
   
-  //G4String thePostPVname = thePostPV->GetName();
+  //G4String thePostPVname = (thePostPV) ? thePostPV->GetName() : "No Vol";
   // For estimating tank energy loss vs digits, need an accurate energy on tank exit - kill particle on
   // tank exit,then end energy will be tank exit energy
   // if(thePostPVname=="Hall"){ track->SetTrackStatus(fStopAndKill); return; }

@@ -20,6 +20,7 @@
 #include "WCSimRootGeom.hh"
 #include "WCSimPmtInfo.hh"
 #include "WCSimLAPPDInfo.hh"
+#include "WCSimLAPPDObject.hh"
 
 #include <vector>
 
@@ -209,6 +210,9 @@ void WCSimRunAction::FillGeoTree(){
   
   std::vector<WCSimPmtInfo*> *fpmts = wcsimdetector->Get_Pmts();
   WCSimPmtInfo *pmt;
+  G4String WCCollectionName = wcsimdetector->GetIDCollectionName();
+  WCSimPMTObject * WCPMT = wcsimdetector->GetPMTPointer(WCCollectionName);
+  std::string tankpmtname = WCPMT->GetPMTName();
   for (unsigned int i=0;i!=fpmts->size();i++){
     pmt = ((WCSimPmtInfo*)fpmts->at(i));
     pos[0] = (Float_t)pmt->Get_transx();
@@ -219,7 +223,7 @@ void WCSimRunAction::FillGeoTree(){
     rot[2] = (Float_t)pmt->Get_orienz();
     tubeNo = pmt->Get_tubeid();
     cylLoc = pmt->Get_cylocation();
-    wcsimrootgeom-> SetPMT(i,tubeNo,cylLoc,rot,pos);
+    wcsimrootgeom-> SetPMT(i,tubeNo,cylLoc,rot,pos,tankpmtname);
   }
   if (fpmts->size() != (unsigned int)numpmt) {
     G4cout << "Mismatch between number of pmts and pmt list in geofile.txt!!"<<G4endl;
@@ -242,6 +246,10 @@ void WCSimRunAction::FillGeoTree(){
   
     std::vector<WCSimLAPPDInfo*> *flappds = wcsimdetector->Get_LAPPDs();
     WCSimLAPPDInfo *lappd;
+    // Get LAPPD name
+    G4String WCIDCollectionName = wcsimdetector->GetIDCollectionName2();
+    WCSimLAPPDObject * LAPPD = wcsimdetector->GetLAPPDPointer(WCIDCollectionName);
+    std::string lappdname = LAPPD->GetLAPPDName();
     for (unsigned int i=0;i!=flappds->size();i++){
       lappd = ((WCSimLAPPDInfo*)flappds->at(i));
       pos[0] = (Float_t)lappd->Get_transx();
@@ -252,7 +260,7 @@ void WCSimRunAction::FillGeoTree(){
       rot[2] = (Float_t)lappd->Get_orienz();
       lappdNo = lappd->Get_lappdid();
       cylLoc = lappd->Get_cylocation();
-      wcsimrootgeom-> SetLAPPD(i,lappdNo,cylLoc,rot,pos);
+      wcsimrootgeom-> SetLAPPD(i,lappdNo,cylLoc,rot,pos,lappdname);
       //G4cout<<"lappd= "<<lappdNo<<" at position: "<<pos[0]<<","<<pos[1]<<","<<pos[2]<<G4endl;
     }
     if (flappds->size() != (unsigned int)numlappd) {
@@ -261,6 +269,9 @@ void WCSimRunAction::FillGeoTree(){
     }
     
     // mrd pmts
+    G4String WCMRDCollectionName = wcsimdetector->GetMRDCollectionName();
+    WCSimPMTObject * MRDPMT = wcsimdetector->GetPMTPointer(WCMRDCollectionName);
+    std::string mrdpmtname = MRDPMT->GetPMTName();
     fpmts = wcsimdetector->Get_MrdPmts();
     for (unsigned int i=0;i!=fpmts->size();i++){
       pmt = ((WCSimPmtInfo*)fpmts->at(i));
@@ -272,7 +283,7 @@ void WCSimRunAction::FillGeoTree(){
       rot[2] = (Float_t)pmt->Get_orienz();
       tubeNo = pmt->Get_tubeid();
       cylLoc = pmt->Get_cylocation();
-      wcsimrootgeom-> SetPMT(i,tubeNo,cylLoc,rot,pos);
+      wcsimrootgeom-> SetPMT(i,tubeNo,cylLoc,rot,pos,mrdpmtname);
     }
     if (fpmts->size() != (unsigned int)nummrdpmts) {
       G4cout << "Mismatch between number of mrd pmts and pmt list in geofile.txt!!"<<G4endl;
@@ -280,6 +291,9 @@ void WCSimRunAction::FillGeoTree(){
     }
     
     //facc pmts
+    G4String WCFACCCollectionName = wcsimdetector->GetFACCCollectionName();
+    WCSimPMTObject * FACCPMT = wcsimdetector->GetPMTPointer(WCFACCCollectionName);
+    std::string faccpmtname = FACCPMT->GetPMTName();
     fpmts = wcsimdetector->Get_FaccPmts();
     for (unsigned int i=0;i!=fpmts->size();i++){
       pmt = ((WCSimPmtInfo*)fpmts->at(i));
@@ -291,7 +305,7 @@ void WCSimRunAction::FillGeoTree(){
       rot[2] = (Float_t)pmt->Get_orienz();
       tubeNo = pmt->Get_tubeid();
       cylLoc = pmt->Get_cylocation();
-      wcsimrootgeom-> SetPMT(i,tubeNo,cylLoc,rot,pos);
+      wcsimrootgeom-> SetPMT(i,tubeNo,cylLoc,rot,pos,faccpmtname);
     }
     if (fpmts->size() != (unsigned int)numfaccpmts) {
       G4cout << "Mismatch between number of facc pmts and pmt list in geofile.txt!!"<<G4endl;

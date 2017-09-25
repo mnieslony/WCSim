@@ -25,10 +25,11 @@ private:
   Int_t fCylLoc;  // endcap1, wall, endcap2
   Float_t fOrientation[3];
   Float_t fPosition[3];
+  std::string fPmtTypeName;
 
 public:
   WCSimRootPMT();
-  WCSimRootPMT(Int_t tubeNo, Int_t cylLoc, Float_t orientation[3], Float_t position[3]);
+  WCSimRootPMT(Int_t tubeNo, Int_t cylLoc, Float_t orientation[3], Float_t position[3], std::string PmtType);
   virtual ~WCSimRootPMT();
 
   void  SetTubeNo(Int_t i) {fTubeNo=i;}
@@ -36,12 +37,14 @@ public:
   void  SetCylLoc(Int_t i) {fCylLoc=i;}
   void  SetOrientation(Int_t i, Float_t f) {fOrientation[i]= ( (i<3) ? f : 0);}
   void  SetPosition(Int_t i, Float_t f) {fPosition[i]= ( (i<3) ? f : 0);}
+  void SetType(std::string PmtType) {fPmtTypeName=PmtType;}
 
   Int_t GetTubeNo() const {return fTubeNo;}
   //Int_t GetLAPPDNo() const {return fLAPPDNo;}
   Int_t GetCylLoc() const {return fCylLoc;}
   Float_t GetOrientation(Int_t i=0) {return (i<3) ? fOrientation[i] : 0;}
   Float_t GetPosition(Int_t i=0) {return (i<3) ? fPosition[i] : 0;}
+  std::string GetName(){ return fPmtTypeName;}
 
   ClassDef(WCSimRootPMT,1)  //WCSimPMT structure
 };
@@ -101,8 +104,8 @@ public:
   void  SetFACCPMTRadius(Float_t f) {fFACCPMTRadius = f;}
   void  SetWCOffset(Float_t x, Float_t y, Float_t z) 
            {fWCOffset[0]=x; fWCOffset[1]=y; fWCOffset[2] = z;}
-  void  SetPMT(Int_t i, Int_t tubeno, Int_t cyl_loc, Float_t rot[3], Float_t pos[3], bool expand=true);
-  void  SetLAPPD(Int_t i, Int_t lappdno, Int_t cyl_loc, Float_t rot[3], Float_t pos[3], bool expand=true);
+  void  SetPMT(Int_t i, Int_t tubeno, Int_t cyl_loc, Float_t rot[3], Float_t pos[3], std::string PmtType, bool expand=true);
+  void  SetLAPPD(Int_t i, Int_t lappdno, Int_t cyl_loc, Float_t rot[3], Float_t pos[3], std::string PmtType, bool expand=true);
   void  SetOrientation(Int_t o) {fOrientation = o;}
 
   Float_t GetWCCylRadius() const {return fWCCylRadius;}

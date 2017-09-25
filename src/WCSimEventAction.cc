@@ -1001,7 +1001,7 @@ void WCSimEventAction::EndOfEventAction(const G4Event* evt)
   hfile->Write("",TObject::kOverwrite);
   
   G4cout<<"events generated so far: "<<(GetRunAction()->GetNumberOfEventsGenerated())<<G4endl;
-  if(event_id%1000==0&&event_id!=0){
+  if(event_id%10000==0&&event_id!=0){
     GetRunAction()->CreateNewOutputFile(); // careful: we should maintain 1:1:1 files genie:g4dirt:wcsim
     if(isANNIE) CreateNewLAPPDFile(); // this must always come *after* the runaction version
   }

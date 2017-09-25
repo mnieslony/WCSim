@@ -53,10 +53,11 @@ WCSimRootPMT::WCSimRootPMT()
 }
 
 //______________________________________________________________________________
-WCSimRootPMT::WCSimRootPMT(Int_t tubeNo, Int_t cylLoc, Float_t orientation[3], Float_t position[3])
+WCSimRootPMT::WCSimRootPMT(Int_t tubeNo, Int_t cylLoc, Float_t orientation[3], Float_t position[3], std::string PmtType)
 {
 	fTubeNo = tubeNo;
 	fCylLoc = cylLoc;
+	fPmtTypeName = PmtType;
 	int j = 0;
 	for(j = 0; j < 3; j++) {
 		fOrientation[j] = orientation[j];
@@ -69,7 +70,7 @@ WCSimRootPMT::WCSimRootPMT(Int_t tubeNo, Int_t cylLoc, Float_t orientation[3], F
 
 //______________________________________________________________________________
 void WCSimRootGeom::SetPMT(Int_t i, Int_t tubeno, Int_t cyl_loc, 
-			    Float_t rot[3], Float_t pos[3], bool expand)
+			    Float_t rot[3], Float_t pos[3], std::string PmtType, bool expand)
 {
    TClonesArray* pmtArray;
    if (cyl_loc==4){ //mrd
@@ -83,7 +84,7 @@ void WCSimRootGeom::SetPMT(Int_t i, Int_t tubeno, Int_t cyl_loc,
 
   // Set PMT values
   // TClonesArray &pmtArray = *fPMTArray;
-    WCSimRootPMT *jPMT = new((*pmtArray)[i]) WCSimRootPMT(tubeno, cyl_loc, rot, pos);
+    WCSimRootPMT *jPMT = new((*pmtArray)[i]) WCSimRootPMT(tubeno, cyl_loc, rot, pos, PmtType);
     //WCSimRootPMT jPMT = *(WCSimRootPMT*)(*fPMTArray)[i];
     // jPMT.SetTubeNo(tubeno);
     // jPMT.SetCylLoc(cyl_loc);
@@ -96,13 +97,13 @@ void WCSimRootGeom::SetPMT(Int_t i, Int_t tubeno, Int_t cyl_loc,
 }
 
 void WCSimRootGeom::SetLAPPD(Int_t i, Int_t lappdno, Int_t cyl_loc, 
-			    Float_t rot[3], Float_t pos[3], bool expand)
+			    Float_t rot[3], Float_t pos[3], std::string PmtType, bool expand)
 {
    if(expand) (*(fLAPPDArray)).ExpandCreate(i+2);
 
   // Set PMT values
    TClonesArray &LAPPDArray = *fLAPPDArray;
-   WCSimRootPMT *jLAPPD = new(LAPPDArray[i]) WCSimRootPMT(lappdno, cyl_loc, rot, pos);
+   WCSimRootPMT *jLAPPD = new(LAPPDArray[i]) WCSimRootPMT(lappdno, cyl_loc, rot, pos, PmtType);
     //WCSimRootPMT jPMT = *(WCSimRootPMT*)(*fPMTArray)[i];
     // jPMT.SetTubeNo(tubeno);
     // jPMT.SetCylLoc(cyl_loc);
