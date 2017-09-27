@@ -345,11 +345,11 @@
 ## now only tracks explicitly drawn in the EndOfEventAction will be shown
 
 # set the random seed
-#/WCSim/random/seed 52878        #default 31415
-# set the offset from the start of the tchain at which to start reading primaries in
-#/mygen/primariesoffset 10000
-# these will be set in the mac file (contents updated by a batch file):
+#/WCSim/random/seed 52878        #default 31415. Now set in setRandomParameters.mac
 /control/execute macros/setRandomParameters.mac
+# set the offset from the start of the tchain at which to start reading primaries in
+#/mygen/primariesoffset 10000    # Now set in primaries_directory.mac << automatically called in WCSim.cc
+
 
 ## change the name of the output root file, default = wcsim (the .root is appended internally)
 /WCSimIO/RootFile wcsim
