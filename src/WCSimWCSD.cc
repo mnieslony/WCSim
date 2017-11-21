@@ -97,7 +97,12 @@ G4bool WCSimWCSD::ProcessHits(G4Step* aStep, G4TouchableHistory*)
   if (trackinfo)
     primParentID = trackinfo->GetPrimaryParentID();
   else // if there is no trackinfo, then it is a primary particle!
+  if (aStep->GetTrack()->GetDefinition() != G4OpticalPhoton::OpticalPhotonDefinition()) {
     primParentID = aStep->GetTrack()->GetTrackID();
+  } else {
+    // it is a primary photon
+    primParentID=-1;
+  }
 
   G4int    trackID           = aStep->GetTrack()->GetTrackID();
   G4String volumeName        = aStep->GetTrack()->GetVolume()->GetName();

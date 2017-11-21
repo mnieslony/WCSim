@@ -103,7 +103,8 @@ void WCSimTrackingAction::PostUserTrackingAction(const G4Track* aTrack)
   if (aTrack->GetDefinition()->GetPDGEncoding()==111)
     pi0List.insert(aTrack->GetTrackID()); // list of all pi0-s 
 
-  if (aTrack->GetParentID()==0 || // primary particle
+  if ( (aTrack->GetParentID()==0 && 
+        aTrack->GetDefinition() != G4OpticalPhoton::OpticalPhotonDefinition() ) || // primary particle,
       (aTrack->GetDefinition()->GetPDGEncoding()==22 && // primary gamma from
        pi0List.count(aTrack->GetParentID())))            // a pi0
     anInfo->SetPrimaryParentID(aTrack->GetTrackID());
