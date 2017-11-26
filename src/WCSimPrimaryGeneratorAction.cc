@@ -6,6 +6,7 @@
 #include "G4ParticleGun.hh"
 #include "G4GeneralParticleSource.hh"
 #include "G4ParticleTable.hh"
+#include "G4ParticleTypes.hh"
 #include "G4IonTable.hh"
 #include "G4ParticleDefinition.hh"
 #include "G4ThreeVector.hh"
@@ -367,9 +368,10 @@ void WCSimPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
       SetBeamEnergy(E);
       SetBeamDir(dir);
       SetBeamPDG(pdg);
-      G4ParticleDefinition* parttype = particleTable->FindParticle(pdg);
+      const G4ParticleDefinition* parttype = anEvent->GetPrimaryVertex()->GetPrimary()->GetParticleDefinition();
       G4String particlename;
-      (parttype) ? particlename=parttype->GetParticleName() : particlename=std::to_string(pdg);
+      if(parttype == G4OpticalPhoton::OpticalPhotonDefinition() ) {particlename="opticalphoton";}
+      else { (parttype) ? particlename=parttype->GetParticleName() : particlename=std::to_string(pdg); }
       
       
       G4cout<<"generating 'laser' "<<E/GeV<<"GeV "<<particlename

@@ -35,7 +35,7 @@
 //#define HYPER_VERBOSITY
 #endif
 
-const double WCSimWCTriggerBase::offset = 950.0; // ns. apply offset to the digit time
+const double WCSimWCTriggerBase::offset = 0.;//950.0; // ns. apply offset to the digit time
 const double WCSimWCTriggerBase::LongTime = 1E6; // ns = 1ms. event time
 
 
@@ -322,7 +322,7 @@ void WCSimWCTriggerBase::AlgNDigits(WCSimWCDigitsCollection* WCDCPMT, bool remov
       //The trigger time is the time of the first hit above threshold
       std::sort(digit_times.begin(), digit_times.end());
       triggertime = digit_times[this_ndigitsThreshold];
-      triggertime -= (int)triggertime % 5;
+      // triggertime -= (int)triggertime % 5; // XXX do not round trigger times to multiples of 5ns
       TriggerTimes.push_back(triggertime);
       TriggerTypes.push_back(this_triggerType);
       TriggerInfos.push_back(std::vector<Float_t>(1, n_digits));
