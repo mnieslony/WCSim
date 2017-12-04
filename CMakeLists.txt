@@ -100,8 +100,10 @@ ${CMAKE_CURRENT_SOURCE_DIR}/include/WCSimLAPPDInfo.hh
 ${CMAKE_CURRENT_SOURCE_DIR}/include/WCSimLAPPDpulse.hh
 ${CMAKE_CURRENT_SOURCE_DIR}/include/WCSimLAPPDpulseCluster.hh
 ${CMAKE_CURRENT_SOURCE_DIR}/include/WCSimRootOptions.hh
-${CMAKE_CURRENT_SOURCE_DIR}/include/WCSimEnumerations.hh LINKDEF
-${CMAKE_CURRENT_SOURCE_DIR}/include/WCSimRootLinkDef.hh)
+${CMAKE_CURRENT_SOURCE_DIR}/include/WCSimEnumerations.hh
+LINKDEF ${CMAKE_CURRENT_SOURCE_DIR}/include/WCSimRootLinkDef.hh
+MODULE WCSimRoot
+)
 
 ## Crucial for reading ROOT classes: make shared object library
 add_library(WCSimRoot SHARED ./src/WCSimRootEvent.cc ./src/WCSimRootGeom.cc
@@ -164,7 +166,6 @@ set(WCSIM_SCRIPTS
   macros/tuning_parameters.mac
   macros/primaries_directory.mac
   macros/setRandomParameters.mac
-  WCSimRootDict_rdict.pcm
   pulsecharacteristics.root
   )
 
