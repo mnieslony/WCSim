@@ -2,6 +2,8 @@
 # List of selected classes
 class WCSimEnumerations
 class WCSimLAPPDInfo
+class WCSimLAPPDpulse
+class WCSimLAPPDpulseCluster
 class WCSimPmtInfo
 class WCSimRootCherenkovDigiHit
 class WCSimRootCherenkovHit
@@ -16,6 +18,8 @@ class WCSimRootTrack
 class WCSimRootTrigger
 header WCSimEnumerations.hh
 header WCSimLAPPDInfo.hh
+header WCSimLAPPDpulse.hh
+header WCSimLAPPDpulseCluster.hh
 header WCSimPmtInfo.hh
 header WCSimRootEvent.hh
 header WCSimRootGeom.hh
