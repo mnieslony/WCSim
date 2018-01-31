@@ -50,6 +50,9 @@ WCSimRootTrigger::WCSimRootTrigger()
   fCherenkovHitTimes = 0;
   fNcherenkovhits = 0;
   fNcherenkovhittimes = 0;
+  
+  // TClonesArray of Captures
+  fCaptures = 0;
 
   // TClonesArray of WCSimRootCherenkovDigiHits
   fCherenkovDigiHits = 0;
@@ -98,6 +101,10 @@ void WCSimRootTrigger::Initialize() //actually allocate memory for things in her
   fNcherenkovdigihits = 0;
   fSumQ = 0;
 
+  // TClonesArray of WCSimRootCaptures
+  fCaptures = new TClonesArray("WCSimRootCapture", 100);
+  fNcaptures = 0;
+
   fTriggerType = kTriggerUndefined;
   fTriggerInfo.clear();
   
@@ -126,11 +133,13 @@ WCSimRootTrigger::~WCSimRootTrigger()
     fCherenkovHits->Delete();      
     fCherenkovHitTimes->Delete();   
     fCherenkovDigiHits->Delete();  
+    fCaptures->Delete();
     
     delete   fTracks;            
     delete   fCherenkovHits;      
     delete   fCherenkovHitTimes;   
     delete   fCherenkovDigiHits; 
+    delete   fCaptures;
   }
   mystopw->Stop();
 
@@ -159,6 +168,9 @@ void WCSimRootTrigger::Clear(Option_t */*option*/)
   fNcherenkovdigihits = 0;
   fSumQ = 0;
 
+  // TClonesArray of WCSimRootCaptures
+  fNcaptures = 0;
+
   // remove whatever's in the arrays
   // but don't deallocate the arrays themselves
 
@@ -166,6 +178,7 @@ void WCSimRootTrigger::Clear(Option_t */*option*/)
   fCherenkovHits->Delete();      
   fCherenkovHitTimes->Delete();   
   fCherenkovDigiHits->Delete();
+  fCaptures->Delete();
 
   fTriggerType = kTriggerUndefined;
   fTriggerInfo.clear();
@@ -413,6 +426,83 @@ WCSimRootCherenkovDigiHit::WCSimRootCherenkovDigiHit(Float_t q,
   fTubeId = tubeid;
   fPhotonIds = photon_ids;
 }
+
+//_____________________________________________________________________________
+void WCSimRootTrigger::SetCaptureParticle(Int_t parent,
+                                          Int_t ipnu,
+                                          Float_t time,
+                                          Float_t vtx[3],
+                                          Float_t dir[3],
+                                          Float_t energy,
+                                          Int_t id)
+{
+    WCSimRootCapture * capture = 0;
+    for(int i = 0; i<fCaptures->GetEntriesFast(); i++){
+        if(((WCSimRootCapture*)fCaptures->At(i))->GetCaptureParent() == parent)
+            capture = (WCSimRootCapture*)fCaptures->At(i);
+    }
+    if(capture == 0) {
+        TClonesArray &captures = *fCaptures;
+        capture = new(captures[fNcaptures++]) WCSimRootCapture(parent);
+    }
+    if(ipnu==22) capture->AddGamma(id, energy, dir);
+    else capture->SetInfo(vtx, time, ipnu);
+}
+
+//_____________________________________________________________________________
+WCSimRootCapture::WCSimRootCapture(Int_t captureParent)
+{
+    fCaptureParent = captureParent;
+    fNGamma = 0;
+    fTotalGammaE = 0;
+    fGammas = new TClonesArray("WCSimRootCaptureGamma", 10);
+    IsZombie=false;
+}
+
+//_____________________________________________________________________________
+
+WCSimRootCapture::~WCSimRootCapture()
+{
+    if(!IsZombie) {
+        fGammas->Delete();
+        delete fGammas;
+    }
+}
+
+//_____________________________________________________________________________
+
+void WCSimRootCapture::SetInfo(Float_t captureVtx[3],
+                               Float_t captureT,
+                               Int_t   captureNucleus)
+{
+    for (int i=0;i<3;i++) fCaptureVtx[i] = captureVtx[i];
+    fCaptureT = captureT;
+    fCaptureNucleus = captureNucleus;
+}
+
+//_____________________________________________________________________________
+
+void WCSimRootCapture::AddGamma(Int_t   gammaID,
+                                Float_t gammaE,
+                                Float_t gammaDir[3])
+{
+    TClonesArray &gammas = *fGammas;
+    new(gammas[fNGamma]) WCSimRootCaptureGamma(gammaID, gammaE, gammaDir);
+    fTotalGammaE += gammaE;
+    fNGamma++;
+}
+
+//_____________________________________________________________________________
+
+WCSimRootCaptureGamma::WCSimRootCaptureGamma(Int_t id,
+                                             Float_t energy,
+                                             Float_t *dir) {
+    fID = id;
+    fEnergy = energy;
+    for(int i=0;i<3;i++) fDir[i] = dir[i];
+}
+
+//_____________________________________________________________________________
 
 // M Fechner, august 2006
 

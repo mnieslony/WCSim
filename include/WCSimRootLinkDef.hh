@@ -20,6 +20,8 @@
 #pragma link C++ class WCSimPmtInfo+;
 #pragma link C++ class WCSimEnumerations+;
 #pragma link C++ class WCSimRootOptions+;
+#pragma link C++ class WCSimRootCapture+;
+#pragma link C++ class WCSimRootCaptureGamma+;
 
 #pragma link C++ class WCSimLAPPDInfo+;
 #pragma link C++ class WCSimLAPPDpulse+;

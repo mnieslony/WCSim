@@ -14,6 +14,7 @@
 WCSimTrackingAction::WCSimTrackingAction()
 {
   ProcessList.insert("Decay") ;
+  ProcessList.insert("nCapture");
   //ProcessList.insert("MuonMinusCaptureAtRest") ;
 //   ProcessList.insert("conv");
   ParticleList.insert(111); // pi0

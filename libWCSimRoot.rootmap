@@ -5,6 +5,8 @@ class WCSimLAPPDInfo
 class WCSimLAPPDpulse
 class WCSimLAPPDpulseCluster
 class WCSimPmtInfo
+class WCSimRootCapture
+class WCSimRootCaptureGamma
 class WCSimRootCherenkovDigiHit
 class WCSimRootCherenkovHit
 class WCSimRootCherenkovHitTime

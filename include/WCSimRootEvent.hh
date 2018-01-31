@@ -216,6 +216,77 @@ public:
 
 //////////////////////////////////////////////////////////////////////////
 
+class WCSimRootCaptureGamma : public TObject {
+
+private:
+  Int_t   fID;
+  Float_t fEnergy;
+  Float_t fDir[3];
+
+public:
+  WCSimRootCaptureGamma() {}
+  WCSimRootCaptureGamma(Int_t id,
+                        Float_t energy,
+                        Float_t dir[3]
+  );
+
+  virtual ~WCSimRootCaptureGamma() {}
+
+  Int_t    GetID()           const { return fID;}
+  Float_t  GetE()            const { return fEnergy;}
+  Float_t  GetDir(int i)     const { return (i<3) ? fDir[i]: 0;}
+
+  ClassDef(WCSimRootCaptureGamma,1)
+};
+
+//////////////////////////////////////////////////////////////////////////
+
+
+class WCSimRootCapture : public TObject {
+// this is a class used specifically for neutron capture events
+
+private:
+   Int_t          fCaptureParent;
+   Float_t        fCaptureVtx[3];
+   Int_t          fNGamma;
+   Float_t        fTotalGammaE;
+   Float_t        fCaptureT;
+   Int_t          fCaptureNucleus;
+   TClonesArray * fGammas;
+   bool           IsZombie;
+
+public:
+   WCSimRootCapture() {
+             fGammas = 0;
+             IsZombie = true;
+           }
+   WCSimRootCapture(Int_t captureParent);
+
+   virtual ~WCSimRootCapture();
+
+   void SetInfo(Float_t captureVtx[3],
+                Float_t captureT,
+                Int_t   captureNucleus
+   );
+
+   void AddGamma(Int_t   gammaID,
+                 Float_t gammaE,
+                 Float_t gammaDir[3]
+   );
+
+   Int_t                   GetCaptureParent()   const { return fCaptureParent;}
+   Float_t                 GetCaptureVtx(int i) const { return (i<3) ? fCaptureVtx[i]: 0;}
+   Int_t                   GetNGamma()          const { return fNGamma;}
+   Float_t                 GetTotalGammaE()     const { return fTotalGammaE;}
+   Float_t                 GetCaptureT()        const { return fCaptureT;}
+   Int_t                   GetCaptureNucleus()  const { return fCaptureNucleus;}
+   TClonesArray           *GetGammas()          const { return fGammas;}
+
+   ClassDef(WCSimRootCapture,1)
+};
+
+////////////////////////////////////////////////////////////////////////////
+
 class WCSimRootTrigger : public TObject {
 
 private:
@@ -230,6 +301,9 @@ private:
   Int_t                fJp;
 
   WCSimRootPi0        fPi0;                // Pi0 info (default = not used)
+
+  TClonesArray        *fCaptures;            // Neutron capture info (default = not used)
+  Int_t                fNcaptures;           // Number of tracks in the array
 
   Int_t                fNpar;               // Number of particles
   Int_t                fNtrack;             // Number of tracks in the array
@@ -280,9 +354,16 @@ public:
   void          SetSumQ(Float_t x){fSumQ = x;}
   void          SetNumDigitizedTubes(Int_t i) {fNumDigitizedTubes = i;}
   void          SetPi0Info(Float_t pi0Vtx[3], 
-			   Int_t   gammaID[2], 
-			   Float_t gammaE[2],
-			   Float_t gammaVtx[2][3]);
+                           Int_t   gammaID[2], 
+                           Float_t gammaE[2],
+                           Float_t gammaVtx[2][3]);
+  void          SetCaptureParticle(Int_t parent,
+                                   Int_t ipnu,
+                                   Float_t time,
+                                   Float_t vtx[3],
+                                   Float_t dir[3],
+                                   Float_t energy,
+                                   Int_t id);
 
 
   WCSimRootEventHeader *GetHeader()               {return &fEvtHdr; }
@@ -327,6 +408,8 @@ public:
 				   Int_t id);
 
   TClonesArray        *GetTracks() const {return fTracks;}
+  
+  Int_t               GetNcaptures()          const {return fNcaptures; }
 
   WCSimRootCherenkovHit   *AddCherenkovHit(Int_t                tubeID,
 					  std::vector<Float_t> truetime,
@@ -344,6 +427,7 @@ public:
  //                                                 Float_t sumq);
 
   TClonesArray            *GetCherenkovDigiHits() const {return fCherenkovDigiHits;}
+  TClonesArray            *GetCaptures() const {return fCaptures;}
 
   ClassDef(WCSimRootTrigger,2) //WCSimRootEvent structure
 };

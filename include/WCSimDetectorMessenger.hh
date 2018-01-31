@@ -42,6 +42,7 @@ class WCSimDetectorMessenger: public G4UImessenger
   G4UIcmdWithADoubleAndUnit* cylinderTank_Diameter;
   G4UIcmdWithADouble* cylinderTank_Coverage;
   G4UIcmdWithAString* cylinderTank_PMTType;
+  G4UIcmdWithAString* SaveCapture;
 
 
   G4UIcmdWithAString* tubeCmd;
