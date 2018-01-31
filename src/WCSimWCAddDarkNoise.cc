@@ -20,6 +20,7 @@
 
 #include <vector>
 #include <utility>
+#include <numeric> // for std::iota
 // for memset
 #include <cstring>
 
