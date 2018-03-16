@@ -37,12 +37,15 @@
 #/vis/viewer/zoom 1.5
 
 ## Color PMTs by type for ANNIEp2v2
-#Idle> /vis/geometry/set/forceSolid ANNIEp2v2-glassFaceWCPMT_R7081 -1 1
-#Idle> /vis/geometry/set/forceSolid ANNIEp2v2-glassFaceWCPMT_D784KFLB -1 1
-#Idle> /vis/geometry/set/forceSolid ANNIEp2v2-glassFaceWCPMT_R5912 -1 1
-#Idle> /vis/geometry/set/colour ANNIEp2v2-glassFaceWCPMT_R7081 -1 1. .6 1. 1
-#Idle> /vis/geometry/set/colour ANNIEp2v2-glassFaceWCPMT_D784KFLB -1 .6 1. 1. 1
-#Idle> /vis/geometry/set/colour ANNIEp2v2-glassFaceWCPMT_R5912 -1 1.0 0.3 .3 1
+/vis/geometry/set/forceSolid ANNIEp2v2-glassFaceWCPMT_R7081 -1 1
+/vis/geometry/set/forceSolid ANNIEp2v2-glassFaceWCPMT_D784KFLB -1 1
+/vis/geometry/set/forceSolid ANNIEp2v2-glassFaceWCPMT_R5912HQE -1 1
+/vis/geometry/set/colour ANNIEp2v2-glassFaceWCPMT_R7081 -1 1. .6 1. 1
+/vis/geometry/set/colour ANNIEp2v2-glassFaceWCPMT_D784KFLB -1 .6 1. 1. 1
+/vis/geometry/set/colour ANNIEp2v2-glassFaceWCPMT_R5912HQE -1 1.0 0.3 .3 1
+
+# Show inner structure for ANNIEp2v2
+/vis/geometry/set/visibility cad_logical 1
 
 # Vis settings for HK
 #/vis/viewer/set/upVector 0 1 0
