@@ -131,12 +131,38 @@ else()
   find_package(Geant4 REQUIRED)
 endif()
 
+if(NOT Geant4_FOUND)
+  message(STATUS "Geant4 package not found.")
+else()
+  message(STATUS "found Geant4")
+endif()
+
 #----------------------------------------------------------------------------
 # Setup Geant4 include directories and compile definitions
 # Setup include directory for this project
 #
 message(STATUS "using Geant4: ${Geant4_USE_FILE}")
 include(${Geant4_USE_FILE})  ## NOT needed for Dict
+
+#----------------------------------------------------------------------------
+# CADMESH install location for reading CAD STL files
+if(DEFINED ENV{ENABLE_CADMESH})
+  
+  set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} $ENV{CADMESH_CMAKE_DIR})
+  message(STATUS "Looking for cadmesh in = ${CMAKE_PREFIX_PATH}")
+  find_package(cadmesh)
+  include_directories($ENV{CADMESH_INCLUDE_DIR})
+  
+  if(NOT cadmesh_FOUND)
+    message(STATUS "!!! cadmesh package not found !!!")
+  else()
+    message(STATUS "CADMESH STL file reading features enabled.")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DENABLE_CADMESH")
+  endif()
+
+else()
+  message(STATUS "CADMESH disabled.")
+endif()
 
 #----------------------------------------------------------------------------
 # Locate sources and headers for this project
@@ -150,7 +176,7 @@ file(GLOB headers ${PROJECT_SOURCE_DIR}/include/*.hh)
 # Add the executable, and link it to the Geant4 libraries
 #
 add_executable(WCSim WCSim.cc ${sources} ${headers})
-target_link_libraries(WCSim ${Geant4_LIBRARIES} ${ROOT_LIBRARIES} ${Genie_LIBRARIES} ${Root_LIBRARIES} WCSimRoot Tree)
+target_link_libraries(WCSim ${Geant4_LIBRARIES} ${ROOT_LIBRARIES} ${Genie_LIBRARIES} ${Root_LIBRARIES} WCSimRoot Tree ${cadmesh_LIBRARIES})
 
 
 

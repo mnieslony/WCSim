@@ -1,4 +1,5 @@
- //
+/* vim:set noexpandtab tabstop=4 wrap */
+//
 // ********************************************************************
 // * License and Disclaimer                                           *
 // *                                                                  *
@@ -77,6 +78,14 @@
   #include "WCSimLAPPDObject.hh"
 // ***********/WCSim PMT integration
 // =================================
+
+#ifdef ENABLE_CADMESH
+// *********CADMESH integration
+// ===============================
+// User Detector Constructor
+#include "CADMesh.hh"
+// ===============================
+#endif
 
 // tank is 7GA (7-gauge steel) = (0.1793"normal sheet steel or) 0.1875" stainless steel = 4.7625mm thick 'A36' steel (density 7,800 kg/m3 )
 // ^ gauge represents the thickness of 1 ounce of copper rolled out to an area of 1 square foot
@@ -161,6 +170,20 @@ G4LogicalVolume* WCSimDetectorConstruction::ConstructANNIE()
 			G4VPhysicalVolume* innerstructure_phys_placed = new G4PVPlacement(rotm2, G4ThreeVector(0,0,-.5*WCLength), innerstructure_log, "innerstructure_phys", logicWCBarrel, false, 0, false);
 		}
 	}
+	
+#ifdef ENABLE_CADMESH
+	// CADMESH STL to GDML file conversion for inner structure
+	// this is only written for conversion to gdml, not for integration into the actual geometry!
+	G4ThreeVector offset = G4ThreeVector(0, 0, 0);
+	static const G4double INCH = 2.54*cm;
+	CADMesh * mesh = new CADMesh("inner_structure.stl", INCH, offset, false);
+	G4VSolid* cad_solid = mesh->TessellatedMesh();
+	G4LogicalVolume* cad_logical = new G4LogicalVolume(cad_solid, G4Material::GetMaterial("StainlessSteel"), "cad_logical", 0, 0, 0);
+	G4VPhysicalVolume* cad_physical = new G4PVPlacement(0, G4ThreeVector(), cad_logical,
+		                                 "cad_physical", expHall_log, false, 0);
+	G4GDMLParser Parser;
+	Parser.Write("InnerStructure.gdml",cad_physical);
+#endif
 
   // set all the paddle dimensions etc and create solids, logical volumes etc. for the MRD & VETO
   DefineANNIEdimensions();												// part of MRDDetectorConstruction.cc

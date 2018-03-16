@@ -98,7 +98,7 @@ G4LogicalVolume* WCSimDetectorConstruction::ConstructCylinder()
     // modify for ANNIE - much more compact, smaller excess <<< this accounts for extra volume around PMT faces!
     WCLength    = WCIDHeight + 5.*cm;	// arbitrary additional space?
     //WCRadius    = (WCIDDiameter/2. + WCBlackSheetThickness + 20*cm)/cos(dPhi/2.); 
-    // this is known - set in DetectorConfigs
+    // WCRadius is known - set in DetectorConfigs
     //G4cout<<"innerAnnulusRadius= "<<innerAnnulusRadius<<" outerAnnulusRadius= "<<outerAnnulusRadius<<G4endl;
   }
   
@@ -116,8 +116,8 @@ G4LogicalVolume* WCSimDetectorConstruction::ConstructCylinder()
   
   G4double WChalfheightexcess, WCradialexcess;
   //jl145 - per blueprint for SK, less for ANNIE
-  (!isANNIE) ? WChalfheightexcess=4.2*m : WChalfheightexcess=2.*cm; 
-  (!isANNIE) ? WCradialexcess=2.0*m : WCradialexcess=1.*cm;            // MRD and FACC are very close to the tank!
+  (!isANNIE) ? WChalfheightexcess=4.2*m : WChalfheightexcess=4.7625*mm; 
+  (!isANNIE) ? WCradialexcess=2.0*m : WCradialexcess=4.7625*mm;    // for ANNIE this is used as the tank steel: 4.7625mm A36 steel (needs to be small as MRD/FACC are very close also)
   
   G4Tubs* solidWC = new G4Tubs("WC",
 			       0.0*m,
@@ -126,11 +126,19 @@ G4LogicalVolume* WCSimDetectorConstruction::ConstructCylinder()
 			       0.*deg,
 			       360.*deg);
   
-  G4LogicalVolume* logicWC = 
-    new G4LogicalVolume(solidWC,
+  // No steel container for the water? Add one for ANNIE
+  G4LogicalVolume* logicWC;
+  if(!isANNIE){
+	logicWC = new G4LogicalVolume(solidWC,
 			G4Material::GetMaterial("Air"),
 			"WC",
 			0,0,0);
+  } else {
+	logicWC = new G4LogicalVolume(solidWC,
+			G4Material::GetMaterial("StainlessSteel"),
+			"WC",
+			0,0,0);
+  }
  
    G4VisAttributes* showColor = new G4VisAttributes(G4Colour(0.0,1.0,0.0));
    logicWC->SetVisAttributes(showColor);
