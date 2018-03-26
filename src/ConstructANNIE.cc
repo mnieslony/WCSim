@@ -107,7 +107,6 @@ G4LogicalVolume* WCSimDetectorConstruction::ConstructANNIE()
     {G4cout<<"Refreshing Water"<<G4endl;}
   
 //  //  ===== Rob Hatcher's integration      <--- to use this, also 'return expHall_log' at bottom
-//  //GDMLFilename="usethisgeometry.gdml";
 //  G4GDMLParser parser;  // Read GDML file
 //  parser.SetOverlapCheck(0);
 //  G4cout << "Read " << GDMLFilename << " (overlap check = " << (doOverlapCheck?"true":"false") << ")" << G4endl;
@@ -118,17 +117,20 @@ G4LogicalVolume* WCSimDetectorConstruction::ConstructANNIE()
 //  //  ===== Rob Hatcher's integration
 
   //  ===== InnerStructure integration
-  G4String GDMLFilename="InnerStructure.gdml";
-  G4GDMLParser parser;
-  parser.SetOverlapCheck(0);
-  G4cout << "Read " << GDMLFilename << " (overlap check = " << (doOverlapCheck?"true":"false") << ")" << G4endl;
-  parser.Read (GDMLFilename, false); // false disables schema validation, which was causing issues
-  // (seeemed to require internet connection, sometimes failed without it??? 
-  // see https://halldweb.jlab.org/wiki/index.php/HOWTO_build_and_install_GEANT4.10.02_on_OS_X )
-  G4VPhysicalVolume* innerstructure_phys_ret = parser.GetWorldVolume();
-  G4LogicalVolume* innerstructure_log = innerstructure_phys_ret->GetLogicalVolume();
-  // n.b. logical volume name is "cad_logical", physical is "cad_physical"
-  // where, if anywhere, does this get *put*?
+  G4LogicalVolume* innerstructure_log;
+  if(addGDMLinnerstructure){
+    G4GDMLParser parser;
+    parser.SetOverlapCheck(0);
+    G4cout << "Read " << GDMLInnerStructureFilename 
+           << " (overlap check = " << (doOverlapCheck?"true":"false") << ")" << G4endl;
+    parser.Read (GDMLInnerStructureFilename, false); // disable schema validation as causing issues
+    // (seeemed to require internet connection, sometimes failed without it??? 
+    // see https://halldweb.jlab.org/wiki/index.php/HOWTO_build_and_install_GEANT4.10.02_on_OS_X )
+    G4VPhysicalVolume* innerstructure_phys_ret = parser.GetWorldVolume();
+    innerstructure_log = innerstructure_phys_ret->GetLogicalVolume();
+    // n.b. logical volume name is "cad_logical", physical is "cad_physical"
+    // where, if anywhere, does this get *put*?
+  }
   //  ===== InnerStructure integration
   
   // Create Experimental Hall
@@ -161,13 +163,17 @@ G4LogicalVolume* WCSimDetectorConstruction::ConstructANNIE()
 			G4LogicalVolume* nextdaughter = waterTank_log->GetDaughter(iDaughter)->GetLogicalVolume();
 			if(nextdaughter->GetName()=="WCBarrel"){ logicWCBarrel=nextdaughter; break; }
 		}
-		if(logicWCBarrel==nullptr){
-			G4cerr<<"!!! could not find WCBarrel, inner structure will not be added !!!"<<G4endl;
-		} else {
-			G4RotationMatrix* rotm2 = new G4RotationMatrix();
-			rotm2->rotateZ(90*deg);
-			rotm2->rotateZ(22.5*deg);
-			G4VPhysicalVolume* innerstructure_phys_placed = new G4PVPlacement(rotm2, G4ThreeVector(0,0,-.5*WCLength), innerstructure_log, "innerstructure_phys", logicWCBarrel, false, 0, false);
+		if(addGDMLinnerstructure){
+			if(logicWCBarrel==nullptr){
+				G4cerr<<"!!! could not find WCBarrel, inner structure will not be added !!!"<<G4endl;
+			} else {
+				G4RotationMatrix* rotm2 = new G4RotationMatrix();
+				rotm2->rotateZ(90*deg);
+				rotm2->rotateZ(22.5*deg);
+				G4VPhysicalVolume* innerstructure_phys_placed = 
+					new G4PVPlacement(rotm2, G4ThreeVector(0,0,-.5*WCLength), innerstructure_log, 
+					"innerstructure_phys", logicWCBarrel, false, 0, false);
+			}
 		}
 	}
 	

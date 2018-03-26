@@ -187,6 +187,8 @@ void WCSimDetectorConstruction::SetANNIEPhase2Geometryv2()
   expHall_x = 50*m;
   expHall_y = expHall_z = 500*m;
   GDMLFilename = "annie_v04.gdml";
+  GDMLInnerStructureFilename = "InnerStructure.gdml";
+  addGDMLinnerstructure = false;
   
   WCSimPMTObject* MRDPMT = CreatePMTObject("FlatFacedPMT2inch",WCMRDCollectionName);
   MRDPMTName = MRDPMT->GetPMTName();

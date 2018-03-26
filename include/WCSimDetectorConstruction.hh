@@ -585,6 +585,8 @@ private:
 
   G4bool isANNIE;
   G4String GDMLFilename;
+  G4String GDMLInnerStructureFilename;
+  G4bool addGDMLinnerstructure;
   G4double tankouterRadius;
   G4double tankhy;
   G4double tankzoffset;

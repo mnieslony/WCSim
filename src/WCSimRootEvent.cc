@@ -81,7 +81,7 @@ void WCSimRootTrigger::Initialize() //actually allocate memory for things in her
   // When the constructor is invoked for the first time, the class static
   // variable fgTracks is 0 and the TClonesArray fgTracks is created.
   // Sim. for the other TClonesArray
-  TStopwatch* mystopw = new TStopwatch();
+  //TStopwatch* mystopw = new TStopwatch();
 
   // TClonesArray of WCSimRootTracks
   fTracks = new TClonesArray("WCSimRootTrack", 10000);
@@ -110,7 +110,7 @@ void WCSimRootTrigger::Initialize() //actually allocate memory for things in her
   
   //  G4cout << " Time to allocate the TCAs :  Real = " << mystopw->RealTime() 
   //	    << " ; CPU = " << mystopw->CpuTime() << "\n";
-  delete mystopw;
+  //delete mystopw;
   
 
   IsZombie = false; // the memory has been allocated
@@ -123,9 +123,9 @@ WCSimRootTrigger::~WCSimRootTrigger()
   // now we must do a bunch a deleting stuff...
   //Destroys all the TClonesArray.. Let's see if Ren'e Brun is right...
 
-  TStopwatch* mystopw = new TStopwatch();
+  //TStopwatch* mystopw = new TStopwatch();
 
-  mystopw->Start();
+  //mystopw->Start();
 
   if (!IsZombie) {
 
@@ -141,12 +141,12 @@ WCSimRootTrigger::~WCSimRootTrigger()
     delete   fCherenkovDigiHits; 
     delete   fCaptures;
   }
-  mystopw->Stop();
+  //mystopw->Stop();
 
   //  G4cout << " Time to delete the TCAs :  Real = " << mystopw->RealTime() 
   //    << " ; CPU = " << mystopw->CpuTime() << "\n";
 
-  delete mystopw;
+  //delete mystopw;
   //Clear("C");
 }
 
