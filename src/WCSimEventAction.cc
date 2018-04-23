@@ -1418,7 +1418,7 @@ void WCSimEventAction::FillRootEvent(G4int event_id,
       float start[3];
       for (int l=0;l<3;l++)
       {
-	dir[l]= mom[l]/mommag; // direction 
+	dir[l]= (mommag!=0) ? mom[l]/mommag : 0; // direction 
 	pdir[l]=mom[l];        // momentum-vector 
 	pdir2[l]=momend[l];    // end momentum-vector 
 	stop[l]=Stop[l]/CLHEP::cm; // stopping point 

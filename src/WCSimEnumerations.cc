@@ -31,6 +31,9 @@ std::string WCSimEnumerations::EnumAsString(TriggerType_t t)
   case (kTriggerNoTrig) :
     return "NoTrigger";
     break;
+  case (kTriggerTankDigits) :
+    return "TankDigits";
+    break;
   default:
     return "";
     break;

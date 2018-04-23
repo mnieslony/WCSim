@@ -194,18 +194,18 @@ void WCSimRunAction::FillGeoTree(){
   }
 
   std::vector<G4String> tankcollectionnames = wcsimdetector->GetIDCollectionNames();
-  if(tankcollectionnames.size()==0){
-  numpmt=0;
-  for(auto acollectionname : tankcollectionnames){
-    WCSimPMTObject* PMT = wcsimdetector->GetPMTPointer(acollectionname);
-    Float_t pmtSize = PMT->GetRadius()/CLHEP::cm;
-    wcsimrootgeom->AddPmtRadius(pmtSize);
-    G4String thepmtname = PMT->GetPMTName();
-    wcsimrootgeom->AddPmtName(thepmtname);
-    Int_t pmtcount = wcsimdetector->GetTotalNumPmts(acollectionname);
-    wcsimrootgeom->AddPmtTypeCount(pmtcount);
-    numpmt+=pmtcount;
-  }
+  if(tankcollectionnames.size()!=0){
+    numpmt=0;
+    for(auto acollectionname : tankcollectionnames){
+      WCSimPMTObject* PMT = wcsimdetector->GetPMTPointer(acollectionname);
+      Float_t pmtSize = PMT->GetRadius()/CLHEP::cm;
+      wcsimrootgeom->AddPmtRadius(pmtSize);
+      G4String thepmtname = PMT->GetPMTName();
+      wcsimrootgeom->AddPmtName(thepmtname);
+      Int_t pmtcount = wcsimdetector->GetTotalNumPmts(acollectionname);
+      wcsimrootgeom->AddPmtTypeCount(pmtcount);
+      numpmt+=pmtcount;
+    }
   } else {
     numpmt = wcsimdetector->GetTotalNumPmts();
   }
@@ -337,7 +337,7 @@ void WCSimRunAction::FillGeoTree(){
     wcsimrootgeom-> SetWCNumLAPPD(numlappd);
     wcsimrootgeom-> SetWCNumMrdPMT(nummrdpmts);
     wcsimrootgeom-> SetWCNumFaccPMT(numfaccpmts);
-  } else {
+  } else { // ! isANNIE
     wcsimrootgeom-> SetWCLAPPDRadius(0.);
     wcsimrootgeom-> SetMRDPMTRadius(0.);
     wcsimrootgeom-> SetFACCPMTRadius(0.);

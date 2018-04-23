@@ -390,10 +390,15 @@ private:
   void DoTheWork(WCSimWCDigitsCollection* WCDCPMT);
 
   bool GetDefaultMultiDigitsPerTrigger()    { return false; } ///< SKI saves only earliest digit on a PMT in the trigger window
-  int  GetDefaultNDigitsWindow()            { return 200;   } ///< SK max light travel time ~200 ns
-  int  GetDefaultNDigitsThreshold()         { return 25;    } ///< SK NDigits threshold ~25
-  int  GetDefaultNDigitsPreTriggerWindow()  { return -1000;  } ///< Scintillator elements have much longer timescales
-  int  GetDefaultNDigitsPostTriggerWindow() { return 2000;   } ///< Scintillator elements have much longer timescales
+  int  GetDefaultNDigitsWindow()            { return 200;   } /// unused, triggers are found from tank
+  int  GetDefaultNDigitsThreshold()         { return 50;    } ///< more suitable for ANNIE, needs tuning
+  int  GetDefaultNDigitsPreTriggerWindow()  { return -400;  } ///< not relevant without further work
+  int  GetDefaultNDigitsPostTriggerWindow() { return 950;   } ///< not relevant without further work
+  // DAQMessenger stores the values set by daq.mac internally, then overrides the class default
+  // values for any that have been set. But there is only one set of internal values stored, so
+  // any values set in daq.mac will be applied to ALL triggers, regardless of class.
+  // scintillator decay time is ~10's ns (10ns in ConstructMaterials) so -400 -> +950 is more than 
+  // sufficient, though.
 };
 
 #endif //WCSimWCTrigger_h

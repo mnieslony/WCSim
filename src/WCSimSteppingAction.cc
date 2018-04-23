@@ -91,7 +91,9 @@ void WCSimSteppingAction::UserSteppingAction(const G4Step* aStep)
                 <<aStep->GetPostStepPoint()->GetPhysicalVolume()->GetName()
                 <<" prestep point is "
                 <<aStep->GetPreStepPoint()->GetPhysicalVolume()->GetName()
+                <<", step length was "<<aStep->GetStepLength()
                 <<G4endl;
+                
           /*G4ExceptionDescription ed;
           ed << "WCSimSteppingAction::UserSteppingAction(): "
                 << "No reallocation step after reflection!"

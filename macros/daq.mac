@@ -20,6 +20,7 @@
 # the digits in which range around the trigger time (ns) should be saved with the event
 #/DAQ/TriggerSaveFailures/PreTriggerWindow  -400
 #/DAQ/TriggerSaveFailures/PostTriggerWindow +950
+## NOTE IF SET THESE WILL BE APPLIED TO _ALL_ TRIGGER TYPES, NOT JUST THE TANK TRIGGER
 
 #options for NDigits-like triggers (defaults are class-specific. Can be overridden here)
 # control the NDigits trigger threshold

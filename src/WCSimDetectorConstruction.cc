@@ -20,6 +20,7 @@
 #include "G4GDMLParser.hh"
 #include "G4PhysicalConstants.hh"
 #include "G4SystemOfUnits.hh"
+#include "G4GeometryTolerance.hh"
 
 std::map<int, G4Transform3D> WCSimDetectorConstruction::tubeIDMap;
 std::map<int, G4Transform3D> WCSimDetectorConstruction::mrdtubeIDMap;
@@ -175,6 +176,18 @@ WCSimDetectorConstruction::~WCSimDetectorConstruction(){
 G4VPhysicalVolume* WCSimDetectorConstruction::Construct()
 {  
   G4GeometryManager::GetInstance()->OpenGeometry();
+  // having issues with StepTooSmall not being set - step sizes are ~1e-9, which *is* larger 
+  // than the kCarTolerance/2 (5e-10m), but StepTooSmall isn't set for some reason...
+  // Try calling SetWorldMaximumExtent to have it calculated from World size. 
+  // This value must be setBEFORE ANY GEOMETRY is instantiated.
+  // Seems to work - kCarTolerance is now much smaller, no more errors.
+  if(isANNIE){
+    // let's try setting the tolerance to try to get rid of geometry errors
+    // this takes the world extent - set in WCSimDetectorConstruction as expHallLength
+    G4GeometryManager::GetInstance()->SetWorldMaximumExtent(3.*WCLength);
+    G4cout << "Computed tolerance = "
+           << G4GeometryTolerance::GetInstance()->GetSurfaceTolerance()/mm << " mm" << G4endl;
+  }
 
   G4PhysicalVolumeStore::GetInstance()->Clean();
   G4LogicalVolumeStore::GetInstance()->Clean();
@@ -201,7 +214,7 @@ G4VPhysicalVolume* WCSimDetectorConstruction::Construct()
   G4LogicalVolume* logicWCBox;
   // Select between egg-shaped HyperK and cylinder
   if (isEggShapedHyperK) logicWCBox = ConstructEggShapedHyperK();
-  else if (isANNIE) logicWCBox = ConstructANNIE();
+  else if (isANNIE) logicWCBox = ConstructANNIE(); // returns a 5x5x5m box MatryoshkaMother
   else logicWCBox = ConstructCylinder();
   G4cout << " WCLength       = " << WCLength/CLHEP::m << " m"<< G4endl;
 

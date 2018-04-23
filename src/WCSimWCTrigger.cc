@@ -123,6 +123,7 @@ int WCSimWCTriggerBase::GetPreTriggerWindow(TriggerType_t t)
     break;
   case kTriggerNDigits:
   case kTriggerNDigitsTest:
+  case kTriggerTankDigits:
     return ndigitsPreTriggerWindow;
     break;
   case kTriggerFailure:
@@ -144,6 +145,7 @@ int WCSimWCTriggerBase::GetPostTriggerWindow(TriggerType_t t)
     break;
   case kTriggerNDigits:
   case kTriggerNDigitsTest:
+  case kTriggerTankDigits:
     return ndigitsPostTriggerWindow;
     break;
   case kTriggerFailure:
@@ -285,26 +287,19 @@ void WCSimWCTriggerBase::AlgNDigits(WCSimWCDigitsCollection* WCDCPMT, bool remov
     for (G4int i = 0 ; i < WCDCPMT->entries() ; i++) {
       //int tube=(*WCDCPMT)[i]->GetTubeID();
       //Loop over each Digit in this PMT
-      //G4cout<<"getting totalpe"<<G4endl;
       //G4int atotalpe = (*WCDCPMT)[i]->GetTotalPe();
-      //G4cout<<"atotalpe of "<<atotalpe<<" this entry"<<G4endl;
       for ( G4int ip = 0 ; ip < (*WCDCPMT)[i]->GetTotalPe() ; ip++) {
         int digit_time=0;
       	try{
-      	  //G4cout<<"getting time as float ...";
 	  G4float temp_time = (*WCDCPMT)[i]->GetTime(ip);
-	  //G4cout<<"converting to int ... ";
 	  if(temp_time<(std::numeric_limits<int>::max())){digit_time = (int)temp_time;} else {digit_time=-999;};
-	  //G4cout<<"converted"<<G4endl;
 	}
 	catch (...){
 	  G4cerr<<"Exception in WCSimWCTriggerBase::AlgNDigits call to WCSimWCDigi::GetTime "
 	        <<G4endl<<"Attempt to retrieve time from pe "<<ip<<" in WCDCPMT entry "<<i<<G4endl;
 	  G4cerr<<"The digi had "<<(*WCDCPMT)[i]->GetTotalPe()<<" total pe's."<<G4endl;
-	  //assert(false);
 	  digit_time=-998;
 	}
-	//G4cout << digit_time << G4endl;
 	//hit in trigger window?
 	if(digit_time >= window_start_time && digit_time <= (window_start_time + ndigitsWindow)) {
 	  n_digits++;
@@ -331,7 +326,7 @@ void WCSimWCTriggerBase::AlgNDigits(WCSimWCDigitsCollection* WCDCPMT, bool remov
 
 #ifdef WCSIMWCTRIGGER_VERBOSE
     if(n_digits)
-      G4cout << n_digits << " digits found in 200nsec trigger window ["
+      G4cout << n_digits << " digits found in "<<ndigitsWindow<<"nsec trigger window ["
 	     << window_start_time << ", " << window_start_time + ndigitsWindow
 	     << "]. Threshold is: " << this_ndigitsThreshold << G4endl;
 #endif
@@ -369,7 +364,8 @@ void WCSimWCTriggerBase::AlgTankDigits(WCSimWCDigitsCollection* WCDCPMT, bool re
   /** this actually doesn't need to search for triggers, but instead needs to retrieve the Trigger vectors
    from the tank trigger class. The storing of digits within those trigger windows is then done by FillDigitsCollection().
   */
-  TriggerType_t this_triggerType = kTriggerNDigits; //kTriggerTankDigits;
+  // save MRD digits for *any* tank trigger, regardless of type... 
+  TriggerType_t this_triggerType = kTriggerTankDigits; // kTriggerNDigits;
   
   // need to retrieve the trigger vectors from the tank trigger class.
   // Get a pointer to the Digitizing Module Manager
@@ -381,8 +377,9 @@ void WCSimWCTriggerBase::AlgTankDigits(WCSimWCDigitsCollection* WCDCPMT, bool re
     int numtanktriggers = WCTM_tank->NumberOfGatesInThisEvent();
     for(int i=0;i<numtanktriggers;i++){
       TriggerTimes.push_back(WCTM_tank->GetTriggerTime(i));
-      TriggerTypes.push_back(WCTM_tank->GetTriggerType(i));
       TriggerInfos.push_back(WCTM_tank->GetTriggerInfo(i));
+      // DO NOT copy trigger type so that MRD may have longer pre- and post-trigger windows
+      TriggerTypes.push_back(kTriggerTankDigits);
     }
     multiDigitsPerTrigger = WCTM_tank->GetMultiDigitsPerTrigger();
   }
@@ -424,6 +421,9 @@ void WCSimWCTriggerBase::FillDigitsCollection(WCSimWCDigitsCollection* WCDCPMT, 
       return;
   }
   else {
+#ifdef WCSIMWCTRIGGER_VERBOSE
+    G4cout<<"no triggers in this event"<<G4endl;
+#endif
     if(saveFailuresMode == 0)
       return;
     TriggerTypes.push_back(kTriggerFailure);
@@ -439,7 +439,8 @@ void WCSimWCTriggerBase::FillDigitsCollection(WCSimWCDigitsCollection* WCDCPMT, 
   for(unsigned int itrigger = 0; itrigger < TriggerTimes.size(); itrigger++) {
     TriggerType_t triggertype = TriggerTypes[itrigger];
     //check if we've already saved this trigger
-    if(triggertype != save_triggerType && save_triggerType != kTriggerUndefined)
+    // skip this digit if it's the wrong trigger type, or for kTriggerTankDigits, trigger on all digits
+    if( (triggertype != save_triggerType || save_triggerType!=kTriggerTankDigits) && save_triggerType != kTriggerUndefined )
       continue;
     float         triggertime = TriggerTimes[itrigger];
     std::vector<Float_t> triggerinfo = TriggerInfos[itrigger];
