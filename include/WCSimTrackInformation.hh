@@ -15,12 +15,17 @@ class WCSimTrackInformation : public G4VUserTrackInformation {
 private:
   G4bool saveit; 
   G4int  primaryParentID;
+  G4int  parentPdg;
   long long int numreflections;
 
 public:
-  WCSimTrackInformation() : saveit(false), primaryParentID(-1) {}
-  WCSimTrackInformation(const WCSimTrackInformation* aninfo) 
-  { saveit = aninfo->saveit; primaryParentID = aninfo->primaryParentID;}
+  WCSimTrackInformation() : saveit(false), primaryParentID(-1), parentPdg(0), numreflections(-1) {}
+  WCSimTrackInformation(const WCSimTrackInformation* aninfo){
+    saveit = aninfo->saveit;
+    primaryParentID = aninfo->primaryParentID;
+    numreflections = aninfo->numreflections;
+    parentPdg = aninfo->parentPdg;
+  }
   virtual ~WCSimTrackInformation() {}
   WCSimTrackInformation(const G4Track* );
   
@@ -29,9 +34,13 @@ public:
 
   void SetPrimaryParentID(G4int i) { primaryParentID = i;}
   G4int GetPrimaryParentID() {return primaryParentID;}
+
+  void SetParentPdg(G4int i) { parentPdg = i;}
+  G4int GetParentPdg() { return parentPdg;}
   
   void IncrementNumReflections() {numreflections++;}
   long long int GetNumReflections() {return numreflections;}
+  
 
   inline void *operator new(size_t);
   inline void operator delete(void *aTrackInfo);

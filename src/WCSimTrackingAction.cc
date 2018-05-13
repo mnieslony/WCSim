@@ -11,21 +11,21 @@
 #include "G4PhysicalConstants.hh"
 #include <algorithm>
 
-WCSimTrackingAction::WCSimTrackingAction()
-{
-  ProcessList.insert("Decay") ;
-  //ProcessList.insert("MuonMinusCaptureAtRest") ;
-//   ProcessList.insert("conv");
-  ParticleList.insert(111); // pi0
-  ParticleList.insert(211); // pion+
-  ParticleList.insert(-211);
-  ParticleList.insert(321);
+WCSimTrackingAction::WCSimTrackingAction(){
+  // XXX THESE ARE USED IN WCSIMEVENTACTION XXX
+  ProcessList.insert("Decay");
+  ProcessList.insert("MuonMinusCaptureAtRest");
+  //ProcessList.insert("conv");
+  ParticleList.insert(111);  // pi0
+  ParticleList.insert(211);  // pion+
+  ParticleList.insert(-211); // pion-
+  ParticleList.insert(321);  // kaon+
   ParticleList.insert(-321); // kaon-
-  ParticleList.insert(311); // kaon0
+  ParticleList.insert(311);  // kaon0
   ParticleList.insert(-311); // kaon0 bar
   
-  ParticleList.insert(11);   // e-
-  ParticleList.insert(-11);  // e+
+//  ParticleList.insert(11);   // e-    // do not save electrons unless they are from Decay process (mu decay)
+//  ParticleList.insert(-11);  // e+
   ParticleList.insert(12);   // nu_e
   ParticleList.insert(-12);  // nubar_e
   ParticleList.insert(13);   // mu-
@@ -40,21 +40,17 @@ WCSimTrackingAction::WCSimTrackingAction()
 
 WCSimTrackingAction::~WCSimTrackingAction(){;}
 
-void WCSimTrackingAction::PreUserTrackingAction(const G4Track* aTrack)
-{
+void WCSimTrackingAction::PreUserTrackingAction(const G4Track* aTrack){
   G4float percentageOfCherenkovPhotonsToDraw = 0.0;
   
-//  static int line=0; line++;
-  
   if (aTrack->GetDefinition() != G4OpticalPhoton::OpticalPhotonDefinition()
-       || G4UniformRand() < percentageOfCherenkovPhotonsToDraw)
-    {
+       || G4UniformRand() < percentageOfCherenkovPhotonsToDraw){
       WCSimTrajectory* thisTrajectory = new WCSimTrajectory(aTrack);
       fpTrackingManager->SetTrajectory(thisTrajectory);
       fpTrackingManager->SetStoreTrajectory(true);
-    }
-  else 
-    fpTrackingManager->SetStoreTrajectory(false);
+  } else {
+      fpTrackingManager->SetStoreTrajectory(false);
+  }
   
   /*
   // implemented to allow photon tracks to be drawn during photon debugging, 
@@ -66,18 +62,21 @@ void WCSimTrackingAction::PreUserTrackingAction(const G4Track* aTrack)
   */
 }
 
-void WCSimTrackingAction::PostUserTrackingAction(const G4Track* aTrack)
-{
+void WCSimTrackingAction::PostUserTrackingAction(const G4Track* aTrack){
   
   // added by M Fechner
   const G4VProcess* creatorProcess = aTrack->GetCreatorProcess();
   //  if ( creatorProcess )
   //    G4cout << "process name " << creatorProcess->GetProcessName() << G4endl;
+  G4int thispdg = aTrack->GetDefinition()->GetPDGEncoding();
+  if(aTrack->GetDefinition()==G4OpticalPhoton::OpticalPhotonDefinition()) thispdg=100;
 
   WCSimTrackInformation* anInfo;
-  if (aTrack->GetUserInformation())
+  if (aTrack->GetUserInformation()){
     anInfo = (WCSimTrackInformation*)(aTrack->GetUserInformation());
-  else anInfo = new WCSimTrackInformation();
+  } else {
+    anInfo = new WCSimTrackInformation();
+  }
 
   // is it a primary ?
   // is the process in the set ? 
@@ -86,50 +85,48 @@ void WCSimTrackingAction::PostUserTrackingAction(const G4Track* aTrack)
   // due to lazy evaluation of the 'or' in C++ the order is important
 //  if( aTrack->GetParentID()==0 || 
 //      ((creatorProcess!=0) && ProcessList.count(creatorProcess->GetProcessName()) ) || 
-//      (ParticleList.count(aTrack->GetDefinition()->GetPDGEncoding()) )
-//      || (aTrack->GetDefinition()->GetPDGEncoding()==22 && aTrack->GetTotalEnergy() > 50.0*CLHEP::MeV)
+//      (ParticleList.count(thispdg) )
+//      || (thispdg==22 && aTrack->GetTotalEnergy() > 50.0*CLHEP::MeV)
 //      )
-  if( aTrack->GetParentID()==0 || ((creatorProcess!=0) && ProcessList.count(creatorProcess->GetProcessName())) || (ParticleList.count(aTrack->GetDefinition()->GetPDGEncoding())) || (aTrack->GetDefinition()->GetPDGEncoding()==22 && aTrack->GetTotalEnergy() > 1.0*MeV) || (creatorProcess->GetProcessName() == "muMinusCaptureAtRest" && aTrack->GetTotalEnergy() > 1.0*MeV) )  // save more information. code from wcsim github issue 197.
-  {
-    // if so the track is worth saving
+  // save more information. code from wcsim github issue 197.
+  if( ( aTrack->GetParentID()==0 ) ||
+      ( (creatorProcess!=0) && ProcessList.count(creatorProcess->GetProcessName()) ) ||
+      ( ParticleList.count(thispdg) ) ||
+      ( thispdg==22 && aTrack->GetTotalEnergy()>1.0*MeV ) ||
+      ( creatorProcess->GetProcessName()=="muMinusCaptureAtRest" && aTrack->GetTotalEnergy()>1.0*MeV )
+    ){
+    // G4cout << "track # " << aTrack->GetTrackID() << " is worth saving\n";
+    // G4cout << "It is a " <<aTrack->GetDefinition()->GetParticleName() << G4endl;
     anInfo->WillBeSaved(true);
-
-    //      G4cout << "track # " << aTrack->GetTrackID() << " is worth saving\n";
-    //      G4cout << "It is a " <<aTrack->GetDefinition()->GetParticleName() << G4endl;
-  }
-  else
+  } else {
     anInfo->WillBeSaved(false);
+  }
 
-  if (aTrack->GetDefinition()->GetPDGEncoding()==111)
+  if( thispdg==111 ){
     pi0List.insert(aTrack->GetTrackID()); // list of all pi0-s 
+  }
 
-  if (aTrack->GetParentID()==0 || // primary particle
-      (aTrack->GetDefinition()->GetPDGEncoding()==22 && // primary gamma from
-       pi0List.count(aTrack->GetParentID())))            // a pi0
-    anInfo->SetPrimaryParentID(aTrack->GetTrackID());
+  if( ( aTrack->GetParentID()==0) || // primary particle
+      ( thispdg==22 && pi0List.count(aTrack->GetParentID()) )
+    ){
+    anInfo->SetPrimaryParentID(aTrack->GetTrackID()); // primary gamma from a pi0
+  }
 
   G4Track* theTrack = (G4Track*)aTrack;
   theTrack->SetUserInformation(anInfo);
   
   // pass primary parent ID to children
   G4TrackVector* secondaries = fpTrackingManager->GimmeSecondaries();
-  if(secondaries)
-  {
-    size_t nSeco = secondaries->size();
-    if(nSeco>0)
-    {
-      for(size_t i=0;i<nSeco;i++)
-      { 
-	WCSimTrackInformation* infoSec = new WCSimTrackInformation(anInfo);
+  if(secondaries){
+      for(size_t i=0;i<secondaries->size();i++){
+        WCSimTrackInformation* infoSec = new WCSimTrackInformation(anInfo);
                  infoSec->WillBeSaved(false); // ADDED BY MFECHNER, temporary, 30/8/06
-	(*secondaries)[i]->SetUserInformation(infoSec);
+        infoSec->SetParentPdg(thispdg);
+        (*secondaries)[i]->SetUserInformation(infoSec);
       }
-    } 
   }
 
-  if ( aTrack->GetDefinition() != G4OpticalPhoton::OpticalPhotonDefinition())
-    //   if (aTrack->GetDefinition()->GetPDGCharge() == 0) 
-  {
+  if ( aTrack->GetDefinition() != G4OpticalPhoton::OpticalPhotonDefinition()){
     WCSimTrajectory *currentTrajectory = (WCSimTrajectory*)fpTrackingManager->GimmeTrajectory();
   
     G4ThreeVector currentPosition      = aTrack->GetPosition();
@@ -141,23 +138,28 @@ void WCSimTrackingAction::PostUserTrackingAction(const G4Track* aTrack)
     currentTrajectory->SetStoppingVolume(currentVolume);
     currentTrajectory->SetStoppingTime(currentTime);
     currentTrajectory->SetStoppingMomentum(currentMomentum);
+    currentTrajectory->SetParentPdg(anInfo->GetParentPdg());
 
+    // if UserTrackInformation is tagged to be saved, mark trajectory for WCSimEventAction;
     if (anInfo->isSaved())
-      currentTrajectory->SetSaveFlag(true);// mark it for WCSimEventAction ;
-    else currentTrajectory->SetSaveFlag(false);// mark it for WCSimEventAction ;
-  } 
+      currentTrajectory->SetSaveFlag(true);
+    else
+      currentTrajectory->SetSaveFlag(false);
+  }
   
   static int line=0;
   if(line%100000==0){ //100000
-    G4cout<<"  PostUserTrackingAction call number: "<<line<<", "<<aTrack->GetDefinition()->GetParticleName();
-    if(creatorProcess){G4cout<<" from "<<creatorProcess->GetProcessName();} else {G4cout<<" primary";}
+    G4cout<<"  PostUserTrackingAction call number: "<<line
+          <<", "<<aTrack->GetDefinition()->GetParticleName();
+    if(creatorProcess) G4cout<<" from "<<creatorProcess->GetProcessName();
+    else G4cout<<"primary";
     G4cout<<" in "<<aTrack->GetVolume()->GetName()<<G4endl; 
   }
   line++;
   
   /*
   if( (aTrack->GetParentID()==0) // primary particle
-      && (abs(aTrack->GetDefinition()->GetPDGEncoding())==13) ){ // is a muon
+      && (abs(thispdg)==13) ){ // is a muon
       G4ThreeVector endpos = aTrack->GetPosition();
       WCSimTrajectory* trj = (WCSimTrajectory*)fpTrackingManager->GimmeTrajectory();
       G4TrajectoryPoint* startpnt = (G4TrajectoryPoint*)trj->GetPoint(0);
