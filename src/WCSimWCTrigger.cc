@@ -440,7 +440,7 @@ void WCSimWCTriggerBase::FillDigitsCollection(WCSimWCDigitsCollection* WCDCPMT, 
     TriggerType_t triggertype = TriggerTypes[itrigger];
     //check if we've already saved this trigger
     // skip this digit if it's the wrong trigger type, or for kTriggerTankDigits, trigger on all digits
-    if( (triggertype != save_triggerType || save_triggerType!=kTriggerTankDigits) && save_triggerType != kTriggerUndefined )
+    if( triggertype != save_triggerType && save_triggerType!=kTriggerTankDigits && save_triggerType != kTriggerUndefined )
       continue;
     float         triggertime = TriggerTimes[itrigger];
     std::vector<Float_t> triggerinfo = TriggerInfos[itrigger];
