@@ -91,9 +91,10 @@ public:
   void SetHyperKGeometry();
   void CylinderGeometry();
   void UpdateGeometry();
-  void SetANNIEPhase1Geometry(); //phase 1 geometry - just 60 PMTs on bottom, with NCV.
-  void SetANNIEPhase2Geometry(); // phase 2 geometry - 60 PMTs on bottom, top, and 200 PMTs around barrel.
+  void SetANNIEPhase1Geometry();   // phase 1 geometry - just 60 PMTs on bottom, with NCV.
+  void SetANNIEPhase2Geometry();   // phase 2 geometry - 60 PMTs on bottom, top, and 200 PMTs around barrel.
   void SetANNIEPhase2Geometryv2(); // phase 2 geometry - with realistic PMT types
+  void SetANNIEPhase2Geometryv3(); // phase 2 geometry - later PMT layout
   
   G4int    GetTotalNumPmts(G4String key){
     if(std::find(WCTankCollectionNames.begin(), WCTankCollectionNames.end(), key)!=WCTankCollectionNames.end())

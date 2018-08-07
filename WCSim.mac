@@ -15,6 +15,7 @@
 # The tube size is fixed for SK to 20"
 # These are fixed geometries for validation
 #/WCSim/WCgeom SuperK
+#/WCSim/Construct
 
 # Some other SuperK options:
 #/WCSim/WCgeom SuperK_20inchPMT_20perCent # Note: the actual coverage is 20.27%
@@ -24,18 +25,22 @@
 
 # HyperK (one cylindrical tank with a height of 54.8 m, a diameter of 70.8 m and 40% coverage with 20" B&L PMTs)
 #/WCSim/WCgeom HyperK
+#/WCSim/Construct 
 
 # Cylindrical detector with a height of 60 m and a diameter of 74 m
 #/WCSim/WCgeom Cylinder_60x74_20inchBandL_14perCent # Note: the actual coverage is 13.51%
 #/WCSim/WCgeom Cylinder_60x74_20inchBandL_40perCent
+#/WCSim/Construct 
 
 # Generic cylindrical detector with a height of 100m and a 
 # diameter of 69m with 12" HPD and 14.59% photocoverage
 #/WCSim/WCgeom Cylinder_12inchHPD_15perCent # Note: the actual coverage is 14.59%
+#/WCSim/Construct
 
 # Previous, egg-shaped HyperK design:
 #/WCSim/WCgeom EggShapedHyperK #default length is 49500 mm unless changed in /WCSim/HK/waterTankLength below.
 #/WCSim/WCgeom EggShapedHyperK_withHPD #default length is 49500 mm unless changed in /WCSim/HK/waterTankLength below.
+#/WCSim/Construct 
 
 #Changes the length of the simulated volume. Is currently only set up for the egg-shaped HyperK design.
 #/WCSim/EggShapedHyperK/waterTank_Length 24750. mm # Equivalent length for 10 partitions
@@ -44,10 +49,12 @@
 #/WCSim/EggShapedHyperK/waterTank_Length 82500. mm # Equivalent length for 3 partitions
 #/WCSim/EggShapedHyperK/waterTank_Length 123750. mm # Equivalent length for 2 partitions
 #/WCSim/EggShapedHyperK/waterTank_Length 247500. mm # Equivalent length for 1 partition
+#/WCSim/Construct 
 
 # switch geometry to ANNIE
 #/WCSim/WCgeom ANNIEp2   ## version with 200 PMTs and 200 LAPPDs
 #/WCSim/WCgeom ANNIEp2v2  ## version with realistic PMT content, no LAPPDs <<< it's already called by default
+#/WCSim/Construct 
 
 # Surface detector
 #/WCSim/WCgeom Cylinder
@@ -55,7 +62,6 @@
 #/WCSim/Cylinder/cylinderTank_Diameter 8. m
 #/WCSim/Cylinder/cylinderTank_Coverage 30.
 #/WCSim/Cylinder/cylinderTank_PMTType PMT8inch
-
 #/WCSim/Construct # This must be uncommented in order to construct a new detector configuration.
 
 #Added for the PMT QE option 08/17/10 (XQ)

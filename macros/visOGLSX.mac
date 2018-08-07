@@ -44,6 +44,14 @@
 /vis/geometry/set/colour ANNIEp2v2-glassFaceWCPMT_D784KFLB -1 .6 1. 1. 1
 /vis/geometry/set/colour ANNIEp2v2-glassFaceWCPMT_R5912HQE -1 1.0 0.3 .3 1
 
+## same colours for ANNIEp2v3
+/vis/geometry/set/forceSolid ANNIEp2v3-glassFaceWCPMT_R7081 -1 1
+/vis/geometry/set/forceSolid ANNIEp2v3-glassFaceWCPMT_D784KFLB -1 1
+/vis/geometry/set/forceSolid ANNIEp2v3-glassFaceWCPMT_R5912HQE -1 1
+/vis/geometry/set/colour ANNIEp2v3-glassFaceWCPMT_R7081 -1 1. .6 1. 1
+/vis/geometry/set/colour ANNIEp2v3-glassFaceWCPMT_D784KFLB -1 .6 1. 1. 1
+/vis/geometry/set/colour ANNIEp2v3-glassFaceWCPMT_R5912HQE -1 1.0 0.3 .3 1
+
 # Show inner structure for ANNIEp2v2
 /vis/geometry/set/visibility cad_logical 1
 
