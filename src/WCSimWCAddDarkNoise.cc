@@ -67,38 +67,43 @@ void WCSimWCAddDarkNoise::SetPMTDarkDefaults()
   } else if(detectorElement=="facc"){
     WCCollectionName = myDetector->GetFACCCollectionName();
   }
+  
   WCSimPMTObject* PMT=0;
-  if(WCCollectionName!="WCIDCollectionNameIsUnused")
-    PMT = myDetector->GetPMTPointer(WCCollectionName);
-  double const conversion_to_kHz = 1000000; //ToDo: remove this and treat DarkRate in CLHEP units throughout the class.
+  if(WCCollectionName!="WCIDCollectionNameIsUnused") PMT = myDetector->GetPMTPointer(WCCollectionName);
 
+  double const conversion_to_kHz = 1000000; //ToDo: remove this & treat DarkRate in CLHEP units throughout
   double defaultPMTDarkRate = (PMT) ? PMT->GetDarkRate() * conversion_to_kHz : -99;
   double defaultConvRate = (PMT) ? PMT->GetDarkRateConversionFactor() : -99;
 
   //Only set the defaults if the user hasn't overwritten the unphysical defaults
-  if(PMTDarkRate < -98)
-    PMTDarkRate = defaultPMTDarkRate;
-  if(ConvRate < -98)
-    ConvRate = defaultConvRate;
+  if(PMTDarkRate < -98) PMTDarkRate = defaultPMTDarkRate;
+  if(ConvRate < -98) ConvRate = defaultConvRate;
     
   // if there are multiple tank PMT types, retrieve the dark rate for each tank collection
   PMTDarkRateMap.clear();
-  if(detectorElement=="tank"){
-  int numtankpmts = myDetector->GetTotalNumPmts();
-  std::vector<G4String> WCTankCollectionNames = myDetector->GetIDCollectionNames();
-  for(auto acollection : WCTankCollectionNames){
-    WCSimPMTObject* PMT = myDetector->GetPMTPointer(acollection);
-    defaultPMTDarkRate = PMT->GetDarkRate() * conversion_to_kHz;
-    defaultConvRate = PMT->GetDarkRateConversionFactor();
-    if(PMTDarkRate < -98) PMTDarkRate = defaultPMTDarkRate;
-    PMTDarkRateMap.emplace(acollection, PMTDarkRate);
-    if(ConvRate < -98) ConvRate = defaultConvRate;
-    ConvRateMap.emplace(acollection, ConvRate);
-    
-    std::vector<int> pmtsinthiscollection = myDetector->GetTubesInCollection(acollection);
-    int npmtscol = pmtsinthiscollection.size();
-    EffectivePMTDarkRate+= PMTDarkRate * (npmtscol/numtankpmts);
-  }
+  ConvRateMap.clear();
+  if(WCCollectionName!="WCIDCollectionNameIsUnused"){
+    // if not multiple types, just put the exisiting ones into the maps
+    ConvRateMap.emplace(WCCollectionName, ConvRate);
+    PMTDarkRateMap.emplace(WCCollectionName, PMTDarkRate);
+    EffectivePMTDarkRate = PMTDarkRate;
+  } else {
+    // if we have multiple types, scan the collections, and add each noise rate to the map in turn
+    int numtankpmts = myDetector->GetTotalNumPmts();
+    std::vector<G4String> WCTankCollectionNames = myDetector->GetIDCollectionNames();
+    for(auto acollection : WCTankCollectionNames){
+      WCSimPMTObject* PMT = myDetector->GetPMTPointer(acollection);
+      defaultPMTDarkRate = PMT->GetDarkRate() * conversion_to_kHz;
+      defaultConvRate = PMT->GetDarkRateConversionFactor();
+      if(PMTDarkRate < -98) PMTDarkRate = defaultPMTDarkRate;
+      if(ConvRate < -98) ConvRate = defaultConvRate;
+      PMTDarkRateMap.emplace(acollection, PMTDarkRate);
+      ConvRateMap.emplace(acollection, ConvRate);
+     
+      std::vector<int> pmtsinthiscollection = myDetector->GetTubesInCollection(acollection);
+      int npmtscol = pmtsinthiscollection.size();
+      EffectivePMTDarkRate+= PMTDarkRate * (npmtscol/numtankpmts);
+    }
   }
 }
 
@@ -198,15 +203,14 @@ void WCSimWCAddDarkNoise::AddDarkNoiseBeforeDigi(WCSimWCDigitsCollection* WCHCPM
     if(detectorElement=="tank"){
     G4cout<<"WCSimWCAddDarkNoise::AddDarkNoiseBeforeDigi ☆ adding dark noise to collection of "<<number_entries<<" entries"<<G4endl;}
 #endif
-    G4int thenum_pmts;
+    G4int number_pmts;
     if(detectorElement=="tank"){
-      thenum_pmts = myDetector->GetTotalNumPmts();
+      number_pmts = myDetector->GetTotalNumPmts();
     } else if(detectorElement=="mrd"){
-      thenum_pmts = myDetector->GetTotalNumMrdPmts();
+      number_pmts = myDetector->GetTotalNumMrdPmts();
     } else if(detectorElement=="facc"){
-      thenum_pmts = myDetector->GetTotalNumFaccPmts();
+      number_pmts = myDetector->GetTotalNumFaccPmts();
     }
-    G4int number_pmts=thenum_pmts;
     int *PMTindex = new int [number_pmts+1];
 
     //initialize PMTindex
@@ -265,29 +269,11 @@ void WCSimWCAddDarkNoise::AddDarkNoiseBeforeDigi(WCSimWCDigitsCollection* WCHCPM
     if(detectorElement=="tank"){G4cout<<"WCSimWCAddDarkNoise::AddDarkNoiseBeforeDigi ☆ getting (WCSimWCPMT*)"<<thewcpmtname<<G4endl;}
 #endif
   
-  G4String WCCollectionName;
-  if(detectorElement=="tank"){
-    WCCollectionName = myDetector->GetIDCollectionName();
-  } else if(detectorElement=="mrd"){
-    WCCollectionName = myDetector->GetMRDCollectionName();
-  } else if(detectorElement=="facc"){
-    WCCollectionName = myDetector->GetFACCCollectionName();
-  }
-   
-  // dummy entry for cases other than multiple tank PMT types
-  std::map<std::string, double> DarkRates;
-  if(detectorElement=="tank"&&PMTDarkRateMap.size()==0){
-    DarkRates.emplace(WCCollectionName,PMTDarkRate);
-  } else {
-    DarkRates = PMTDarkRateMap;
-  }
-  
-  G4double currentPMTDarkRate;
   // loop over the different PMT types if applicable
   for(auto anoisegroup : PMTDarkRateMap){
     // each element of PMTDarkRateMap represents a subset of PMTs in WCRawPMTSignalCollection
     // of a particular PMT type, with a unique dark rate.
-    WCCollectionName = anoisegroup.first;
+    G4String WCCollectionName = anoisegroup.first;
 #ifdef WCSIMWCADDDARKNOISE_VERBOSE
     G4cout<<"adding dark noise on PMT collection "<<WCCollectionName<<G4endl;
 #endif
@@ -297,11 +283,12 @@ void WCSimWCAddDarkNoise::AddDarkNoiseBeforeDigi(WCSimWCDigitsCollection* WCHCPM
       pmtsinthiscollection = myDetector->GetTubesInCollection(WCCollectionName);
       number_pmts = pmtsinthiscollection.size();
     } else {
+      pmtsinthiscollection.resize(number_pmts);
       std::iota(pmtsinthiscollection.begin(), pmtsinthiscollection.end(), 1); // tube IDs start from 1 NOT 0
     }
   
   //average number of PMTs with noise
-    double ave=number_pmts * currentPMTDarkRate * this->ConvRate * windowsize * 1E-6; 
+    double ave=number_pmts * currentPMTDarkRate * ConvRateMap.at(WCCollectionName) * windowsize * 1E-6;
 
     //poisson distributed noise, number of noise hits to add
     int nnoispmt = CLHEP::RandPoisson::shoot(ave);
@@ -332,7 +319,8 @@ void WCSimWCAddDarkNoise::AddDarkNoiseBeforeDigi(WCSimWCDigitsCollection* WCHCPM
 	//now a random PMT.  Assuming noise levels are the same for
 	//each PMT.
 	int noise_pmt_index = static_cast<int>( G4UniformRand() * number_pmts ); //so that pmt numbers runs from 1 to Npmt
-	if(noise_pmt_index>pmtsinthiscollection.size()) G4cerr<<" NOISE PMT INDEX "<<noise_pmt_index<<" OUTSIDE RANGE "<<pmtsinthiscollection.size()<<G4endl;
+	if(noise_pmt_index>pmtsinthiscollection.size()) 
+	    G4cerr<<" NOISE PMT INDEX "<<noise_pmt_index<<" OUTSIDE RANGE "<<pmtsinthiscollection.size()<<G4endl;
 	int noise_pmt = pmtsinthiscollection.at(noise_pmt_index);
       
 	if( list[ noise_pmt ] == 0 )

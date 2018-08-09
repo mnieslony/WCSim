@@ -89,6 +89,9 @@ public:
   ///Save current values of options
   void SaveOptionsToOutput(WCSimRootOptions * wcopt);
   
+  // get legacy digit time offset, for accounting in EndOfEventAction
+  double GetWCTriggerOffset(){return offset;}
+  
 protected:
 
   ///This should call the trigger algorithms, and handle any temporary DigitsCollection's

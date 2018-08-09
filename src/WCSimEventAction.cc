@@ -762,7 +762,7 @@ void WCSimEventAction::EndOfEventAction(const G4Event* evt)
      beamenergy = generatorAction->GetBeamEnergy(u);
      beamdir    = generatorAction->GetBeamDir(u);
      
-     jhfNtuple.ipnu[npar]    = beampdg;               // id
+     jhfNtuple.ipnu[npar]    = beampdg;               // pdg
      jhfNtuple.flag[npar]    = -1;                    // incoming neutrino
      jhfNtuple.m[npar]       = 0.0;                   // mass (always a neutrino)
      jhfNtuple.p[npar]       = beamenergy;            // momentum magnitude
@@ -781,7 +781,7 @@ void WCSimEventAction::EndOfEventAction(const G4Event* evt)
      jhfNtuple.stop[npar][0] = vtxs[u][0]/CLHEP::cm;  // stopping point (neutrino intx vertex)
      jhfNtuple.stop[npar][1] = vtxs[u][1]/CLHEP::cm;  // stopping point (neutrino intx vertex)
      jhfNtuple.stop[npar][2] = vtxs[u][2]/CLHEP::cm;  // stopping point (neutrino intx vertex)
-     jhfNtuple.parent[npar] = 0;                      // primary
+     jhfNtuple.parent[npar] = 0;                      // parentpdg = 0: primary
 
      npar++;
      /////////////////////////////////
@@ -812,7 +812,7 @@ void WCSimEventAction::EndOfEventAction(const G4Event* evt)
        }
      }
      
-     jhfNtuple.ipnu[npar]     = targetpdg;                      // id
+     jhfNtuple.ipnu[npar]     = targetpdg;                      // pdg
      jhfNtuple.flag[npar]     = -2;                             // target
      jhfNtuple.m[npar]        = targetmass;                     // mass (always a neutrino)
      jhfNtuple.p[npar]        = targetpmag;                     // momentum magnitude
@@ -831,7 +831,7 @@ void WCSimEventAction::EndOfEventAction(const G4Event* evt)
      jhfNtuple.stop[npar][0]  = 0./cm;                          // stopping point (for target nucleus, N/A)
      jhfNtuple.stop[npar][1]  = 0./cm;                          // stopping point (for target nucleus, N/A)
      jhfNtuple.stop[npar][2]  = 0./cm;                          // stopping point (for target nucleus, N/A)
-     jhfNtuple.parent[npar]   = 0;                              // primary
+     jhfNtuple.parent[npar]   = 0;                              // parent pdg=0: primary
 
      npar++;
    }
@@ -880,7 +880,7 @@ void WCSimEventAction::EndOfEventAction(const G4Event* evt)
       if(idx_e != INT_MAX) {
         WCSimTrajectory* trj =
           (WCSimTrajectory*)((*(evt->GetTrajectoryContainer()))[idx_e]);
-        jhfNtuple.ipnu[npar]     = trj->GetPDGEncoding();                   // id
+        jhfNtuple.ipnu[npar]     = trj->GetPDGEncoding();                   // pdg
         jhfNtuple.flag[npar]    = 3;                                        // decay daughter
         jhfNtuple.m[npar]       = particleTable->FindParticle(trj->GetPDGEncoding())->GetPDGMass();    // mass
         jhfNtuple.p[npar]       = trj->GetInitialMomentum().mag();          // momentum magnitude
@@ -896,7 +896,7 @@ void WCSimEventAction::EndOfEventAction(const G4Event* evt)
         jhfNtuple.stop[npar][0] = vtxs[u][0]/cm;                            // stopping point (not meaningful)
         jhfNtuple.stop[npar][1] = vtxs[u][1]/cm;                            // stopping point (not meaningful)
         jhfNtuple.stop[npar][2] = vtxs[u][2]/cm;                            // stopping point (not meaningful)
-        jhfNtuple.parent[npar] = 0;
+        jhfNtuple.parent[npar]  = trj->GetParentPdg();                      // parent pdg
         
         npar++; 
       }
@@ -921,7 +921,7 @@ void WCSimEventAction::EndOfEventAction(const G4Event* evt)
         jhfNtuple.stop[npar][0] = vtxs[u][0]/cm;                            // stopping point (not meaningful)
         jhfNtuple.stop[npar][1] = vtxs[u][1]/cm;                            // stopping point (not meaningful)
         jhfNtuple.stop[npar][2] = vtxs[u][2]/cm;                            // stopping point (not meaningful)
-        jhfNtuple.parent[npar] = 0;
+        jhfNtuple.parent[npar]  = trj->GetParentPdg();                      // parent pdg
         
         npar++; 
       }
@@ -946,7 +946,7 @@ void WCSimEventAction::EndOfEventAction(const G4Event* evt)
         jhfNtuple.stop[npar][0] = vtxs[u][0]/cm;                            // stopping point (not meaningful)
         jhfNtuple.stop[npar][1] = vtxs[u][1]/cm;                            // stopping point (not meaningful)
         jhfNtuple.stop[npar][2] = vtxs[u][2]/cm;                            // stopping point (not meaningful)
-        jhfNtuple.parent[npar] = 0;
+        jhfNtuple.parent[npar]  = trj->GetParentPdg();;                     // parent pdg
         
         npar++; 
       }
@@ -1254,38 +1254,27 @@ void WCSimEventAction::FillRootEvent(G4int event_id,
     }
 
     // Add the track to the TClonesArray
-    wcsimrootevent->AddTrack(jhfNtuple.ipnu[k], 
-			      jhfNtuple.flag[k], 
-			      jhfNtuple.m[k], 
-			      jhfNtuple.p[k], 
-			      jhfNtuple.E[k], 
-			      -1.,  // stopping mommag not stored in jhfNtuple
-			      -1.,  // stopping E not stored in jhfNtuple
-			      jhfNtuple.startvol[k], 
-			      jhfNtuple.stopvol[k], 
-			      dir, 
-			      pdir, 
-			      pdir2,
-			      stop,
-			      start,
-			      jhfNtuple.parent[k],
-			      jhfNtuple.time[k],
-			      -1.,  // not stored in jhfNtuple
-			      0); 
+     wcsimrootevent->AddTrack(jhfNtuple.ipnu[k],         // particle PDG
+			      jhfNtuple.flag[k],         // neutrino probe, target or other
+			      jhfNtuple.m[k],            // particle rest mass
+			      jhfNtuple.p[k],            // initial momentum mag
+			      jhfNtuple.E[k],            // intial relativistic energy
+			      -1.,                       // stopping mommag not stored in jhfNtuple
+			      -1.,                       // stopping E not stored in jhfNtuple
+			      jhfNtuple.startvol[k],     // intial volume code (10=tank, 20=veto, 30=mrd)
+			      jhfNtuple.stopvol[k],      // final volume code 
+			      dir,                       // intial direction unit vector
+			      pdir,                      // intial momentum vector
+			      pdir2,                     // final momentum vector
+			      stop,                      // stopping vertex
+			      start,                     // start vertex 
+			      jhfNtuple.parent[k],       // parent PDG
+			      jhfNtuple.time[k],         // start time (global)
+			      0,                         // stopping time not stored in jhfNtuple
+			      0);                        // WCSim TrackID not applicable
   }
 
   // the rest of the tracks come from WCSimTrajectory
-
-  std::set<int> pizeroList;
-  // added by M Fechner, dec 16th, 2004
-  std::set<int> muonList;
-  std::set<int> antimuonList;
-  // same, april 7th 2005
-  std::set<int> pionList;
-  std::set<int> antipionList;
-  std::set<int> primaryList;
-  std::set<int> neutronList;
-  std::set<int> protonList;
 
   // Pi0 specific variables
   Float_t pi0Vtx[3];
@@ -1306,19 +1295,6 @@ void WCSimEventAction::FillRootEvent(G4int event_id,
   for (int i=0; i <n_trajectories; i++) 
   {
     WCSimTrajectory* trj = (WCSimTrajectory*)(*TC)[i];
-
-    // If this track is a pizero remember it for later
-    if ( trj->GetPDGEncoding() == 111)
-      pizeroList.insert(trj->GetTrackID());
-    // If it is a mu+/mu- also remember it
-    if ( trj->GetPDGEncoding() == 13 ) muonList.insert(trj->GetTrackID());
-    if ( trj->GetPDGEncoding() == -13 ) antimuonList.insert(trj->GetTrackID());
-    if ( trj->GetPDGEncoding() == 211 ) pionList.insert(trj->GetTrackID());
-    if ( trj->GetPDGEncoding() == -211 ) antipionList.insert(trj->GetTrackID());
-    if ( trj->GetPDGEncoding() == 2212 ) protonList.insert(trj->GetTrackID());
-    if ( trj->GetPDGEncoding() == 2112 ) neutronList.insert(trj->GetTrackID());
-
-    if( trj->GetParentID() == 0 ) primaryList.insert(trj->GetTrackID());
 
     // Process primary tracks or the secondaries from pizero or muons...
 
@@ -1344,7 +1320,7 @@ void WCSimEventAction::FillRootEvent(G4int event_id,
         }
       }
     }
-    
+    // XXX only trajectories for particles / processes listed in WCSimTrackingAction are saved!! XXX
     if ( trj->GetSaveFlag() && !ignoreneutron)
     {
       // initial point of the trajectory
@@ -1353,7 +1329,7 @@ void WCSimEventAction::FillRootEvent(G4int event_id,
 	
       G4int         ipnu   = trj->GetPDGEncoding();
       G4int         id     = trj->GetTrackID();
-      G4int         flag   = 0;  //TODO: 1 = outgoing lepton, 2 = most energetic outgoing nucleon
+      G4int         flag   = 0;
       G4double      mass   = trj->GetParticleDefinition()->GetPDGMass();
       G4ThreeVector mom    = trj->GetInitialMomentum();
       G4double      mommag = mom.mag();
@@ -1383,29 +1359,14 @@ void WCSimEventAction::FillRootEvent(G4int event_id,
       // Right now only secondaries whose parents are pi0's are stored
       // This may change later
       // M Fechner : dec 16, 2004 --> added decay e- from muons
-      if (trj->GetParentID() == 0){
-	parentType = 0;
-      } else if (pizeroList.count(trj->GetParentID())   ) {
-	parentType = 111;
-      } else if (muonList.count(trj->GetParentID())     ) {
-	parentType = 13;
-      } else if (antimuonList.count(trj->GetParentID()) ) {
-	parentType = -13;
-      } else if (antipionList.count(trj->GetParentID()) ) {
-	parentType = -211;
-      } else if (pionList.count(trj->GetParentID()) ) {
-	parentType = 211;
-//      } else if (protonList.count(trj->GetParentID()) ) {
-//	parentType = 2212;
-//      } else if (neutronList.count(trj->GetParentID()) ) {
-//	parentType = 2112;
-      } else if (primaryList.count(trj->GetParentID()) ) {
-	parentType = 1;    // secondary - it's parent is in the list of primaries. Note this might not work.
-	// because unless it's parent has been processed first, it won't yet be in the list of primaries.
-      } else {  // no identified parent, but not a primary
-	parentType = 999;
-      }
-
+      // GetParentID stores the *trackID* of the parent, but we need the *trajectory* ID
+      // to retrieve the parent's PDG. Old method kept lists of the track IDs of particles
+      // of notable types. We'd then have to check if the trackID was in any of these lists.
+      // This meant we could only identify the parent PDG if it was of a limited subset.
+      
+      // new method: store the parent PDG in the UserTrackInfo in PostUserTrackingAction 
+      // (via GimmeSecondaries), and copy it from Info into the Trajectory after tracking.
+      parentType=trj->GetParentPdg();
 
       // G4cout << parentType << " " << ipnu << " " 
       //	     << id << " " << energy << "\n";
@@ -1431,34 +1392,36 @@ void WCSimEventAction::FillRootEvent(G4int event_id,
       detectorConstructor->SaveCaptureInfo() : ! ( (ipnu==22)&&(parentType==999))  ) {
 
 	int choose_event=0;
-
-	if (ngates)
-	{
-	  if ( ttime > WCTM->GetTriggerTime(0)+950. && WCTM->GetTriggerTime(1)+950. > ttime ) choose_event=1; 
-	  if ( ttime > WCTM->GetTriggerTime(1)+950. && WCTM->GetTriggerTime(2)+950. > ttime ) choose_event=2; 
-	  if (choose_event >= ngates) choose_event = ngates-1; // do not overflow the number of events
 	
-	}
+
+	while (choose_event<(ngates-1)){
+	  if ( ttime < (WCTM->GetTriggerTime(choose_event)+WCTM->GetWCTriggerOffset()) )
+		  break;  // did this track start before the end of the current trigger? if so, it's in the current trigger
+	  else 
+		  choose_event++;  // otherwise go to next trigger
+	} // exit (without check) if this is the last trigger
+	
 	wcsimrootevent= wcsimrootsuperevent->GetTrigger(choose_event);
-	wcsimrootevent->AddTrack(ipnu, 
-				  flag, 
-				  mass, 
-				  mommag, 
-				  energy,
-				  mommagend, 
-				  energyend, 
-				  startvol, 
-				  stopvol, 
-				  dir, 
-				  pdir, 
-				  pdir2, 
-				  stop,
-				  start,
-				  parentType,
-				  ttime,
-				  ttimeend,
-				  id); 
+	wcsimrootevent->AddTrack(ipnu,           // particle PDG
+				  flag,          // neutrino probe, target or other
+				  mass,          // particle rest mass
+				  mommag,        // initial momentum mag
+				  energy,        // intial relativistic energy
+				  mommagend,     // final momentum mag
+				  energyend,     // final relativistic energy
+				  startvol,      // intial volume code (10=tank, 20=veto, 30=mrd)
+				  stopvol,       // final volume code 
+				  dir,           // intial direction unit vector
+				  pdir,          // intial momentum vector
+				  pdir2,         // final momentum vector
+				  stop,          // stopping vertex
+				  start,         // start vertex 
+				  parentType,    // parent PDG
+				  ttime,         // start time (global)
+				  ttimeend,      // end time (global)
+				  id);           // wcsim TrackID
       }
+
       
       if (detectorConstructor->SavePi0Info() == true)
       {

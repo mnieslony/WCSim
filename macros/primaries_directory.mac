@@ -2,3 +2,4 @@
 # be sure that the neutrinosDirectory is set before setting the primariesDirectory!
 /mygen/neutrinosdirectory /home/marc/LinuxSystemFiles/WChSandBox/build/fluxesandtables/gntp.*.ghep.root
 /mygen/primariesdirectory /home/marc/LinuxSystemFiles/WChSandBox/build/fluxesandtables/annie_tank_flux.*.root
+/mygen/primariesoffset 0

@@ -58,7 +58,7 @@ WCSim.mac        # gpvm version shouldn't show visualisation
 ##ignore compiled python scripts
 *.pyc
 
-#ignore dictionary products
+#ignore dictionary build products
 WCSimRootDict_rdict.pcm
 src/WCSimRootDict_rdict.pcm
 src/WCSimRootDict.cxx

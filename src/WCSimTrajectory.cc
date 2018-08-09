@@ -18,7 +18,7 @@
 G4Allocator<WCSimTrajectory> myTrajectoryAllocator;
 
 WCSimTrajectory::WCSimTrajectory()
-  :  positionRecord(0), fTrackID(0), fParentID(0),
+  :  positionRecord(0), fTrackID(0), fParentID(0), fParentPdg(0),
      PDGEncoding( 0 ), PDGCharge(0.0), ParticleName(""),
      initialMomentum( G4ThreeVector() ), finalMomentum( G4ThreeVector() ),
      SaveIt(false),creatorProcess(""), 
@@ -43,9 +43,11 @@ WCSimTrajectory::WCSimTrajectory(const G4Track* aTrack)
 
   stoppingPoint  = aTrack->GetPosition();
   stoppingVolume = aTrack->GetVolume();
-  if ( aTrack->GetUserInformation() != 0 ) 
+  if ( aTrack->GetUserInformation() != 0 ){
     SaveIt = true;
-  else SaveIt = false;
+  } else {
+    SaveIt = false;
+  }
   globalTime = aTrack->GetGlobalTime();
   if (aTrack->GetCreatorProcess() != 0 )
     {
@@ -68,6 +70,7 @@ WCSimTrajectory::WCSimTrajectory(WCSimTrajectory & right):G4VTrajectory()
   PDGEncoding = right.PDGEncoding;
   fTrackID = right.fTrackID;
   fParentID = right.fParentID;
+  fParentPdg = right.fParentPdg;
   initialMomentum = right.initialMomentum;
   finalMomentum = right.finalMomentum;
   positionRecord = new TrajectoryPointContainer();

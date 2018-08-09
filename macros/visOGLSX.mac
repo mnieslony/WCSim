@@ -37,12 +37,12 @@
 #/vis/viewer/zoom 1.5
 
 ## Color PMTs by type for ANNIEp2v2
-/vis/geometry/set/forceSolid ANNIEp2v2-glassFaceWCPMT_R7081 -1 1
-/vis/geometry/set/forceSolid ANNIEp2v2-glassFaceWCPMT_D784KFLB -1 1
-/vis/geometry/set/forceSolid ANNIEp2v2-glassFaceWCPMT_R5912HQE -1 1
-/vis/geometry/set/colour ANNIEp2v2-glassFaceWCPMT_R7081 -1 1. .6 1. 1
-/vis/geometry/set/colour ANNIEp2v2-glassFaceWCPMT_D784KFLB -1 .6 1. 1. 1
-/vis/geometry/set/colour ANNIEp2v2-glassFaceWCPMT_R5912HQE -1 1.0 0.3 .3 1
+#/vis/geometry/set/forceSolid ANNIEp2v2-glassFaceWCPMT_R7081 -1 1
+#/vis/geometry/set/forceSolid ANNIEp2v2-glassFaceWCPMT_D784KFLB -1 1
+#/vis/geometry/set/forceSolid ANNIEp2v2-glassFaceWCPMT_R5912HQE -1 1
+#/vis/geometry/set/colour ANNIEp2v2-glassFaceWCPMT_R7081 -1 1. .6 1. 1
+#/vis/geometry/set/colour ANNIEp2v2-glassFaceWCPMT_D784KFLB -1 .6 1. 1. 1
+#/vis/geometry/set/colour ANNIEp2v2-glassFaceWCPMT_R5912HQE -1 1.0 0.3 .3 1
 
 ## same colours for ANNIEp2v3
 /vis/geometry/set/forceSolid ANNIEp2v3-glassFaceWCPMT_R7081 -1 1

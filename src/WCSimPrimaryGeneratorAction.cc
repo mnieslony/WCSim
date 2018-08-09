@@ -1,3 +1,4 @@
+/* vim:set noexpandtab tabstop=4 wrap */
 #include "WCSimPrimaryGeneratorAction.hh"
 #include "WCSimDetectorConstruction.hh"
 #include "WCSimPrimaryGeneratorMessenger.hh"
@@ -35,6 +36,11 @@
 // when loading dirt primaries, skip entries that are from upstream rock interactions. 
 #ifndef ONLY_TANK_EVENTS
 #define ONLY_TANK_EVENTS
+#endif
+
+// as help for reconstruction, a sample where light is only from muons, no other primary particles from the event.
+#ifndef ONLY_MUONS
+//#define ONLY_MUONS
 #endif
 
 using std::vector;
@@ -357,14 +363,14 @@ void WCSimPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
       MyGPS->GeneratePrimaryVertex(anEvent);
       
       G4ThreeVector P   =anEvent->GetPrimaryVertex()->GetPrimary()->GetMomentum();
-      G4double m       =anEvent->GetPrimaryVertex()->GetPrimary()->GetMass();
+      G4double m        =anEvent->GetPrimaryVertex()->GetPrimary()->GetMass();      // this is rest mass
       G4ThreeVector vtx =anEvent->GetPrimaryVertex()->GetPosition();
       G4int pdg         =anEvent->GetPrimaryVertex()->GetPrimary()->GetPDGcode();
       
       G4ThreeVector dir  = P.unit();
       G4double E         = std::sqrt((P.dot(P))+(m*m));
       
-      SetVtx(vtx);	// required to store the true vertex for Bonsai!
+      SetVtx(vtx);   // required to store the true vertex for Bonsai!
       SetBeamEnergy(E);
       SetBeamDir(dir);
       SetBeamPDG(pdg);
@@ -373,9 +379,13 @@ void WCSimPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
       if(parttype == G4OpticalPhoton::OpticalPhotonDefinition() ) {particlename="opticalphoton";}
       else { (parttype) ? particlename=parttype->GetParticleName() : particlename=std::to_string(pdg); }
       
+      double tote = anEvent->GetPrimaryVertex()->GetPrimary()->GetTotalEnergy();
+      double ke = anEvent->GetPrimaryVertex()->GetPrimary()->GetKineticEnergy();
       
-      G4cout<<"generating 'laser' "<<E/GeV<<"GeV "<<particlename
-            <<" event at ("<<vtx.x()/cm<<","<<vtx.y()/cm<<","<<vtx.z()/cm<<")";
+      G4cout<<"Generating laser primary "<<particlename<<" with total energy "
+            <<tote/MeV<<"MeV and kinetic energy "<<ke/MeV
+            <<"MeV at ("<<vtx.x()/cm<<","<<vtx.y()/cm<<","<<vtx.z()/cm<<") in direction ("
+            <<dir.x()<<", "<<dir.y()<<", "<<dir.z()<<") ";
       G4Navigator* theNavigator = G4TransportationManager::GetTransportationManager()->GetNavigatorForTracking();
       G4VPhysicalVolume* primaryPV = theNavigator->LocateGlobalPointAndSetup(vtx);
       std::string vtxvol = ( (primaryPV) ? primaryPV->GetName() : "<<no-primaryPV>>" );
@@ -561,6 +571,27 @@ void WCSimPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 			} else { goto loadbeamentry; } // load the next entry
 		}
 #endif
+#ifdef ONLY_MUONS
+		// ensure the event has at least one muon and skip it if not
+		Bool_t muonsinthisentry=false;
+		for(int i=0;i<ntankbranchval;i++){
+			if(pdgbranchval[i]==1){ muonsinthisentry=true; break; }
+		}
+		if(!muonsinthisentry){ // no muons in the event
+			//G4cout<<"---------------SKIPPING ENTRY WITH NO MUONS ----------------"<<G4endl;
+			inputEntry++;
+			localEntry = inputdata->LoadTree(inputEntry);
+			if(localEntry<0){
+				// get the pointer to the UI manager
+				G4UImanager* UI = G4UImanager::GetUIpointer();
+				UI->ApplyCommand("/run/abort 0");	// abort without processing current event
+				G4cout<<"@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#"<<G4endl;
+				G4cout<<"@#@#@#@#@#@#@#@#@#@ REACHED END OF INPUT FILE! #@#@#@#@#@#@#@#@#@#@#@#"<<G4endl;
+				G4cout<<"@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#"<<G4endl;
+			} else { goto loadbeamentry; } // load the next entry
+		}
+		goto loadbeamentry; 
+#endif
 		// First the genie information (largely unused as not currently stored in wcsim output)
 		// ===========================
 #ifndef NO_GENIE
@@ -731,6 +762,12 @@ void WCSimPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 			char strA[10]={0};
 			char strZ[10]={0};
 			long int A=0,Z=0;
+#ifdef ONLY_MUONS
+			if(abs(pdgval)!=13){
+				// skip non-muon primary
+				continue;
+			}
+#endif
 			if(abs(pdgval) >= 1000000000){
 				//ion
 				sprintf(strPDG,"%i",abs(pdgval));

@@ -224,6 +224,12 @@ void WCSimRunAction::FillGeoTree(){
   
   std::vector<WCSimPmtInfo*> *fpmts = wcsimdetector->Get_Pmts();
   WCSimPmtInfo *pmt;
+  std::string tankpmtname="unset";
+  G4String WCCollectionName = wcsimdetector->GetIDCollectionName();
+  if(WCCollectionName!="WCIDCollectionNameIsUnused"){
+    WCSimPMTObject * WCPMT = wcsimdetector->GetPMTPointer(WCCollectionName);
+    tankpmtname = WCPMT->GetPMTName();
+  }
   for (unsigned int i=0;i!=fpmts->size();i++){
     pmt = ((WCSimPmtInfo*)fpmts->at(i));
     pos[0] = (Float_t)pmt->Get_transx();
@@ -234,8 +240,8 @@ void WCSimRunAction::FillGeoTree(){
     rot[2] = (Float_t)pmt->Get_orienz();
     tubeNo = pmt->Get_tubeid();
     cylLoc = pmt->Get_cylocation();
-    wcsimrootgeom-> SetPMT(i,tubeNo,cylLoc,rot,pos,(std::string)wcsimdetector->GetTubeCollection(tubeNo));
     if(tankcollectionnames.size()!=0){
+      wcsimrootgeom-> SetPMT(i,tubeNo,cylLoc,rot,pos,(std::string)wcsimdetector->GetTubeCollection(tubeNo));
       G4String thistubescollectionname = wcsimdetector->GetTubeCollection(tubeNo);
       auto it = std::find(tankcollectionnames.begin(), tankcollectionnames.end(), thistubescollectionname);
       int thecollectionindex=-1;
@@ -243,6 +249,12 @@ void WCSimRunAction::FillGeoTree(){
         thecollectionindex = std::distance(tankcollectionnames.begin(), it);
       }
       wcsimrootgeom->SetTubeIdType(tubeNo, thecollectionindex);
+    } else {
+      if(tankpmtname=="unset"){
+        std::cerr<<"RunAction error filling wcsimrootgeom!"
+                   " tankcollectionnames not filled, but WCIDCollectionName not set"<<std::endl;
+      }
+      wcsimrootgeom-> SetPMT(i,tubeNo,cylLoc,rot,pos,tankpmtname);
     }
   }
   if (fpmts->size() != (unsigned int)numpmt) {

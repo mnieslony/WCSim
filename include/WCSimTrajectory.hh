@@ -45,6 +45,8 @@ public: // with description
    { return fTrackID; }
    inline G4int GetParentID() const
    { return fParentID; }
+   inline G4int GetParentPdg() const
+   { return fParentPdg; }
    inline G4String GetParticleName() const
    { return ParticleName; }
    inline G4double GetCharge() const
@@ -72,6 +74,7 @@ public: // with description
   { return globalTimeEnd; }
   inline G4bool GetSaveFlag() const { return SaveIt; }
   inline void SetSaveFlag(G4bool value) { SaveIt = value; }
+  inline void SetParentPdg(G4int value) { fParentPdg = value; }
 
 // New function we have added
    inline G4ThreeVector GetStoppingPoint() const
@@ -109,6 +112,7 @@ public: // with description
   TrajectoryPointContainer* positionRecord;
   G4int                     fTrackID;
   G4int                     fParentID;
+  G4int                     fParentPdg;
   G4int                     PDGEncoding;
   G4double                  PDGCharge;
   G4String                  ParticleName;

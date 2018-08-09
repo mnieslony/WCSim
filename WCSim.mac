@@ -1,9 +1,11 @@
+#!/bin/sh 
 # Sample setup macro with no visualization
 
 /run/verbose 0
 /tracking/verbose 0
 /hits/verbose 0
 /process/em/verbose 0
+#/process/had/particle_hp/verbose 0
 /process/had/cascade/verbose 0
 /process/verbose 0
 /process/setVerbose 0
@@ -149,8 +151,16 @@
 #/control/execute macros/visOGLSX.mac
 #/control/execute macros/visRayTracer.mac
 
+#####################################
+## PRIMARY SOURCES
+#####################################
+
+## Genie beam events
+####################
 /mygen/generator beam	# retrieve input primaries from GENIE output files
 
+## Simple electron gun at WCSim origin using G4 Particle Gun
+#############################################################
 # Or you can use the G4 Particle Gun
 # for a full list of /gun/ commands see:
 # http://geant4.web.cern.ch/geant4/G4UsersDocuments/UsersGuides/ForApplicationDeveloper/html/Control/UIcommands/_gun_.html
@@ -161,6 +171,8 @@
 #/gun/direction 1 0 0 
 #/gun/position 0 0 0  
 
+## Simple electron gun at WCSim origin, using G4 GPS
+####################################################
 # Or you can use the G4 General Particle Source
 # you can do a lot more with this than a monoenergetic, monodirectional, single-particle gun
 # for a full list of /gps/ commands see:
@@ -171,6 +183,8 @@
 #/gps/direction 1 0 0
 #/gps/position 0 0 0
 
+## Optical photon gun in MRD paddle to test reflections
+########################################################
 #/mygen/generator gun
 #/gun/particle opticalphoton
 #/gun/energy 3 eV
@@ -194,6 +208,8 @@
 ##  fpTrackingManager->SetStoreTrajectory(false);
 ##in WCSimTrackingAction
 
+## Electron gun in MRD paddle to test scintillation
+###################################################
 # Use a muon gun for testing scintillator elements
 #/mygen/generator gun
 #/gun/particle mu-
@@ -201,6 +217,8 @@
 #/gun/direction 0 0 1
 #/gun/position 50 50 -500 mm
 
+## Isotropic electron swarm within tank for Bonsai training
+############################################################
 # use laser for bonsai 
 # This is equivalent to the gps command, (except that the gps particle energies are saved ignoring their mass)<< not true:
 # masses are included for bonsai, which uses laser source with e-...  for photons the mass will be 0 anyway! 
@@ -214,7 +232,7 @@
 #/gps/pos/type Volume
 #/gps/pos/shape Cylinder
 #/gps/pos/radius 1.5 m   # 1.524 in WCSim::DetectorConfigs
-#/gps/pos/halfz 1.97 m   # 1.98m in WCSim::DetectorConfigs
+#/gps/pos/halfz 1.95 m   # 1.98m in WCSim::DetectorConfigs
 ##/gps/pos/confine WCBarrel
 ##cylinders are defined with the z axis as the axis of the cylinder
 ##rotate the cylinder to align with ANNIE's y-parallel tank
@@ -243,6 +261,8 @@
 #/DarkRate/SetDetectorElement facc
 #/DarkRate/SetDarkRate 0 kHz
 
+## Optical photon bomb within tank to test light yield
+######################################################
 ### opticalphoton bomb: we can use the laser source, just need to setnumberofparticles > 1!
 #/mygen/generator laser
 #/gps/particle opticalphoton
@@ -256,7 +276,10 @@
 #/gps/ene/gradient 0
 #/gps/ene/intercept 1
 
-## muon gun events shot just before the front face of the MRD, used to establish range vs energy at various angles of entry
+## Muons shot into the MRD for track / energy vs depth estimation
+#################################################################
+## muon events from just before the front face of the MRD, 
+## used to establish range vs energy at various angles of entry
 #/mygen/generator gps
 #/gps/particle mu-
 #/gps/pos/type Plane
@@ -282,27 +305,8 @@
 #/gps/ene/max 2500 MeV
 #/DAQ/Trigger NoTrigger  # >>>DISABLE NDigits TRIGGER<<< and enable NoTrigger to records everything even w/o a tank event
 
-#/mygen/generator laser
-#/gps/particle mu-
-##/gps/particle pi0
-#/gps/pos/type Volume
-#/gps/pos/shape Cylinder
-#/gps/pos/radius 1.5 m   # 1.524 in WCSim::DetectorConfigs
-#/gps/pos/halfz 1.97 m   # 1.98m in WCSim::DetectorConfigs
-##cylinders are defined with the z axis as the axis of the cylinder
-##rotate the cylinder to align with ANNIE's y-parallel tank
-#/gps/pos/rot1 1 0 0
-#/gps/pos/rot2 0 0 1
-## place source at centre of tank
-#/gps/pos/centre 0 -14.46 168.1 cm
-#/gps/ang/type iso
-#/gps/ene/type Lin    # uniform energy spread
-#/gps/ene/gradient 0  # gradient (MeV^{-1}) = 0: all energies equally likely
-#/gps/ene/intercept 1 # The intercept is a pure number.
-#/gps/ene/min 100 MeV
-#/gps/ene/max 2500 MeV
-##/DAQ/Trigger NDigits # normal NDigits 'cut' left on
-
+## Thermal neutron gun, to test for neutron capture detection
+#############################################################
 ## thermal neutron gun
 #/mygen/generator laser
 #/gps/particle neutron
@@ -328,6 +332,73 @@
 ## disable adjusting NDigits trigger for average occupancy, since noise is disabled for Bonsai
 #/DAQ/TriggerNDigits/AdjustForNoise false
 
+## Isotropic muons with linear spread of energies, within the tank, for E reconstruction
+########################################################################################
+## isotropic distribution may be better for energy reconstruction tests?
+#/mygen/generator laser
+#/gps/particle mu-
+##/gps/particle pi0
+#/gps/pos/type Volume
+#/gps/pos/shape Cylinder
+#/gps/pos/radius 1.5 m   # 1.524 in WCSim::DetectorConfigs
+#/gps/pos/halfz 1.97 m   # 1.98m in WCSim::DetectorConfigs
+##cylinders are defined with the z axis as the axis of the cylinder
+##rotate the cylinder to align with ANNIE's y-parallel tank
+#/gps/pos/rot1 1 0 0
+#/gps/pos/rot2 0 0 1
+## place source at centre of tank
+#/gps/pos/centre 0 -14.46 168.1 cm
+#/gps/ang/type iso
+#/gps/ene/type Lin    # uniform energy spread
+#/gps/ene/gradient 0  # gradient (MeV^{-1}) = 0: all energies equally likely
+#/gps/ene/intercept 1 # The intercept is a pure number.
+#/gps/ene/min 100 MeV
+#/gps/ene/max 2500 MeV
+##/DAQ/Trigger NDigits # normal NDigits 'cut' left on
+
+## Beam muon simulation - gaussian spread of energies and directions
+####################################################################
+## muons with gaussian spread of ~beam energies, starting in the tank, shot into the mrd with ~suitable angles.
+#/mygen/generator laser
+#/gps/particle mu-
+#/gps/pos/type Volume
+#/gps/pos/shape Cylinder
+#/gps/pos/radius 1.5 m   # 1.524 in WCSim::DetectorConfigs
+#/gps/pos/halfz 1.97 m   # 1.98m in WCSim::DetectorConfigs
+##/gps/pos/confine WCBarrel
+## to generate a 10 deg cone of equally likely directions about the z axis, we can use an isotropic directionality
+## source but limit the angular span using the following
+## see http://nngroup.physics.sunysb.edu/captain/reference/master/detSim/dox/detSimGPS.html for details
+##/gps/ang/type iso
+##/gps/ang/mintheta 10 deg  # limit to a 10 degree cone in +z dir
+#/gps/ang/mintheta 90 deg   # limit to positive z directions(!) <<< this may have no effect on gaussian beam distribution
+## perhaps more suitable is a gaussian spread of directions about a beam direction:
+#/gps/ang/type beam1d
+#/gps/ang/sigma_r 35 deg
+#/gps/ang/focuspoint  0 -14.46 168.1 cm
+## fix roational alignment if necessary
+## The X axis of the direction coordinate system is defined by the /gps/ang/rot1 command
+## and the XY plane is determined by the /gps/ang/rot2 command
+## the following pair results in particles along the Z direction (in theory flips Z->-Z?)
+#/gps/ang/rot1 -1 0 0
+#/gps/ang/rot2 0 1 0
+## uniform energy spread... 
+##/gps/ene/type Lin    # uniform energy spread
+##/gps/ene/gradient 0  # gradient 0 means probability distrib is flat: all energies in range are equally likely
+##/gps/ene/intercept 1
+## The gradient is specified in MeV^{-1}. The intercept is a pure number.
+##/gps/ene/min 100 MeV
+##/gps/ene/max 2500 MeV
+## a gaussian energy spread is better
+#/gps/ene/type Gauss
+#/gps/ene/mono 500 MeV   # gaussian centre
+#/gps/ene/sigma 400 MeV # gaussian width
+#/gps/ene/min 10 MeV      # add a minimum because anything <50MeV is undetectable
+
+##################################
+## END OF PRIMARY SOURCES
+##################################
+
 # set up visualization view for debugging photons - 
 # should be associated with changes store in branch photonbouncedebug
 #/vis/viewer/set/viewpointThetaPhi 0 0
@@ -339,11 +410,10 @@
 ## now only tracks explicitly drawn in the EndOfEventAction will be shown
 
 # set the random seed
-#/WCSim/random/seed 52878        #default 31415
-# set the offset from the start of the tchain at which to start reading primaries in
-#/mygen/primariesoffset 10000
-# these will be set in the mac file (contents updated by a batch file):
+#/WCSim/random/seed 52878        #default 31415. Now set in setRandomParameters.mac
 /control/execute macros/setRandomParameters.mac
+# set the offset from the start of the tchain at which to start reading primaries in
+#/mygen/primariesoffset 10000    # Now set in primaries_directory.mac << automatically called in WCSim.cc
 
 ## change the name of the output root file, default = wcsim (the .root is appended internally)
 /WCSimIO/RootFile wcsim

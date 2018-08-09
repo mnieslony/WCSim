@@ -1124,6 +1124,7 @@ G4LogicalVolume* WCSimDetectorConstruction::ConstructCaps(G4int zflip)
                         "WCBarrelBorderCell", 
                         0,0,0);
   //G4cout << *solidWCBarrelBorderCell << G4endl;
+  G4double rotationoffset = (isANNIE) ? pi/4. : 0.; // shouldn't make any difference but seems to reduce instances of Stuck tracks
   G4VPhysicalVolume* physiWCBarrelBorderCell =
     new G4PVReplica("WCBarrelBorderCell",
                     logicWCBarrelBorderCell,
@@ -1131,7 +1132,7 @@ G4LogicalVolume* WCSimDetectorConstruction::ConstructCaps(G4int zflip)
                     kPhi,
                     (G4int)WCBarrelRingNPhi,
                     dPhi,
-                    0.);
+                    rotationoffset);
 
 // These lines of code below will turn the border rings invisible. 
 

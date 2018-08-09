@@ -38,7 +38,6 @@ WCSimRootTrigger::WCSimRootTrigger()
 {
   // Create an WCSimRootTrigger object.
 
-
   // WARNING : default constructor for ROOT : do not allocate memory
   // inside it or upon re-reading the object there will be a memory leak
   // TClonesArray of WCSimRootTracks
@@ -108,7 +107,7 @@ void WCSimRootTrigger::Initialize() //actually allocate memory for things in her
   fTriggerType = kTriggerUndefined;
   fTriggerInfo.clear();
   
-  //  G4cout << " Time to allocate the TCAs :  Real = " << mystopw->RealTime() 
+  //  std::cout << " Time to allocate the TCAs :  Real = " << mystopw->RealTime() 
   //	    << " ; CPU = " << mystopw->CpuTime() << "\n";
   //delete mystopw;
   
@@ -129,7 +128,7 @@ WCSimRootTrigger::~WCSimRootTrigger()
 
   if (!IsZombie) {
 
-    fTracks->Delete();            
+    fTracks->Delete();
     fCherenkovHits->Delete();      
     fCherenkovHitTimes->Delete();   
     fCherenkovDigiHits->Delete();  
@@ -143,7 +142,7 @@ WCSimRootTrigger::~WCSimRootTrigger()
   }
   //mystopw->Stop();
 
-  //  G4cout << " Time to delete the TCAs :  Real = " << mystopw->RealTime() 
+  //  std::cout << " Time to delete the TCAs :  Real = " << mystopw->RealTime() 
   //    << " ; CPU = " << mystopw->CpuTime() << "\n";
 
   //delete mystopw;
@@ -174,7 +173,7 @@ void WCSimRootTrigger::Clear(Option_t */*option*/)
   // remove whatever's in the arrays
   // but don't deallocate the arrays themselves
 
-  fTracks->Delete();            
+  fTracks->Clear(); // performs no memory allocation, contains only basic numeric types (no TStrings)
   fCherenkovHits->Delete();      
   fCherenkovHitTimes->Delete();   
   fCherenkovDigiHits->Delete();

@@ -150,12 +150,12 @@ G4LogicalVolume* WCSimDetectorConstruction::ConstructANNIE()
 		G4Tubs* waterTank_tubs = new G4Tubs("waterTank",0.*m,tankouterRadius,tankhy,0.*deg,360.*deg);	//prev dims: 5.5m radius, 11m height.
 		waterTank_log = new G4LogicalVolume(waterTank_tubs,G4Material::GetMaterial(watertype),"waterTank",0,0,0);
 		waterTank_phys = 
-		new G4PVPlacement(rotm,G4ThreeVector(0,-tankyoffset*mm,tankouterRadius+tankzoffset),waterTank_log,"waterTank",expHall_log,false,0);
+		new G4PVPlacement(rotm,G4ThreeVector(0,-tankyoffset,tankouterRadius+tankzoffset),waterTank_log,"waterTank",expHall_log,false,0);
 		AddANNIEPhase1PMTs(waterTank_log); 
 	} else { 
 		waterTank_log = ConstructCylinder();
 		waterTank_phys = 
-		new G4PVPlacement(rotm,G4ThreeVector(0,-tankyoffset*mm,tankouterRadius+tankzoffset),waterTank_log,"waterTank",expHall_log,false,0);
+		new G4PVPlacement(rotm,G4ThreeVector(0,-tankyoffset,tankouterRadius+tankzoffset),waterTank_log,"waterTank",expHall_log,false,0);
 		
 		G4LogicalVolume* logicWCBarrel=nullptr;
 		int nDaughters = waterTank_log->GetNoDaughters();
@@ -192,23 +192,23 @@ G4LogicalVolume* WCSimDetectorConstruction::ConstructANNIE()
 #endif
 
   // set all the paddle dimensions etc and create solids, logical volumes etc. for the MRD & VETO
-  DefineANNIEdimensions();												// part of MRDDetectorConstruction.cc
-  // Create MRD																		// part of MRDDetectorConstruction.cc
+  DefineANNIEdimensions();									// part of MRDDetectorConstruction.cc
+  // Create MRD												// part of MRDDetectorConstruction.cc
   useadditionaloffset=false;
-  ConstructMRD(expHall_log, expHall_phys);				// marcus' MRD construction
+  ConstructMRD(expHall_log, expHall_phys);					// marcus' MRD construction
   // if desired, enable true 'hit' sensitive detector in MRDDetectorConstruction::ConstructMRD
   
   // ===== SciBooNE integration
   //totMRD_log=expHall->GetLogicalVolume(); 
-  //startindex=numpaddlesperpanelv+1;								// can't remember why  this is needed....
+  //startindex=numpaddlesperpanelv+1;						// can't remember why  this is needed....
   //DefineMRD((G4PVPlacement*)expHall_phys);				// Subroutine below - combines FACC from MRDDetectorConstruction
-  																									// with MRD from DefineMRD.icc
-  //useadditionaloffset=true;												// positioning is different based on if MRD is built in hall or in totMRD
+  															// with MRD from DefineMRD.icc
+  //useadditionaloffset=true;								// positioning is different based on if MRD is built in hall or in totMRD
   //  ===== /SciBooNE integration
   
   // Create FACC
   //G4cout<<"Calling construction for the VETO"<<G4endl;
-  ConstructVETO(expHall_log, expHall_phys);				// part of MRDDetectorConstruction.cc
+  ConstructVETO(expHall_log, expHall_phys);					// part of MRDDetectorConstruction.cc
   // enable 'true hits' sensitive detector in MRDDetectorConstruction::ConstructVETO if desired.
   
   if (isNCV){
@@ -216,7 +216,7 @@ G4LogicalVolume* WCSimDetectorConstruction::ConstructANNIE()
     NCVposition.setX(0.*m); // Position of the NCV
     NCVposition.setY(0.*m);
     NCVposition.setZ(0.*m);
-    ConstructNCV(waterTank_log);									// subroutine below
+    ConstructNCV(waterTank_log);							// subroutine below
     G4cout << "************ Neutron Capture Volume will be included in the simulation ! ************\n";
   } else{
     G4cout << "************ Neutron Capture Volume will NOT be included in the simulation ! ********\n";
@@ -225,20 +225,20 @@ G4LogicalVolume* WCSimDetectorConstruction::ConstructANNIE()
   /* code that just puts a flat faced pmt in the hall for geometry inspection
   logicMRDPMT = ConstructFlatFacedPMT(MRDPMTName, WCMRDCollectionName, "mrd");
 	G4VPhysicalVolume* mrdpmt_phys=
-		new G4PVPlacement(	0,						// no rotation
+		new G4PVPlacement(	0,								// no rotation
 							G4ThreeVector(),				// its position
-							logicMRDPMT,						// its logical volume
-							"MRDPMT",								// its name
-							expHall_log,						// its mother volume
-							false,									// no boolean os
-							0,											// every PMT need a unique id.
-							true);									// check for overlaps
+							logicMRDPMT,					// its logical volume
+							"MRDPMT",						// its name
+							expHall_log,					// its mother volume
+							false,							// no boolean os
+							0,								// every PMT need a unique id.
+							true);							// check for overlaps
 	*/
   
-  expHall_log->SetVisAttributes (G4VisAttributes::Invisible);	// set hall volume invisible
+  expHall_log->SetVisAttributes (G4VisAttributes::Invisible); // set hall volume invisible
   
   //return expHall_phys;
-  return MatryoshkaMother;	// return a logical volume not a physical one
+  return MatryoshkaMother;									// return a logical volume not a physical one
   //return expHall_log;
 }
 
