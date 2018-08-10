@@ -82,7 +82,7 @@ void WCSimWCAddDarkNoise::SetPMTDarkDefaults()
   // if there are multiple tank PMT types, retrieve the dark rate for each tank collection
   PMTDarkRateMap.clear();
   ConvRateMap.clear();
-  if(WCCollectionName!="WCIDCollectionNameIsUnused"){
+  if(detectorElement!="tank"||WCCollectionName!="WCIDCollectionNameIsUnused"){
     // if not multiple types, just put the exisiting ones into the maps
     ConvRateMap.emplace(WCCollectionName, ConvRate);
     PMTDarkRateMap.emplace(WCCollectionName, PMTDarkRate);
@@ -154,7 +154,7 @@ void WCSimWCAddDarkNoise::AddDarkNoise(){
 #endif
   }
   
-  if (((WCHCPMT != NULL)||(thetriggertype=="TankDigits"&&WCHCPMT_tank!=NULL)) && (this->PMTDarkRate > 1E-307)) {
+  if (( (WCHCPMT != NULL) ||(thetriggertype=="TankDigits"&&WCHCPMT_tank!=NULL)) && (this->PMTDarkRate > 1E-307)) {
     //Determine ranges for adding noise
     if(DarkMode == 1){
       if(thetriggertype=="TankDigits"){
@@ -279,7 +279,7 @@ void WCSimWCAddDarkNoise::AddDarkNoiseBeforeDigi(WCSimWCDigitsCollection* WCHCPM
 #endif
     G4double currentPMTDarkRate = anoisegroup.second;
     std::vector<Int_t> pmtsinthiscollection;
-    if(myDetector->GetIDCollectionNames().size()>1){
+    if(detectorElement=="tank"&&myDetector->GetIDCollectionNames().size()>1){
       pmtsinthiscollection = myDetector->GetTubesInCollection(WCCollectionName);
       number_pmts = pmtsinthiscollection.size();
     } else {
@@ -287,7 +287,7 @@ void WCSimWCAddDarkNoise::AddDarkNoiseBeforeDigi(WCSimWCDigitsCollection* WCHCPM
       std::iota(pmtsinthiscollection.begin(), pmtsinthiscollection.end(), 1); // tube IDs start from 1 NOT 0
     }
   
-  //average number of PMTs with noise
+    //average number of PMTs with noise
     double ave=number_pmts * currentPMTDarkRate * ConvRateMap.at(WCCollectionName) * windowsize * 1E-6;
 
     //poisson distributed noise, number of noise hits to add

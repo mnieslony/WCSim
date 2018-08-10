@@ -95,6 +95,7 @@ public:
   void SetANNIEPhase2Geometry();   // phase 2 geometry - 60 PMTs on bottom, top, and 200 PMTs around barrel.
   void SetANNIEPhase2Geometryv2(); // phase 2 geometry - with realistic PMT types
   void SetANNIEPhase2Geometryv3(); // phase 2 geometry - later PMT layout
+  void SetANNIEPhase2Geometryv4(); // phase 2 geometry -  alt later PMT layout
   
   G4int    GetTotalNumPmts(G4String key){
     if(std::find(WCTankCollectionNames.begin(), WCTankCollectionNames.end(), key)!=WCTankCollectionNames.end())
@@ -104,6 +105,11 @@ public:
   G4String GetTubeCollection(Int_t tubeID){return WCTubeCollectionMap.at(tubeID);}          // ✩
   std::vector<G4String> GetIDCollectionNames(){return WCTankCollectionNames;}               // ✩
   std::vector<Int_t> GetTubesInCollection(G4String CollectionName){                         // ✩
+    if(TubeIdsByCollection.count(CollectionName)==0){
+      G4cerr<<"WCSimDetectorConstruction::GetTubesInCollection could not find collection "
+            <<CollectionName<<G4endl;
+            return std::vector<Int_t>{};
+    }
     return TubeIdsByCollection.at(CollectionName);
   }
   
@@ -431,6 +437,12 @@ private:
   G4double WCBarrelCellLength;
   G4double WCCapNCell;
   G4double WCBarrelLength;
+  
+  // for annie
+  G4double compressionfactor;        // ratio to squeeze PMTs together on an octagon face, relative to full width
+  G4double capcompressionratio;      // aspect ratio of PMT spacing on bottom cap
+  G4double WCCapPMTPosRadius;        // radius at which to position top cap PMTs, for some ANNIE designs
+  G4double WCCapPMTPosRadius2;       // radius at which to position PMTs on the hatch
 
   // amb79: to universally make changes in structure and geometry
   bool isUpright;

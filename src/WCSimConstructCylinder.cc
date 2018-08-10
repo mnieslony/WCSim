@@ -68,7 +68,7 @@ G4LogicalVolume* WCSimDetectorConstruction::ConstructCylinder()
   // angle per regular cell:
   dPhi        =  totalAngle/ WCBarrelRingNPhi;
   // its height:
-  if(WCDetectorName!="ANNIEp2v2"){
+  if(WCDetectorName!="ANNIEp2v2"&&WCDetectorName!="ANNIEp2v4"){
     barrelCellHeight  = (WCIDHeight-2.*WCBarrelPMTOffset)/WCBarrelNRings;
     mainAnnulusHeight = WCIDHeight -2.*WCBarrelPMTOffset -2.*barrelCellHeight;
   } else {  // ANNIEp2v2 uses a single main barrel ring, populated manually
@@ -236,7 +236,7 @@ if(!debugMode)
 			"WCBarrelRing",
 			0,0,0);
 
-  if(WCDetectorName!="ANNIEp2v2"){
+  if(WCDetectorName!="ANNIEp2v2"&&WCDetectorName!="ANNIEp2v4"){
   G4VPhysicalVolume* physiWCBarrelRing = 
     new G4PVReplica("WCBarrelRing",
 		    logicWCBarrelRing,
@@ -747,9 +747,6 @@ If used here, uncomment the SetVisAttributes(WClogic) line, and comment out the 
 
   if(WCDetectorName=="ANNIEp2"){
 	  
-	  // squeeze PMTs closer to prevent geometry overlap in ANNIE
-	  G4double compressionfactor = 0.9;
-	  
 	  G4double barrelCellWidth = 2.*WCIDRadius*tan(dPhi/2.)*compressionfactor;
 	  G4double horizontalSpacing   = barrelCellWidth/WCPMTperCellHorizontal;
 	  G4double verticalSpacing     = barrelCellHeight/WCPMTperCellVertical;
@@ -845,9 +842,6 @@ If used here, uncomment the SetVisAttributes(WClogic) line, and comment out the 
 	// declared in DetectorConfigs: 
 	// {R7081 (10" WB/LUX : barrel+bottom), D784KFLB (11" LBNE : top), R5912HQE (8" HQE : barrel)}
 	  
-	  // squeeze PMTs closer to prevent geometry overlap in ANNIE
-	  G4double compressionfactor = 0.9; // FIXME
-	  
 	  G4double barrelCellWidth = 2.*WCIDRadius*tan(dPhi/2.)*compressionfactor;
 	  G4double horizontalSpacing   = barrelCellWidth/WCPMTperCellHorizontal;
 	  G4double verticalSpacing     = barrelCellHeight/WCPMTperCellVertical;
@@ -880,6 +874,62 @@ If used here, uncomment the SetVisAttributes(WClogic) line, and comment out the 
 						  false,                              // no boolean operations
 						  (int)(i*WCPMTperCellVertical+j),    // a unique ID for this PMT
 						  true);                              // check overlaps
+		}
+	  }
+	  
+  } else if(WCDetectorName=="ANNIEp2v4"){
+	  // Manual override of barrel ring placement: we have just 1 barrel ring replica volume, into which
+	  // multiple rings of PMTs are placed
+	  // 10", 10"
+	  //  8",  8"
+	  // 10", 10"
+	  //  8",  8"
+	  // 10",  8"   << one asymmetrical ring
+	  // 10", 10"
+	  
+	  //  PMTs are placed in the vector in the order their collections are defined - i.e. in the order they are 
+	  //  declared in DetectorConfigs: 
+	  //  {R7081 (10" WB/LUX : barrel+bottom), D784KFLB (11" LBNE : top), R5912HQE (8" HQE : barrel)}
+	  
+	  G4double barrelCellWidth = 2.*WCIDRadius*tan(dPhi/2.);
+	  G4double horizontalSpacing   = barrelCellWidth/WCPMTperCellHorizontal;
+	  G4double verticalSpacing     = barrelCellHeight/WCPMTperCellVertical;
+	  
+	  for(G4double i = 0; i < WCPMTperCellHorizontal; i++){
+		for(G4double j = 0; j < WCPMTperCellVertical; j++){
+			// need to modify horizontal position and number of placements based on which ring we're in
+			// j is ring number
+			
+			// which PMT logical vol, based on ring & position
+			if((j==0&&i==0)||j==2){
+			  logicWCPMT = logicWCPMTs.at(0); // 10" LUX/Watchboy
+			} else {
+			  logicWCPMT = logicWCPMTs.at(2); // 8" HQE new
+			}
+			
+			// position: vertically it's as normal for a cell
+			double verticalposition = -barrelCellHeight/2.+(j+0.5)*verticalSpacing;
+			// horizontally it depends on which ring
+			// PMTs are closer to the centre of the face
+			double horizontalposition = pow(-1,i)*(barrelCellWidth/4.)*compressionfactor; // 2 evenly within cell
+			
+			G4ThreeVector PMTPosition = G4ThreeVector(WCIDRadius, horizontalposition, verticalposition);
+			
+			//G4cout<<"PMT position: "
+			//      <<WCIDRadius<<","
+			//      <<-barrelCellWidth/2.+(i+0.5)*horizontalSpacing<<","
+			//      <<-barrelCellHeight/2.+(j+0.5)*verticalSpacing<<G4endl;
+			
+			G4VPhysicalVolume* physiWCBarrelPMT =
+				new G4PVPlacement(WCPMTRotation,              // its rotation
+						  PMTPosition,                        // its position
+						  logicWCPMT,                         // its logical volume
+						  "WCPMT",                            // its name
+						  logicWCBarrelCell,                  // its mother volume
+						  false,                              // no boolean operations
+						  (int)(i*WCPMTperCellVertical+j),    // a unique ID for this PMT
+						  true);                              // check overlaps
+		  
 		}
 	  }
 	  
@@ -923,8 +973,6 @@ If used here, uncomment the SetVisAttributes(WClogic) line, and comment out the 
   //when I define it with the pmt parameters it works fine...Why????
   if(WCDetectorName=="ANNIEp2"){
 	  
-	  // squeeze PMTs closer to prevent geometry overlap in ANNIE
-	  G4double compressionfactor = 0.9;   // put in config file XXX
 	  G4double barrelCellWidth = 2.*WCIDRadius*tan(dPhi/2.)*compressionfactor;
 	  //G4double horizontalSpacingLAPPD   = barrelCellWidth/WCPMTperCellHorizontal;
 	  //G4double verticalSpacingLAPPD     = barrelCellHeight/WCPMTperCellVertical;
@@ -1072,7 +1120,9 @@ G4LogicalVolume* WCSimDetectorConstruction::ConstructCaps(G4int zflip)
   // border ring height should correspond to a single ring
   
   // ANNIEp2v2 overrides the main barrel ring replication, so border rings have a different size to the body ring
-  if(WCDetectorName=="ANNIEp2v2") barrelCellHeight = (WCIDHeight-2.*WCBarrelPMTOffset)/WCBarrelNRings;
+  if(WCDetectorName=="ANNIEp2v2"||WCDetectorName=="ANNIEp2v4"){
+    barrelCellHeight = (WCIDHeight-2.*WCBarrelPMTOffset)/WCBarrelNRings;
+  }
   
   G4double borderAnnulusZ[3] = {-barrelCellHeight/2.*zflip,
                                 (-barrelCellHeight/2.+(WCIDRadius-innerAnnulusRadius))*zflip,
@@ -1167,7 +1217,7 @@ G4LogicalVolume* WCSimDetectorConstruction::ConstructCaps(G4int zflip)
   // barrel cells.
   // ---------------------------------------------------------
 
-  if(WCDetectorName=="ANNIEp2v2"){
+  if(WCDetectorName=="ANNIEp2v2"||WCDetectorName=="ANNIEp2v4"){
     // ANNIEp2v2 can't re-use the body ring, as it represents the entire body, not just one ring.
     // Generate a new logicWCBarrelCellBlackSheet with the same code, but proper 1-ring barrelCellHeight
     G4double borderbarrelCellHeight = (WCIDHeight-2.*WCBarrelPMTOffset)/WCBarrelNRings;
@@ -1489,6 +1539,7 @@ G4LogicalVolume* WCSimDetectorConstruction::ConstructCaps(G4int zflip)
   // Add top and bottom PMTs
   // -----------------------------------------------------
   G4String thecollectionName;
+  G4cout<<"Adding cap PMTs to "<<WCDetectorName<<" detetor"<<G4endl;
 	if(WCDetectorName=="ANNIEp2v2"){
 		if(zflip>0){
 			thecollectionName = WCTankCollectionNames.at(1);
@@ -1498,6 +1549,14 @@ G4LogicalVolume* WCSimDetectorConstruction::ConstructCaps(G4int zflip)
 			WCPMTName = WCPMTNameMap.at(thecollectionName);   // bottom is R7081
 		}
 	} else if(WCDetectorName=="ANNIEp2v3"){ // flipped compared to v2
+		if(zflip<0){
+			thecollectionName = WCTankCollectionNames.at(1);
+			WCPMTName = WCPMTNameMap.at(thecollectionName);   // bottom is D784KFLB
+		} else {
+			thecollectionName = WCTankCollectionNames.at(0);
+			WCPMTName = WCPMTNameMap.at(thecollectionName);   // top is R7081
+		}
+	} else if(WCDetectorName=="ANNIEp2v4"){
 		if(zflip<0){
 			thecollectionName = WCTankCollectionNames.at(1);
 			WCPMTName = WCPMTNameMap.at(thecollectionName);   // bottom is D784KFLB
@@ -1527,53 +1586,123 @@ G4LogicalVolume* WCSimDetectorConstruction::ConstructCaps(G4int zflip)
     WCCapPMTRotation->rotateY(180.*deg);
   }
 
-  // loop over the cap
-  G4int CapNCell = WCCapEdgeLimit/WCCapPMTSpacing + 2;
-  for ( int i = -CapNCell ; i <  CapNCell; i++) {
-    for (int j = -CapNCell ; j <  CapNCell; j++)   {
-
-       
-      xoffset = i*WCCapPMTSpacing + WCCapPMTSpacing*0.5;
-      yoffset = j*WCCapPMTSpacing + WCCapPMTSpacing*0.5;
-
-      
-      G4ThreeVector cellpos = G4ThreeVector(xoffset, yoffset, 0);     
-      //      G4double WCBarrelEffRadius = WCIDDiameter/2. - WCCapPMTSpacing;
-      //      double comp = xoffset*xoffset + yoffset*yoffset 
-      //	- 2.0 * WCBarrelEffRadius * sqrt(xoffset*xoffset+yoffset*yoffset)
-      //	+ WCBarrelEffRadius*WCBarrelEffRadius;
-      //      if ( (comp > WCPMTRadius*WCPMTRadius) && ((sqrt(xoffset*xoffset + yoffset*yoffset) + WCPMTRadius) < WCCapEdgeLimit) ) {
-     if((WCDetectorName=="ANNIEp2")&&((i%2==0 && j%2==0)||(i%2!=0 && j%2!=0))){
-       if (((sqrt(xoffset*xoffset + yoffset*yoffset) + WCLAPPDRadius) < WCCapEdgeLimit + WCLAPPDRadius ) ) {
-        //G4cout<<"LAPPD at: "<<i<<" j= "<<j<<" cellpos= "<<cellpos<<G4endl;
-        //add LAPPDs in cap:
-        G4ThreeVector cellposlappd = G4ThreeVector(xoffset, yoffset, (WCBarrelPMTOffset/2.)*zflip);
-        G4VPhysicalVolume* physiCapLAPPD =
-            new G4PVPlacement(WCCapPMTRotation,
-                              cellposlappd,                   // its position
-                              logicWCLAPPD,                   // its logical volume
-                              "WCLAPPD",                      // its name 
-                              logicWCCap,                     // its mother volume
-                              false,                          // no boolean os
-                              icopylappd,                     // every LAPPD need a unique copy id
-                              false);                         // don't check overlaps
-         icopylappd++;
-       }
-     } else {
-
-	if (((sqrt(xoffset*xoffset + yoffset*yoffset) + WCPMTRadius) < WCCapEdgeLimit) ) {
-	G4VPhysicalVolume* physiCapPMT =
-	  new G4PVPlacement(WCCapPMTRotation,
-			    cellpos,                   // its position
-			    logicWCPMT,                // its logical volume
-			    "WCPMT",                   // its name 
-			    logicWCCap,                // its mother volume
-			    false,                     // no boolean os
-			    icopy);                    // every PMT need a unique id.
-	
-	icopy++;
-	}
+  // loop over the cap and place PMTs
+  if(WCDetectorName=="ANNIEp2v3"||WCDetectorName=="ANNIEp2v4"){
+    G4cout<<"Constructing caps for "<<WCDetectorName<<G4endl;
+    // ANNIEp2v3 accounts for cap PMTs being closer in one dimension than the other on the bottom
+    // and a bizarre ring + triangle on the top
+    
+    if(zflip==-1){ // bottom cap, PMTs placed in regular grid, but with different X:Y spacing
+      G4int CapNCellX = WCCapEdgeLimit/WCCapPMTSpacing + 2;
+      G4int CapNCellY = WCCapEdgeLimit/WCCapPMTSpacing*capcompressionratio + 2;
+      for ( int i = -CapNCellX ; i <  CapNCellX; i++) {
+        for (int j = -CapNCellY ; j <  CapNCellY; j++)   {
+          
+          xoffset = i*WCCapPMTSpacing + WCCapPMTSpacing*0.5;
+          yoffset = (j*WCCapPMTSpacing + WCCapPMTSpacing*0.5)*capcompressionratio;
+          
+          G4ThreeVector cellpos = G4ThreeVector(xoffset, yoffset, 0);
+          if (((sqrt(xoffset*xoffset + yoffset*yoffset) + WCPMTRadius) < WCCapEdgeLimit) ) {
+            G4cout<<"Constructing bottom cap PMT "<<i<<","<<j<<" at ("<<xoffset<<", "<<yoffset<<")"<<G4endl;
+            G4VPhysicalVolume* physiCapPMT =
+                  new G4PVPlacement(WCCapPMTRotation,
+                                    cellpos,                   // its position
+                                    logicWCPMT,                // its logical volume
+                                    "WCPMT",                   // its name 
+                                    logicWCCap,                // its mother volume
+                                    false,                     // no boolean os
+                                    icopy);                    // every PMT need a unique id.
+            icopy++;
+          } else { G4cout<<"skipping bottom cap PMT "<<i<<","<<j<<")"<<G4endl; }
+        }
       }
+    } else { // top cap
+      
+      // first position the ring of PMTs
+      G4double PMTangle = dPhi/WCPMTperCellHorizontal;
+      for ( int i = 0 ; i < WCBarrelNumPMTHorizontal; i++) {
+        // 2 PMTs per cell, as per the barrel, but with smaller radius 
+        xoffset = WCCapPMTPosRadius*cos((i+0.5)*PMTangle);
+        yoffset = WCCapPMTPosRadius*sin((i+0.5)*PMTangle);
+        G4cout<<"Constructing top cap ring PMT "<<i<<" at ("<<xoffset<<", "<<yoffset<<")"<<G4endl;
+        
+        G4ThreeVector cellpos = G4ThreeVector(xoffset, yoffset, 0);
+        G4VPhysicalVolume* physiCapPMT =
+              new G4PVPlacement(WCCapPMTRotation,
+                                cellpos,                   // its position
+                                logicWCPMT,                // its logical volume
+                                "WCPMT",                   // its name 
+                                logicWCCap,                // its mother volume
+                                false,                     // no boolean os
+                                icopy);                    // every PMT need a unique id.
+        icopy++;
+      }
+      
+      // then position the odd PMTs on the hatch
+      int numhatchpmts = 3;
+      PMTangle = 2*pi/numhatchpmts;
+      for ( int i = 0 ; i < numhatchpmts; i++) {
+        xoffset = WCCapPMTPosRadius2*cos(i*PMTangle);
+        yoffset = WCCapPMTPosRadius2*sin(i*PMTangle);
+        G4cout<<"Constructing top cap hatch PMT "<<i<<" at ("<<xoffset<<", "<<yoffset<<")"<<G4endl;
+        
+        G4ThreeVector cellpos = G4ThreeVector(xoffset, yoffset, 0);
+        G4VPhysicalVolume* physiCapPMT =
+              new G4PVPlacement(WCCapPMTRotation,
+                                cellpos,                   // its position
+                                logicWCPMT,                // its logical volume
+                                "WCPMT",                   // its name 
+                                logicWCCap,                // its mother volume
+                                false,                     // no boolean os
+                                icopy);                    // every PMT need a unique id.
+        icopy++;
+      }
+      
+    }
+  } else { // wcsim nominal
+    G4int CapNCell = WCCapEdgeLimit/WCCapPMTSpacing + 2;
+    for ( int i = -CapNCell ; i <  CapNCell; i++) {
+      for (int j = -CapNCell ; j <  CapNCell; j++)   {
+         
+        xoffset = i*WCCapPMTSpacing + WCCapPMTSpacing*0.5;
+        yoffset = j*WCCapPMTSpacing + WCCapPMTSpacing*0.5;
+        
+        G4ThreeVector cellpos = G4ThreeVector(xoffset, yoffset, 0);     
+        //      G4double WCBarrelEffRadius = WCIDDiameter/2. - WCCapPMTSpacing;
+        //      double comp = xoffset*xoffset + yoffset*yoffset 
+        //	- 2.0 * WCBarrelEffRadius * sqrt(xoffset*xoffset+yoffset*yoffset)
+        //	+ WCBarrelEffRadius*WCBarrelEffRadius;
+        //      if ( (comp > WCPMTRadius*WCPMTRadius) && ((sqrt(xoffset*xoffset + yoffset*yoffset) + WCPMTRadius) < WCCapEdgeLimit) ) {
+       if((WCDetectorName=="ANNIEp2")&&((i%2==0 && j%2==0)||(i%2!=0 && j%2!=0))){
+         if (((sqrt(xoffset*xoffset + yoffset*yoffset) + WCLAPPDRadius) < WCCapEdgeLimit + WCLAPPDRadius ) ) {
+          //G4cout<<"LAPPD at: "<<i<<" j= "<<j<<" cellpos= "<<cellpos<<G4endl;
+          //add LAPPDs in cap:
+          G4ThreeVector cellposlappd = G4ThreeVector(xoffset, yoffset, (WCBarrelPMTOffset/2.)*zflip);
+          G4VPhysicalVolume* physiCapLAPPD =
+              new G4PVPlacement(WCCapPMTRotation,
+                                cellposlappd,                   // its position
+                                logicWCLAPPD,                   // its logical volume
+                                "WCLAPPD",                      // its name 
+                                logicWCCap,                     // its mother volume
+                                false,                          // no boolean os
+                                icopylappd,                     // every LAPPD need a unique copy id
+                                false);                         // don't check overlaps
+           icopylappd++;
+         }
+       } else {
+          if (((sqrt(xoffset*xoffset + yoffset*yoffset) + WCPMTRadius) < WCCapEdgeLimit) ) {
+          G4VPhysicalVolume* physiCapPMT =
+            new G4PVPlacement(WCCapPMTRotation,
+                      cellpos,                   // its position
+                      logicWCPMT,                // its logical volume
+                      "WCPMT",                   // its name 
+                      logicWCCap,                // its mother volume
+                      false,                     // no boolean os
+                      icopy);                    // every PMT need a unique id.
+          icopy++;
+          }
+        }
+       }
      }
    }
   
@@ -1587,8 +1716,6 @@ G4LogicalVolume* WCSimDetectorConstruction::ConstructCaps(G4int zflip)
   WCPMTRotation->rotateY(90.*deg);
 
   if(WCDetectorName=="ANNIEp2"){
-    // squeeze PMTs closer to prevent geometry overlap in ANNIE
-    G4double compressionfactor = 0.9;
     
     G4double barrelCellWidth = 2.*WCIDRadius*tan(dPhi/2.)*compressionfactor;
     G4double horizontalSpacing   = barrelCellWidth/WCPMTperCellHorizontal;
@@ -1668,9 +1795,6 @@ G4LogicalVolume* WCSimDetectorConstruction::ConstructCaps(G4int zflip)
     // PMTs are placed in the vector in the order their collections are declared in DetectorConfigs:
     // {R7081 (10" WB/LUX : barrel+bottom), D784KFLB (11" LBNE : top), R5912HQE (8" HQE : barrel)}
     
-    // squeeze PMTs closer to prevent geometry overlap in ANNIE
-    G4double compressionfactor = 0.9; // FIXME
-    
     G4double barrelCellWidth = 2.*WCIDRadius*tan(dPhi/2.)*compressionfactor;
     G4double horizontalSpacing   = barrelCellWidth/WCPMTperCellHorizontal;
     G4double verticalSpacing     = barrelCellHeight/WCPMTperCellVertical;
@@ -1701,6 +1825,34 @@ G4LogicalVolume* WCSimDetectorConstruction::ConstructCaps(G4int zflip)
 				    (int)(i*WCPMTperCellVertical+j),                // a unique copy number for the LAPPD
 				    true);                                          // check overlaps
       }
+    }
+    
+  } else if(WCDetectorName=="ANNIEp2v4"){
+    
+    // border rings are 10" WB / LUX
+    thecollectionName = WCTankCollectionNames.at(0);
+    WCPMTName = WCPMTNameMap.at(thecollectionName);
+    logicWCPMT = ConstructPMT(WCPMTName, thecollectionName, "tank");
+    
+    // 2 PMTs per cell
+    G4double barrelCellWidth = 2.*WCIDRadius*tan(dPhi/2.)*compressionfactor;
+    G4double horizontalSpacing   = barrelCellWidth/WCPMTperCellHorizontal;
+    
+    for(G4double i = 0; i < WCPMTperCellHorizontal; i++){
+      // placements as per nominal WCSim
+      G4ThreeVector PMTPosition =  G4ThreeVector(WCIDRadius,
+	                                            -barrelCellWidth/2.+(i+0.5)*horizontalSpacing,
+	                                             0);
+	
+	  G4VPhysicalVolume* physiWCBarrelBorderPMT =
+		    new G4PVPlacement(WCPMTRotation,                      // its rotation
+			      PMTPosition,                                    // its position
+			      logicWCPMT,                                     // its logical volume
+			      "WCPMT",                                        // its name
+			      logicWCBarrelBorderCell,                        // its mother volume
+			      false,                                          // no boolean operations
+			      (int)(i),                                       // a unique copy number for the LAPPD
+			      true);                                          // check overlaps
     }
     
   } else {
