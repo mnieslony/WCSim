@@ -96,6 +96,7 @@ public:
   void SetANNIEPhase2Geometryv2(); // phase 2 geometry - with realistic PMT types
   void SetANNIEPhase2Geometryv3(); // phase 2 geometry - later PMT layout
   void SetANNIEPhase2Geometryv4(); // phase 2 geometry -  alt later PMT layout
+  void SetANNIEPhase2Geometryv5(); // phase 2 geometry -  alt later PMT layout
   
   G4int    GetTotalNumPmts(G4String key){
     if(std::find(WCTankCollectionNames.begin(), WCTankCollectionNames.end(), key)!=WCTankCollectionNames.end())
@@ -395,6 +396,10 @@ private:
   G4double WCBarrelNRings;
   G4double WCPMTperCellHorizontal;
   G4double WCPMTperCellVertical;
+  // added for ANNIE
+  G4double WCBarrelCellNPhiGon;
+  G4double WCBarrelCelldPhi;
+  G4double WCBarrelCellStartPhi;
 
   G4double WCPMTPercentCoverage;
 
