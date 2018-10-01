@@ -28,50 +28,59 @@ G4ClassificationOfNewTrack WCSimStackingAction::ClassifyNewTrack
   G4ClassificationOfNewTrack classification    = fWaiting;
   G4ParticleDefinition*      particleType      = aTrack->GetDefinition();
 
-  //return classification;	//bypass QE photon check
-  
+  //return classification;        //bypass QE photon check
   
   // Make sure it is an optical photon
-  if( particleType == G4OpticalPhoton::OpticalPhotonDefinition() )
-    {
+  static bool hasreported=false;
+  if( particleType == G4OpticalPhoton::OpticalPhotonDefinition() ){
+      // MF : translated from skdetsim : better to increase the number of photons
+      // than to throw in a global factor at Digitization time !
+      // XQ: get the maximum QE and multiply it by the ratio
+      // only work for the range between 240 nm and 660 nm for now 
+      // Even with WLS
       G4float photonWavelength = (2.0*M_PI*197.3)/(aTrack->GetTotalEnergy()/CLHEP::eV);
-      G4float ratio = 1./(1.0-0.25);
+      G4float ratio = 1.; //1./(1.0-0.25); ??? increase the reported QE? Why???
       G4float wavelengthQE = 0;
+      
       if(aTrack->GetCreatorProcess()==NULL) {
-        // not sure why primary photons should be treated differently here... ?
+        // primary photons. I don't see why these should be treated differently... 
+        
         if (DetConstruct->GetPMT_QE_Method()!=4){
-	wavelengthQE  = DetConstruct->GetPMTQE(WCIDCollectionName,photonWavelength,1,240,660,ratio);
-	} else {
-	// we have to override this: for PMT_QE_Method==4 there's no wavelength-specific value
-	wavelengthQE  = DetConstruct->GetPMTQE(WCIDCollectionName,photonWavelength,0,240,660,ratio);
-	}
-	if( G4UniformRand() > wavelengthQE ) {
-	  classification = fKill;
-	  // G4cout<<"stage 0 PMTS.."<<G4endl;
-	}
+          // primary photons use PMT_QE_Method Stacking_Only
+          wavelengthQE  = DetConstruct->GetPMTQE(WCIDCollectionName,photonWavelength,1,240,660,ratio);
+        } else {
+          // ... unless using multiple PMT types, in which case this isn't supported
+          // so use Stacking_And_SensitiveDetector instead
+          wavelengthQE  = DetConstruct->GetPMTQE(WCIDCollectionName,photonWavelength,0,240,660,ratio);
+        }
+        
+      } else if (((G4VProcess*)(aTrack->GetCreatorProcess()))->GetProcessType()!=3){
+          // all normal photons here:
+          
+          if (DetConstruct->GetPMT_QE_Method()==1){
+            // Stacking_Only
+            wavelengthQE  = DetConstruct->GetPMTQE(WCIDCollectionName,photonWavelength,1,240,660,ratio);
+          }else if (DetConstruct->GetPMT_QE_Method()==2||DetConstruct->GetPMT_QE_Method()==4){
+            // Stacking_And_SensitiveDetector || Multi_Tank_Types
+            wavelengthQE  = DetConstruct->GetPMTQE(WCIDCollectionName,photonWavelength,0,240,660,ratio);
+          }else if (DetConstruct->GetPMT_QE_Method()==3){
+            // SensitiveDetector_Only
+            wavelengthQE = 1.1;
+          }
       }
-      else if (((G4VProcess*)(aTrack->GetCreatorProcess()))->GetProcessType()!=3)
-	{
-	  G4float photonWavelength = (2.0*M_PI*197.3)/(aTrack->GetTotalEnergy()/CLHEP::eV);
-	  // MF : translated from skdetsim : better to increase the number of photons
-	  // than to throw in a global factor  at Digitization time !
-	  G4float ratio = 1./(1.0-0.25);
-	  // XQ: get the maximum QE and multiply it by the ratio
-	  // only work for the range between 240 nm and 660 nm for now 
-	  // Even with WLS
-	  G4float wavelengthQE = 0;
-	  if (DetConstruct->GetPMT_QE_Method()==1){
-	    wavelengthQE  = DetConstruct->GetPMTQE(WCIDCollectionName,photonWavelength,1,240,660,ratio);
-	  }else if (DetConstruct->GetPMT_QE_Method()==2||DetConstruct->GetPMT_QE_Method()==4){
-	    wavelengthQE  = DetConstruct->GetPMTQE(WCIDCollectionName,photonWavelength,0,240,660,ratio);
-	  }else if (DetConstruct->GetPMT_QE_Method()==3){
-	    wavelengthQE = 1.1;
-	  }
-	  
-	  if( G4UniformRand() > wavelengthQE )
-	    classification = fKill;
-	}
-    }
+      // else {
+      //   no culling for non-primary photons that have a Creator Process of type G4ProcessType[3] = fOptical
+      //   There don't seem to be any such photons anyway.
+      //}
+      
+      // prune the photon if desired
+      if(not hasreported){
+        G4cout<<"Stacking action applying global QE of "<<wavelengthQE<<G4endl;
+        hasreported=true;
+      }
+      
+      if( G4UniformRand() > wavelengthQE ){ classification = fKill; }
+  }
   
   return classification;
 }

@@ -15,6 +15,7 @@ WCSimTrackingAction::WCSimTrackingAction(){
   ProcessList.insert("Decay") ;
   ProcessList.insert("nCapture");
   ProcessList.insert("MuonMinusCaptureAtRest");
+  ProcessList.insert("muMinusCaptureAtRest");  // which syntax is correct?
   //ProcessList.insert("conv");
   ParticleList.insert(111);  // pi0
   ParticleList.insert(211);  // pion+
@@ -33,7 +34,7 @@ WCSimTrackingAction::WCSimTrackingAction(){
   ParticleList.insert(2212); // proton
 //  ParticleList.insert(11);   // e-    // do not save electrons unless they are from Decay process (mu decay)
 //  ParticleList.insert(-11);  // e+
-//  Don't put gammas there or there'll be too many
+//  Don't put gammas there or there'll be too many -  we can add an energy cut later
   
 }
 
@@ -63,89 +64,76 @@ void WCSimTrackingAction::PreUserTrackingAction(const G4Track* aTrack){
 
 void WCSimTrackingAction::PostUserTrackingAction(const G4Track* aTrack){
   
-  // added by M Fechner
-  const G4VProcess* creatorProcess = aTrack->GetCreatorProcess();
-  //  if ( creatorProcess )
-  //    G4cout << "process name " << creatorProcess->GetProcessName() << G4endl;
-  G4int thispdg = aTrack->GetDefinition()->GetPDGEncoding();
-  if(aTrack->GetDefinition()==G4OpticalPhoton::OpticalPhotonDefinition()) thispdg=100;
-
+  // retrieve UserTrackInfo
+  // This is used to keep track of parentage - PrimaryParentId, stored in Hits,
+  // and ParentPdg, used by EndOfEventAction when recording Tracks -
+  // and to mark Trajectories to be saved by EndOfEventAction
   WCSimTrackInformation* anInfo;
   if (aTrack->GetUserInformation()){
     anInfo = (WCSimTrackInformation*)(aTrack->GetUserInformation());
   } else {
     anInfo = new WCSimTrackInformation();
   }
-
-  // is it a primary ?
-  // is the process in the set ? 
-  // is the particle in the set ?
-  // is it a gamma 
-  // due to lazy evaluation of the 'or' in C++ the order is important
-//  if( aTrack->GetParentID()==0 || 
-//      ((creatorProcess!=0) && ProcessList.count(creatorProcess->GetProcessName()) ) || 
-//      (ParticleList.count(thispdg) )
-//      || (thispdg==22 && aTrack->GetTotalEnergy() > 50.0*CLHEP::MeV)
-//      )
-  // save more information. code from wcsim github issue 197.
+  
+  // get particle type and creator process
+  const G4VProcess* creatorProcess = aTrack->GetCreatorProcess();
+  G4int thispdg;
+  if(aTrack->GetDefinition()==G4OpticalPhoton::OpticalPhotonDefinition()) thispdg=100;
+  else thispdg = aTrack->GetDefinition()->GetPDGEncoding();
+  
+  // check if it's of interest
+  // *  is it a primary ?
+  // *  is the process in the set ?
+  // *  is the particle in the set ?
+  // *  is it a gamma with energy > threshold?
   if( ( aTrack->GetParentID()==0 ) ||
       ( (creatorProcess!=0) && ProcessList.count(creatorProcess->GetProcessName()) ) ||
       ( ParticleList.count(thispdg) ) ||
-      ( thispdg==22 && aTrack->GetTotalEnergy()>1.0*MeV ) ||
-      ( creatorProcess->GetProcessName()=="muMinusCaptureAtRest" && aTrack->GetTotalEnergy()>1.0*MeV )
+      ( thispdg==22 && (aTrack->GetTotalEnergy()>50.0*MeV )      // 50 MeV? 1MeV? what threshold?
+                    || (anInfo->GetParentPdg()==111) )           // gamma from a Pi0 decay
     ){
-    // G4cout << "track # " << aTrack->GetTrackID() << " is worth saving\n";
-    // G4cout << "It is a " <<aTrack->GetDefinition()->GetParticleName() << G4endl;
     anInfo->WillBeSaved(true);
   } else {
     anInfo->WillBeSaved(false);
   }
-
-  if( thispdg==111 ){
-    pi0List.insert(aTrack->GetTrackID()); // list of all pi0-s 
-  }
-
-  if((aTrack->GetParentID()==0 && aTrack->GetDefinition()!=G4OpticalPhoton::OpticalPhotonDefinition()) // primary
-      || ( thispdg==22 && pi0List.count(aTrack->GetParentID()) ) // primary gamma from a pi0
-    ){
+  
+  // for primary particles, set the ParentID to the track's own ID
+  if(aTrack->GetParentID()==0 && aTrack->GetDefinition()!=G4OpticalPhoton::OpticalPhotonDefinition()){
     anInfo->SetPrimaryParentID(aTrack->GetTrackID());
   }
-
+  
+  // bypass const-ness to update track information
   G4Track* theTrack = (G4Track*)aTrack;
   theTrack->SetUserInformation(anInfo);
   
-  // pass primary parent ID to children
+  // pass parentage information to children
   G4TrackVector* secondaries = fpTrackingManager->GimmeSecondaries();
   if(secondaries){
       for(size_t i=0;i<secondaries->size();i++){
         WCSimTrackInformation* infoSec = new WCSimTrackInformation(anInfo);
-                 infoSec->WillBeSaved(false); // ADDED BY MFECHNER, temporary, 30/8/06
+        infoSec->WillBeSaved(false);
         infoSec->SetParentPdg(thispdg);
         (*secondaries)[i]->SetUserInformation(infoSec);
       }
   }
-
-  if ( aTrack->GetDefinition() != G4OpticalPhoton::OpticalPhotonDefinition()){
-    WCSimTrajectory *currentTrajectory = (WCSimTrajectory*)fpTrackingManager->GimmeTrajectory();
   
+  // Pass the information to the Trajectory, used by EndOfEventAction
+  if ( aTrack->GetDefinition() != G4OpticalPhoton::OpticalPhotonDefinition()){
     G4ThreeVector currentPosition      = aTrack->GetPosition();
     G4VPhysicalVolume* currentVolume   = aTrack->GetVolume();
-    G4double currentTime = aTrack->GetGlobalTime();
-    G4ThreeVector currentMomentum = aTrack->GetMomentum();
-
+    G4double currentTime               = aTrack->GetGlobalTime();
+    G4ThreeVector currentMomentum      = aTrack->GetMomentum();
+    
+    WCSimTrajectory *currentTrajectory = (WCSimTrajectory*)fpTrackingManager->GimmeTrajectory();
     currentTrajectory->SetStoppingPoint(currentPosition);
     currentTrajectory->SetStoppingVolume(currentVolume);
     currentTrajectory->SetStoppingTime(currentTime);
     currentTrajectory->SetStoppingMomentum(currentMomentum);
     currentTrajectory->SetParentPdg(anInfo->GetParentPdg());
-
-    // if UserTrackInformation is tagged to be saved, mark trajectory for WCSimEventAction;
-    if (anInfo->isSaved())
-      currentTrajectory->SetSaveFlag(true);
-    else
-      currentTrajectory->SetSaveFlag(false);
+    currentTrajectory->SetSaveFlag(anInfo->isSaved());
   }
   
+  // report every 100000'th track, just to see progress
   static int line=0;
   if(line%100000==0){ //100000
     G4cout<<"  PostUserTrackingAction call number: "<<line

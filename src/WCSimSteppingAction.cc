@@ -14,7 +14,6 @@
 #include "G4PVReplica.hh"
 #include "G4SDManager.hh"
 #include "G4RunManager.hh"
-#include "WCSimTrackInformation.hh"
 #include "G4OpBoundaryProcess.hh"
 
 
@@ -23,7 +22,7 @@ void WCSimSteppingAction::UserSteppingAction(const G4Step* aStep)
   //return;    // disable while investigating differences in validation plots.
 
   G4Track* track = aStep->GetTrack();
-  G4VPhysicalVolume* thePostPV = aStep->GetPostStepPoint()->GetPhysicalVolume();
+//  G4VPhysicalVolume* thePostPV = aStep->GetPostStepPoint()->GetPhysicalVolume();
 
   // For estimating tank energy loss vs digits, need an accurate energy on tank exit - kill particle on
   // tank exit,then end energy will be tank exit energy
@@ -69,10 +68,10 @@ void WCSimSteppingAction::UserSteppingAction(const G4Step* aStep)
     }
   }
   
-  if(!thePostPV){//out of world
-    fExpectedNextStatus=Undefined;
-    return;
-  }
+//  if(!thePostPV){//out of world
+//    fExpectedNextStatus=Undefined;
+//    return;
+//  }
   
   if(track->GetDefinition()==G4OpticalPhoton::OpticalPhotonDefinition()){
    //G4cout<<"optical photon StepStatus is          "<<thePostPoint->GetStepStatus()<<G4endl
@@ -125,6 +124,7 @@ void WCSimSteppingAction::UserSteppingAction(const G4Step* aStep)
   }
 }
 
+///////////////////////////////////////////////////////
 
 G4int WCSimSteppingAction::G4ThreeVectorToWireTime(G4ThreeVector *pos3d,
 						    G4ThreeVector lArPos,
@@ -182,7 +182,7 @@ G4int WCSimSteppingAction::G4ThreeVectorToWireTime(G4ThreeVector *pos3d,
   else if (i==2)
     return (int)t;
   else return 0;
-} 
+}
 
 
 void WCSimSteppingAction::Distortion(G4double /*x*/,G4double /*y*/)

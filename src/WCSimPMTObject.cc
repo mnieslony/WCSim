@@ -1792,8 +1792,6 @@ G4float* FlatFacedPMT2inch::GetQEWavelength(){static G4float wavelength[20] = { 
 
 G4float  FlatFacedPMT2inch::GetmaxQE(){
   const G4float maxQE = 0.211;
-  const G4float fullQE = 1.00;
-  //return fullQE;
   return maxQE;
 }
 
