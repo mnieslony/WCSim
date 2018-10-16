@@ -86,6 +86,9 @@ WCSimEventAction::WCSimEventAction(WCSimRunAction* myRun,
    ConstructedDAQClasses(false), LAPPDfile(0), SavedOptions(false)
 {
   DAQMessenger = new WCSimWCDAQMessenger(this);
+  DAQMessenger->AddDAQMessengerInstance("tank");
+  DAQMessenger->AddDAQMessengerInstance("mrd");
+  DAQMessenger->AddDAQMessengerInstance("facc");
 
   G4DigiManager* DMman = G4DigiManager::GetDMpointer();
 
@@ -169,67 +172,99 @@ void WCSimEventAction::CreateDAQInstances()
   G4DigiManager* DMman = G4DigiManager::GetDMpointer();
 
   //create your choice of digitizer module
-  if(DigitizerChoice == "SKI") {
+  if(DigitizerChoices.at("tank") == "SKI") {
     WCSimWCDigitizerSKI* WCDM = new WCSimWCDigitizerSKI("WCReadoutDigits", detectorConstructor, DAQMessenger, "tank");
     DMman->AddNewModule(WCDM);
   }
   else {
-    G4cerr << "Unknown DigitizerChoice " << DigitizerChoice << G4endl;
+    G4cerr << "Unknown DigitizerChoice " << DigitizerChoices.at("tank") << G4endl;
     exit(-1);
   }
 
   //create your choice of trigger module
-  if(TriggerChoice == "NDigits") {
+  if(TriggerChoices.at("tank") == "NDigits") {
     WCSimWCTriggerNDigits* WCTM = new WCSimWCTriggerNDigits("WCReadout", detectorConstructor, DAQMessenger, "tank");
     DMman->AddNewModule(WCTM);
   }
-  else if(TriggerChoice == "NDigits2") {
+  else if(TriggerChoices.at("tank") == "NDigits2") {
     WCSimWCTriggerNDigits2* WCTM = new WCSimWCTriggerNDigits2("WCReadout", detectorConstructor, DAQMessenger, "tank");
     DMman->AddNewModule(WCTM);
   }
-  else if(TriggerChoice == "NoTrigger") {
+  else if(TriggerChoices.at("tank") == "NoTrigger") {
     WCSimWCTriggerNoTrigger* WCTM = new WCSimWCTriggerNoTrigger("WCReadout", detectorConstructor, DAQMessenger, "tank");
     DMman->AddNewModule(WCTM);
   }
   else {
-    G4cerr << "Unknown TriggerChoice " << TriggerChoice << G4endl;
+    G4cerr << "Unknown TriggerChoice " << TriggerChoices.at("tank") << G4endl;
     exit(-1);
   }
 
   if(isANNIE){
-  // Repeat for MRD & FACC //
-  if(DigitizerChoice=="SKI"){
     // Repeat for MRD
+    if(DigitizerChoices.at("mrd")=="SKI"){
 #ifdef HYPER_VERBOSITY
-    G4cout<<"WCSimEventAction::CreateDAQInstances ☆ making new WCSimWCDigitizerSKI for mrd with name WCReadoutDigits_MRD"<<G4endl;
+      G4cout<<"WCSimEventAction::CreateDAQInstances ☆ making new WCSimWCDigitizerSKI for mrd with name WCReadoutDigits_MRD"<<G4endl;
 #endif
-    WCSimWCDigitizerSKI* WCDM_MRD = new WCSimWCDigitizerSKI("WCReadoutDigits_MRD", detectorConstructor, DAQMessenger, "mrd");
-    DMman->AddNewModule(WCDM_MRD);
+      WCSimWCDigitizerSKI* WCDM_MRD = new WCSimWCDigitizerSKI("WCReadoutDigits_MRD", detectorConstructor, DAQMessenger, "mrd");
+      DMman->AddNewModule(WCDM_MRD);
+    } else {
+      G4cerr << "Unknown MRD DigitizerChoice " << DigitizerChoices.at("mrd") << G4endl;
+      exit(-1);
+    }
     // repeat for FACC
-    WCSimWCDigitizerSKI* WCDM_FACC = new WCSimWCDigitizerSKI("WCReadoutDigits_FACC", detectorConstructor, DAQMessenger, "facc");
-    DMman->AddNewModule(WCDM_FACC);
-  }
+    if(DigitizerChoices.at("facc")=="SKI"){
+      WCSimWCDigitizerSKI* WCDM_FACC = new WCSimWCDigitizerSKI("WCReadoutDigits_FACC", detectorConstructor, DAQMessenger, "facc");
+      DMman->AddNewModule(WCDM_FACC);
+    } else {
+      G4cerr << "Unknown FACC DigitizerChoice " << DigitizerChoices.at("facc") << G4endl;
+      exit(-1);
+    }
+    
+    
 #ifdef HYPER_VERBOSITY
-  G4cout<<"WCSimEventAction::CreateDAQInstances ☆ making new WCSimWCTriggerOnTankDigits for mrd with name WCReadout_MRD"<<G4endl;
+    G4cout<<"WCSimEventAction::CreateDAQInstances ☆ making new WCSimWCTriggerOnTankDigits for mrd with name WCReadout_MRD"<<G4endl;
 #endif
-  if(TriggerChoice == "NoTrigger") {
-    // for 'NoTrigger' trigger, which just reads out all hits/digits, need to use the same for MRD/FACC.
-    // Usef for things like MRD testing, where we fire muons into the MRD and have no associated tank event.
-    WCSimWCTriggerNoTrigger* WCTM_MRD = new WCSimWCTriggerNoTrigger("WCReadout_MRD", detectorConstructor, DAQMessenger, "mrd");
-    DMman->AddNewModule(WCTM_MRD);
-    // repeat for facc
-    WCSimWCTriggerNoTrigger* WCTM_FACC = new WCSimWCTriggerNoTrigger("WCReadout_FACC", detectorConstructor, DAQMessenger, "facc");
-    DMman->AddNewModule(WCTM_FACC);
-  } else {
-  // for a legit tank trigger style, MRD and FACC read out whatever digits are within tank trigger windows
-    WCSimWCTriggerOnTankDigits* WCTM_MRD = new WCSimWCTriggerOnTankDigits("WCReadout_MRD", detectorConstructor, DAQMessenger, "mrd");
-    DMman->AddNewModule(WCTM_MRD);
-    // repeat for facc
-    WCSimWCTriggerOnTankDigits* WCTM_FACC = new WCSimWCTriggerOnTankDigits("WCReadout_FACC", detectorConstructor, DAQMessenger, "facc");
-    DMman->AddNewModule(WCTM_FACC);
+    if(TriggerChoices.at("mrd") == "NoTrigger") {
+      // for 'NoTrigger' trigger, which just reads out all hits/digits, need to use the same for MRD/FACC.
+      // Used for things like MRD testing, where we fire muons into the MRD
+      WCSimWCTriggerNoTrigger* WCTM_MRD = new WCSimWCTriggerNoTrigger("WCReadout_MRD", detectorConstructor, DAQMessenger, "mrd");
+      DMman->AddNewModule(WCTM_MRD);
+    } else if (TriggerChoices.at("mrd")=="NDigits"){
+      WCSimWCTriggerNDigits* WCTM_MRD = new WCSimWCTriggerNDigits("WCReadout_MRD", detectorConstructor, DAQMessenger, "mrd");
+      DMman->AddNewModule(WCTM_MRD);
+    } else if (TriggerChoices.at("mrd")=="NDigits2"){
+      WCSimWCTriggerNDigits2* WCTM_MRD = new WCSimWCTriggerNDigits2("WCReadout_MRD", detectorConstructor, DAQMessenger, "mrd");
+      DMman->AddNewModule(WCTM_MRD);
+    } else if(TriggerChoices.at("mrd")=="TankDigits"){
+      // for an ANNIE-style tank trigger, MRD and FACC read out whatever digits are within tank trigger windows
+      WCSimWCTriggerOnTankDigits* WCTM_MRD = new WCSimWCTriggerOnTankDigits("WCReadout_MRD", detectorConstructor, DAQMessenger, "mrd");
+      DMman->AddNewModule(WCTM_MRD);
+    } else {
+      G4cerr<<"Unknown trigger choice for mrd: "<<TriggerChoices.at("mrd") <<G4endl;
+      exit(-1);
+    }
+    
+      // repeat for facc
+    if(TriggerChoices.at("facc") == "NoTrigger") {
+      WCSimWCTriggerNoTrigger* WCTM_FACC = new WCSimWCTriggerNoTrigger("WCReadout_FACC", detectorConstructor, DAQMessenger, "facc");
+      DMman->AddNewModule(WCTM_FACC);
+    } else if (TriggerChoices.at("facc")=="NDigits"){
+      WCSimWCTriggerNDigits* WCTM_FACC = new WCSimWCTriggerNDigits("WCReadout_FACC", detectorConstructor, DAQMessenger, "facc");
+      DMman->AddNewModule(WCTM_FACC);
+    } else if (TriggerChoices.at("facc")=="NDigits2"){
+      WCSimWCTriggerNDigits2* WCTM_FACC = new WCSimWCTriggerNDigits2("WCReadout_FACC", detectorConstructor, DAQMessenger, "facc");
+      DMman->AddNewModule(WCTM_FACC);
+    } else if(TriggerChoices.at("facc")=="TankDigits"){
+      // for an ANNIE-style tank trigger, MRD and FACC read out whatever digits are within tank trigger windows
+      WCSimWCTriggerOnTankDigits* WCTM_FACC = new WCSimWCTriggerOnTankDigits("WCReadout_FACC", detectorConstructor, DAQMessenger, "facc");
+      DMman->AddNewModule(WCTM_FACC);
+    } else {
+      G4cerr<<"Unknown trigger choice for mrd: "<<TriggerChoices.at("mrd") <<G4endl;
+      exit(-1);
+    }
+    
   }
-  }
-
+  
   ConstructedDAQClasses = true;
 }
 

@@ -44,6 +44,7 @@ private:
   
   G4String initaliseString;
   G4String detectorElement;
+  G4bool initialised;
   
 };
 

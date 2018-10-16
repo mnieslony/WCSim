@@ -9,15 +9,46 @@
 #include "G4UIdirectory.hh"
 #include "G4UIcmdWithoutParameter.hh"
 
+#include <map>
+
 class G4UIcommand;
 class WCSimEventAction;
 class WCSimWCDigitizerBase;
 class WCSimWCTriggerBase;
 
+struct OptionsStore{
+  // Trigger options
+  G4int                 StoreNDigitsPostWindow;
+  G4int                 StoreNDigitsPreWindow;
+  G4bool                StoreNDigitsAdjustForNoise;
+  G4int                 StoreNDigitsWindow;
+  G4int                 StoreNDigitsThreshold;
+  G4int                 StoreSaveFailuresPostWindow;
+  G4int                 StoreSaveFailuresPreWindow;
+  G4double              StoreSaveFailuresTime;
+  G4int                 StoreSaveFailuresMode;
+  G4String              StoreTriggerChoice;
+  G4bool                StoreMultiDigitsPerTrigger;
+  G4bool                MultiDigitsPerTriggerSet;
+  // Digitizer options
+  G4int                 StoreDigitizerIntegrationWindow;
+  G4int                 StoreDigitizerDeadTime;
+  G4String              StoreDigitizerChoice;
+};
+
 class WCSimWCDAQMessenger: public G4UImessenger
 {
 public:
+  static WCSimWCDAQMessenger* iInstance;
   WCSimWCDAQMessenger(WCSimEventAction*);
+  
+  static WCSimWCDAQMessenger* GetInstance();
+  void AddDAQMessengerInstance(G4String detectorElement);
+  void RemoveDAQMessengerInstance(G4String detectorElement);
+  void SetDigitizerInstance(WCSimWCDigitizerBase* digitizerpoint, G4String detectorElement);
+  void SetTriggerInstance(WCSimWCTriggerBase* triggerpoint, G4String detectorElement);
+  void Initialize(G4String detectorElementin);
+  G4String GetDetectorElement(){ return detectorElement; }
 
   ~WCSimWCDAQMessenger();
 
@@ -34,45 +65,36 @@ private:
   WCSimWCDigitizerBase* WCSimDigitize;
   WCSimWCTriggerBase*   WCSimTrigger;
 
-  G4UIdirectory*      WCSimDAQDir;
-  G4UIcmdWithAString* DigitizerChoice;
-  G4String            StoreDigitizerChoice;
-  G4UIcmdWithAString* TriggerChoice;
-  G4String            StoreTriggerChoice;
-  G4UIcmdWithABool*   MultiDigitsPerTrigger;
-  G4bool              StoreMultiDigitsPerTrigger;
-  G4bool              MultiDigitsPerTriggerSet;
+  G4UIdirectory*        WCSimDAQDir;
+  G4UIcmdWithAString*   DigitizerChoice;
+  G4UIcmdWithAString*   TriggerChoice;
+  G4UIcmdWithABool*     MultiDigitsPerTrigger;
+  G4bool                MultiDigitsPerTriggerSet;
 
   G4UIdirectory*        DigitizerDir;
   G4UIcmdWithAnInteger* DigitizerDeadTime;
-  G4int                 StoreDigitizerDeadTime;
   G4UIcmdWithAnInteger* DigitizerIntegrationWindow;
-  G4int                 StoreDigitizerIntegrationWindow;
 
   G4UIdirectory*        SaveFailuresTriggerDir;
   G4UIcmdWithAnInteger* SaveFailuresTriggerMode;
-  G4int                 StoreSaveFailuresMode;
   G4UIcmdWithADouble*   SaveFailuresTriggerTime;
-  G4double              StoreSaveFailuresTime;
   G4UIcmdWithAnInteger* SaveFailuresPreTriggerWindow;
-  G4int                 StoreSaveFailuresPreWindow;
   G4UIcmdWithAnInteger* SaveFailuresPostTriggerWindow;
-  G4int                 StoreSaveFailuresPostWindow;
 
   G4UIdirectory*        NDigitsTriggerDir;
   G4UIcmdWithAnInteger* NDigitsTriggerThreshold;
-  G4int                 StoreNDigitsThreshold;
   G4UIcmdWithAnInteger* NDigitsTriggerWindow;
-  G4int                 StoreNDigitsWindow;
   G4UIcmdWithABool*     NDigitsTriggerAdjustForNoise;
-  G4bool                StoreNDigitsAdjustForNoise;
   G4UIcmdWithAnInteger* NDigitsPreTriggerWindow;
-  G4int                 StoreNDigitsPreWindow;
   G4UIcmdWithAnInteger* NDigitsPostTriggerWindow;
-  G4int                 StoreNDigitsPostWindow;
+  G4UIcmdWithAString*   SetDetectorElement;
+
+  std::map<std::string, OptionsStore> StoredOptions;
 
   G4String initialiseString;
   G4bool   initialised;
+  G4String detectorElement;
+  
 };
 
 #endif

@@ -45,8 +45,12 @@ public:
 		     G4String detectorElement
 		     );
   WCSimRunAction* GetRunAction(){return runAction;}
-  void SetDigitizerChoice(G4String digitizer) { DigitizerChoice = digitizer; }
-  void SetTriggerChoice  (G4String trigger)   { TriggerChoice   = trigger;   }
+  void SetDigitizerChoice(G4String digitizer, G4String detectorElement){
+    DigitizerChoices[detectorElement] = digitizer;
+  }
+  void SetTriggerChoice  (G4String trigger, G4String detectorElement){
+    TriggerChoices[detectorElement] = trigger;
+  }
   G4bool isANNIE;
   void CreateNewLAPPDFile();
 
@@ -58,8 +62,8 @@ private:
   ///Create instances of the user-chosen digitizer and trigger classes
   void  CreateDAQInstances();
 
-  G4String DigitizerChoice;
-  G4String TriggerChoice;
+  std::map<std::string, std::string> DigitizerChoices;
+  std::map<std::string, std::string> TriggerChoices;
   bool     ConstructedDAQClasses;
   bool     SavedOptions;
   
