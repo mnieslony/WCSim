@@ -72,11 +72,12 @@ void WCSimWCDigitizerBase::GetVariables()
   //set the options to digitizer-specific defaults
   DigitizerDeadTime          = GetDefaultDeadTime();
   DigitizerIntegrationWindow = GetDefaultIntegrationWindow();
+  ExtendDigitizerIntegrationWindow = GetDefaultExtendIntegrationWindow();
 
   //read the .mac file to override them
   if(DAQMessenger != NULL) {
     DAQMessenger->TellMeAboutTheDigitizer(this);
-    DAQMessenger->SetDigitizerOptions();
+    DAQMessenger->SetDigitizerOptions(detectorElement);
   }
   else {
     G4cerr << "WCSimWCDAQMessenger pointer is NULL when used in WCSimWCDigitizerBase::GetVariables(). Exiting..." 
@@ -86,6 +87,10 @@ void WCSimWCDigitizerBase::GetVariables()
 
   G4cout << "Using digitizer deadtime " << DigitizerDeadTime << " ns" << G4endl;
   G4cout << "Using digitizer integration window " << DigitizerIntegrationWindow << " ns" << G4endl;
+  if(ExtendDigitizerIntegrationWindow) G4cout<<"Will extend the digitizer integration window "
+     << "when new hits arrive within an existing window" <<G4endl;
+  else G4cout<<"Will not extend the digitizer integration window "
+     << "when new hits arrive within an existing window" <<G4endl;
 }
 
 void WCSimWCDigitizerBase::Digitize()
@@ -185,6 +190,7 @@ void WCSimWCDigitizerBase::SaveOptionsToOutput(WCSimRootOptions * wcopt)
   wcopt->SetDigitizerClassName(DigitizerClassName);
   wcopt->SetDigitizerDeadTime(DigitizerDeadTime);
   wcopt->SetDigitizerIntegrationWindow(DigitizerIntegrationWindow);
+  wcopt->SetExtendIntegrationWindow(ExtendDigitizerIntegrationWindow);
 }
 
 
@@ -295,6 +301,8 @@ void WCSimWCDigitizerSKI::DigitizeHits(WCSimWCDigitsCollection* WCHCPMT) {
 	    peSmeared += pe;
 	    photon_unique_id = ip+absoluteindex;
 	    digi_comp.push_back(photon_unique_id);
+	    // extend the integration window, if enabled
+	    if(ExtendDigitizerIntegrationWindow) upperlimit = time + DigitizerIntegrationWindow;
       
 #ifdef WCSIMWCDIGITIZER_VERBOSE
 	    if(tube < NPMTS_VERBOSE)

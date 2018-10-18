@@ -189,6 +189,7 @@ set(WCSIM_SCRIPTS
   macros/jobOptions.mac
   WCSim.mac
   macros/daq.mac
+  macros/annie_daq.mac
   macros/visOGLSX.mac
   macros/visRayTracer.mac
   macros/tuning_parameters.mac

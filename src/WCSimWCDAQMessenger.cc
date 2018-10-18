@@ -42,6 +42,7 @@ void WCSimWCDAQMessenger::Initialize(G4String detectorElementin)
   bool defaultMultiDigitsPerTrigger = false;
   int defaultDigitizerDeadTime = -99;
   int defaultDigitizerIntegrationWindow = -99;
+  bool defaultExtendDigitizerIntegrationWindow = false;
   int defaultSaveFailuresTriggerMode = 0;
   double defaultSaveFailuresTriggerTime = 100;
   int defaultSaveFailuresPreTriggerWindow = -400;
@@ -110,6 +111,10 @@ void WCSimWCDAQMessenger::Initialize(G4String detectorElementin)
     DigitizerIntegrationWindow->SetDefaultValue(defaultDigitizerIntegrationWindow);
     //don't SetNewValue -> defaults class-specific and taken from GetDefault*()
 
+    ExtendDigitizerIntegrationWindow = new G4UIcmdWithABool("/DAQ/DigitizerOpt/ExtendIntegrationWindow", this);
+    ExtendDigitizerIntegrationWindow->SetGuidance("Extend the digitizer integration window when new hits arrive in an existing one");
+    ExtendDigitizerIntegrationWindow->SetParameterName("ExtendDigitizerIntegrationWindow",true);
+    ExtendDigitizerIntegrationWindow->SetDefaultValue(defaultExtendDigitizerIntegrationWindow);
 
     //Save failure trigger specific options
     SaveFailuresTriggerDir = new G4UIdirectory("/DAQ/TriggerSaveFailures/");
@@ -191,6 +196,7 @@ void WCSimWCDAQMessenger::Initialize(G4String detectorElementin)
   OptionsStore theseOptions;
   theseOptions.StoreDigitizerDeadTime = defaultDigitizerDeadTime;
   theseOptions.StoreDigitizerIntegrationWindow = defaultDigitizerIntegrationWindow;
+  theseOptions.StoreExtendDigitizerIntegrationWindow = defaultExtendDigitizerIntegrationWindow;
   theseOptions.StoreDigitizerChoice = defaultDigitizer;
   // set the silent trigger options
   theseOptions.StoreTriggerChoice = defaultTrigger;
@@ -227,8 +233,11 @@ void WCSimWCDAQMessenger::Initialize(G4String detectorElementin)
 WCSimWCDAQMessenger::~WCSimWCDAQMessenger()
 {
   if(StoredOptions.size()){
-    for(auto anelement : StoredOptions){
-      this->RemoveDAQMessengerInstance(anelement.first);
+    //G4cout<<"Cleaning up DAQ Messenger"<<G4endl;
+    while(StoredOptions.size()){
+      G4String nextelement = StoredOptions.begin()->first;
+      //G4cout<<"Removing instance for detectorElement "<<nextelement<<G4endl;
+      this->RemoveDAQMessengerInstance(nextelement);
     }
   }
   
@@ -249,6 +258,7 @@ WCSimWCDAQMessenger::~WCSimWCDAQMessenger()
   if(DigitizerDir){ delete DigitizerDir; DigitizerDir=nullptr; }
   if(DigitizerDeadTime){ delete DigitizerDeadTime; DigitizerDeadTime=nullptr; }
   if(DigitizerIntegrationWindow){ delete DigitizerIntegrationWindow; DigitizerIntegrationWindow=nullptr; }
+  if(ExtendDigitizerIntegrationWindow){ delete ExtendDigitizerIntegrationWindow; ExtendDigitizerIntegrationWindow=nullptr; }
 
   if(DigitizerChoice){ delete DigitizerChoice; DigitizerChoice=nullptr; }
   if(TriggerChoice){ delete TriggerChoice; TriggerChoice=nullptr; }
@@ -294,6 +304,12 @@ void WCSimWCDAQMessenger::SetNewValue(G4UIcommand* command,G4String newValue)
     G4cout << "Digitizer integration window set to " << newValue << " ns" << initialiseString.c_str() << G4endl;
     StoredOptions.at(detectorElement).StoreDigitizerIntegrationWindow = 
          DigitizerIntegrationWindow->GetNewIntValue(newValue);
+  }
+  else if (command == ExtendDigitizerIntegrationWindow) {
+    G4cout<< "Digitizer integration window set to " << ((newValue=="true") ? "" : "not " ) 
+          << "extend when new hits arrive in an existing window" << initialiseString.c_str() << G4endl;
+    StoredOptions.at(detectorElement).StoreExtendDigitizerIntegrationWindow = 
+         ExtendDigitizerIntegrationWindow->GetNewBoolValue(newValue);
   }
 
   //Save failures "trigger"
@@ -358,9 +374,10 @@ void WCSimWCDAQMessenger::SetNewValue(G4UIcommand* command,G4String newValue)
   }
 }
 
-void WCSimWCDAQMessenger::SetTriggerOptions()
+void WCSimWCDAQMessenger::SetTriggerOptions(G4String detectorElementin)
 {
-  G4cout << "Passing Trigger options to the trigger class instance" << G4endl;
+  detectorElement = detectorElementin;
+  G4cout << "Passing Trigger options to the trigger class instance " << detectorElement << G4endl;
 
   if(StoredOptions.at(detectorElement).MultiDigitsPerTriggerSet) {
     WCSimTrigger->SetMultiDigitsPerTrigger(StoredOptions.at(detectorElement).StoreMultiDigitsPerTrigger);
@@ -418,9 +435,10 @@ void WCSimWCDAQMessenger::SetTriggerOptions()
   }
 }
 
-void WCSimWCDAQMessenger::SetDigitizerOptions()
+void WCSimWCDAQMessenger::SetDigitizerOptions(G4String detectorElementin)
 {
-  G4cout << "Passing Digitizer options to the digitizer class instance" << G4endl;
+  detectorElement = detectorElementin;
+  G4cout << "Passing Digitizer options to the digitizer class instance " << detectorElement << G4endl;
   if(StoredOptions.at(detectorElement).StoreDigitizerDeadTime >= 0) {
     WCSimDigitize->SetDigitizerDeadTime(StoredOptions.at(detectorElement).StoreDigitizerDeadTime);
     G4cout << "\tDigitizer deadtime set to " 
@@ -431,20 +449,27 @@ void WCSimWCDAQMessenger::SetDigitizerOptions()
     G4cout << "\tDigitizer integration window set to " 
            << StoredOptions.at(detectorElement).StoreDigitizerIntegrationWindow << " ns" << G4endl;
   }
+  WCSimDigitize->SetExtendIntegrationWindow(StoredOptions.at(detectorElement).StoreExtendDigitizerIntegrationWindow);
+  G4cout<<"\tDigitizer integration window set to " << ((StoredOptions.at(detectorElement).StoreExtendDigitizerIntegrationWindow) ? "" : "not") << "extend when new hits arrive in an existing window" << G4endl;
 }
 
-void WCSimWCDAQMessenger::AddDAQMessengerInstance(G4String detectorElement){
-  if(StoredOptions.count(detectorElement)){
-    G4cerr<<"Attempt to re-add existing DAQ messenger "<<detectorElement<<G4endl;
+void WCSimWCDAQMessenger::AddDAQMessengerInstance(G4String detectorElementin){
+  if(StoredOptions.count(detectorElementin)){
+    G4cerr<<"Attempt to re-add existing DAQ messenger "<<detectorElementin<<G4endl;
     return;
   } else {
-    Initialize(detectorElement);
+    G4cout<<"AddDAQMessengerInstance for detectorElement "<<detectorElementin<<G4endl;
+    G4cout<<"Current contents: "<<G4endl;
+    for(auto&& aninstance : StoredOptions){
+      G4cout<<"instance "<<aninstance.first<<G4endl;
+    }
+    Initialize(detectorElementin);
   }
 }
 
 void WCSimWCDAQMessenger::RemoveDAQMessengerInstance(G4String detectorElementin){
   if(StoredOptions.count(detectorElementin)){
-    //G4cout<<"deleting DAQ messenger for detector Element "<<detectorElementin<<G4endl;
+    G4cout<<"Removing DAQ Messenger instance " << detectorElementin << G4endl;
     StoredOptions.erase(detectorElementin);
   } else {
     G4cerr<<"Attempt to remove nonexistant element "<<detectorElementin<<" from WCDAQMessenger!"<<G4endl;

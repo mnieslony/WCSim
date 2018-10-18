@@ -34,6 +34,7 @@ struct OptionsStore{
   G4int                 StoreDigitizerIntegrationWindow;
   G4int                 StoreDigitizerDeadTime;
   G4String              StoreDigitizerChoice;
+  G4bool                StoreExtendDigitizerIntegrationWindow;
 };
 
 class WCSimWCDAQMessenger: public G4UImessenger
@@ -54,8 +55,8 @@ public:
 
   void SetNewValue(G4UIcommand* command, G4String newValue);
 
-  void SetTriggerOptions();
-  void SetDigitizerOptions();
+  void SetTriggerOptions(G4String detectorElementin);
+  void SetDigitizerOptions(G4String detectorElementin);
 
   void TellMeAboutTheDigitizer  (WCSimWCDigitizerBase* digitizer)   { WCSimDigitize = digitizer; }
   void TellMeAboutTheTrigger    (WCSimWCTriggerBase*   trigger)     { WCSimTrigger  = trigger; }
@@ -69,6 +70,7 @@ private:
   G4UIcmdWithAString*   DigitizerChoice;
   G4UIcmdWithAString*   TriggerChoice;
   G4UIcmdWithABool*     MultiDigitsPerTrigger;
+  G4UIcmdWithABool*     ExtendDigitizerIntegrationWindow;
   G4bool                MultiDigitsPerTriggerSet;
 
   G4UIdirectory*        DigitizerDir;
@@ -89,7 +91,7 @@ private:
   G4UIcmdWithAnInteger* NDigitsPostTriggerWindow;
   G4UIcmdWithAString*   SetDetectorElement;
 
-  std::map<std::string, OptionsStore> StoredOptions;
+  std::map<G4String, OptionsStore> StoredOptions;
 
   G4String initialiseString;
   G4bool   initialised;

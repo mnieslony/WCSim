@@ -14,8 +14,7 @@ typedef enum ETriggerType {
 
 typedef enum EDigitizerType {
   kDigitizerUndefined = -1,
-  kDigitizerSKI,
-  kDigitizerANNIE
+  kDigitizerSKI
 } DigitizerType_t;
 
 typedef enum ERandomGeneratorType {

@@ -85,7 +85,7 @@ void WCSimWCTriggerBase::GetVariables()
   //read the .mac file to override them
   if(DAQMessenger != NULL) {
     DAQMessenger->TellMeAboutTheTrigger(this);
-    DAQMessenger->SetTriggerOptions();
+    DAQMessenger->SetTriggerOptions(detectorElement);
   }
   else {
     G4cerr << "WCSimWCDAQMessenger pointer is NULL when used in WCSimWCTriggerBase::GetVariables(). Exiting..." 
@@ -317,7 +317,7 @@ void WCSimWCTriggerBase::AlgNDigits(WCSimWCDigitsCollection* WCDCPMT, bool remov
       //The trigger time is the time of the first hit above threshold
       std::sort(digit_times.begin(), digit_times.end());
       triggertime = digit_times[this_ndigitsThreshold];
-      // triggertime -= (int)triggertime % 5; // XXX do not round trigger times to multiples of 5ns
+      // triggertime -= (int)triggertime % 5; // ANNIE: do not round trigger times to multiples of 5ns
       TriggerTimes.push_back(triggertime);
       TriggerTypes.push_back(this_triggerType);
       TriggerInfos.push_back(std::vector<Float_t>(1, n_digits));
@@ -363,25 +363,26 @@ void WCSimWCTriggerBase::AlgTankDigits(WCSimWCDigitsCollection* WCDCPMT, bool re
   
   /** this actually doesn't need to search for triggers, but instead needs to retrieve the Trigger vectors
    from the tank trigger class. The storing of digits within those trigger windows is then done by FillDigitsCollection().
+   NOTE: Pre-Trigger Window, Post-Trigger Window and MultiDigitsPerTrigger are taken from THIS trigger
+   instance, NOT the tank trigger!
   */
-  // save MRD digits for *any* tank trigger, regardless of type... 
-  TriggerType_t this_triggerType = kTriggerTankDigits; // kTriggerNDigits;
+  
+  // ensures we save tank trigger windows, regardless of which trigger type the tank is using
+  TriggerType_t this_triggerType = kTriggerTankDigits;
   
   // need to retrieve the trigger vectors from the tank trigger class.
   // Get a pointer to the Digitizing Module Manager
   G4DigiManager* DMman = G4DigiManager::GetDMpointer();
   //Get a pointer to the tank Trigger Module
   WCSimWCTriggerBase* WCTM_tank = (WCSimWCTriggerBase*)DMman->FindDigitizerModule("WCReadout");
-  // copy across all the information about the triggers it found
+  // copy across all the information about the triggers it found.
   if(WCTM_tank){
     int numtanktriggers = WCTM_tank->NumberOfGatesInThisEvent();
     for(int i=0;i<numtanktriggers;i++){
       TriggerTimes.push_back(WCTM_tank->GetTriggerTime(i));
       TriggerInfos.push_back(WCTM_tank->GetTriggerInfo(i));
-      // DO NOT copy trigger type so that MRD may have longer pre- and post-trigger windows
-      TriggerTypes.push_back(kTriggerTankDigits);
+      TriggerTypes.push_back(WCTM_tank->GetTriggerType(i));
     }
-    multiDigitsPerTrigger = WCTM_tank->GetMultiDigitsPerTrigger();
   }
   
 #ifdef HYPER_VERBOSITY
@@ -399,7 +400,6 @@ void WCSimWCTriggerBase::AlgTankDigits(WCSimWCDigitsCollection* WCDCPMT, bool re
           <<", which has "<<WCDCPMT->entries()<<" entries."<<G4endl;
   }
 #endif
-  //WCTriggerBase::offset??
   // then fill this digits collection with the digits from the corresponding triggers
   FillDigitsCollection(WCDCPMT, remove_hits, this_triggerType);
 }
@@ -452,7 +452,7 @@ void WCSimWCTriggerBase::FillDigitsCollection(WCSimWCDigitsCollection* WCDCPMT, 
     if(itrigger) {
       float upperbound_previous = TriggerTimes[itrigger - 1] + GetPostTriggerWindow(TriggerTypes[itrigger - 1]);
       if(upperbound_previous > lowerbound) {
-	//also need to check whether the previous upperbound is above the lowerbound
+	//also need to check whether the previous upperbound is above the upperbound
 	//(different trigger windows for different trigger types can mean this trigger is completely contained within another)
 	// if it is, we skip it
 	if(upperbound_previous >= upperbound)
