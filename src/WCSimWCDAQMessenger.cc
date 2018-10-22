@@ -52,6 +52,9 @@ void WCSimWCDAQMessenger::Initialize(G4String detectorElementin)
   bool defaultNDigitsTriggerAdjustForNoise = true;
   int defaultNDigitsPreTriggerWindow = -99;
   int defaultNDigitsPostTriggerWindow = -99;
+  bool defaultPromptTrigger = false;
+  int defaultPromptPreTriggerWindow = -400;
+  int defaultPromptPostTriggerWindow = 950;
 
   if(not initialised){
     WCSimDAQDir = new G4UIdirectory("/DAQ/");
@@ -175,6 +178,26 @@ void WCSimWCDAQMessenger::Initialize(G4String detectorElementin)
     //don't SetNewValue -> defaults class-specific and taken from GetDefault*()
 
 
+    // Prompt (beam) Trigger specfic options
+    PromptTriggerEnable = new G4UIcmdWithABool("/DAQ/PromptTrigger/Enable", this);
+    PromptTriggerEnable->SetGuidance("Record all digits in a prompt window at the beginning of the event");
+    PromptTriggerEnable->SetParameterName("PromptTriggerEnable",true);
+    PromptTriggerEnable->SetDefaultValue(defaultPromptTrigger);
+
+/// removed: this doesn't really make sense if the trigger is prompt; i.e. occurs at time 0
+//    PromptPreTriggerWindow = new G4UIcmdWithAnInteger("/DAQ/PromptTrigger/PreTriggerWindow", this);
+//    PromptPreTriggerWindow->SetGuidance("Set the prompt pretrigger window (in ns)");
+//    PromptPreTriggerWindow->SetParameterName("PromptPreTriggerWindow",false);
+//    PromptPreTriggerWindow->SetDefaultValue(defaultPromptPreTriggerWindow);
+//    //don't SetNewValue -> defaults class-specific and taken from GetDefault*()
+
+    PromptPostTriggerWindow = new G4UIcmdWithAnInteger("/DAQ/PromptTrigger/PostTriggerWindow", this);
+    PromptPostTriggerWindow->SetGuidance("Set the prompt posttrigger window (in ns)");
+    PromptPostTriggerWindow->SetParameterName("PromptPostTriggerWindow",false);
+    PromptPostTriggerWindow->SetDefaultValue(defaultPromptPostTriggerWindow);
+    //don't SetNewValue -> defaults class-specific and taken from GetDefault*()
+
+
     SetDetectorElement = new G4UIcmdWithAString("/DAQ/SetDetectorElement", this);
     SetDetectorElement->SetParameterName("detectorElement", false);
     SetDetectorElement->AvailableForStates(G4State_PreInit, G4State_Idle);
@@ -198,6 +221,9 @@ void WCSimWCDAQMessenger::Initialize(G4String detectorElementin)
   theseOptions.StoreDigitizerIntegrationWindow = defaultDigitizerIntegrationWindow;
   theseOptions.StoreExtendDigitizerIntegrationWindow = defaultExtendDigitizerIntegrationWindow;
   theseOptions.StoreDigitizerChoice = defaultDigitizer;
+  theseOptions.StorePromptTrigger = defaultPromptTrigger;
+  theseOptions.StorePromptPreWindow = defaultPromptPreTriggerWindow;
+  theseOptions.StorePromptPostWindow = defaultPromptPostTriggerWindow;
   // set the silent trigger options
   theseOptions.StoreTriggerChoice = defaultTrigger;
   theseOptions.StoreMultiDigitsPerTrigger = defaultMultiDigitsPerTrigger;
@@ -254,6 +280,10 @@ WCSimWCDAQMessenger::~WCSimWCDAQMessenger()
   if(NDigitsTriggerAdjustForNoise){ delete NDigitsTriggerAdjustForNoise; NDigitsTriggerAdjustForNoise=nullptr; }
   if(NDigitsPreTriggerWindow){ delete NDigitsPreTriggerWindow; NDigitsPreTriggerWindow=nullptr; }
   if(NDigitsPostTriggerWindow){ delete NDigitsPostTriggerWindow; NDigitsPostTriggerWindow=nullptr; }
+
+  if(PromptTriggerEnable){ delete PromptTriggerEnable; PromptTriggerEnable=nullptr; }
+//  if(PromptPreTriggerWindow){ delete PromptPreTriggerWindow; PromptPreTriggerWindow=nullptr; }
+  if(PromptPostTriggerWindow){ delete PromptPostTriggerWindow; PromptPostTriggerWindow=nullptr; }
 
   if(DigitizerDir){ delete DigitizerDir; DigitizerDir=nullptr; }
   if(DigitizerDeadTime){ delete DigitizerDeadTime; DigitizerDeadTime=nullptr; }
@@ -365,6 +395,21 @@ void WCSimWCDAQMessenger::SetNewValue(G4UIcommand* command,G4String newValue)
     StoredOptions.at(detectorElement).StoreNDigitsPostWindow = NDigitsPostTriggerWindow->GetNewIntValue(newValue);
   }
   
+  //Prompt trigger
+  else if (command == PromptTriggerEnable) {
+    StoredOptions.at(detectorElement).StorePromptTrigger = PromptTriggerEnable->GetNewBoolValue(newValue);
+    G4cout << "Will " << ((StoredOptions.at(detectorElement).StorePromptTrigger) ? "" : "not ") 
+           << "add a prompt trigger window at the start of the event" << initialiseString.c_str() << G4endl;
+  }
+//  else if (command == PromptPreTriggerWindow) {
+//    G4cout << "Prompt pretrigger window set to " << newValue << " ns" << initialiseString.c_str() << G4endl;
+//    StoredOptions.at(detectorElement).StorePromptPreWindow = PromptPreTriggerWindow->GetNewIntValue(newValue);
+//  }
+  else if (command == PromptPostTriggerWindow) {
+    G4cout << "Prompt posttrigger window set to " << newValue << " ns" << initialiseString.c_str() << G4endl;
+    StoredOptions.at(detectorElement).StorePromptPostWindow = PromptPostTriggerWindow->GetNewIntValue(newValue);
+  }
+  
   // Detector Element to handle multiple digitizer and trigger classes
   else if(command == SetDetectorElement){
     if(StoredOptions.count(newValue)>0){
@@ -433,6 +478,20 @@ void WCSimWCDAQMessenger::SetTriggerOptions(G4String detectorElementin)
     G4cout << "\tNDigits posttrigger window set to " 
            << StoredOptions.at(detectorElement).StoreNDigitsPostWindow << " ns" << G4endl;
   }
+
+  WCSimTrigger->SetRecordPromptWindow(StoredOptions.at(detectorElement).StorePromptTrigger);
+  G4cout << "\tWill "<<((StoredOptions.at(detectorElement).StorePromptTrigger) ? "" : "not ") 
+         << "add a prompt trigger window at the start of the event" << G4endl;
+  if(StoredOptions.at(detectorElement).StoreNDigitsPreWindow >= 0) {
+    WCSimTrigger->SetPromptPreTriggerWindow(StoredOptions.at(detectorElement).StorePromptPreWindow);
+    G4cout << "\tPrompt pretrigger window set to " 
+           << StoredOptions.at(detectorElement).StorePromptPreWindow << " ns" << G4endl;
+  }
+  if(StoredOptions.at(detectorElement).StoreNDigitsPostWindow >= 0) {
+    WCSimTrigger->SetPromptPostTriggerWindow(StoredOptions.at(detectorElement).StorePromptPostWindow);
+    G4cout << "\tPrompt posttrigger window set to " 
+           << StoredOptions.at(detectorElement).StorePromptPostWindow << " ns" << G4endl;
+  }
 }
 
 void WCSimWCDAQMessenger::SetDigitizerOptions(G4String detectorElementin)
@@ -458,18 +517,14 @@ void WCSimWCDAQMessenger::AddDAQMessengerInstance(G4String detectorElementin){
     G4cerr<<"Attempt to re-add existing DAQ messenger "<<detectorElementin<<G4endl;
     return;
   } else {
-    G4cout<<"AddDAQMessengerInstance for detectorElement "<<detectorElementin<<G4endl;
-    G4cout<<"Current contents: "<<G4endl;
-    for(auto&& aninstance : StoredOptions){
-      G4cout<<"instance "<<aninstance.first<<G4endl;
-    }
+    //G4cout<<"AddDAQMessengerInstance for detectorElement "<<detectorElementin<<G4endl;
     Initialize(detectorElementin);
   }
 }
 
 void WCSimWCDAQMessenger::RemoveDAQMessengerInstance(G4String detectorElementin){
   if(StoredOptions.count(detectorElementin)){
-    G4cout<<"Removing DAQ Messenger instance " << detectorElementin << G4endl;
+    //G4cout<<"Removing DAQ Messenger instance " << detectorElementin << G4endl;
     StoredOptions.erase(detectorElementin);
   } else {
     G4cerr<<"Attempt to remove nonexistant element "<<detectorElementin<<" from WCDAQMessenger!"<<G4endl;

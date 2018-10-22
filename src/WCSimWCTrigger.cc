@@ -81,6 +81,9 @@ void WCSimWCTriggerBase::GetVariables()
   ndigitsWindow            = GetDefaultNDigitsWindow();
   ndigitsPreTriggerWindow  = GetDefaultNDigitsPreTriggerWindow();
   ndigitsPostTriggerWindow = GetDefaultNDigitsPostTriggerWindow();
+  enablePromptTrigger      = GetDefaultPromptTrigger();
+  promptPreTriggerWindow   = GetDefaultPromptPreTriggerWindow();
+  promptPostTriggerWindow  = GetDefaultPromptPostTriggerWindow();
 
   //read the .mac file to override them
   if(DAQMessenger != NULL) {
@@ -111,6 +114,10 @@ if(detectorElement=="tank"){
     G4cout << "Using SaveFailures trigger time" << saveFailuresTime << " ns" << G4endl
 	   << "Using SaveFailures event pretrigger window " << saveFailuresPreTriggerWindow << " ns" << G4endl
 	   << "Using SaveFailures event posttrigger window " << saveFailuresPostTriggerWindow << " ns" << G4endl;
+  if(enablePromptTrigger){
+    G4cout << "Recording digits in a prompt window at the start of the event" << G4endl
+           << "Using Prompt trigger window " << promptPostTriggerWindow << " ns" << G4endl;
+  }
 }
 #endif
 }
@@ -128,6 +135,9 @@ int WCSimWCTriggerBase::GetPreTriggerWindow(TriggerType_t t)
     break;
   case kTriggerFailure:
     return saveFailuresPreTriggerWindow;
+    break;
+  case kPromptTrigger:
+    return promptPreTriggerWindow;
     break;
   default:
     G4cerr << "WCSimWCTriggerBase::GetPreTriggerWindow() Unknown trigger type " << t
@@ -150,6 +160,9 @@ int WCSimWCTriggerBase::GetPostTriggerWindow(TriggerType_t t)
     break;
   case kTriggerFailure:
     return saveFailuresPostTriggerWindow;
+    break;
+  case kPromptTrigger:
+    return promptPostTriggerWindow;
     break;
   default:
     G4cerr << "WCSimWCTriggerBase::GetPostTriggerWindow() Unknown trigger type " << t
@@ -288,7 +301,11 @@ void WCSimWCTriggerBase::AlgNDigits(WCSimWCDigitsCollection* WCDCPMT, bool remov
       //int tube=(*WCDCPMT)[i]->GetTubeID();
       //Loop over each Digit in this PMT
       //G4int atotalpe = (*WCDCPMT)[i]->GetTotalPe();
-      for ( G4int ip = 0 ; ip < (*WCDCPMT)[i]->GetTotalPe() ; ip++) {
+      // When stacking triggers, some digits are removed from the map, so the keys are no longer monotonic.
+      // Use an iterator to loop over the digits present
+      for (std::map<int,float>::const_iterator digit_time_it = (*WCDCPMT)[i]->GetTimeMapBegin();
+               digit_time_it!=(*WCDCPMT)[i]->GetTimeMapEnd(); digit_time_it++) {
+        int ip = digit_time_it->first;
         int digit_time=0;
       	try{
 	  G4float temp_time = (*WCDCPMT)[i]->GetTime(ip);
@@ -475,7 +492,9 @@ void WCSimWCTriggerBase::FillDigitsCollection(WCSimWCDigitsCollection* WCDCPMT, 
     for (G4int i = 0; i < WCDCPMT->entries(); i++) {
       int tube=(*WCDCPMT)[i]->GetTubeID();
       //loop over digits in this PMT
-      for ( G4int ip = 0; ip < (*WCDCPMT)[i]->GetTotalPe(); ip++){
+      for (std::map<int,float>::const_iterator digit_time_it = (*WCDCPMT)[i]->GetTimeMapBegin();
+               digit_time_it!=(*WCDCPMT)[i]->GetTimeMapEnd(); digit_time_it++) {
+        int ip = digit_time_it->first;
 	int digit_time=0;
 	try{
 	  G4float temp_time = (*WCDCPMT)[i]->GetTime(ip);
@@ -560,19 +579,23 @@ void WCSimWCTriggerBase::FillDigitsCollection(WCSimWCDigitsCollection* WCDCPMT, 
 
 void WCSimWCTriggerBase::SaveOptionsToOutput(WCSimRootOptions * wcopt)
 {
-  wcopt->SetTriggerClassName(triggerClassName);;
-  wcopt->SetMultiDigitsPerTrigger(multiDigitsPerTrigger);;
+  wcopt->SetTriggerClassName(triggerClassName);
+  wcopt->SetMultiDigitsPerTrigger(multiDigitsPerTrigger);
   //ndigits
-  wcopt->SetNDigitsThreshold(ndigitsThreshold);;
-  wcopt->SetNDigitsWindow(ndigitsWindow);;
-  wcopt->SetNDigitsAdjustForNoise(ndigitsAdjustForNoise);;
-  wcopt->SetNDigitsPreTriggerWindow(ndigitsPreTriggerWindow);;
-  wcopt->SetNDigitsPostTriggerWindow(ndigitsPostTriggerWindow);;
+  wcopt->SetNDigitsThreshold(ndigitsThreshold);
+  wcopt->SetNDigitsWindow(ndigitsWindow);
+  wcopt->SetNDigitsAdjustForNoise(ndigitsAdjustForNoise);
+  wcopt->SetNDigitsPreTriggerWindow(ndigitsPreTriggerWindow);
+  wcopt->SetNDigitsPostTriggerWindow(ndigitsPostTriggerWindow);
+  //prompt/beam trigger
+  wcopt->SetPromptTriggerEnabled(enablePromptTrigger);
+  wcopt->SetPromptPreTriggerWindow(promptPreTriggerWindow);
+  wcopt->SetPromptPostTriggerWindow(promptPostTriggerWindow);
   //savefailures
-  wcopt->SetSaveFailuresMode(saveFailuresMode);;
-  wcopt->SetSaveFailuresTime(saveFailuresTime);;
-  wcopt->SetSaveFailuresPreTriggerWindow(saveFailuresPreTriggerWindow);;
-  wcopt->SetSaveFailuresPostTriggerWindow(saveFailuresPostTriggerWindow);;
+  wcopt->SetSaveFailuresMode(saveFailuresMode);
+  wcopt->SetSaveFailuresTime(saveFailuresTime);
+  wcopt->SetSaveFailuresPreTriggerWindow(saveFailuresPreTriggerWindow);
+  wcopt->SetSaveFailuresPostTriggerWindow(saveFailuresPostTriggerWindow);
 }
 
 
@@ -596,7 +619,54 @@ void WCSimWCTriggerBase::AlgNoTrigger(WCSimWCDigitsCollection* WCDCPMT, bool rem
   FillDigitsCollection(WCDCPMT, remove_hits, this_triggerType);
 }
 
+void WCSimWCTriggerBase::AlgPromptDigits(WCSimWCDigitsCollection* WCDCPMT, bool remove_hits, bool test) {
 
+  //Does not doanything, just writes counts the hits in the prompt window
+  TriggerType_t this_triggerType = kPromptTrigger;
+  std::vector<Float_t> triggerinfo;
+  Int_t Ndigits=0;
+  int prompt_window_duration = GetPostTriggerWindow(this_triggerType);
+  
+  //loop over PMTs
+  for (G4int i = 0; i < WCDCPMT->entries(); i++) {
+    //loop over digits in this PMT
+    for (std::map<int,float>::const_iterator digit_time_it = (*WCDCPMT)[i]->GetTimeMapBegin();
+             digit_time_it!=(*WCDCPMT)[i]->GetTimeMapEnd(); digit_time_it++) {
+      int ip = digit_time_it->first;
+      int digit_time=0;
+      try{
+        G4float temp_time = (*WCDCPMT)[i]->GetTime(ip);
+        if(temp_time<(std::numeric_limits<int>::max())){
+          digit_time = static_cast<int>(temp_time);
+        } else {digit_time=-999;}
+      }
+      catch (...){
+        G4cerr<<"Exception in WCSimWCTriggerBase::FillDigitsCollection call to WCSimWCDigi::GetTime "
+              <<G4endl<<"Attempt to retrieve time from pe "<<ip<<" in WCDCPMT entry "<<i<<G4endl;
+        G4cerr<<"The digi had "<<(*WCDCPMT)[i]->GetTotalPe()<<" total pe's."<<G4endl;
+        //assert(false);
+        digit_time=-996;
+      }
+      //is hit in prompt window
+      if(digit_time < prompt_window_duration) {
+        Ndigits++;
+      } else {
+      }
+    }
+  }
+#ifdef HYPER_VERBOSITY
+  if(detectorElement=="tank"){
+    G4cout<<"WCSimWCTriggerBase::AlgPromptDigits ☆ capturing "<<Ndigits<<" digits"<<G4endl;
+  }
+#endif
+  
+  triggerinfo.push_back(Ndigits);
+  TriggerTypes.push_back(kPromptTrigger);
+  TriggerInfos.push_back(triggerinfo);
+  TriggerTimes.push_back(0.);
+
+  FillDigitsCollection(WCDCPMT, remove_hits, this_triggerType);
+}
 
 // *******************************************
 // CONTAINER CLASS
@@ -678,9 +748,21 @@ WCSimWCTriggerNDigits::~WCSimWCTriggerNDigits()
 }
 
 void WCSimWCTriggerNDigits::DoTheWork(WCSimWCDigitsCollection* WCDCPMT) {
-  //Apply an NDigits trigger
+  
   bool remove_hits = false;
-  AlgNDigits(WCDCPMT, remove_hits);
+  WCSimWCDigitsCollection* WCDCPMTCopy = WCDCPMT;
+  
+  if(enablePromptTrigger){
+    //Make a copy of the input DigitsCollection, so we can remove hits from the copy
+    WCDCPMTCopy = new WCSimWCDigitsCollection(*WCDCPMT);
+    remove_hits = true;
+    
+    //Apply the prompt trigger
+    AlgPromptDigits(WCDCPMTCopy, remove_hits);
+  }
+  
+  //Apply the NDigits trigger
+  AlgNDigits(WCDCPMTCopy, remove_hits);
 }
 
 
@@ -734,8 +816,14 @@ void WCSimWCTriggerNDigits2::DoTheWork(WCSimWCDigitsCollection* WCDCPMT) {
   //Make a copy of the input DigitsCollection, so we can remove hits from the copy
   WCSimWCDigitsCollection* WCDCPMTCopy = new WCSimWCDigitsCollection(*WCDCPMT);
   
-  //Apply an NDigits trigger
   bool remove_hits = true;
+  
+  if(enablePromptTrigger){
+    //Apply the prompt trigger first
+    AlgPromptDigits(WCDCPMTCopy, remove_hits);
+  }
+  
+  //Apply the first NDigits trigger
   AlgNDigits(WCDCPMTCopy, remove_hits);
 
   //Apply an NDigits trigger with a lower threshold & different saved trigger type
@@ -755,7 +843,6 @@ WCSimWCTriggerOnTankDigits::WCSimWCTriggerOnTankDigits(G4String name,
 {
   triggerClassName = "TankDigits";
   GetVariables(); // need to get the pre- and post-triggerwindow sizes 
-  ndigitsAdjustForNoise=false;
 }
 
 WCSimWCTriggerOnTankDigits::~WCSimWCTriggerOnTankDigits()
@@ -763,10 +850,23 @@ WCSimWCTriggerOnTankDigits::~WCSimWCTriggerOnTankDigits()
 }
 
 void WCSimWCTriggerOnTankDigits::DoTheWork(WCSimWCDigitsCollection* WCDCPMT) {
-  //Nab the triggered digits from the tank and record all hits that fall within those time windows
-  bool remove_hits = false;
 #ifdef HYPER_VERBOSITY
-  if(detectorElement=="mrd"){G4cout<<"WCSimWCTriggerBase::DoTheWork ☆ calling AlgTankDigits"<<G4endl;}
+  if(detectorElement=="mrd"){G4cout<<"WCSimWCTriggerOnTankDigits::DoTheWork ☆ calling AlgTankDigits"<<G4endl;}
 #endif
-  AlgTankDigits(WCDCPMT, remove_hits);
+  
+  bool remove_hits = false;
+  WCSimWCDigitsCollection* WCDCPMTCopy = WCDCPMT;
+  
+  if(enablePromptTrigger){
+    //Make a copy of the input DigitsCollection, so we can remove hits from the copy
+    WCDCPMTCopy = new WCSimWCDigitsCollection(*WCDCPMT);
+    remove_hits = true;
+    
+    //Apply the prompt trigger
+    AlgPromptDigits(WCDCPMTCopy, remove_hits);
+  }
+  
+  remove_hits = false;
+  //Nab the triggered digits from the tank and record all hits that fall within those time windows
+  AlgTankDigits(WCDCPMTCopy, remove_hits);
 }

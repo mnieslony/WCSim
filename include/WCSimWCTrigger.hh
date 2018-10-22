@@ -73,6 +73,14 @@ public:
   ///Set the posttrigger window for the NDigits trigger (value will be forced positive)
   void SetNDigitsPostTriggerWindow(G4int window) { ndigitsPostTriggerWindow = + abs(window); }
 
+  // Prompt trigger options
+  ///Record digits in a prompt window at the start of the event
+  void SetRecordPromptWindow    (G4bool prompt)      { enablePromptTrigger = prompt; }
+  ///Set the pretrigger window for the NDigits trigger (value will be forced negative)
+  void SetPromptPreTriggerWindow(G4int window)  { promptPreTriggerWindow  = - abs(window); }
+  ///Set the posttrigger window for the NDigits trigger (value will be forced positive)
+  void SetPromptPostTriggerWindow(G4int window) { promptPostTriggerWindow = + abs(window); }
+
   // Save trigger failures options
   ///Set the mode for saving failed triggers (0:save only triggered events, 1:save both triggered events & failed events, 2:save only failed events)
   void SetSaveFailuresMode       (G4int mode )        { saveFailuresMode = mode; }
@@ -111,6 +119,13 @@ protected:
   ///Set the default trigger class specific NDigits posttrigger window (in ns) (overridden by .mac)
   virtual int GetDefaultNDigitsPostTriggerWindow() { return 950; }
 
+  ///Get the default trigger class specific decisions on the prompt beam trigger
+  virtual bool GetDefaultPromptTrigger()           { return false; }
+  ///Set the default trigger class specific prompt pretrigger window (in ns) (overridden by .mac)
+  virtual int GetDefaultPromptPreTriggerWindow()   { return 0; }
+  ///Set the default trigger class specific prompt posttrigger window (in ns) (overridden by .mac)
+  virtual int GetDefaultPromptPostTriggerWindow()  { return 2000; }
+
   ///Get the pretrigger window for a given trigger algorithm
   int GetPreTriggerWindow(TriggerType_t t);
   ///Get the posttrigger window for a given trigger algorithm
@@ -136,6 +151,7 @@ protected:
   void AlgNDigits(WCSimWCDigitsCollection* WCDCPMT, bool remove_hits, bool test=false);
   void AlgTankDigits(WCSimWCDigitsCollection* WCDCPMT, bool remove_hits, bool test=false);
   void AlgNoTrigger(WCSimWCDigitsCollection* WCDCPMT, bool remove_hits, bool test=false);
+  void AlgPromptDigits(WCSimWCDigitsCollection* WCDCPMT, bool remove_hits, bool test=false);
 
   WCSimWCTriggeredDigitsCollection*   DigitsCollection; ///< The main output of the class - collection of digits in the trigger window
   std::map<int,int>          DigiHitMap; ///< Keeps track of the PMTs that have been added to the output WCSimWCTriggeredDigitsCollection
@@ -166,6 +182,10 @@ protected:
   G4bool ndigitsAdjustForNoise;    ///< Automatically adjust the NDigits trigger threshold based on the average dark noise rate?
   G4int  ndigitsPreTriggerWindow;  ///< The pretrigger window to save before an NDigits trigger
   G4int  ndigitsPostTriggerWindow; ///< The posttrigger window to save after an NDigits trigger
+  //Prompt
+  G4bool enablePromptTrigger;      ///< Save digits in a prompt window at the start of the event
+  G4int  promptPreTriggerWindow;   ///< The prompt pre-trigger window (not really relevant as triggertime=0)
+  G4int  promptPostTriggerWindow;  ///< The prompt trigger window size
   //Save failures
   G4int    saveFailuresMode;              ///< The mode for saving events which don't pass triggers
   G4double saveFailuresTime;              ///< The dummy trigger time for failed events
@@ -330,6 +350,10 @@ private:
   int  GetDefaultNDigitsThreshold()         { return 25;    } ///< SK NDigits threshold ~25
   int  GetDefaultNDigitsPreTriggerWindow()  { return -400;  } ///< SK SLE trigger window ~-400
   int  GetDefaultNDigitsPostTriggerWindow() { return 950;   } ///< SK SLE trigger window ~+950
+
+  bool GetDefaultPromptTrigger()            { return false; }
+  int  GetDefaultPromptPreTriggerWindow()   { return 0;     }
+  int  GetDefaultPromptPostTriggerWindow()  { return 2000;  }
 };
 
 class WCSimWCTriggerNoTrigger : public WCSimWCTriggerBase
@@ -370,6 +394,10 @@ private:
   int  GetDefaultNDigitsThreshold()         { return 50;    } ///< 2 * SK NDigits threshold ~25
   int  GetDefaultNDigitsPreTriggerWindow()  { return -400;  } ///< SK SLE trigger window ~-400
   int  GetDefaultNDigitsPostTriggerWindow() { return 950;   } ///< SK SLE trigger window ~+950
+
+  bool GetDefaultPromptTrigger()            { return false; }
+  int  GetDefaultPromptPreTriggerWindow()   { return 0;     }
+  int  GetDefaultPromptPostTriggerWindow()  { return 2000;  }
 };
 
 /**
@@ -392,16 +420,15 @@ private:
   ///Calls the workhorse of this class: AlgTankDigits
   void DoTheWork(WCSimWCDigitsCollection* WCDCPMT);
 
-  bool GetDefaultMultiDigitsPerTrigger()    { return false; } ///< SKI saves only earliest digit on a PMT in the trigger window
+  bool GetDefaultMultiDigitsPerTrigger()    { return false; }
   int  GetDefaultNDigitsWindow()            { return 200;   } /// unused, triggers are found from tank
-  int  GetDefaultNDigitsThreshold()         { return 50;    } ///< more suitable for ANNIE, needs tuning
-  int  GetDefaultNDigitsPreTriggerWindow()  { return -400;  } ///< not relevant without further work
-  int  GetDefaultNDigitsPostTriggerWindow() { return 950;   } ///< not relevant without further work
-  // DAQMessenger stores the values set by daq.mac internally, then overrides the class default
-  // values for any that have been set. But there is only one set of internal values stored, so
-  // any values set in daq.mac will be applied to ALL triggers, regardless of class.
-  // scintillator decay time is ~10's ns (10ns in ConstructMaterials) so -400 -> +950 is more than 
-  // sufficient, though.
+  int  GetDefaultNDigitsThreshold()         { return 50;    } /// unused, triggers are found from tank
+  int  GetDefaultNDigitsPreTriggerWindow()  { return -400;  }
+  int  GetDefaultNDigitsPostTriggerWindow() { return 950;   }
+
+  bool GetDefaultPromptTrigger()            { return false; }
+  int  GetDefaultPromptPreTriggerWindow()   { return 0;     }
+  int  GetDefaultPromptPostTriggerWindow()  { return 2000;  }
 };
 
 #endif //WCSimWCTrigger_h

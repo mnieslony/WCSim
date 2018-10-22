@@ -30,6 +30,9 @@ struct OptionsStore{
   G4String              StoreTriggerChoice;
   G4bool                StoreMultiDigitsPerTrigger;
   G4bool                MultiDigitsPerTriggerSet;
+  G4bool                StorePromptTrigger;
+  G4int                 StorePromptPreWindow;
+  G4int                 StorePromptPostWindow;
   // Digitizer options
   G4int                 StoreDigitizerIntegrationWindow;
   G4int                 StoreDigitizerDeadTime;
@@ -89,6 +92,10 @@ private:
   G4UIcmdWithABool*     NDigitsTriggerAdjustForNoise;
   G4UIcmdWithAnInteger* NDigitsPreTriggerWindow;
   G4UIcmdWithAnInteger* NDigitsPostTriggerWindow;
+  G4UIcmdWithABool*     PromptTriggerEnable;
+//  G4UIcmdWithAnInteger* PromptPreTriggerWindow;
+  G4UIcmdWithAnInteger* PromptPostTriggerWindow;
+  
   G4UIcmdWithAString*   SetDetectorElement;
 
   std::map<G4String, OptionsStore> StoredOptions;

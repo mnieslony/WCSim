@@ -70,6 +70,10 @@ public:
   void SetNDigitsAdjustForNoise(bool indigitsAdjustForNoise) {NDigitsAdjustForNoise = indigitsAdjustForNoise;};
   void SetNDigitsPreTriggerWindow(int indigitsPreTriggerWindow) {NDigitsPreTriggerWindow = indigitsPreTriggerWindow;};
   void SetNDigitsPostTriggerWindow(int indigitsPostTriggerWindow) {NDigitsPostTriggerWindow = indigitsPostTriggerWindow;};
+  //prompt
+  void SetPromptTriggerEnabled(bool enablePromptTriggerin){ enablePromptTrigger = enablePromptTriggerin;}
+  void SetPromptPreTriggerWindow(int promptPreTriggerWindowin){ promptPreTriggerWindow = promptPreTriggerWindowin;}
+  void SetPromptPostTriggerWindow(int promptPostTriggerWindowin){ promptPostTriggerWindow = promptPostTriggerWindowin;}
   //savefailures
   void SetSaveFailuresMode(int isaveFailuresMode) {SaveFailuresMode = isaveFailuresMode;};
   void SetSaveFailuresTime(double isaveFailuresTime) {SaveFailuresTime = isaveFailuresTime;};
@@ -84,6 +88,10 @@ public:
   bool   GetNDigitsAdjustForNoise() {return NDigitsAdjustForNoise;}
   int    GetNDigitsPreTriggerWindow() {return NDigitsPreTriggerWindow;}
   int    GetNDigitsPostTriggerWindow() {return NDigitsPostTriggerWindow;}
+  //prompt
+  bool   GetPromptTriggerEnabled(){ return enablePromptTrigger;}
+  int    GetPromptPreTriggerWindow(){ return promptPreTriggerWindow;}
+  int    GetPromptPostTriggerWindow(){ return promptPostTriggerWindow;}
   //savefailures
   int    GetSaveFailuresMode() {return SaveFailuresMode;}
   double GetSaveFailuresTime() {return SaveFailuresTime;}
@@ -152,6 +160,10 @@ private:
   bool   NDigitsAdjustForNoise;
   int    NDigitsPreTriggerWindow; // ns
   int    NDigitsPostTriggerWindow; // ns
+  //prompt
+  bool   enablePromptTrigger;
+  int    promptPreTriggerWindow;  // ns
+  int    promptPostTriggerWindow; // ns
   //savefailures
   int    SaveFailuresMode;
   double SaveFailuresTime; // ns

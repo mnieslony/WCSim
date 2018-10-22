@@ -397,7 +397,7 @@ void WCSimPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 		// Load the next entry, with all required trees and files
 		// ------------------------------------------------------
 		loadbeamentry:
-		if(loadNewPrimaries){ LoadNewPrimaries(); }	// update TChain if a new file is loaded by messenger
+		if(loadNewPrimaries){ LoadNewPrimaries(); } // update TChain if a new file is loaded by messenger
 		//inputdata has already had tree loaded at the end of last event's GeneratePrimaries call
 		//localEntry will already be the value of the NEXT entry
 		metadata->LoadTree(inputEntry);
@@ -699,14 +699,14 @@ void WCSimPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 		nvtxs = 1;
 		npar = -1;                                              // ? not used.
 		for(int i=0; i<nvtxs; i++){                             // we only ever have 1 neutrino intx
-			vtxsvol[i] = -10;                               // looked up in EndOfEventAction
+			vtxsvol[i] = -10;                                   // looked up in EndOfEventAction
 			// neutrino vertices are stored in m not cm
 			vtxs[i] = G4ThreeVector(nuvtxxval*CLHEP::m, nuvtxyval*CLHEP::m, nuvtxzval*CLHEP::m);
 			beampdgs[i] = probepdg;
 			beamenergies[i] = probeenergy;
 			targetpdgs[i] = targetnucleuspdg;
 			targetenergies[i] = targetnucleonenergy;
-			G4ThreeVector probemomdir;                      // convert TVector3 to G4ThreeVector
+			G4ThreeVector probemomdir;                          // convert TVector3 to G4ThreeVector
 			G4ThreeVector targetnucleonmomdir;
 			for(int comp=0; comp<2; comp++){
 				probemomdir[comp] = probemomentumdir[comp];
@@ -804,9 +804,9 @@ void WCSimPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 			
 			particleGun->SetParticleEnergy(keval);       // !!!kinetic!!! energy
 			particleGun->SetParticlePosition(thevtx);
-			particleGun->SetParticleTime(vtxtval);
+			//particleGun->SetParticleTime(vtxtval);     // set event time t=0 for prompt trigger.
 			particleGun->SetParticleMomentumDirection(thepdir);
-			particleGun->GeneratePrimaryVertex(anEvent);    //anEvent provided by G4 when invoking the method
+			particleGun->GeneratePrimaryVertex(anEvent); //anEvent provided by G4 when invoking the method
 			//G4cout<<"Vertex set"<<G4endl;
 		}
 		
