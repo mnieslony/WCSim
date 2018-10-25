@@ -10,6 +10,7 @@
 /process/verbose 0
 /process/setVerbose 0
 /run/initialize
+#/vis/disable
 
 ## select the geometry
 # Default config if you do nothing is currently SuperK

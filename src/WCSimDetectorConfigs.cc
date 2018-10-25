@@ -38,6 +38,8 @@ void WCSimDetectorConstruction::SetANNIEPhase1Geometry()
   expHall_x = 50*m;
   expHall_y = expHall_z = 500*m;
   GDMLFilename = "annie_v04.gdml";
+  constructmrd = true;
+  constructveto = true;
   
   WCLength = tankhy;
   WCRadius = tankouterRadius;
@@ -85,6 +87,8 @@ void WCSimDetectorConstruction::SetANNIEPhase2Geometry()
   expHall_x = 50*m;
   expHall_y = expHall_z = 500*m;
   GDMLFilename = "annie_v04.gdml";
+  constructmrd = true;
+  constructveto = true;
   
   WCSimPMTObject* MRDPMT = CreatePMTObject("FlatFacedPMT2inch",WCMRDCollectionName);
   MRDPMTName = MRDPMT->GetPMTName();
@@ -201,6 +205,8 @@ void WCSimDetectorConstruction::SetANNIEPhase2Geometryv2()
   GDMLFilename = "annie_v04.gdml";
   GDMLInnerStructureFilename = "InnerStructure.gdml";
   addGDMLinnerstructure = false;
+  constructmrd = true;
+  constructveto = true;
   
   WCSimPMTObject* MRDPMT = CreatePMTObject("FlatFacedPMT2inch",WCMRDCollectionName);
   MRDPMTName = MRDPMT->GetPMTName();
@@ -330,6 +336,8 @@ void WCSimDetectorConstruction::SetANNIEPhase2Geometryv3()
   GDMLFilename = "annie_v04.gdml";
   GDMLInnerStructureFilename = "InnerStructure.gdml";
   addGDMLinnerstructure = false;
+  constructmrd = true;
+  constructveto = true;
   
   WCSimPMTObject* MRDPMT = CreatePMTObject("FlatFacedPMT2inch",WCMRDCollectionName);
   MRDPMTName = MRDPMT->GetPMTName();
@@ -456,6 +464,8 @@ void WCSimDetectorConstruction::SetANNIEPhase2Geometryv4()
   GDMLFilename = "annie_v04.gdml";
   GDMLInnerStructureFilename = "InnerStructure.gdml";
   addGDMLinnerstructure = false;
+  constructmrd = true;
+  constructveto = true;
   
   WCSimPMTObject* MRDPMT = CreatePMTObject("FlatFacedPMT2inch",WCMRDCollectionName);
   MRDPMTName = MRDPMT->GetPMTName();
@@ -593,8 +603,11 @@ void WCSimDetectorConstruction::SetANNIEPhase2Geometryv5()
   expHall_x = 50*m;
   expHall_y = expHall_z = 500*m;
   GDMLFilename = "annie_v04.gdml";
-  GDMLInnerStructureFilename = "InnerStructure.gdml";
-  addGDMLinnerstructure = false;
+  GDMLInnerStructureFilename = "PHASE2_INNER_STRUCTURE.gdml";
+  addGDMLinnerstructure = true;
+  doOverlapCheck = true;		// check overlaps when adding inner structure
+  constructmrd = false;
+  constructveto = false;
   
   WCSimPMTObject* MRDPMT = CreatePMTObject("FlatFacedPMT2inch",WCMRDCollectionName);
   MRDPMTName = MRDPMT->GetPMTName();
@@ -613,7 +626,7 @@ void WCSimDetectorConstruction::SetANNIEPhase2Geometryv5()
   WCIDDiameter             = 2.554*m;		// 2x shortest distance to the centre of a ocatgonal
 											// cell wall- from blueprints, this is 100.57" = 255.4cm
   WCIDHeight               = 3.96*m;		// full height
-  WCBarrelPMTOffset        = 0.0715*m;		// offset of first barrel ring from tank caps
+  WCBarrelPMTOffset        = 0.5715*m;		// offset of first barrel ring from tank caps
   
   // NOTE: ANNIEp2v2 bypasses the use of multiple identical rings to fill the barrel
   // instead, there is just ONE main barrel ring, in which 5 rings of PMTs are placed manually
@@ -629,11 +642,15 @@ void WCSimDetectorConstruction::SetANNIEPhase2Geometryv5()
   											// 4 vertical PMTs placed within the one main barrel ring
   											// border rings have 1 vertical PMT per cell
   
+  numhatchpmts = 4;
   G4double CapPMTRadius    = WCPMTRadius_D784KFLB;		// 11" on top are largest cap PMTs
   WCCapPMTSpacing          = 3.*(CapPMTRadius+25.*mm);
   WCCapEdgeLimit           = WCIDDiameter/2.0 - CapPMTRadius; // - 10*cm
-  compressionfactor        = 0.9;			// how much to squeeze PMTs together on an octagon face
-  capcompressionratio      = 0.7;			// how much cap PMTs are squeezed in one dir relative to the other
+  WCCapPMTOffset           = 0.35*m;		// offset of the cap PMTs into the tank centre.
+  WCCapTopPMTOffset        = 0.15*m;		// additional offset for the top cap PMTs, the offsets are different
+  WCBorderBarrelTopPMTOffset = 0.2*m;		// top border ring PMTs need pushing down
+  compressionfactor        = 0.62;			// how much to squeeze PMTs together on an octagon face
+  capcompressionratio      = 0.6;			// how much cap PMTs are squeezed in one dir relative to the other
   WCCapPMTPosRadius        = 0.9*m;			// radius at which to position PMTs for the top cap
   WCCapPMTPosRadius2       = 0.3*m;			// radius at which to position PMTs for the hatch
   
@@ -644,6 +661,8 @@ void WCSimDetectorConstruction::SetANNIEPhase2Geometryv5()
   WCCapLAPPDSpacing       = 0.*m;
   WCLAPPDperCellHorizontal= 1;
   WCLAPPDperCellVertical  = 3;
+  barrelcompressionfactor = 0.9;
+  barrelbordercompressionfactor = 1.; // 0.8
   
 }
 

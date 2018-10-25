@@ -63,16 +63,59 @@
 #/vis/geometry/set/colour ANNIEp2v4-glassFaceWCPMT_R5912HQE -1 1.0 0.3 .3 1
 #/vis/geometry/set/forceSolid ANNIEp2v4-glassFaceWCONLYLAPPDS -1 1
 
+/vis/geometry/set/visibility cad_logical -1 1
+/vis/geometry/set/forceSolid cad_logical -1 1
+/vis/geometry/set/colour cad_logical -1 0.5 0.5 0.5 0.3
+
+## barrel
+#########
+#/vis/geometry/set/visibility WCBarrel 1   ## whole barrel assembly
+/vis/geometry/set/visibility WCBarrelAnnulus -1 1       ## <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< but this is flush with border ring (size OK)
+#/vis/geometry/set/visibility WCBarrelRing -1 1          ## <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< this is too short?, does not meet border ring
+/vis/geometry/set/visibility WCBarrelRing -1 0
+#/vis/geometry/set/visibility WCBarrelCell -1 1         ## << unused for ANNIEp2v3+
+#/vis/geometry/set/visibility WCBarrelCellBlackSheet    ## << unused for ANNIEp2v3+
+
+## barrel border rings
+######################
+/vis/geometry/set/visibility WCBarrelBorderRing -1 1    ##  <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< moves toward cap, position wrong
+#/vis/geometry/set/visibility WCBarrelBorderCell -1 1   ## << not used only for ANNIEp2v4
+#/vis/geometry/set/visibility WCBarrelBorderCellBlackSheet
+
+## caps
+#######
+#/vis/geometry/set/visibility CapAssembly -1 1   # << border rings are part of cap assembly
+#/vis/geometry/set/colour CapAssembly -1 1 1 0
+/vis/geometry/set/visibility CapAssembly -1 0
+/vis/geometry/set/visibility WCCapPolygon -1 1  ## <<< cap polygon, OK
+#/vis/geometry/set/visibility WCCapBlackSheet
+
+/vis/viewer/set/hiddenEdge 0
+/vis/viewer/set/hiddenMarker 0
+/vis/viewer/set/viewpointThetaPhi 112.5 0
+#/vis/viewer/set/auxiliaryEdge 0
+#/vis/viewer/set/background white 0 # red green blue opacity << opacity has no effect?
+#/vis/viewer/set/rotationStyle freeRotation #constrainUpDirection or 
+#/vis/viewer/set/style s # (for solid) or w for wireframe
+#/vis/viewer/set/targetPoint 0 0 10 m
+#/vis/viewer/set/viewpointVector 0 0 1  # Sets direction from target to camera.
+#/vis/viewer/dolly 1 m #Moves the camera incrementally towards target point
+#/vis/viewer/dollyTo 1 m #Places the camera towards target point relative to standard camera point.
+
 # same colours for ANNIEp2v5
 #/vis/viewer/set/viewpointThetaPhi 90 90
+/vis/geometry/set/visibility ANNIEp2v5-glassFaceWCPMT_R7081 -1 1
+/vis/geometry/set/visibility ANNIEp2v5-glassFaceWCPMT_D784KFLB -1 1
+/vis/geometry/set/visibility ANNIEp2v5-glassFaceWCPMT_R7081HQE -1 1
+/vis/geometry/set/visibility ANNIEp2v5-glassFaceWCONLYLAPPDS -1 1
 /vis/geometry/set/forceSolid ANNIEp2v5-glassFaceWCPMT_R7081 -1 1
 /vis/geometry/set/forceSolid ANNIEp2v5-glassFaceWCPMT_D784KFLB -1 1
 /vis/geometry/set/forceSolid ANNIEp2v5-glassFaceWCPMT_R7081HQE -1 1
+/vis/geometry/set/forceSolid ANNIEp2v5-glassFaceWCONLYLAPPDS -1 1
 /vis/geometry/set/colour ANNIEp2v5-glassFaceWCPMT_R7081 -1 1. .6 1. 1
 /vis/geometry/set/colour ANNIEp2v5-glassFaceWCPMT_D784KFLB -1 .6 1. 1. 1
 /vis/geometry/set/colour ANNIEp2v5-glassFaceWCPMT_R7081HQE -1 1.0 0.3 .3 1
-/vis/geometry/set/forceSolid ANNIEp2v5-glassFaceWCONLYLAPPDS -1 1
-#/vis/geometry/set/visibility WCBarrelRing 1
+/vis/geometry/set/colour ANNIEp2v5-glassFaceWCONLYLAPPDS -1 0.6 0.6 0.6 1
 
 ## make things invisible
 #/vis/geometry/set/colour totMRDlog -1 0 0 0 0
@@ -81,13 +124,14 @@
 #/vis/geometry/set/colour ANNIEp2v5-glassFaceWCPMT_R7081 -1 0 0 0 0
 #/vis/geometry/set/colour ANNIEp2v5-glassFaceWCPMT_D784KFLB -1  0 0 0 0
 #/vis/geometry/set/colour ANNIEp2v5-glassFaceWCPMT_R7081HQE -1  0 0 0 0
+#/vis/geometry/set/visibility ANNIEp2v5-glassFaceWCPMT_R7081 -1 0
+#/vis/geometry/set/visibility ANNIEp2v5-glassFaceWCPMT_D784KFLB -1 0
+#/vis/geometry/set/visibility ANNIEp2v5-glassFaceWCPMT_R7081HQE -1 0
+#/vis/geometry/set/visibility ANNIEp2v5-glassFaceWCONLYLAPPDS -1 0
 
 ## show the blacksheets for debug
 #/vis/geometry/set/visibility WCBarrelBorderCellBlackSheet 1
 #/vis/geometry/set/visibility WCBarrelCellBlackSheet 1
-
-# Show inner structure for ANNIEp2v2
-#/vis/geometry/set/visibility cad_logical 1
 
 # Vis settings for HK
 #/vis/viewer/set/upVector 0 1 0
@@ -124,4 +168,5 @@
 # Default background for OGLSX is black, can change it here (but muons are white)
 #/vis/viewer/set/background 0 0 0 1
 
-/vis/viewer/pan 9 0
+#/vis/viewer/pan 9 0
+/vis/viewer/panTo -2 0

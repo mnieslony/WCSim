@@ -120,7 +120,7 @@ G4LogicalVolume* WCSimDetectorConstruction::ConstructANNIE()
   G4LogicalVolume* innerstructure_log;
   if(addGDMLinnerstructure){
     G4GDMLParser parser;
-    parser.SetOverlapCheck(0);
+    parser.SetOverlapCheck(doOverlapCheck);
     G4cout << "Read " << GDMLInnerStructureFilename 
            << " (overlap check = " << (doOverlapCheck?"true":"false") << ")" << G4endl;
     parser.Read (GDMLInnerStructureFilename, false); // disable schema validation as causing issues
@@ -195,7 +195,7 @@ G4LogicalVolume* WCSimDetectorConstruction::ConstructANNIE()
   DefineANNIEdimensions();									// part of MRDDetectorConstruction.cc
   // Create MRD												// part of MRDDetectorConstruction.cc
   useadditionaloffset=false;
-  ConstructMRD(expHall_log, expHall_phys);					// marcus' MRD construction
+  if(constructmrd) ConstructMRD(expHall_log, expHall_phys);					// marcus' MRD construction
   // if desired, enable true 'hit' sensitive detector in MRDDetectorConstruction::ConstructMRD
   
   // ===== SciBooNE integration
@@ -208,7 +208,7 @@ G4LogicalVolume* WCSimDetectorConstruction::ConstructANNIE()
   
   // Create FACC
   //G4cout<<"Calling construction for the VETO"<<G4endl;
-  ConstructVETO(expHall_log, expHall_phys);					// part of MRDDetectorConstruction.cc
+  if(constructveto) ConstructVETO(expHall_log, expHall_phys);					// part of MRDDetectorConstruction.cc
   // enable 'true hits' sensitive detector in MRDDetectorConstruction::ConstructVETO if desired.
   
   if (isNCV){

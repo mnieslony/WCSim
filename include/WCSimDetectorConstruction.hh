@@ -444,10 +444,18 @@ private:
   G4double WCBarrelLength;
   
   // for annie
+  G4double WCCapPMTOffset;           // offset of the cap PMTs toward the centre of the tank.
+  G4double WCCapTopPMTOffset;        // offsets are different for ANNIE
+  G4double WCBorderBarrelTopPMTOffset; // more fudging for ANNIE
+  G4int numhatchpmts;
+  G4bool constructmrd;
+  G4bool constructveto;
   G4double compressionfactor;        // ratio to squeeze PMTs together on an octagon face, relative to full width
   G4double capcompressionratio;      // aspect ratio of PMT spacing on bottom cap
   G4double WCCapPMTPosRadius;        // radius at which to position top cap PMTs, for some ANNIE designs
   G4double WCCapPMTPosRadius2;       // radius at which to position PMTs on the hatch
+  G4double barrelcompressionfactor;  // how much to squeeze barrel PMTs from caps, ANNIE PMTs fill only central ~60%
+  G4double barrelbordercompressionfactor;  // ANNIE border ring sizes also need tuning
 
   // amb79: to universally make changes in structure and geometry
   bool isUpright;
@@ -612,7 +620,7 @@ private:
   G4double expHall_x;
   G4double expHall_y;
   G4double expHall_z;
-  G4int doOverlapCheck;
+  G4bool doOverlapCheck;
   
   G4String WCMRDCollectionName;
   G4String WCFACCCollectionName;
