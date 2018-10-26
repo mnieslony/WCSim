@@ -153,7 +153,8 @@ G4LogicalVolume* WCSimDetectorConstruction::ConstructANNIE()
 		new G4PVPlacement(rotm,G4ThreeVector(0,-tankyoffset,tankouterRadius+tankzoffset),waterTank_log,"waterTank",expHall_log,false,0);
 		AddANNIEPhase1PMTs(waterTank_log); 
 	} else { 
-		waterTank_log = ConstructCylinder();
+		if(WCDetectorName=="ANNIEp2v6") waterTank_log = ConstructANNIECylinder();
+		else  waterTank_log = ConstructCylinder();
 		waterTank_phys = 
 		new G4PVPlacement(rotm,G4ThreeVector(0,-tankyoffset,tankouterRadius+tankzoffset),waterTank_log,"waterTank",expHall_log,false,0);
 		

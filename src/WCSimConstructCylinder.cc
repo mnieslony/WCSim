@@ -165,13 +165,13 @@ G4LogicalVolume* WCSimDetectorConstruction::ConstructCylinder()
 				     0.*deg,
 				     360.*deg);
   
-  G4LogicalVolume* logicWCBarrel = 
+  logicWCBarrel = 
     new G4LogicalVolume(solidWCBarrel,
 			G4Material::GetMaterial(water),
 			"WCBarrel",
 			0,0,0);
 
-    G4VPhysicalVolume* physiWCBarrel = 
+    physiWCBarrel = 
     new G4PVPlacement(0,
 		      G4ThreeVector(0.,0.,0.),
 		      logicWCBarrel,

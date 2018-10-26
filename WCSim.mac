@@ -10,7 +10,7 @@
 /process/verbose 0
 /process/setVerbose 0
 /run/initialize
-#/vis/disable
+/vis/disable
 
 ## select the geometry
 # Default config if you do nothing is currently SuperK
@@ -98,7 +98,7 @@
 #/mygen/vecfile mu+.out
 
 #grab the DAQ options (digitizer type, thresholds, timing windows, etc.)
-/control/execute macros/annie_daq.mac
+#/control/execute macros/annie_daq.mac
 
 
 # default dark noise frequency (and conversion factor) is PMT property (NEW), set in the code.
@@ -143,7 +143,7 @@
 
 
 #Uncomment one of the lines below if you want to use the OGLSX or RayTracer visualizer
-#/control/execute macros/visOGLSX.mac
+/control/execute macros/visOGLSX.mac
 #/control/execute macros/visRayTracer.mac
 
 #####################################

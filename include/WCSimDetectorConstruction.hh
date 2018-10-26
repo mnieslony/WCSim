@@ -97,6 +97,7 @@ public:
   void SetANNIEPhase2Geometryv3(); // phase 2 geometry - later PMT layout
   void SetANNIEPhase2Geometryv4(); // phase 2 geometry -  alt later PMT layout
   void SetANNIEPhase2Geometryv5(); // phase 2 geometry -  alt later PMT layout
+  void SetANNIEPhase2Geometryv6(); // phase 2 geometry -  entirely new Cylinder construction
   
   G4int    GetTotalNumPmts(G4String key){
     if(std::find(WCTankCollectionNames.begin(), WCTankCollectionNames.end(), key)!=WCTankCollectionNames.end())
@@ -269,14 +270,18 @@ private:
 
   // The Construction routines
   G4LogicalVolume*   ConstructCylinder();
+  G4LogicalVolume*   ConstructANNIECylinder();
   G4LogicalVolume* ConstructPMT(G4String,G4String, G4String detectorElement="tank");
   G4LogicalVolume* ConstructFlatFacedPMT(G4String PMTName, G4String CollectionName, G4String detectorElement="mrd");
   G4LogicalVolume* ConstructLAPPD(G4String,G4String);
 
   G4LogicalVolume* ConstructCaps(G4int zflip);
+  void ConstructANNIECaps(G4int zflip);
 
   void  ConstructMaterials();
 
+  G4LogicalVolume* logicWCBarrel;
+  G4VPhysicalVolume* physiWCBarrel;
   G4LogicalVolume* logicWCBarrelCellBlackSheet;
   G4LogicalVolume* logicWCTowerBlackSheet;
   G4double capAssemblyHeight;
@@ -444,8 +449,8 @@ private:
   G4double WCBarrelLength;
   
   // for annie
+  G4int PMTcounter;                  // ANNIEp2v6 needs this available in ConstructANNIECaps 
   G4double WCCapPMTOffset;           // offset of the cap PMTs toward the centre of the tank.
-  G4double WCCapTopPMTOffset;        // offsets are different for ANNIE
   G4double WCBorderBarrelTopPMTOffset; // more fudging for ANNIE
   G4int numhatchpmts;
   G4bool constructmrd;
@@ -456,6 +461,10 @@ private:
   G4double WCCapPMTPosRadius2;       // radius at which to position PMTs on the hatch
   G4double barrelcompressionfactor;  // how much to squeeze barrel PMTs from caps, ANNIE PMTs fill only central ~60%
   G4double barrelbordercompressionfactor;  // ANNIE border ring sizes also need tuning
+  G4double InnerStructureCentreOffset;
+
+  G4double WCCapTopPMTOffset;        // offsets are different for ANNIE
+  G4double WCCapBottomPMTOffset;     // 
 
   // amb79: to universally make changes in structure and geometry
   bool isUpright;
