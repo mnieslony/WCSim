@@ -536,7 +536,7 @@ void WCSimDetectorConstruction::SetANNIEPhase2Geometryv5()
   // above design uses 32 x 10" HQE and 48 x WB - must remove 2 HQE and 3 WB PMTs
   
   // PMTs on hand:
-  // Side: 45 x 10" (Watchboy, R7081) + 40 x 8" (new, HQE(?) R5912)
+  // Side: 45 x 10" (Watchboy, R7081) + 30 x 10" (new R7081HQE)
   // Bottom: 20 x 10” PMTs (LUX, R7081)
   // Top: 19 x 11” PMTs (LBNE, HQE D784KFLB)  // NB. UPDATED NUMBER, DOWN FROM 22
   
@@ -555,7 +555,7 @@ void WCSimDetectorConstruction::SetANNIEPhase2Geometryv5()
   std::string WCIDCollectionName_R7081HQE = WCDetectorName +"-glassFaceWCPMT_R7081HQE";
   WCTankCollectionNames.push_back(WCIDCollectionName_R7081);     // 10" LUX/Watchboy
   WCTankCollectionNames.push_back(WCIDCollectionName_D784KFLB);  // 11" HQE LBNE
-  WCTankCollectionNames.push_back(WCIDCollectionName_R7081HQE);  // 8"  HQE new
+  WCTankCollectionNames.push_back(WCIDCollectionName_R7081HQE);  // new 10" HQE
   
   // other detector element collections
   WCMRDCollectionName = WCDetectorName +"-glassFaceWCPMT_MRD";
@@ -673,18 +673,30 @@ void WCSimDetectorConstruction::SetANNIEPhase2Geometryv6()
   // 20 x 10" LUX PMTs on the bottom, arranged in a cross with a 4x4 rectangle, extended on it's narrow
   // dimension by an extra 2 PMTs in the centre on either side
   // 19 x 11" LBNE PMTs on the top, arranged in a ring of 16, with 3 on the central hatch
-  // 40 x 8" + 45 x 10" PMTs in the barrel:
-  //   ring config:
-  //   10", 10"
-  //    8",  8"
-  //   10", 10"
-  //    8",  8"
-  //   10",  8"   << one asymmetrical ring
-  //   10", 10"
+  //  8",  8"                                     == 16*8"
+  //  WB,  8" << 3 faces //  WB,  WB << 5 faces   == 3*8", 13*WB
+  //  WB,  WM << 2 faces //  8",  WB << 6 faces   == 2*WM, 6*8", 8*WB
+  //  WM,  WB                                     == 8*WM,       8*WB
+  //  WB,  WB                                     == 16 * WB
+  //  8",  8" (missing one)                       == 15*8"
   // 
-  // Since rings are not all identical, must override replication as per ANNIEp2v2
+  //                                              == 10*WM, (16+3+6+15=40 8"), (13+8+8+16=45 WB) OK!
+  // 
+  // border rings:       31 *  8" HQE                         ->  9 remaining  8" HQE
+  // central rings:      10 * 10" HQE +  6 * 8" HQE + 16 * WB ->  3 remaining  8" HQE + 29 remaining WB
+  // intermediate rings:  3 *  8" HQE + 29 * WB               ->  none remaining 
+  // 
+  // inner structure has 16*6 = 96 holes
+  // PMTs we should have:
+  // 40 new hamamatsu 8"
+  // 45 WB 10" tubes
+  // 10 WM 10" HQE tubes << new, for barrel
+  // Total: 
+  // 95 PMTs
+  // --> only one hole!
+  // 
   // PMTs on hand:
-  // Side: 45 x 10" (Watchboy, R7081) + 40 x 8" (new, HQE(?) R5912)
+  // Side: 45 x 10" (Watchboy, R7081) + 40 x 8" (new, HQE R5912) + 10 x 10" HQE (Watchman, R7081HQE)
   // Bottom: 20 x 10” PMTs (LUX, R7081)
   // Top: 19 x 11” PMTs (LBNE, HQE D784KFLB)  // NB. UPDATED NUMBER, DOWN FROM 22
   
@@ -702,10 +714,12 @@ void WCSimDetectorConstruction::SetANNIEPhase2Geometryv6()
   // the order in the maps is important due to hardcoded hacking in ConstructCylinder
   std::string WCIDCollectionName_R7081 = WCDetectorName +"-glassFaceWCPMT_R7081";
   std::string WCIDCollectionName_D784KFLB = WCDetectorName +"-glassFaceWCPMT_D784KFLB";
+  std::string WCIDCollectionName_R5912HQE = WCDetectorName +"-glassFaceWCPMT_R5912HQE";
   std::string WCIDCollectionName_R7081HQE = WCDetectorName +"-glassFaceWCPMT_R7081HQE";
   WCTankCollectionNames.push_back(WCIDCollectionName_R7081);     // 10" LUX/Watchboy
   WCTankCollectionNames.push_back(WCIDCollectionName_D784KFLB);  // 11" HQE LBNE
-  WCTankCollectionNames.push_back(WCIDCollectionName_R7081HQE);  // 8"  HQE new
+  WCTankCollectionNames.push_back(WCIDCollectionName_R5912HQE);  //  8" HQE new
+  WCTankCollectionNames.push_back(WCIDCollectionName_R7081HQE);  // 10" HQE Watchman
   
   // other detector element collections
   WCMRDCollectionName = WCDetectorName +"-glassFaceWCPMT_MRD";
@@ -723,7 +737,12 @@ void WCSimDetectorConstruction::SetANNIEPhase2Geometryv6()
   G4double WCPMTExposeHeight_D784KFLB = PMT_D784KFLB->GetExposeHeight();
   G4double WCPMTRadius_D784KFLB = PMT_D784KFLB->GetRadius();
   
-  WCSimPMTObject* PMT_R7081HQE = CreatePMTObject("PMT10inchHQE", WCIDCollectionName_R7081HQE);
+  WCSimPMTObject* PMT_R5912HQE = CreatePMTObject("R5912HQE", WCIDCollectionName_R5912HQE);
+  G4String WCPMTName_R5912HQE = PMT_R5912HQE->GetPMTName();
+  G4double WCPMTExposeHeight_R5912HQE = PMT_R5912HQE->GetExposeHeight();
+  G4double WCPMTRadius_R5912HQE = PMT_R5912HQE->GetRadius();
+  
+  WCSimPMTObject* PMT_R7081HQE = CreatePMTObject("R7081HQE", WCIDCollectionName_R7081HQE);
   G4String WCPMTName_R7081HQE = PMT_R7081HQE->GetPMTName();
   G4double WCPMTExposeHeight_R7081HQE = PMT_R7081HQE->GetExposeHeight();
   G4double WCPMTRadius_R7081HQE = PMT_R7081HQE->GetRadius();
@@ -731,10 +750,17 @@ void WCSimDetectorConstruction::SetANNIEPhase2Geometryv6()
   // store info in the maps
   WCPMTNameMap.emplace(WCIDCollectionName_R7081, WCPMTName_R7081);
   WCPMTNameMap.emplace(WCIDCollectionName_D784KFLB, WCPMTName_D784KFLB);
+  WCPMTNameMap.emplace(WCIDCollectionName_R5912HQE, WCPMTName_R5912HQE);
   WCPMTNameMap.emplace(WCIDCollectionName_R7081HQE, WCPMTName_R7081HQE);
   WCPMTRadiusMap.emplace(WCIDCollectionName_R7081, WCPMTRadius_R7081);
   WCPMTRadiusMap.emplace(WCIDCollectionName_D784KFLB, WCPMTRadius_D784KFLB);
+  WCPMTRadiusMap.emplace(WCIDCollectionName_R5912HQE, WCPMTRadius_R5912HQE);
   WCPMTRadiusMap.emplace(WCIDCollectionName_R7081HQE, WCPMTRadius_R7081HQE);
+  // these are used in ConstructANNIECylinder to account for different inner radii due to different holders
+  WCPMTExposeHeightMap.emplace(WCIDCollectionName_R7081,     20.*cm); // FUDGE FACTORS XXX
+  WCPMTExposeHeightMap.emplace(WCIDCollectionName_D784KFLB,   0.*cm);
+  WCPMTExposeHeightMap.emplace(WCIDCollectionName_R5912HQE,  10.*cm);
+  WCPMTExposeHeightMap.emplace(WCIDCollectionName_R7081HQE,  20.*cm);
   WCPMTRadius = WCPMTRadius_D784KFLB;             // the LBNE PMTs are largest at 11"
   WCPMTExposeHeight = WCPMTRadius_R7081;          // the largest expose height of barrel PMTs
   
@@ -791,11 +817,13 @@ void WCSimDetectorConstruction::SetANNIEPhase2Geometryv6()
   
   // cap positioning
   G4double CapPMTRadius    = WCPMTRadius_D784KFLB;				// 11" on top are largest cap PMTs
-  WCCapPMTSpacing          = 3.*(CapPMTRadius+25.*mm);			// ??? XXX
-  WCCapEdgeLimit           = WCIDDiameter/2.0 - CapPMTRadius;	// - 10*cm
-  WCCapPMTPosRadius        = 0.9*m;			// radius at which to position PMTs for the top cap
+  WCCapPMTSpacing          = 3.*(CapPMTRadius) + 4*cm;			// wide separation of bottom PMTs
+  capcompressionratio      = 0.62;			// relative spacing of bottom PMTs in x relative to in y
+  capcentrebarwidth        = 4*cm;			// additional offset of bottom PMTs from centre due to central bar
+  WCCapEdgeLimit           = WCIDDiameter/2.0 - CapPMTRadius;	//
+  WCCapPMTPosRadius        = 0.85*m;		// radius at which to position PMTs for the top cap
+  											// TODO this could probably have a squeeze in pairs
   WCCapPMTPosRadius2       = 0.3*m;			// radius at which to position PMTs for the hatch
-  capcompressionratio      = 0.6;			// how much cap PMTs are squeezed in one dir relative to the other
   WCCapTopPMTOffset        = 0.0*cm;		//
   WCCapBottomPMTOffset     = 0.2*cm;		//
   

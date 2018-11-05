@@ -47,14 +47,14 @@ void WCSimDetectorConstruction::DefineANNIEdimensions(){
 	Xposition=0, Yposition=0, Zposition=0;		// used for positioning parameterisations.
 	numpaddlesperpanelh=26;								// paddles per h scintillator panel
 	numpaddlesperpanelv=30;								// paddles per v scintillator panel
-	numpanels=11;													// scintillator panels
+	numpaddlesperpanelvv = std::vector<int>{30,34,26,30,30};  // refurbished MRD has irregular num PMTs per layer
+	nummrdpmts = 306;
 	numhpanels=6;													// vertical scintillator layers
 	numvpanels=5;													// horizontal scintillator layers
-	numrpcs=10;														// rpc panels
 	numplates=11;													// steel plates
-	numalustructs=11;											// number of supporting structs.
 	numvetopaddles=26;										// number of scintillator paddles in the FACC; 13 panels in 2 layers
 	vetopaddlesperpanel=13;								// number of scintillator paddles in each FACC panel
+	numalustructs=numhpanels+numvpanels;	// number of supporting structs, also num scintillator layers
 
 	scintbordergap=0.3*cm;								// gap between each scintillator (cm) (to account for cladding etc)
 	steelscintgap=0.5*cm;									// gap between steel and scintillator
@@ -67,6 +67,7 @@ void WCSimDetectorConstruction::DefineANNIEdimensions(){
 	steelfullzlen = 5*cm;
 
 	scintfullxlen = 20*cm;
+	scintfullxlen2 = 15*cm;   // 2 upstream most layers of the MRD have narrower kTeV paddles
 	scintfullzlen= 0.6*cm;
 	scinthfullylen = 147.2*cm; //155cm - 7.8cm tapered section		147.1 according to sciboone gdml export		//swapped???
 	scintvfullylen= 130.2*cm;  //138cm - 7.8cm tapered section		129.4 according to sciboone gdml export
@@ -134,14 +135,19 @@ void WCSimDetectorConstruction::DefineANNIEdimensions(){
 	// Paddles - h and v
 	sciMRDhpaddle_box = new G4Box("scintHpaddle",scintfullxlen/2,scinthfullylen/2,scintfullzlen/2);
 	sciMRDvpaddle_box = new G4Box("scintVpaddle",scintfullxlen/2,scintvfullylen/2,scintfullzlen/2);
+	sciMRDvpaddle_box2 = new G4Box("scintVpaddle2",scintfullxlen2/2,scintvfullylen/2,scintfullzlen/2); // kTeV
 
 	// Paddle Tapered ends
-	mrdScintTap_box = new G4Trd("mrdScintTap_box", scintfullxlen/2, scinttapfullwidth/2, scintfullzlen/2, scintfullzlen/2, scinttapfullheight/2);	
+	mrdScintTap_box = new G4Trd("mrdScintTap_box", scintfullxlen/2, scinttapfullwidth/2, scintfullzlen/2, scintfullzlen/2, scinttapfullheight/2);
+	// kTev paddles have no scintTap component: only square paddle and tapered light guide
 
 	// Tapered Light Guides - same code as tapered ends. re-use rotations matrices as they're the same.
-	mrdLG_box = new G4Trd("mrdLG_box", scinttapfullwidth/2, scintlgfullwidth/2, scintfullzlen/2, scintfullzlen/2, scintlgfullheight/2);	
+	mrdLG_box = new G4Trd("mrdLG_box", scinttapfullwidth/2, scintlgfullwidth/2, scintfullzlen/2, scintfullzlen/2, scintlgfullheight/2);
+	mrdLG_box2 = new G4Trd("mrdLG_box2", scintfullxlen2/2, scintlgfullwidth/2, scintfullzlen/2, scintfullzlen/2, scintlgfullheight/2);
 	
-	// Little boxes to go on the ends of the light guides - photons entering these will be killed at the boundary & recorded
+	// Little boxes to go on the ends of the light guides
+	// Photons entering these will be killed at the boundary & recorded
+	// simplified PMT model - now depreciated
 	mrdSurface_box = new G4Box("mrdSurface_box",scintlgfullwidth/2,scintfullzlen/2,nothickness/2);
 
 	// Steel plates
@@ -152,6 +158,7 @@ void WCSimDetectorConstruction::DefineANNIEdimensions(){
 
 	// ...with a 3x3 grid of ~even sized holes  
 	aluMRDwindow_box = new G4Box("inner_Box", windowwidth/2, windowheight/2, alufullzlen/2);
+	// TODO ideally we should replace this simplified alu structure with the SciBooNE version
 
 	totMRD_box = new G4Box("totMRD",(maxwidth/2),(maxheight/2),mrdZlen/2);
 
@@ -192,6 +199,7 @@ void WCSimDetectorConstruction::DefineANNIEdimensions(){
 	
   // Define Mylar cladding
   // =====================
+  // TODO move this to ConstructMaterials
   // For the optical boundary process to use a border surface, the two volumes must have been positioned with G4PVPlacement. 
   scintSurface_op = new G4OpticalSurface("mylarSurface",unified, polishedbackpainted, dielectric_dielectric);
 
@@ -283,7 +291,7 @@ void WCSimDetectorConstruction::ConstructMRD(G4LogicalVolume* expHall_log, G4VPh
   makeAlu(aluMRDassembly);
   G4RotationMatrix rot (0,0,0);
   G4ThreeVector trans(0,0,0);
-  G4cout<<"Making aluminium assembly"<<G4endl;							aluMRDassembly->MakeImprint(totMRD_log,trans,&rot);
+  G4cout<<"Making aluminium assembly"<<G4endl;						aluMRDassembly->MakeImprint(totMRD_log,trans,&rot);
   
   // ADD VIS ATTRIBS
   //================
@@ -368,40 +376,75 @@ void WCSimDetectorConstruction::ConstructMRD(G4LogicalVolume* expHall_log, G4VPh
 // Definition of called functions below
 // ====================================
 
+int WCSimDetectorConstruction::GetLayerNum(int copyNo, int* paddlenuminlayer=nullptr, bool* ishpaddle=nullptr){
+	int layernum = 0;
+	int runningtot=0;
+	int lastrunningtot;
+	do{
+		lastrunningtot = runningtot;
+		runningtot += GetNumPaddlesInLayer(layernum);
+		if(copyNo < runningtot){
+			if(paddlenuminlayer){ *paddlenuminlayer = copyNo - lastrunningtot; }
+			if(ishpaddle){ (*ishpaddle) = (layernum%2==0); }
+			return layernum;
+		}
+		layernum++;
+	} while (1);
+}
+
+int WCSimDetectorConstruction::GetNumPaddlesInLayer(int layernum){
+	if((layernum%2)==0) return numpaddlesperpanelh;
+	else return numpaddlesperpanelvv.at((layernum-1)/2);
+}
+
 // Place Mylar on paddles and light guides
 void WCSimDetectorConstruction::PlaceMylarOnMRDPaddles(G4VPhysicalVolume* expHall_phys, G4VPhysicalVolume* totMRD_phys){
   // Place cladding on MRD paddles
-  for(G4int i=0;i<((numpaddlesperpanelv*numvpanels)+(numpaddlesperpanelh*numhpanels));i++){
-  		G4LogicalBorderSurface* scintSurface_log;
-  		 if(totMRD_phys){
-  	   scintSurface_log
-  		 = new G4LogicalBorderSurface("scintcladdinglog",paddles_phys.at(i),totMRD_phys,scintSurface_op);
-  		 bordersurfaces.push_back(scintSurface_log);
-  		 scintSurface_log
-  		 = new G4LogicalBorderSurface("scintcladdinglog",tapers_phys.at(i),totMRD_phys,scintSurface_op);
-  		 bordersurfaces.push_back(scintSurface_log);
-  		 }// else {
-  		scintSurface_log
-  		 = new G4LogicalBorderSurface("scintcladdinglog",paddles_phys.at(i),expHall_phys,scintSurface_op);
-  		 bordersurfaces.push_back(scintSurface_log);
-  		 scintSurface_log
-  		 = new G4LogicalBorderSurface("scintcladdinglog",tapers_phys.at(i),expHall_phys,scintSurface_op);
-  		 bordersurfaces.push_back(scintSurface_log);
-  		 //}
-  }
-  
-	// Place cladding on Light guides
-  for(G4int i=0;i<((numpaddlesperpanelv*numvpanels)+(numpaddlesperpanelh*numhpanels));i++){
-  		G4LogicalBorderSurface* scintSurface_log;
-  		 if(totMRD_phys){
-  		 scintSurface_log
-  		 = new G4LogicalBorderSurface("scintcladdinglog",lgs_phys.at(i),totMRD_phys,scintSurface_op);
-  		 bordersurfaces.push_back(scintSurface_log);
-  		 }// else {
-  		 scintSurface_log
-  		 = new G4LogicalBorderSurface("scintcladdinglog",lgs_phys.at(i),expHall_phys,scintSurface_op);
-  		 bordersurfaces.push_back(scintSurface_log);
-  		 //}
+  for(G4int i=0;i<paddles_phys.size();i++){
+    
+    G4LogicalBorderSurface* scintSurface_log;
+    
+      // paddle to totMRD_phys surface
+      if(totMRD_phys){
+        
+        // paddle
+        scintSurface_log
+          = new G4LogicalBorderSurface("scintcladdinglog",paddles_phys.at(i),totMRD_phys,scintSurface_op);
+        bordersurfaces.push_back(scintSurface_log);
+        
+        // taper
+        if(i<tapers_phys.size()){  // not every paddle has a taper (KTeV don't)
+          scintSurface_log
+            = new G4LogicalBorderSurface("scintcladdinglog",tapers_phys.at(i),totMRD_phys,scintSurface_op);
+          bordersurfaces.push_back(scintSurface_log);
+        }
+        
+        // light-guide
+        scintSurface_log
+          = new G4LogicalBorderSurface("scintcladdinglog",lgs_phys.at(i),totMRD_phys,scintSurface_op);
+        bordersurfaces.push_back(scintSurface_log);
+         
+      } // else {  // which should we use? totMRD or expHall? Both? safer? or worse?
+      
+      // paddle tot expHall_phys
+      
+      // paddle
+      scintSurface_log
+        = new G4LogicalBorderSurface("scintcladdinglog",paddles_phys.at(i),expHall_phys,scintSurface_op);
+      bordersurfaces.push_back(scintSurface_log);
+      
+      // taper
+      if(i<tapers_phys.size()){  // not every paddle has a taper (KTeV don't)
+        scintSurface_log
+          = new G4LogicalBorderSurface("scintcladdinglog",tapers_phys.at(i),expHall_phys,scintSurface_op);
+        bordersurfaces.push_back(scintSurface_log);
+      }
+      
+      // light-guide
+      scintSurface_log
+        = new G4LogicalBorderSurface("scintcladdinglog",lgs_phys.at(i),expHall_phys,scintSurface_op);
+      bordersurfaces.push_back(scintSurface_log);
+      //}
   }
 }
 
@@ -452,31 +495,18 @@ void WCSimDetectorConstruction::ComputeSteelTransformation (const G4int copyNo, 
 void WCSimDetectorConstruction::ComputePaddleTransformation (const G4int copyNo, G4VPhysicalVolume* physVol) {
 		Xposition=0, Yposition=0, Zposition=0;
 		G4RotationMatrix* rotmtx;
-		G4int panelpairnum = floor(copyNo/(numpaddlesperpanelv+numpaddlesperpanelh));	// which pair of panels
-		G4int panelnumrem = copyNo - panelpairnum*(numpaddlesperpanelv+numpaddlesperpanelh);	// copy num within a pair of panels
-		G4int panelnum;
-		G4int paddlenum;
-		G4bool isvpaddle=false, ishpaddle=false;
-		if(panelnumrem>(numpaddlesperpanelh-1)){																	// first layer is a horizontal layer
-			panelnum = (panelpairnum*2) +1;
-			isvpaddle = true;
-			paddlenum = panelnumrem-numpaddlesperpanelh; // copyNo%numpaddlesperpanelh;	//## replaced!!!
-		} else {
-			panelnum = (panelpairnum*2);
-			ishpaddle = true;
-			paddlenum = panelnumrem; // copyNo%numpaddlesperpanelh;
-		}
-		/*G4cout<<"placing mrd paddle "<<copyNo<<" =";
-		isvpaddle ? (G4cout<<" vertical ") : (G4cout<<" horizontal ");
-		G4cout<<" panel "<<panelnum<<", paddle "<<paddlenum<<G4endl;*/
+		
+		G4int paddlenum; // number within a scintillator layer. paddles 0,1 are an opposing pair.
+		G4bool ishpaddle;
+		G4int panelnum = GetLayerNum(copyNo, &paddlenum, &ishpaddle); 				// extra args are also set
 		G4int pairnum = floor(paddlenum/2);																		// Paddles 0&1 are a pair; 
 																																					// then X offset is the same for every pair
 		Zposition = panelnum*(steelfullzlen + alufullzlen + scintfullzlen + layergap);
 																																					// layer width offset is always constant (except first)
-		//if(panelnum==0){Zposition = Zposition + alufullzlen + scintalugap;}								// first layer intrudes into 'layer offset' 
+		//if(panelnum==0){Zposition = Zposition + alufullzlen + scintalugap;}	// first layer intrudes into 'layer offset' 
 		Zposition = Zposition + steelfullzlen + steelscintgap;								// scint follows closely behind first steel
 		Zposition = Zposition + (scintfullzlen/2);														// offset by half depth so we place front face not centre
-		Zposition = Zposition + MRDPMTRadius - (mrdZlen/2);																	// offset by half total length to shift to front
+		Zposition = Zposition + MRDPMTRadius - (mrdZlen/2);										// offset by half total length to shift to front
 		
 		//if(paddlenum==0){G4cout<<"scint layer placed at z = " << (Zposition + (mrdZlen/2) - (scintfullzlen/2) + tankouterRadius + 2*cm)<< " cm to "<< (Zposition + (mrdZlen/2) + (scintfullzlen/2) + tankouterRadius + 2*cm) << " cm." << G4endl;}
 		
@@ -490,7 +520,7 @@ void WCSimDetectorConstruction::ComputePaddleTransformation (const G4int copyNo,
 			} else {
 				Xposition=-((scinthfullylen+scintbordergap)/2.);										// offset by -half length so one end is at x=0
 			}
-			Yposition = pairnum*(scintfullxlen+scintbordergap); 								// individual offset by pair number
+			Yposition = pairnum*(scintfullxlen+scintbordergap); 									// individual offset by pair number
 			Yposition = Yposition - 0.5*(((scintfullxlen+scintbordergap)*(numpaddlesperpanelh/2.))-scintbordergap)+(scintfullxlen/2);
 			// shift whole set by 1/2 total X extent to shift center back to X=0: HalfLength cancels doubed num of paddles
 			rotmtx=rotatedmatx;
@@ -501,10 +531,11 @@ void WCSimDetectorConstruction::ComputePaddleTransformation (const G4int copyNo,
 			} else {
 				Yposition=-((scintvfullylen+scintbordergap)/2);
 			}
+			G4double scintxlen = (panelnum==1||panelnum==3) ? scintfullxlen2 : scintfullxlen;
 			// for vertical panels need to shift Y for each pair
-			Xposition = pairnum*(scintfullxlen+scintbordergap); 	// individual offset by pair number
+			Xposition = pairnum*(scintxlen+scintbordergap); 	// individual offset by pair number
 			// shift whole set by 1/2 total Y extent to shift center back to Y=0: HalfLength cancels doubed num of paddles
-			Xposition = Xposition - 0.5*(((scintfullxlen+scintbordergap)*(numpaddlesperpanelv/2.))-scintbordergap)+(scintfullxlen/2); 
+			Xposition = Xposition - 0.5*(((scintxlen+scintbordergap)*(numpaddlesperpanelvv.at((panelnum-1)/2)/2.))-scintbordergap)+(scintxlen/2); 
 			
 			rotmtx=0;							// don't rotate vertical panels
 		}
@@ -527,7 +558,8 @@ void WCSimDetectorConstruction::ComputePaddleTransformation (const G4int copyNo,
 			G4cout<<Xposition-(scinthfullylen/2.)<<"→"<<Xposition+(scinthfullylen/2.)<<", ";
 			G4cout<<Yposition-(scintfullxlen/2.)<<"→"<<Yposition+(scintfullxlen/2.)<<", ";
 		} else {
-			G4cout<<Xposition-(scintfullxlen/2.)<<"→"<<Xposition+(scintfullxlen/2.)<<", ";
+			G4double scintxlen = (panelnum==1||panelnum==3) ? scintfullxlen2 : scintfullxlen;
+			G4cout<<Xposition-(scintxlen/2.)<<"→"<<Xposition+(scintxlen/2.)<<", ";
 			G4cout<<Yposition-(scintvfullylen/2.)<<"→"<<Yposition+(scintvfullylen/2.)<<", ";
 		}
 		G4cout<<Zposition-(scintfullzlen/2.)+mrdZoffset<<"→"
@@ -545,21 +577,12 @@ void WCSimDetectorConstruction::ComputePaddleTransformation (const G4int copyNo,
 void WCSimDetectorConstruction::ComputeTaperTransformation (const G4int copyNo, G4VPhysicalVolume* physVol, G4int selector, G4bool additionaloffset) {
 		Xposition=0, Yposition=0, Zposition=0;
 		G4RotationMatrix* rotmtx;
-		G4int panelpairnum = floor(copyNo/(numpaddlesperpanelv+numpaddlesperpanelh));	// which pair of panels
-		G4int panelnumrem = copyNo - panelpairnum*(numpaddlesperpanelv+numpaddlesperpanelh);	// copy num within a pair of panels
-		G4int panelnum;
-		G4int paddlenum;
-		G4bool isvpaddle=false, ishpaddle=false;
-		if(panelnumrem>(numpaddlesperpanelh-1)){																	// first layer is a horizontal layer (leading horizontal layer removed)
-			panelnum = (panelpairnum*2) +1;
-			isvpaddle = true;
-			paddlenum = panelnumrem-numpaddlesperpanelh;
-		} else {
-			panelnum = (panelpairnum*2);
-			ishpaddle = true;
-			paddlenum = panelnumrem;
-		}
-		G4int pairnum = floor(paddlenum/2);											// LGs 0,1 are a vertical pair; X offset is the same for every pair
+		
+		G4int paddlenum; // number within a scintillator layer. paddles 0,1 are an opposing pair.
+		G4bool ishpaddle;
+		G4int panelnum = GetLayerNum(copyNo, &paddlenum, &ishpaddle); // extra args are also set
+		G4int pairnum = floor(paddlenum/2);														// LGs 0,1 are a vertical pair; X offset is the same for every pair
+		
 		/*switch(selector){
 			case 0: {G4cout<<"Placing";
 			ishpaddle ? (G4cout<<" horizontal ") : (G4cout<<" vertical ");
@@ -615,13 +638,21 @@ void WCSimDetectorConstruction::ComputeTaperTransformation (const G4int copyNo, 
 			Yposition = Yposition - 0.5*(((scintfullxlen+scintbordergap)*(numpaddlesperpanelh/2))-scintbordergap)+(scintfullxlen/2); 
 		} else {
 		// vertical panel
-			if(selector==0){
+			if(selector==0){         // scintillating tapers
 				Yposition=scintvfullylen+(scintbordergap/2)+(scinttapfullheight/2);
-			} else if(selector==1){
-				Yposition=scintvfullylen+(scintbordergap/2)+scinttapfullheight+(scintlgfullheight/2);
-			} else if(selector==2){	//pmts
-				Yposition=scintvfullylen+(scintbordergap/2)+scinttapfullheight+scintlgfullheight+(mrdpmtfullheight/2);
-			} else if(selector==3){	//sds
+			} else if(selector==1){  //light guides
+				if(panelnum==1||panelnum==3){  // no tapers: adjust position of LG accordingly
+					Yposition=scintvfullylen+(scintbordergap/2)+(scintlgfullheight/2);
+				} else {
+					Yposition=scintvfullylen+(scintbordergap/2)+scinttapfullheight+(scintlgfullheight/2);
+				}
+			} else if(selector==2){  //pmts
+				if(panelnum==1||panelnum==3){  // no tapers: adjust position of LG accordingly
+					Yposition=scintvfullylen+(scintbordergap/2)+scintlgfullheight+(mrdpmtfullheight/2);
+				} else {
+					Yposition=scintvfullylen+(scintbordergap/2)+scinttapfullheight+scintlgfullheight+(mrdpmtfullheight/2);
+				}
+			} else if(selector==3){  //sds
 				Yposition=scintvfullylen+(scintbordergap/2)+scinttapfullheight+scintlgfullheight+(nothickness/2);
 			}
 
@@ -640,8 +671,9 @@ void WCSimDetectorConstruction::ComputeTaperTransformation (const G4int copyNo, 
 					rotmtx=downmtx;
 				}
 			}
-			Xposition = pairnum*(scintfullxlen+scintbordergap);
-			Xposition = Xposition - 0.5*(((scintfullxlen+scintbordergap)*(numpaddlesperpanelv/2))-scintbordergap)+(scintfullxlen/2); 
+			G4double scintxlen = (panelnum==1||panelnum==3) ? scintfullxlen2 : scintfullxlen;
+			Xposition = pairnum*(scintxlen+scintbordergap);
+			Xposition = Xposition - 0.5*(((scintxlen+scintbordergap)*(numpaddlesperpanelvv.at((panelnum-1)/2)/2))-scintbordergap)+(scintxlen/2); 
 		}
 
 		G4ThreeVector origin(Xposition,Yposition,Zposition);
@@ -714,51 +746,57 @@ void WCSimDetectorConstruction::ComputeVetoPaddleTransformation (const G4int cop
 // ===========================================================
 void WCSimDetectorConstruction::PlacePaddles(G4LogicalVolume* totMRD_log){
 
-	hpaddle_log = new G4LogicalVolume(sciMRDhpaddle_box, G4Material::GetMaterial("Scinti"), "vpaddle_log");
-	vpaddle_log = new G4LogicalVolume(sciMRDvpaddle_box, G4Material::GetMaterial("Scinti"), "hpaddle_log");
+	hpaddle_log = new G4LogicalVolume(sciMRDhpaddle_box, G4Material::GetMaterial("Scinti"), "hpaddle_log");
+	vpaddle_log = new G4LogicalVolume(sciMRDvpaddle_box, G4Material::GetMaterial("Scinti"), "vpaddle_log");
+	vpaddle_log2 = new G4LogicalVolume(sciMRDvpaddle_box2, G4Material::GetMaterial("Scinti"), "vpaddle_log2"); //KTeV
 	hpaddle_log->SetVisAttributes(scinthatts);
 	vpaddle_log->SetVisAttributes(scintvatts);
+	vpaddle_log2->SetVisAttributes(scintvatts);
 	G4LogicalVolume* paddle_log;
 	G4VPhysicalVolume* paddle_phys;
-	for(G4int i=0;i<((numpaddlesperpanelv*numvpanels)+(numpaddlesperpanelh*numhpanels));i++){
-			G4int panelpairnum = floor(i/(numpaddlesperpanelv+numpaddlesperpanelh));					// which pair of panels
-			G4int panelnumrem = i - panelpairnum*(numpaddlesperpanelv+numpaddlesperpanelh);		// copy num within a pair of panels
-			G4bool isvpaddle=false, ishpaddle=false;
-			if(panelnumrem>(numpaddlesperpanelh-1)){																	// first layer is a horizontal layer (leading pair removed)
-				paddle_log = vpaddle_log;
-			} else {
-				paddle_log = hpaddle_log;
-			}
-			
-			paddle_phys = new G4PVPlacement(noRot,G4ThreeVector(), paddle_log, "paddle_phys", totMRD_log, false, i);
-			ComputePaddleTransformation(i, paddle_phys);
-			paddles_phys.push_back(paddle_phys);
+	for(G4int i=0;i<nummrdpmts;i++){
+		int layernum = GetLayerNum(i);
+		if(layernum==1||layernum==3) paddle_log = vpaddle_log2; // kTeV paddle
+		else if((layernum%2)==0)     paddle_log = hpaddle_log;  // first, even paddles are horizontal
+		else                         paddle_log = vpaddle_log;  // sciboone vertical paddle
+		
+		paddle_phys = new G4PVPlacement(noRot,G4ThreeVector(), paddle_log, "paddle_phys", totMRD_log, false, i);
+		ComputePaddleTransformation(i, paddle_phys);
+		paddles_phys.push_back(paddle_phys);
 	}
 }
 
 // Code to do generation and placement of scintillator taper ends
 // ==============================================================
 void WCSimDetectorConstruction::PlaceTapers(G4LogicalVolume* totMRD_log){
-
+	
 	taper_log = new G4LogicalVolume(mrdScintTap_box, G4Material::GetMaterial("Scinti"), "taper_log");
 	G4VPhysicalVolume* taper_phys;
-	for(G4int i=0;i<((numpaddlesperpanelv*numvpanels)+(numpaddlesperpanelh*numhpanels));i++){
-			taper_phys = new G4PVPlacement(noRot,G4ThreeVector(), taper_log, "taper_phys", totMRD_log, false, i);
-			ComputeTaperTransformation(i, taper_phys, 0, false);
-			tapers_phys.push_back(taper_phys);
+	for(G4int i=0;i<nummrdpmts;i++){
+		int layernum = GetLayerNum(i);
+		if(layernum==1||layernum==3) continue; // first 2 vertical layers have no tapered scintillator
+		taper_phys = new G4PVPlacement(noRot,G4ThreeVector(), taper_log, "taper_phys", totMRD_log, false, i);
+		ComputeTaperTransformation(i, taper_phys, 0, false);
+		tapers_phys.push_back(taper_phys);
 	}
 }
 
 // Code to do generation and placement of glass light-guides
 // =========================================================
 void WCSimDetectorConstruction::PlaceLGs(G4LogicalVolume* totMRD_log){
-
+	
 	lg_log = new G4LogicalVolume(mrdLG_box, G4Material::GetMaterial("Glass"), "lg_log");
+	lg_log2 = new G4LogicalVolume(mrdLG_box2, G4Material::GetMaterial("Glass"), "lg_log2");
+	G4LogicalVolume* this_lg_log;
 	G4VPhysicalVolume* lg_phys;
-	for(G4int i=0;i<((numpaddlesperpanelv*numvpanels)+(numpaddlesperpanelh*numhpanels));i++){
-			lg_phys = new G4PVPlacement(noRot,G4ThreeVector(), lg_log, "lg_phys", totMRD_log, false, i);
-			ComputeTaperTransformation(i, lg_phys, 1, false);
-			lgs_phys.push_back(lg_phys);
+	for(G4int i=0;i<nummrdpmts;i++){
+		int layernum = GetLayerNum(i);
+		if(layernum==1||layernum==3) this_lg_log = lg_log2; // kTeV paddle
+		else                         this_lg_log = lg_log;
+		
+		lg_phys = new G4PVPlacement(noRot,G4ThreeVector(), this_lg_log, "lg_phys", totMRD_log, false, i);
+		ComputeTaperTransformation(i, lg_phys, 1, false);
+		lgs_phys.push_back(lg_phys);
 	}
 }
 
@@ -772,7 +810,7 @@ void WCSimDetectorConstruction::PlaceMRDSDSurfs(G4LogicalVolume* totMRD_log){
 	mrdsdsurf_log->SetVisAttributes(surfacevisatts);
 	G4VPhysicalVolume* mrdsdsurf_phys;
 	
-	for(G4int i=0;i<((numpaddlesperpanelv*numvpanels)+(numpaddlesperpanelh*numhpanels));i++){
+	for(G4int i=0;i<nummrdpmts;i++){
 			mrdsdsurf_phys = new G4PVPlacement(noRot,G4ThreeVector(), mrdsdsurf_log, "mrdsdsurf_phys", totMRD_log, false, i);
 			ComputeTaperTransformation(i, mrdsdsurf_phys, 3, useadditionaloffset);
 			mrdsdsurfs_phys.push_back(mrdsdsurf_phys);
@@ -780,7 +818,7 @@ void WCSimDetectorConstruction::PlaceMRDSDSurfs(G4LogicalVolume* totMRD_log){
 	
 	// must be dielectric_metal to invoke absorption/detection process - but is this overridden if both volumes have a ref index?
   // for dielectric_metal transmittance isn't possible, so either reflection or absorption with probability from mat. properties. 
-  for(G4int i=0;i<((numpaddlesperpanelv*numvpanels)+(numpaddlesperpanelh*numhpanels));i++){
+  for(G4int i=0;i<nummrdpmts;i++){
       G4LogicalBorderSurface* lgSurface_log = new G4LogicalBorderSurface("lgborderlog",lgs_phys.at(i),mrdsdsurfs_phys.at(i),lgSurface_op);
       bordersurfaces.push_back(lgSurface_log);
   }
@@ -801,7 +839,7 @@ void WCSimDetectorConstruction::PlaceMRDPMTs(G4LogicalVolume* totMRD_log){
 	logicMRDPMT = ConstructFlatFacedPMT(MRDPMTName, WCMRDCollectionName, "mrd");
 	G4VPhysicalVolume* mrdpmt_phys;
 //	G4cout<<"making placements"<<G4endl;
-	for(G4int icopy=0; icopy<((numpaddlesperpanelv*numvpanels)+(numpaddlesperpanelh*numhpanels));icopy++){
+	for(G4int icopy=0; icopy<nummrdpmts;icopy++){
 		mrdpmt_phys = 
 		new G4PVPlacement(	0,						// no rotation
 							G4ThreeVector(),				// its position

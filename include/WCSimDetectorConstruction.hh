@@ -360,8 +360,9 @@ private:
   G4String WCIDCollectionName; // ⚠
   G4String WCODCollectionName;
 	G4String WCIDCollectionName2;
-  std::map<G4String, G4String> WCPMTNameMap;              // ✩
-  std::map<G4String, G4double> WCPMTRadiusMap;            // ✩
+  std::map<G4String, G4String> WCPMTNameMap;                 // ✩
+  std::map<G4String, G4double> WCPMTRadiusMap;               // ✩
+  std::map<G4String, G4double> WCPMTExposeHeightMap;         // ✩
   std::map<G4String, std::vector<int> > TubeIdsByCollection; // ✩ Store all tubeIDs in each collection
   std::map<Int_t, G4String> WCTubeCollectionMap;             // ✩ Map a tubeID to the collection it's in
   std::vector<G4String> WCTankCollectionNames;               // ✩
@@ -457,6 +458,7 @@ private:
   G4bool constructveto;
   G4double compressionfactor;        // ratio to squeeze PMTs together on an octagon face, relative to full width
   G4double capcompressionratio;      // aspect ratio of PMT spacing on bottom cap
+  G4double capcentrebarwidth;        // cap PMT offset due to width of central bar
   G4double WCCapPMTPosRadius;        // radius at which to position top cap PMTs, for some ANNIE designs
   G4double WCCapPMTPosRadius2;       // radius at which to position PMTs on the hatch
   G4double barrelcompressionfactor;  // how much to squeeze barrel PMTs from caps, ANNIE PMTs fill only central ~60%
@@ -592,6 +594,8 @@ private:
   void ConstructMRD(G4LogicalVolume* expHall_log, G4VPhysicalVolume* expHall_phys);
   void ConstructVETO(G4LogicalVolume* expHall_log, G4VPhysicalVolume* expHall_phys);
   void ConstructNCV(G4LogicalVolume* waterTank_log);
+  int GetLayerNum(int copyNo, int* paddlenuminlayer, bool* ishpaddle);
+  int GetNumPaddlesInLayer(int layernum);
   void ComputePaddleTransformation (const G4int copyNo, G4VPhysicalVolume* physVol);
   void ComputeTaperTransformation (const G4int copyNo, G4VPhysicalVolume* physVol, G4int selector, G4bool additionaloffset);
   void ComputeSteelTransformation (const G4int copyNo, G4VPhysicalVolume* physVol);
@@ -656,6 +660,8 @@ private:
 	G4double Xposition, Yposition, Zposition;		// used for positioning parameterisations.
 	G4int numpaddlesperpanelh;									// paddles per h scintillator panel
 	G4int numpaddlesperpanelv;									// paddles per v scintillator panel
+	std::vector<int> numpaddlesperpanelvv;			// not all the same in refurbished MRD
+	G4int nummrdpmts;														// total number of mrd paddles
 	G4int numpanels;														// scintillator panels
 	G4int numhpanels;														// horizontal scintillator panels
 	G4int numvpanels;														// vertical scintillator panels
@@ -676,6 +682,7 @@ private:
 	G4double steelfullzlen;
 
 	G4double scintfullxlen;
+	G4double scintfullxlen2;
 	G4double scintfullzlen;
 	G4double scinthfullylen;
 	G4double scintvfullylen;
@@ -725,9 +732,11 @@ private:
 
 	G4Box* sciMRDhpaddle_box;										// Paddles - h 
 	G4Box* sciMRDvpaddle_box;										// and v
+	G4Box* sciMRDvpaddle_box2;									// kTeV version
 	G4Trd* mrdScintTap_box;											// Paddle Tapered ends
 
 	G4Trd* mrdLG_box;														// Tapered Light Guides
+	G4Trd* mrdLG_box2;													// KTeV version
 	G4Box* mrdSurface_box;											// little box for surface to detect photons
 
 	G4Box* steelMRDplate_box;										// Steel plates
@@ -750,8 +759,10 @@ private:
 
 	G4LogicalVolume* hpaddle_log;
 	G4LogicalVolume* vpaddle_log;
+	G4LogicalVolume* vpaddle_log2;
 	G4LogicalVolume* taper_log;
 	G4LogicalVolume* lg_log;
+	G4LogicalVolume* lg_log2;
 	G4LogicalVolume* steel_log;
 	G4LogicalVolume* mrdsdsurf_log;
 

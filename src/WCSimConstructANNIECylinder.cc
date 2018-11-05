@@ -210,27 +210,6 @@ G4LogicalVolume* WCSimDetectorConstruction::ConstructANNIECylinder()
 	G4RotationMatrix* WCPMTRotation = new G4RotationMatrix;
 	WCPMTRotation->rotateY(90.*deg);
 	
-	// ANNIEp2v6
-	// =========
-	// Manual override of barrel ring placement: we have just 1 barrel ring replica volume, into which
-	// multiple rings of PMTs are placed
-	// 10", N/A   << border ring
-	//  8",  8"
-	// 10", 10"
-	//  8",  8"
-	// 10",  8"   << one asymmetrical ring
-	// N/A, 10"   << border ring
-
-	// NB: This design has 5 x 10" PMTs per face => 5x8 = 40 total 10" PMTs! We have 45,
-	// So we can add 5 more to the border rings - e.g. 3 to one border ring and 2 to the other
-	// Since we use cell replication, octagon faces must be identical...
-	// and masking PMTs in output is not sufficient - they would still contribute to triggering!
-	// need to figure out how to make a list of 'ghost' PMTs, and neuter them in WCSimWCSD::ProcessHits??
-
-	//  PMTs are placed in the vector in the order their collections are defined - i.e. in the order they are 
-	//  declared in DetectorConfigs: 
-	//  {R7081 (10" WB/LUX : barrel+bottom), D784KFLB (11" LBNE : top), R5912HQE (8" HQE : barrel)}
-	
 	// azimuthal PMT spacing in rings
 	G4double barrelCellWidth   = 2.*WCIDRadius*tan(dPhi/2.)*compressionfactor;
 	G4double horizontalSpacing = barrelCellWidth/WCPMTperCellHorizontal;
@@ -239,37 +218,58 @@ G4LogicalVolume* WCSimDetectorConstruction::ConstructANNIECylinder()
 	
 	// extra loop over barrel faces
 	PMTcounter=0;
-	for(double facei=0.5; facei<WCBarrelRingNPhi; facei++){
+	for(double facei=0; facei<WCBarrelRingNPhi; facei++){
 		// rotate the PMT. We need a new rotation matrix for each volume
 		G4RotationMatrix* WCPMTRotationNext = new G4RotationMatrix(*WCPMTRotation);
-		WCPMTRotationNext->rotateX((dPhi*facei)-90.*deg);
-		G4double CellCentreX = WCIDRadius * sin(dPhi*facei);
-		G4double CellCentreY = WCIDRadius * cos(dPhi*facei);
+		WCPMTRotationNext->rotateX((dPhi*facei)-67.5*deg);
+//		G4double CellCentreX = WCIDRadius * sin(dPhi*(facei+0.5));
+//		G4double CellCentreY = WCIDRadius * cos(dPhi*(facei+0.5));
 		
 		for(G4double i = 0; i < WCPMTperCellHorizontal; i++){
 			for(G4double j = 0; j < WCBarrelNRings; j++){
 				
+				// we have one hole: skip PMT placement
+				if( j==5 && facei==0 && i==0 ) continue;
 				
+				// Select the appropriate PMT logical volume
+				// PMTs are placed in the vector in the order their collections are defined
+				// - i.e. in the order they are declared in DetectorConfigs: 
+				// {R7081 (10" WB/LUX), D784KFLB (11" LBNE), R5912HQE (8" HQE), R7081HQE (10" HQE WM)}
 				
-				// we need to skip 5 WB placements in the outer main barrel rings,
-				// and switch two HQEs with WBs in the inner HQE rings, to properly match the PMTs we have
-				if( (j==0 && i==0) ||
-					(j==5 && i==1)
-				) continue;
+				// 0:  8",  8"
+				// 1:  WB,  8" << 3 faces //  WB,  WB << 5 faces   (3 * 8" on downstream... is upstream better?)
+				// 2:  WB,  WM << 2 faces //  WB,  8" << 6 faces
+				// 3:  WM,  WB
+				// 4:  WB,  WB
+				// 5:  8",  8" (missing one)
+				// N.B. facei==0 is x<0, upstream.
+				// ring j==0 is top of tank.
 				
-				if(j==0 || j==2 || (j==4&&i==1) || j==5){
-				 logicWCPMT = logicWCPMTs.at(0); // 10" LUX/Watchboy
+				int PMTindex=-1;
+				if( j==0 || j==5 || 
+				   (j==1&&(facei>1&&facei<5)&&i==0) || 
+				   (j==2&&(facei!=3&&facei!=4)&&i==1)
+				  ){
+					PMTindex = 2;  // 8" HQE new
+				} else if( (j==3&&i==0) || (j==2&&(facei==3||facei==4)&&i==1) ){
+					PMTindex = 3;  // WM 10" HQE
 				} else {
-				 logicWCPMT = logicWCPMTs.at(2); // 10" HQE new
+					PMTindex = 0;  // WB 10"
 				}
+				logicWCPMT = logicWCPMTs.at(PMTindex);
+				G4String pmtCollectionName = WCTankCollectionNames.at(PMTindex);
 				
 				// account only for rotation of the cell and vertical (ring) translation
-				G4ThreeVector PMTPosition =	
-					G4ThreeVector((-barrelCellWidth/2.+(i+0.5)*horizontalSpacing)*sin((dPhi*facei)+90.*deg),
-								  (-barrelCellWidth/2.+(i+0.5)*horizontalSpacing)*cos((dPhi*facei)+90.*deg),
+				G4ThreeVector PMTPosition =
+					G4ThreeVector((-barrelCellWidth/2.+(i+0.5)*horizontalSpacing)*sin((dPhi*facei)+112.5*deg),
+								  (-barrelCellWidth/2.+(i+0.5)*horizontalSpacing)*cos((dPhi*facei)+112.5*deg),
 								   -mainAnnulusHeight/2.+(j+1)*verticalSpacing-InnerStructureCentreOffset/2.);
 				
 				// add translation of cell centre
+				// this will depend on the PMT type, because of different mounting radii
+				G4double MountingRadius = WCIDRadius - WCPMTExposeHeightMap.at(pmtCollectionName);
+				G4double CellCentreX = MountingRadius * sin(dPhi*(facei+0.5));
+				G4double CellCentreY = MountingRadius * cos(dPhi*(facei+0.5));
 				PMTPosition.setX(PMTPosition.getX()+CellCentreX);
 				PMTPosition.setY(PMTPosition.getY()+CellCentreY);
 				
@@ -439,7 +439,8 @@ void WCSimDetectorConstruction::ConstructANNIECaps(G4int zflip)
 			for (int j = -CapNCellY ; j < CapNCellY; j++) {
 				
 				xoffset = i*WCCapPMTSpacing + WCCapPMTSpacing*0.5;
-				yoffset = (j*WCCapPMTSpacing + WCCapPMTSpacing*0.5)*capcompressionratio;
+				int yside = (j<0) ? -1 : 1;
+				yoffset = (j*WCCapPMTSpacing + WCCapPMTSpacing*0.5)*capcompressionratio+(capcentrebarwidth*yside);
 				zoffset = -capAssemblyHeight*zflip+InnerStructureCentreOffset+WCCapBottomPMTOffset;
 				
 				G4ThreeVector cellpos = G4ThreeVector(xoffset, yoffset, zoffset);
