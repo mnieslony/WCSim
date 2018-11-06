@@ -259,10 +259,11 @@ void WCSimDetectorConstruction::DefineANNIEdimensions(){
 void WCSimDetectorConstruction::ConstructMRD(G4LogicalVolume* expHall_log, G4VPhysicalVolume* expHall_phys){
 
   G4cout<<"CONSTRUCTING MRD"<<G4endl;
-  // Set up some sort of offset for the MRD from the tank. Leave the tank centred on the origin. 
+  DefineANNIEdimensions();  // first define necessary dimensions, paddles etc.
+  
+  // offset MRD by half of length of both so edges touch + 2cm offset, 
+  // with 1.52m tank radius puts MRD at z = 1.54*m.
   // N.B. Hall is 50*500*500m
-   
-  // offset MRD by half of length of both so edges touch + 2cm offset, with 1.52m tank radius puts MRD at z = 1.54*m.
   mrdZoffset = (2*tankouterRadius) + tankzoffset + (mrdZlen/2.) + 5*cm;
 #ifdef PRINT_MRD_POSITION
   G4cout<<"########## MRD front face: "<<(mrdZoffset-(mrdZlen/2.))/cm<<"                      ##########"<<G4endl;

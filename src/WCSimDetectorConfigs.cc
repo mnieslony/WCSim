@@ -716,10 +716,12 @@ void WCSimDetectorConstruction::SetANNIEPhase2Geometryv6()
   std::string WCIDCollectionName_D784KFLB = WCDetectorName +"-glassFaceWCPMT_D784KFLB";
   std::string WCIDCollectionName_R5912HQE = WCDetectorName +"-glassFaceWCPMT_R5912HQE";
   std::string WCIDCollectionName_R7081HQE = WCDetectorName +"-glassFaceWCPMT_R7081HQE";
+  std::string WCODCollectionName_EMI9954KB = WCDetectorName +"-glassFaceWCPMT_EMI9954KB"; // 2" OD PMTs
   WCTankCollectionNames.push_back(WCIDCollectionName_R7081);     // 10" LUX/Watchboy
   WCTankCollectionNames.push_back(WCIDCollectionName_D784KFLB);  // 11" HQE LBNE
   WCTankCollectionNames.push_back(WCIDCollectionName_R5912HQE);  //  8" HQE new
   WCTankCollectionNames.push_back(WCIDCollectionName_R7081HQE);  // 10" HQE Watchman
+  WCTankCollectionNames.push_back(WCODCollectionName_EMI9954KB); //  2" PMT, for now use same as MRD
   
   // other detector element collections
   WCMRDCollectionName = WCDetectorName +"-glassFaceWCPMT_MRD";
@@ -747,20 +749,32 @@ void WCSimDetectorConstruction::SetANNIEPhase2Geometryv6()
   G4double WCPMTExposeHeight_R7081HQE = PMT_R7081HQE->GetExposeHeight();
   G4double WCPMTRadius_R7081HQE = PMT_R7081HQE->GetRadius();
   
+  WCSimPMTObject* PMT_EMI9954KB = CreatePMTObject("FlatFacedPMT2inch",WCODCollectionName_EMI9954KB);
+  G4String WCPMTName_EMI9954KB = PMT_EMI9954KB->GetPMTName();
+  G4double WCPMTExposeHeight_EMI9954KB = PMT_EMI9954KB->GetExposeHeight();
+  G4double WCPMTRadius_EMI9954KB = PMT_EMI9954KB->GetRadius();
+  
   // store info in the maps
+  // names
   WCPMTNameMap.emplace(WCIDCollectionName_R7081, WCPMTName_R7081);
   WCPMTNameMap.emplace(WCIDCollectionName_D784KFLB, WCPMTName_D784KFLB);
   WCPMTNameMap.emplace(WCIDCollectionName_R5912HQE, WCPMTName_R5912HQE);
   WCPMTNameMap.emplace(WCIDCollectionName_R7081HQE, WCPMTName_R7081HQE);
+  WCPMTNameMap.emplace(WCODCollectionName_EMI9954KB, WCPMTName_EMI9954KB);
+  // radii
   WCPMTRadiusMap.emplace(WCIDCollectionName_R7081, WCPMTRadius_R7081);
   WCPMTRadiusMap.emplace(WCIDCollectionName_D784KFLB, WCPMTRadius_D784KFLB);
   WCPMTRadiusMap.emplace(WCIDCollectionName_R5912HQE, WCPMTRadius_R5912HQE);
   WCPMTRadiusMap.emplace(WCIDCollectionName_R7081HQE, WCPMTRadius_R7081HQE);
+  WCPMTRadiusMap.emplace(WCODCollectionName_EMI9954KB, WCPMTRadius_EMI9954KB);
+  // expose heights
   // these are used in ConstructANNIECylinder to account for different inner radii due to different holders
-  WCPMTExposeHeightMap.emplace(WCIDCollectionName_R7081,     20.*cm); // FUDGE FACTORS XXX
+  WCPMTExposeHeightMap.emplace(WCIDCollectionName_R7081,     20.*cm); // (just fudge factors)
   WCPMTExposeHeightMap.emplace(WCIDCollectionName_D784KFLB,   0.*cm);
   WCPMTExposeHeightMap.emplace(WCIDCollectionName_R5912HQE,  10.*cm);
   WCPMTExposeHeightMap.emplace(WCIDCollectionName_R7081HQE,  20.*cm);
+  WCPMTExposeHeightMap.emplace(WCODCollectionName_EMI9954KB,  10.*cm);
+  
   WCPMTRadius = WCPMTRadius_D784KFLB;             // the LBNE PMTs are largest at 11"
   WCPMTExposeHeight = WCPMTRadius_R7081;          // the largest expose height of barrel PMTs
   
@@ -769,7 +783,6 @@ void WCSimDetectorConstruction::SetANNIEPhase2Geometryv6()
   WCLAPPDExposeHeight = lappd->GetExposeHeight();
   WCLAPPDRadius = lappd->GetRadius();
   
-
   WCAddGd = true;
   // TODO: convert these with the ones below, and add in other constants from MRD definition etc.
   tankouterRadius= 1.524*m;		// 120" exactly (TSW blueprint) = 3.048m diameter

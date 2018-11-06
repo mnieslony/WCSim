@@ -62,8 +62,11 @@ G4LogicalVolume* WCSimDetectorConstruction::ConstructANNIECylinder()
 	WCLength = WCIDHeight;
 	
 	G4double WChalfheightexcess, WCradialexcess;
+	// tank is 7GA (7-gauge steel) = (0.1793"normal sheet steel or) 0.1875" stainless steel
+	// ^ gauge represents the thickness of 1 ounce of copper rolled out to an area of 1 square foot
+	// = 4.7625mm thick 'A36' steel (density 7,800 kg/m3 )
 	WChalfheightexcess=4.7625*mm; 
-	WCradialexcess=4.7625*mm;  // the tank steel: 4.7625mm A36 steel (small as MRD/FACC are very close)
+	WCradialexcess=4.7625*mm;
 	
 	G4Tubs* solidWC = new G4Tubs("WC",
 								 0.0*m,
@@ -218,7 +221,7 @@ G4LogicalVolume* WCSimDetectorConstruction::ConstructANNIECylinder()
 	
 	// extra loop over barrel faces
 	PMTcounter=0;
-	for(double facei=0; facei<WCBarrelRingNPhi; facei++){
+	for(int facei=0; facei<WCBarrelRingNPhi; facei++){
 		// rotate the PMT. We need a new rotation matrix for each volume
 		G4RotationMatrix* WCPMTRotationNext = new G4RotationMatrix(*WCPMTRotation);
 		WCPMTRotationNext->rotateX((dPhi*facei)-67.5*deg);
@@ -325,6 +328,56 @@ G4LogicalVolume* WCSimDetectorConstruction::ConstructANNIECylinder()
 	
 	ConstructANNIECaps(-1);
 	ConstructANNIECaps(1);
+	
+	//------------------------OUTER DETECTOR-------------------------
+	// place 12 * 2" PMTs on the outside of the blacksheet, between the inner structure and the tank wall
+	// two on each of the three upstream most octagon face 
+	G4RotationMatrix* WCODPMTRotationMatrix = new G4RotationMatrix();
+	WCODPMTRotationMatrix->rotateY(180.*deg);
+	for(int facei=0; facei<WCBarrelRingNPhi; facei++){
+		
+		// facei==0 is x<0, upstream. inner structure is rotated with corners upstream/downstream
+		if( facei!=0 && facei!=7) continue;
+		
+		for(G4double i = 0; i < 2; i++){                                     // 2 OD PMTs per face
+			for(G4double j = 0; j<WCBarrelNRings; j+=(WCBarrelNRings-1)){   // ODs at top and bottom of face
+				
+				// Select the appropriate PMT logical volume - from DetectorConfigs:
+				// {R7081 (WB/LUX), D784KFLB (LBNE), R5912HQE (new HQE), R7081HQE (HQE WM), EMI9954KB (2" OD)}
+				int PMTindex=4;
+				logicWCPMT = logicWCPMTs.at(PMTindex);
+				G4String pmtCollectionName = WCTankCollectionNames.at(PMTindex);
+				
+				// account only for rotation of the cell and vertical (ring) translation
+				// ring j==0 is top of tank.
+				G4ThreeVector PMTPosition =
+					G4ThreeVector((-barrelCellWidth/2.+(i+0.5)*horizontalSpacing)*sin((dPhi*facei)+112.5*deg),
+								  (-barrelCellWidth/2.+(i+0.5)*horizontalSpacing)*cos((dPhi*facei)+112.5*deg),
+								   -mainAnnulusHeight/2.+(j+1)*verticalSpacing-InnerStructureCentreOffset/2.);
+				
+				// add translation of cell centre
+				G4double MountingRadius = WCIDRadius + WCPMTExposeHeightMap.at(pmtCollectionName);
+				G4double CellCentreX = MountingRadius * sin(dPhi*(facei+0.5));
+				G4double CellCentreY = MountingRadius * cos(dPhi*(facei+0.5));
+				PMTPosition.setX(PMTPosition.getX()+CellCentreX);
+				PMTPosition.setY(PMTPosition.getY()+CellCentreY);
+				
+				G4RotationMatrix* WCPMTRotationNext = (j==0) ? WCODPMTRotationMatrix : nullptr;
+				
+				G4VPhysicalVolume* physiOuterDetectorPMT =
+						new G4PVPlacement(WCPMTRotationNext,    // its rotation
+										  PMTPosition,          // its position
+										  logicWCPMT,          // its logical volume
+										  "ODPMT",             // its name
+										  logicWCBarrel,        // its mother volume
+										  false,                // no boolean operations
+										  PMTcounter,           // a unique ID for this PMT
+										  true);                // check overlaps
+				PMTcounter++;
+			}
+		}
+	}
+	
 	
 	return logicWC;
 	
