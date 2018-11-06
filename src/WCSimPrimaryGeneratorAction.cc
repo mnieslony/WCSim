@@ -11,6 +11,7 @@
 #include "G4IonTable.hh"
 #include "G4ParticleDefinition.hh"
 #include "G4ThreeVector.hh"
+#include "TFile.h"
 #include "TLorentzVector.h"
 #include "globals.hh"
 #include "Randomize.hh"
@@ -406,6 +407,7 @@ void WCSimPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 		if(treeNumber!=nextTreeNumber){
 			G4cout<< "Reached end of Tree. Last entries' tree number was "
 						<< treeNumber <<", this entries' tree number is "<< nextTreeNumber <<G4endl;
+			dirtFileName = inputdata->GetCurrentFile()->GetName(); // new tree, new file
 			G4cout<<"Getting new tree branches"<<G4endl;
 			inputdata->SetBranchAddress("run",&runbranchval,&runBranch);
 			inputdata->SetBranchAddress("ntank",&ntankbranchval,&nTankBranch);
@@ -458,6 +460,11 @@ void WCSimPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 		nuvtxmatBranch->GetEntry(localEntry);
 		genieentryBranch->GetEntry(localEntry);
 		nufluxfilenameBranch->GetEntry(localEntry);
+		
+		// note info about this input event for recording into output file
+		dirtEntryNum = localEntry;
+		genieEntryNum = genieentrybranchval;
+		genieFileName = nufluxfilenameval;
 		
 #ifdef ONLY_TANK_EVENTS
 		if(strcmp(numatval,"TankWater")!=0){ // nu intx not in tank
@@ -976,6 +983,7 @@ void WCSimPrimaryGeneratorAction::LoadNewPrimaries(){
 	G4cout<<"first run: "<<runbranchval<<G4endl;
 	treeNumber=inputdata->GetTreeNumber();
 	localEntry = inputdata->LoadTree(inputEntry);
+	dirtFileName = inputdata->GetCurrentFile()->GetName(); // new tree, new file
 	
 	loadNewPrimaries=false;
 }

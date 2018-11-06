@@ -170,16 +170,30 @@ private:
   Int_t   fRun;
   Int_t   fDate;
   Int_t   fSubEvtNumber;
+  
+  TString fDirtFileName;
+  TString fGenieFileName;
+  Int_t   fDirtEntryNum;
+  Int_t   fGenieEntryNum;
 
 public:
   WCSimRootEventHeader() : fEvtNum(0), fRun(0), fDate(0), fSubEvtNumber(1) { }
    virtual ~WCSimRootEventHeader() { }
   void   Set(Int_t i, Int_t r, Int_t d, Int_t s=1) { fEvtNum = i; fRun = r; fDate = d; fSubEvtNumber = s;}
-  void SetDate(Int_t d) { fDate=d; }
+  void   SetDate(Int_t d) { fDate=d; }
+  void   SetDirtFileName(TString namein){ fDirtFileName = namein; }
+  void   SetGenieFileName(TString namein){ fGenieFileName = namein; }
+  void   SetDirtEntryNum(Int_t numin){ fDirtEntryNum = numin; }
+  void   SetGenieEntryNum(Int_t numin){ fGenieEntryNum = numin; }
+  
    Int_t  GetEvtNum() const { return fEvtNum; }
    Int_t  GetRun() const { return fRun; }
    Int_t  GetDate() const { return fDate; }
-  Int_t GetSubEvtNumber() const { return fSubEvtNumber;}
+   Int_t GetSubEvtNumber() const { return fSubEvtNumber;}
+   TString GetDirtFileName() const { return fDirtFileName; }
+   TString GetGenieFileName() const { return fGenieFileName; }
+   Int_t GetDirtEntryNum() const { return fDirtEntryNum; }
+   Int_t GetGenieEntryNum() const { return fGenieEntryNum; }
   
 
    ClassDef(WCSimRootEventHeader,2)  //WCSimRootEvent Header

@@ -58,6 +58,11 @@ public:
   G4int GetTargetPDG(G4int n = 0) {return targetpdgs[n];};
   G4double GetTargetEnergy(G4int n = 0) {return targetenergies[n];};
   G4ThreeVector GetTargetDir(G4int n = 0) {return targetdirs[n];};
+  // ANNIE: trace upstream sources
+  G4String  GetDirtFileName(){return dirtFileName;}
+  G4String GetGenieFileName(){return genieFileName;}
+  G4int    GetDirtEntryNum(){return dirtEntryNum;}
+  G4int   GetGenieEntryNum(){return genieEntryNum;}
 
   // older ...
   G4double GetNuEnergy() {return nuEnergy;};
@@ -88,6 +93,11 @@ private:
   std::fstream inputFile;
   G4String vectorFileName;
   G4bool   GenerateVertexInRock;
+  
+  G4String dirtFileName;
+  G4String genieFileName;
+  G4int dirtEntryNum;
+  G4int genieEntryNum;
 
   // These go with jhfNtuple
   G4int mode;

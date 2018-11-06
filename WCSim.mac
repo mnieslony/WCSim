@@ -143,7 +143,7 @@
 
 
 #Uncomment one of the lines below if you want to use the OGLSX or RayTracer visualizer
-/control/execute macros/visOGLSX.mac
+#/control/execute macros/visOGLSX.mac
 #/control/execute macros/visRayTracer.mac
 
 #####################################

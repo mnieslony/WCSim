@@ -753,11 +753,11 @@ void WCSimEventAction::EndOfEventAction(const G4Event* evt)
 #endif
   }
   
-  G4int         mode     = generatorAction->GetMode();				// neut interaction code
-  G4int         nvtxs   = generatorAction->GetNvtxs();				// always 1
-  G4ThreeVector vtxs[MAX_N_PRIMARIES];								// interaction vertices of the neutrino
-  G4int         vtxsvol[MAX_N_PRIMARIES];							// volumes of the vertices if applicable
-  G4int         vecRecNumber = generatorAction->GetVecRecNumber();	// genie file entry number
+  G4int         mode     = generatorAction->GetMode();			// neut interaction code
+  G4int         nvtxs   = generatorAction->GetNvtxs();			// always 1
+  G4ThreeVector vtxs[MAX_N_PRIMARIES];					// interaction vertices of the neutrino
+  G4int         vtxsvol[MAX_N_PRIMARIES];				// volumes of the vertices if applicable
+  G4int         vecRecNumber = generatorAction->GetVecRecNumber();	// 
 
   // ----------------------------------------------------------------------
   //  Fill Ntuple
@@ -1248,6 +1248,17 @@ void WCSimEventAction::FillRootEvent(G4int event_id,
   // Need to add run and date
   wcsimrootevent = wcsimrootsuperevent->GetTrigger(0);
   wcsimrootevent->SetHeader(event_id,0,0); // will be set later.
+
+  // add the information about upstream source
+  G4String      dirtFileName = generatorAction->GetDirtFileName();
+  G4String     genieFileName = generatorAction->GetGenieFileName();
+  G4int      dirtEventNumber = generatorAction->GetDirtEntryNum();
+  G4int     genieEventNumber = generatorAction->GetGenieEntryNum();
+  WCSimRootEventHeader* theheader = wcsimrootevent->GetHeader();
+  theheader->SetDirtFileName(dirtFileName);
+  theheader->SetGenieFileName(genieFileName);
+  theheader->SetDirtEntryNum(dirtEventNumber);
+  theheader->SetGenieEntryNum(genieEventNumber);
 
   // Fill other info for this event
 
