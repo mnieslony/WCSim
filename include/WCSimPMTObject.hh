@@ -319,6 +319,8 @@ public:
   G4double GetPMTGlassThickness();
   G4float  GetDarkRate();
   G4float  GetDarkRateConversionFactor();
+protected:
+  G4float* GetCollectionEfficiencyArray();
 };
 
 class PMT_D784KFLB : public WCSimPMTObject
@@ -339,6 +341,8 @@ public:
   G4double GetPMTGlassThickness();
   G4float  GetDarkRate();
   G4float  GetDarkRateConversionFactor();
+protected:
+  G4float* GetCollectionEfficiencyArray();
 };
 
 class PMT_R7081 : public WCSimPMTObject
@@ -359,14 +363,16 @@ public:
   G4double GetPMTGlassThickness();
   G4float  GetDarkRate();
   G4float  GetDarkRateConversionFactor();
+protected:
+  G4float* GetCollectionEfficiencyArray();
 };
 
- class R7081HQE : public WCSimPMTObject  // actually just the same as PMT10inchHQE
+ class PMT_R7081HQE : public WCSimPMTObject  // actually just the same as PMT10inchHQE
 {
 
 public: 
-  R7081HQE();
-  ~R7081HQE();
+  PMT_R7081HQE();
+  ~PMT_R7081HQE();
  
 public:
   G4String GetPMTName(); 
@@ -380,6 +386,8 @@ public:
   G4double GetPMTGlassThickness();
   G4float  GetDarkRate();
   G4float  GetDarkRateConversionFactor();
+protected:
+  G4float* GetCollectionEfficiencyArray();
  };
 
 #endif

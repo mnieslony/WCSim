@@ -2294,6 +2294,11 @@ G4float PMT_R5912HQE::GetDarkRateConversionFactor(){
   return factor;
 }
 
+G4float* PMT_R5912HQE::GetCollectionEfficiencyArray(){
+  static G4float CE[10] = { 100., 100., 100., 100., 100., 100., 100., 100., 100., 100.};
+  return CE;
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////
 // LBNE 11 HQE  - TODO currently using 12" HQE properties
 
@@ -2454,6 +2459,11 @@ G4float PMT_D784KFLB::GetDarkRate(){
 G4float PMT_D784KFLB::GetDarkRateConversionFactor(){
   const G4float factor = 1.367;
   return factor;
+}
+
+G4float* PMT_D784KFLB::GetCollectionEfficiencyArray(){
+  static G4float CE[10] = { 100., 100., 100., 100., 100., 100., 100., 100., 100., 100.};
+  return CE;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2618,17 +2628,22 @@ G4float PMT_R7081::GetDarkRateConversionFactor(){
   return factor;
 }
 
+G4float* PMT_R7081::GetCollectionEfficiencyArray(){
+  static G4float CE[10] = { 100., 100., 100., 100., 100., 100., 100., 100., 100., 100.};
+  return CE;
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////
 // R7081 10" HQE 
 
-R7081HQE::R7081HQE() {}
-R7081HQE::~R7081HQE(){}
+PMT_R7081HQE::PMT_R7081HQE() {}
+PMT_R7081HQE::~PMT_R7081HQE(){}
 
-G4String R7081HQE::GetPMTName() {G4String PMTName = "R7081HQE"; return PMTName;}
-G4double R7081HQE::GetExposeHeight() {return 117.*CLHEP::mm;}
-G4double R7081HQE::GetRadius() {return 127.*CLHEP::mm;}
-G4double R7081HQE::GetPMTGlassThickness() {return 0.55*CLHEP::cm;}
-G4float R7081HQE::HitTimeSmearing(float Q) {
+G4String PMT_R7081HQE::GetPMTName() {G4String PMTName = "PMT_R7081HQE"; return PMTName;}
+G4double PMT_R7081HQE::GetExposeHeight() {return 117.*CLHEP::mm;}
+G4double PMT_R7081HQE::GetRadius() {return 127.*CLHEP::mm;}
+G4double PMT_R7081HQE::GetPMTGlassThickness() {return 0.55*CLHEP::cm;}
+G4float PMT_R7081HQE::HitTimeSmearing(float Q) {
   float timingConstant = 2.0; 
   float timingResolution = 0.33 + sqrt(timingConstant/Q); 
   // looking at SK's jitter function for 20" tubes
@@ -2637,7 +2652,7 @@ G4float R7081HQE::HitTimeSmearing(float Q) {
   return Smearing_factor;
 }
 
-G4float* R7081HQE::Getqpe() //currently uses the same as 20inch
+G4float* PMT_R7081HQE::Getqpe() //currently uses the same as 20inch
    {
   static G4float qpe0[501]= {
     // 1
@@ -2756,27 +2771,32 @@ G4float* R7081HQE::Getqpe() //currently uses the same as 20inch
    return qpe0;
   }
 
-G4float* R7081HQE::GetQE(){
+G4float* PMT_R7081HQE::GetQE(){
  static G4float QE[20] =
    { 0.00, .0502, .2017, .2933, .3306, .3396, .3320, .3168, .2915, .2655, 
       .2268,  .1971, .1641, .1102, .0727, .0499, .0323, .0178, .0061, 0.00};
  return QE;
 }
-G4float* R7081HQE::GetQEWavelength(){static G4float wavelength[20] = { 280., 300., 320., 340., 360., 380., 400., 420., 440., 460., 480., 500., 520., 540., 560., 580., 600., 620., 640., 660.};
+G4float* PMT_R7081HQE::GetQEWavelength(){static G4float wavelength[20] = { 280., 300., 320., 340., 360., 380., 400., 420., 440., 460., 480., 500., 520., 540., 560., 580., 600., 620., 640., 660.};
   return wavelength;}
 
-G4float  R7081HQE::GetmaxQE(){
+G4float  PMT_R7081HQE::GetmaxQE(){
   const G4float maxQE = 0.3396;  // datasheet says 35%, leave as-is as it might include other factors?
   return maxQE;
 }
 
-G4float R7081HQE::GetDarkRate(){
+G4float PMT_R7081HQE::GetDarkRate(){
   const G4float rate = 8*CLHEP::kilohertz;  // datasheet says 8kHz
   return rate;
 }
 
-G4float R7081HQE::GetDarkRateConversionFactor(){
+G4float PMT_R7081HQE::GetDarkRateConversionFactor(){
   const G4float factor = 1.367;
   return factor;
+}
+
+G4float* PMT_R7081HQE::GetCollectionEfficiencyArray(){
+  static G4float CE[10] = { 100., 100., 100., 100., 100., 100., 100., 100., 100., 100.};
+  return CE;
 }
 

@@ -98,7 +98,7 @@ G4bool WCSimWCSD::ProcessHits(G4Step* aStep, G4TouchableHistory*)
       ratio = 1./(1.-0.25);
       photonQE = fdet->GetPMTQE(volumeName, wavelength,1,240,660,ratio);
     }else if (fdet->GetPMT_QE_Method()==4){
-      maxQE = fdet->GetPMTQE(volumeName, wavelength,0,240,660,ratio);
+      maxQE = fdet->GetPMTQE(fdet->GetIDCollectionName(), wavelength,0,240,660,ratio);
       photonQE = fdet->GetPMTQE(volumeName, wavelength,1,240,660,ratio);
       photonQE = photonQE/maxQE;
     }else{ photonQE=0.3; }
