@@ -263,6 +263,12 @@ private:
 
   //Tyvek surface - jl145
   G4OpticalSurface * OpWaterTySurface;
+  
+  //Inner structure surface
+  G4OpticalSurface * InnerStructureOpSurface;
+  
+  // Tank liner surface
+  G4OpticalSurface * LinerOpSurface;
 
   // The messenger we use to change the geometry.
 

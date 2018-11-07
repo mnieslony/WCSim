@@ -119,11 +119,13 @@ void WCSimDetectorConstruction::ConstructMaterials()
   const G4int nEntries = 2;
   G4double photonEnergy[nEntries] = {1.*CLHEP::eV , 7.*CLHEP::eV};
   
-  //G4double rindex_Steel[nEntries] = {1.462 , 1.462}; // No I haven't gone mad
+  G4double rindex_Steel[nEntries] = {1.462 , 1.462}; // No I haven't gone mad
   G4double abslength_Steel[nEntries] = {.001*CLHEP::mm , .001*CLHEP::mm};
-  //mpt->AddProperty("RINDEX", photonEnergy, rindex_Steel, nEntries);
+  mpt->AddProperty("RINDEX", photonEnergy, rindex_Steel, nEntries);
   mpt->AddProperty("ABSLENGTH", photonEnergy, abslength_Steel, nEntries);
   
+  // used for tank and inner structure
+  // but tank in ANNIE is given a liner (optical surface) to modify reflection properties
   StainlessSteel->SetMaterialPropertiesTable(mpt);
 
   //---Solid Dry Ice
@@ -1012,6 +1014,58 @@ void WCSimDetectorConstruction::ConstructMaterials()
    myMPT6->AddProperty("ABSLENGTH", ENERGY_water, BLACKABS_blacksheet, NUMENTRIES_water);
    Tyvek->SetMaterialPropertiesTable(myMPT6);
 
+
+   // reflectivity of steel inner structure
+   // =====================================
+   const G4int arrEntries = 2;
+   G4double photEneSteel[] = { 1.56962*CLHEP::eV, 6.19998*CLHEP::eV };
+   G4double rIndexSteel[] = { 1.5, 1.5};
+   G4double absSteel[] = { 1.0e-9*CLHEP::cm,  1.0e-9*CLHEP::cm};
+   G4double refSteel[] = {0.5, 0.5}; // low estimate.
+   G4double specularlobeSteel[] = {0.8, 0.8};   // ¯\_(ツ)_/¯
+   G4double specularspikeSteel[] = {0.1, 0.1};
+   G4double backscatterSteel[] = {0.01, 0.01};
+   // remaining reflection type (lambertian) is the remainder from 1
+   
+   // see http://geant4.web.cern.ch/geant4/UserDocumentation/UsersGuides/ForApplicationDeveloper/html/ch05s02.html
+   G4MaterialPropertiesTable *linerMatProps = new G4MaterialPropertiesTable();
+   linerMatProps->AddProperty("RINDEX", photEneSteel, rIndexSteel, arrEntries);
+   linerMatProps->AddProperty("ABSLENGTH",photEneSteel,absSteel,arrEntries);
+   // total probability of reflection
+   linerMatProps->AddProperty("REFLECTIVITY",photEneSteel, refSteel,arrEntries);
+   // selection of type of reflection
+   linerMatProps->AddProperty("SPECULARLOBECONSTANT",photEneSteel,specularlobeSteel,arrEntries);
+   linerMatProps->AddProperty("SPECULARSPIKECONSTANT",photEneSteel,specularspikeSteel,arrEntries);
+   linerMatProps->AddProperty("BACKSCATTERCONSTANT",photEneSteel,backscatterSteel,arrEntries);
+   
+   InnerStructureOpSurface = new G4OpticalSurface("SteelInnerStructureSurface");
+   InnerStructureOpSurface->SetType(dielectric_metal);
+   InnerStructureOpSurface->SetModel(unified);
+   InnerStructureOpSurface->SetFinish(ground);
+   InnerStructureOpSurface->SetSigmaAlpha(0.1);
+   InnerStructureOpSurface->SetMaterialPropertiesTable(linerMatProps);
+   
+   // reflectivity of tank liner
+   // ===========================
+   // re-use the properties from steel, only reflectivity is important?
+   G4double refLiner[] = {0.87, 0.87}; // from datasheet
+   // remaining reflection type (lambertian) is the remainder from 1
+   
+   // see http://geant4.web.cern.ch/geant4/UserDocumentation/UsersGuides/ForApplicationDeveloper/html/ch05s02.html
+   G4MaterialPropertiesTable *linerSurfaceMatProps = new G4MaterialPropertiesTable();
+   linerSurfaceMatProps->AddProperty("RINDEX", photEneSteel, rIndexSteel, arrEntries);
+   linerSurfaceMatProps->AddProperty("ABSLENGTH",photEneSteel,absSteel,arrEntries);
+   linerSurfaceMatProps->AddProperty("REFLECTIVITY",photEneSteel, refLiner,arrEntries);
+   linerSurfaceMatProps->AddProperty("SPECULARLOBECONSTANT",photEneSteel,specularlobeSteel,arrEntries);
+   linerSurfaceMatProps->AddProperty("SPECULARSPIKECONSTANT",photEneSteel,specularspikeSteel,arrEntries);
+   linerSurfaceMatProps->AddProperty("BACKSCATTERCONSTANT",photEneSteel,backscatterSteel,arrEntries);
+   
+   LinerOpSurface = new G4OpticalSurface("LinerOpSurface");
+   LinerOpSurface->SetType(dielectric_metal); // fine, reflection or absorption only.
+   LinerOpSurface->SetModel(unified);
+   LinerOpSurface->SetFinish(ground);
+   LinerOpSurface->SetSigmaAlpha(0.1);
+   LinerOpSurface->SetMaterialPropertiesTable(linerSurfaceMatProps);
 
    //	------------- Surfaces --------------
 

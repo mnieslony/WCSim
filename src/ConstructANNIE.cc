@@ -161,8 +161,10 @@ G4LogicalVolume* WCSimDetectorConstruction::ConstructANNIE()
   //============================================================
   G4RotationMatrix* rotm = new G4RotationMatrix();
   rotm->rotateX(90*deg); // rotate Y
-  G4LogicalVolume* waterTank_log;
-  G4VPhysicalVolume* waterTank_phys;
+  G4LogicalVolume* waterTank_log;     // steel barrel physical volume
+  G4VPhysicalVolume* waterTank_phys;  // steel barrel physical volume
+  G4VPhysicalVolume* water_phys;      // water volume within it
+  G4LogicalVolume* water_log;         // water logical volume
   if(WCDetectorName=="ANNIEp1") {
 		//============================================================
 		//               ANNIE Phase 1 Tank Construction
@@ -184,17 +186,34 @@ G4LogicalVolume* WCSimDetectorConstruction::ConstructANNIE()
 		waterTank_phys = 
 			new G4PVPlacement(rotm,G4ThreeVector(0,-tankyoffset,tankouterRadius+tankzoffset),waterTank_log,"waterTank",expHall_log,false,0);
 		
+		if(WCDetectorName=="ANNIEp2v6"){
+			// Get logical and physical volumes of the water, within the steel barrel
+			int nDaughters = waterTank_log->GetNoDaughters();
+			for (int iDaughter = 0; iDaughter < nDaughters; iDaughter++){
+				G4VPhysicalVolume* nextdaughterphys = waterTank_log->GetDaughter(iDaughter);
+				G4LogicalVolume* nextdaughterlog = nextdaughterphys->GetLogicalVolume();
+				if(nextdaughterlog->GetName()=="WCBarrel"){
+					water_log=nextdaughterlog;
+					water_phys=nextdaughterphys;
+					break;
+				}
+			}
+		
+			// place an optical surface between the steel and water to represent the liner reflectivity
+			G4LogicalBorderSurface* LinerSurface_log = new 
+						G4LogicalBorderSurface( "LinerSurface",
+												water_phys,
+												waterTank_phys,
+												LinerOpSurface);
+		
+			bordersurfaces.push_back(LinerSurface_log);
+		}
+		
 		//============================================================
 		//               Add Inner Structure to Tank
 		//============================================================
 		if(addGDMLinnerstructure){
-			G4LogicalVolume* logicWCBarrel=nullptr;
-			int nDaughters = waterTank_log->GetNoDaughters();
-			for (int iDaughter = 0; iDaughter < nDaughters; iDaughter++){
-				G4LogicalVolume* nextdaughter = waterTank_log->GetDaughter(iDaughter)->GetLogicalVolume();
-				if(nextdaughter->GetName()=="WCBarrel"){ logicWCBarrel=nextdaughter; break; }
-			}
-			if(logicWCBarrel==nullptr){
+			if(water_log==nullptr){
 				G4cerr<<"!!! could not find WCBarrel, inner structure will not be added !!!"<<G4endl;
 			} else {
 				G4RotationMatrix* rotm2 = new G4RotationMatrix();
@@ -202,7 +221,16 @@ G4LogicalVolume* WCSimDetectorConstruction::ConstructANNIE()
 				rotm2->rotateZ(22.5*deg);
 				G4VPhysicalVolume* innerstructure_phys_placed = 
 					new G4PVPlacement(rotm2, G4ThreeVector(0,0,-.5*WCLength), innerstructure_log, 
-					"innerstructure_phys", logicWCBarrel, false, 0, false);
+					"innerstructure_phys", water_log, false, 0, false);
+				
+				// add optical surface between water and inner structure to provide reflection
+				G4LogicalBorderSurface* InnerStructureSurface_log = new 
+					G4LogicalBorderSurface( "innerStructureSurface",
+											water_phys,
+											innerstructure_phys_placed,
+											InnerStructureOpSurface);
+				
+				bordersurfaces.push_back(InnerStructureSurface_log);
 			}
 		}
 	}

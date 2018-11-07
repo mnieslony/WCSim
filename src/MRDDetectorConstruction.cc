@@ -221,6 +221,7 @@ void WCSimDetectorConstruction::DefineANNIEdimensions(){
 	G4double mylar_specularspike[mylarmptentries] = {0.8, 0.8};
 	G4double mylar_backscatter[mylarmptentries] = {0.01, 0.01};
 	G4double mylar_reflectivity[mylarmptentries] = {0.9, 0.9};
+	// remaining reflection type (lambertian) is the remainder from 1.
 	//G4double mylar_efficiency[mylarmptentries] = {0.8, 0.1};
 
   MPTmylarSurface = new G4MaterialPropertiesTable();
