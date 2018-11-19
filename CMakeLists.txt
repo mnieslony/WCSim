@@ -196,6 +196,7 @@ set(WCSIM_SCRIPTS
   macros/primaries_directory.mac
   macros/setRandomParameters.mac
   pulsecharacteristics.root
+  PHASE2_INNER_STRUCTURE.gdml
   )
 
 foreach(_script ${WCSIM_SCRIPTS})

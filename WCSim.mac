@@ -98,7 +98,7 @@
 #/mygen/vecfile mu+.out
 
 #grab the DAQ options (digitizer type, thresholds, timing windows, etc.)
-#/control/execute macros/annie_daq.mac
+/control/execute macros/annie_daq.mac
 
 
 # default dark noise frequency (and conversion factor) is PMT property (NEW), set in the code.
