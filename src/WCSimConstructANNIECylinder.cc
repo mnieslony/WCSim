@@ -337,7 +337,7 @@ G4LogicalVolume* WCSimDetectorConstruction::ConstructANNIECylinder()
 	for(int facei=0; facei<WCBarrelRingNPhi; facei++){
 		
 		// facei==0 is x<0, upstream. inner structure is rotated with corners upstream/downstream
-		if( facei!=0 && facei!=7) continue;
+		if( facei!=0 && facei!=7 && facei!=6) continue;
 		
 		for(G4double i = 0; i < 2; i++){                                     // 2 OD PMTs per face
 			for(G4double j = 0; j<WCBarrelNRings; j+=(WCBarrelNRings-1)){   // ODs at top and bottom of face
