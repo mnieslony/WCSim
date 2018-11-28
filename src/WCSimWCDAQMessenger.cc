@@ -509,7 +509,7 @@ void WCSimWCDAQMessenger::SetDigitizerOptions(G4String detectorElementin)
            << StoredOptions.at(detectorElement).StoreDigitizerIntegrationWindow << " ns" << G4endl;
   }
   WCSimDigitize->SetExtendIntegrationWindow(StoredOptions.at(detectorElement).StoreExtendDigitizerIntegrationWindow);
-  G4cout<<"\tDigitizer integration window set to " << ((StoredOptions.at(detectorElement).StoreExtendDigitizerIntegrationWindow) ? "" : "not") << "extend when new hits arrive in an existing window" << G4endl;
+  G4cout<<"\tDigitizer integration window set to " << ((StoredOptions.at(detectorElement).StoreExtendDigitizerIntegrationWindow) ? "" : "not") << " extend when new hits arrive in an existing window" << G4endl;
 }
 
 void WCSimWCDAQMessenger::AddDAQMessengerInstance(G4String detectorElementin){

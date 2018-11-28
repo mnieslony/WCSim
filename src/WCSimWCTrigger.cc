@@ -563,6 +563,9 @@ void WCSimWCTriggerBase::FillDigitsCollection(WCSimWCDigitsCollection* WCDCPMT, 
       }//loop over Digits
     }//loop over PMTs
     if(digitsinthistrigger==0){
+#ifdef WCSIMWCTRIGGER_VERBOSE
+      G4cout<<"removing trigger "<<itrigger<<" as it contains no digits"<<G4endl;
+#endif
       triggerstoremove.push_back(itrigger);
     }
   }//loop over Triggers
@@ -628,10 +631,12 @@ void WCSimWCTriggerBase::AlgPromptDigits(WCSimWCDigitsCollection* WCDCPMT, bool 
   int prompt_window_duration = GetPostTriggerWindow(this_triggerType);
   
   //loop over PMTs
+  int totalndigits=0;
   for (G4int i = 0; i < WCDCPMT->entries(); i++) {
     //loop over digits in this PMT
     for (std::map<int,float>::const_iterator digit_time_it = (*WCDCPMT)[i]->GetTimeMapBegin();
              digit_time_it!=(*WCDCPMT)[i]->GetTimeMapEnd(); digit_time_it++) {
+      totalndigits++;
       int ip = digit_time_it->first;
       int digit_time=0;
       try{
@@ -650,7 +655,6 @@ void WCSimWCTriggerBase::AlgPromptDigits(WCSimWCDigitsCollection* WCDCPMT, bool 
       //is hit in prompt window
       if(digit_time < prompt_window_duration) {
         Ndigits++;
-      } else {
       }
     }
   }
@@ -660,6 +664,9 @@ void WCSimWCTriggerBase::AlgPromptDigits(WCSimWCDigitsCollection* WCDCPMT, bool 
   }
 #endif
   
+#ifdef WCSIMWCTRIGGER_VERBOSE
+  G4cout<<"Making prompt trigger for "<<detectorElement<<", containing "<<Ndigits<<"/"<<totalndigits<<" digits"<<G4endl;
+#endif
   triggerinfo.push_back(Ndigits);
   TriggerTypes.push_back(kPromptTrigger);
   TriggerInfos.push_back(triggerinfo);

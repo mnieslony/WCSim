@@ -45,6 +45,8 @@ private:
   Float_t fTime;   // start time
   Float_t fTime2;  // end time 
   Int_t fId;
+  std::string fStartProcess;
+  std::string fEndProcess;
 
 public:
   WCSimRootTrack() {}
@@ -65,7 +67,9 @@ public:
 		  Int_t parenttype,
 		  Float_t time,
 		  Float_t endtime,
-		 Int_t id);
+		  Int_t id,
+		  std::string sProcess,
+		  std::string eProcess);
   
   virtual ~WCSimRootTrack() { }
 
@@ -87,6 +91,10 @@ public:
   Float_t   GetTime() { return fTime;}
   Float_t   GetStopTime() { return fTime2;}
   Int_t     GetId(){return fId;}
+  std::string GetStartProcess(){return fStartProcess;}
+  std::string GetEndProcess(){return fEndProcess;}
+  
+  void Clear(Option_t *option ="");
 
   ClassDef(WCSimRootTrack,1)  
 };
@@ -419,7 +427,9 @@ public:
 				   Int_t parenttype,
 				   Float_t time,
 				   Float_t time2,
-				   Int_t id);
+				   Int_t id,
+				   std::string sProcess,
+				   std::string eProcess);
 
   TClonesArray        *GetTracks() const {return fTracks;}
   

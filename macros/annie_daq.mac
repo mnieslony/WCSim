@@ -37,7 +37,7 @@
 /DAQ/DigitizerOpt/DeadTime 0
 /DAQ/DigitizerOpt/IntegrationWindow 10            # should match the configured DISCRIMINATOR OUTPUT pulse duration
 /DAQ/DigitizerOpt/ExtendIntegrationWindow true    # replicate how LRS 4413 discriminators work
-/DAQ/MultiDigitsPerTrigger false                  # as per TDC settings. But we should probably allow more than 1...
+/DAQ/MultiDigitsPerTrigger true                   # TDC settings are 1, but record all more than 1...
 
 ## configure prompt trigger. This may be enabled for all triggers EXCEPT NoTrigger
 /DAQ/PromptTrigger/Enable true                    # enable recording mrd digits in a prompt beam trigger window
@@ -64,7 +64,7 @@
 /DAQ/DigitizerOpt/DeadTime 0                      # for annie these
 /DAQ/DigitizerOpt/IntegrationWindow 10            # should match mrd
 /DAQ/DigitizerOpt/ExtendIntegrationWindow true    # replicate how LRS 4413 discriminators work
-/DAQ/MultiDigitsPerTrigger false                  # digitizer settings
+/DAQ/MultiDigitsPerTrigger true                   # digitizer settings say we should only have one... but record all
 
 ## configure prompt trigger. This may be enabled for all triggers EXCEPT NoTrigger
 /DAQ/PromptTrigger/Enable true                    # enable recording mrd digits in a prompt beam trigger window
