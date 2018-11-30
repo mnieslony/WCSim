@@ -89,7 +89,26 @@ void WCSimPhysicsListFactory::InitializeList(){
       RegisterPhysics(elem);
     }
     G4cout << "RegisterPhysics: OpticalPhysics" << G4endl; 
-    RegisterPhysics(new G4OpticalPhysics());
+    G4OpticalPhysics* opticalPhysics = new G4OpticalPhysics();
+    RegisterPhysics(opticalPhysics);
+    
+    // can optionally turn off cerenkov/scintillation process like this:
+    //opticalPhysics->Configure(kCerenkov, true);
+    // or in G4.10.3+ can keep the process on to make *number of photons* available,
+    // but do not put them on the tracking stack. This is a much faster equivalent to using:
+    //   ` if(particleType==G4OpticalPhoton::OpticalPhotonDefinition()) return fKill; `
+    // in the UserStackingAction.
+    //opticalPhysics->SetCerenkovStackPhotons(true);
+    
+    // # photons produced is calculated from beta value at start of step, and has nonlinear dependence
+    // limit beta change so that beta ~ constant and # photons generated is closer to correct
+    opticalPhysics->SetMaxBetaChangePerStep(10.0);
+    // similar to above for scintillation??
+    opticalPhysics->SetMaxNumPhotonsPerStep(100);
+    
+    // prevent the stack getting too large by tracking photons first
+    opticalPhysics->SetTrackSecondariesFirst(kScintillation,true);
+    opticalPhysics->SetTrackSecondariesFirst(kCerenkov,true);
   } else {
     G4cout << "Physics list " << PhysicsListName << " is not understood" << G4endl;
   }

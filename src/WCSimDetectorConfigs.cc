@@ -837,7 +837,7 @@ void WCSimDetectorConstruction::SetANNIEPhase2Geometryv6()
   WCCapPMTPosRadius        = 0.85*m;		// radius at which to position PMTs for the top cap
   											// TODO this could probably have a squeeze in pairs
   WCCapPMTPosRadius2       = 0.3*m;			// radius at which to position PMTs for the hatch
-  WCCapTopPMTOffset        = 0.0*cm;		//
+  WCCapTopPMTOffset        = -0.1*cm;		//
   WCCapBottomPMTOffset     = 0.2*cm;		//
   
   // barrel positioning
