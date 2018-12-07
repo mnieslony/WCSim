@@ -1,5 +1,4 @@
 # Macro for controlling DAQ-like options (thresholds, time windows, etc.)
-
 #choose the Trigger & Digitizer type in novis.mac
 
 #generic digitizer options (defaults are class-specific. Can be overridden here)

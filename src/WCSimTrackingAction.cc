@@ -89,8 +89,8 @@ void WCSimTrackingAction::PostUserTrackingAction(const G4Track* aTrack){
   if( ( aTrack->GetParentID()==0 ) ||
       ( (creatorProcess!=0) && ProcessList.count(creatorProcess->GetProcessName()) ) ||
       ( ParticleList.count(thispdg) ) ||
-      ( thispdg==22 && (aTrack->GetTotalEnergy()>50.0*MeV )      // 50 MeV? 1MeV? what threshold?
-                    || (anInfo->GetParentPdg()==111) )           // gamma from a Pi0 decay
+      ( thispdg==22 && aTrack->GetTotalEnergy()>50.0*MeV ) ||     // 50 MeV? 1MeV? what threshold?
+      ( thispdg==22 && anInfo->GetParentPdg()==111 )              // gamma from a Pi0 decay
     ){
     anInfo->WillBeSaved(true);
   } else {

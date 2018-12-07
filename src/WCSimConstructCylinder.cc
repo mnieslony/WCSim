@@ -72,9 +72,16 @@ G4LogicalVolume* WCSimDetectorConstruction::ConstructCylinder()
     barrelCellHeight  = (WCIDHeight-2.*WCBarrelPMTOffset)/WCBarrelNRings;
     mainAnnulusHeight = WCIDHeight -2.*WCBarrelPMTOffset -2.*barrelCellHeight;
   } else {  // ANNIEp2v2 uses a single main barrel ring, populated manually
-    barrelCellHeight  = (WCIDHeight-2.*WCBarrelPMTOffset)*((WCBarrelNRings-2)/WCBarrelNRings);
-    G4double borderbarrelCellHeight = (WCIDHeight-2.*WCBarrelPMTOffset)/WCBarrelNRings;
-    mainAnnulusHeight = WCIDHeight -2.*WCBarrelPMTOffset -2.*borderbarrelCellHeight;
+    if(WCDetectorName=="ANNIEp2v5"){
+      // ANNIEp2v5 increases the fudging of the barrel cell heights to align with phase 2 inner structure
+      barrelCellHeight  = (WCIDHeight-2.*WCBarrelPMTOffset)*((WCBarrelNRings-(2*barrelbordercompressionfactor))/WCBarrelNRings);
+      G4double borderbarrelCellHeight = (WCIDHeight-2.*WCBarrelPMTOffset)/WCBarrelNRings;
+      mainAnnulusHeight = WCIDHeight -2.*WCBarrelPMTOffset -2.*borderbarrelCellHeight*barrelbordercompressionfactor;
+    } else {
+      barrelCellHeight  = (WCIDHeight-2.*WCBarrelPMTOffset)*((WCBarrelNRings-2)/WCBarrelNRings);
+      G4double borderbarrelCellHeight = (WCIDHeight-2.*WCBarrelPMTOffset)/WCBarrelNRings;
+      mainAnnulusHeight = WCIDHeight -2.*WCBarrelPMTOffset -2.*borderbarrelCellHeight;
+    }
   }
   // the hight of all regular cells together:
   G4cout<<"WCBarrelRingNPhi= "<<WCBarrelRingNPhi<<" totalAngle= "<<totalAngle<<" dPhi= "<<dPhi<<" barrelCellHeight= "<<barrelCellHeight<<" mainAnnulusHeight= "<<mainAnnulusHeight<<G4endl;
@@ -158,13 +165,13 @@ G4LogicalVolume* WCSimDetectorConstruction::ConstructCylinder()
 				     0.*deg,
 				     360.*deg);
   
-  G4LogicalVolume* logicWCBarrel = 
+  logicWCBarrel = 
     new G4LogicalVolume(solidWCBarrel,
 			G4Material::GetMaterial(water),
 			"WCBarrel",
 			0,0,0);
 
-    G4VPhysicalVolume* physiWCBarrel = 
+    physiWCBarrel = 
     new G4PVPlacement(0,
 		      G4ThreeVector(0.,0.,0.),
 		      logicWCBarrel,
@@ -974,7 +981,7 @@ If used here, uncomment the SetVisAttributes(WClogic) line, and comment out the 
 	
 	G4double barrelCellWidth     = 2.*WCIDRadius*tan(dPhi/2.)*compressionfactor;
 	G4double horizontalSpacing   = barrelCellWidth/WCPMTperCellHorizontal;
-	G4double verticalSpacing     = barrelCellHeight/WCPMTperCellVertical;
+	G4double verticalSpacing     = (barrelCellHeight/WCPMTperCellVertical)*barrelcompressionfactor;
 	
 	// extra loop over barrel faces
 	int counter=0;
@@ -1000,7 +1007,7 @@ If used here, uncomment the SetVisAttributes(WClogic) line, and comment out the 
 				 logicWCPMT = logicWCPMTs.at(2); // 10" HQE new
 				}
 			   
-			   // account only for rotation of the cell and verticle (ring) translation
+			   // account only for rotation of the cell and vertical (ring) translation
 			   G4ThreeVector PMTPosition =  
 		   				G4ThreeVector((-barrelCellWidth/2.+(i+0.5)*horizontalSpacing)*sin((dPhi*facei)+90.*deg),
 					                  (-barrelCellWidth/2.+(i+0.5)*horizontalSpacing)*cos((dPhi*facei)+90.*deg),
@@ -1236,13 +1243,16 @@ G4LogicalVolume* WCSimDetectorConstruction::ConstructCaps(G4int zflip)
   // border ring height should correspond to a single ring
   
   // ANNIEp2v2 overrides the main barrel ring replication, so border rings have a different size to the body ring
-  if(WCDetectorName=="ANNIEp2v2"||WCDetectorName=="ANNIEp2v4"||WCDetectorName=="ANNIEp2v5"){
-    barrelCellHeight = (WCIDHeight-2.*WCBarrelPMTOffset)/WCBarrelNRings;
+  G4double borderbarrelCellHeight;
+  if(WCDetectorName=="ANNIEp2v2"||WCDetectorName=="ANNIEp2v4"){
+    borderbarrelCellHeight = (WCIDHeight-2.*WCBarrelPMTOffset)/WCBarrelNRings;
+  } else if(WCDetectorName=="ANNIEp2v5"){
+    borderbarrelCellHeight = (WCIDHeight-2.*WCBarrelPMTOffset)/WCBarrelNRings*barrelbordercompressionfactor;
   }
   
-  G4double borderAnnulusZ[3] = {-barrelCellHeight/2.*zflip,
-                                (-barrelCellHeight/2.+(WCIDRadius-innerAnnulusRadius))*zflip,
-				barrelCellHeight/2.*zflip};
+  G4double borderAnnulusZ[3] = {-borderbarrelCellHeight/2.*zflip,
+                                (-borderbarrelCellHeight/2.+(WCIDRadius-innerAnnulusRadius))*zflip,
+				borderbarrelCellHeight/2.*zflip};
   G4double borderAnnulusRmin[3] = { WCIDRadius, innerAnnulusRadius, innerAnnulusRadius};
   G4double borderAnnulusRmax[3] = {outerAnnulusRadius, outerAnnulusRadius,outerAnnulusRadius};
   G4Polyhedra* solidWCBarrelBorderRing = new G4Polyhedra("WCBarrelBorderRing",
@@ -1262,7 +1272,7 @@ G4LogicalVolume* WCSimDetectorConstruction::ConstructCaps(G4int zflip)
 
   G4VPhysicalVolume* physiWCBarrelBorderRing =
     new G4PVPlacement(0,
-                  G4ThreeVector(0.,0.,(capAssemblyHeight/2.- barrelCellHeight/2.)*zflip),
+                  G4ThreeVector(0.,0.,(capAssemblyHeight/2.- borderbarrelCellHeight/2.)*zflip),
                   logicWCBarrelBorderRing,
                   "WCBarrelBorderRing",
                   logicCapAssembly,
@@ -1340,7 +1350,6 @@ G4LogicalVolume* WCSimDetectorConstruction::ConstructCaps(G4int zflip)
   if(WCDetectorName=="ANNIEp2v2"||WCDetectorName=="ANNIEp2v4"||WCDetectorName=="ANNIEp2v5"){
     // ANNIEp2v2 can't re-use the body ring, as it represents the entire body, not just one ring.
     // Generate a new logicWCBarrelCellBlackSheet with the same code, but proper 1-ring barrelCellHeight
-    G4double borderbarrelCellHeight = (WCIDHeight-2.*WCBarrelPMTOffset)/WCBarrelNRings;
     G4double RingZ[2] = {-borderbarrelCellHeight/2.,
                           borderbarrelCellHeight/2.};
     G4double annulusBlackSheetRmax[2] = {WCIDRadius+WCBlackSheetThickness,
@@ -1704,8 +1713,7 @@ G4LogicalVolume* WCSimDetectorConstruction::ConstructCaps(G4int zflip)
 
   G4double xoffset;
   G4double yoffset;
-  G4double xoffset2;
-  G4double yoffset2;
+  G4double zoffset;
   G4int    icopy = 0;
   G4int    icopylappd = 0;
 
@@ -1728,8 +1736,9 @@ G4LogicalVolume* WCSimDetectorConstruction::ConstructCaps(G4int zflip)
           
           xoffset = i*WCCapPMTSpacing + WCCapPMTSpacing*0.5;
           yoffset = (j*WCCapPMTSpacing + WCCapPMTSpacing*0.5)*capcompressionratio;
+          zoffset = WCCapPMTOffset*zflip;
           
-          G4ThreeVector cellpos = G4ThreeVector(xoffset, yoffset, 0);
+          G4ThreeVector cellpos = G4ThreeVector(xoffset, yoffset, zoffset);
           if (((sqrt(xoffset*xoffset + yoffset*yoffset) + WCPMTRadius) < WCCapEdgeLimit) ) {
             //G4cout<<"Constructing bottom cap PMT "<<i<<","<<j<<" at ("<<xoffset<<", "<<yoffset<<")"<<G4endl;
             G4VPhysicalVolume* physiCapPMT =
@@ -1752,9 +1761,10 @@ G4LogicalVolume* WCSimDetectorConstruction::ConstructCaps(G4int zflip)
         // 2 PMTs per cell, as per the barrel, but with smaller radius 
         xoffset = WCCapPMTPosRadius*cos((i+0.5)*PMTangle);
         yoffset = WCCapPMTPosRadius*sin((i+0.5)*PMTangle);
+        zoffset = WCCapPMTOffset*zflip + WCCapTopPMTOffset*zflip;
         //G4cout<<"Constructing top cap ring PMT "<<i<<" at ("<<xoffset<<", "<<yoffset<<")"<<G4endl;
         
-        G4ThreeVector cellpos = G4ThreeVector(xoffset, yoffset, 0);
+        G4ThreeVector cellpos = G4ThreeVector(xoffset, yoffset, zoffset);
         G4VPhysicalVolume* physiCapPMT =
               new G4PVPlacement(WCCapPMTRotation,
                                 cellpos,                   // its position
@@ -1767,14 +1777,14 @@ G4LogicalVolume* WCSimDetectorConstruction::ConstructCaps(G4int zflip)
       }
       
       // then position the odd PMTs on the hatch
-      int numhatchpmts = 3;
       PMTangle = 2*pi/numhatchpmts;
       for ( int i = 0 ; i < numhatchpmts; i++) {
         xoffset = WCCapPMTPosRadius2*cos(i*PMTangle);
         yoffset = WCCapPMTPosRadius2*sin(i*PMTangle);
+        zoffset = WCCapPMTOffset*zflip + WCCapTopPMTOffset*zflip;
         //G4cout<<"Constructing top cap hatch PMT "<<i<<" at ("<<xoffset<<", "<<yoffset<<")"<<G4endl;
         
-        G4ThreeVector cellpos = G4ThreeVector(xoffset, yoffset, 0);
+        G4ThreeVector cellpos = G4ThreeVector(xoffset, yoffset, zoffset);
         G4VPhysicalVolume* physiCapPMT =
               new G4PVPlacement(WCCapPMTRotation,
                                 cellpos,                   // its position
@@ -1794,8 +1804,9 @@ G4LogicalVolume* WCSimDetectorConstruction::ConstructCaps(G4int zflip)
          
         xoffset = i*WCCapPMTSpacing + WCCapPMTSpacing*0.5;
         yoffset = j*WCCapPMTSpacing + WCCapPMTSpacing*0.5;
+        zoffset = WCCapPMTOffset*zflip;
         
-        G4ThreeVector cellpos = G4ThreeVector(xoffset, yoffset, 0);     
+        G4ThreeVector cellpos = G4ThreeVector(xoffset, yoffset, zoffset);     
         //      G4double WCBarrelEffRadius = WCIDDiameter/2. - WCCapPMTSpacing;
         //      double comp = xoffset*xoffset + yoffset*yoffset 
         //	- 2.0 * WCBarrelEffRadius * sqrt(xoffset*xoffset+yoffset*yoffset)
@@ -1843,6 +1854,9 @@ G4LogicalVolume* WCSimDetectorConstruction::ConstructCaps(G4int zflip)
   G4RotationMatrix* WCPMTRotation = new G4RotationMatrix;
   WCPMTRotation->rotateY(90.*deg);
 
+
+  // XXX ANNIE configurations from ANNIEp2v2-ANNIEp2v4 may be incorrect? Border ring height was changed, but it was not consistently used.
+  // It may be fine, but should be checked.
   if(WCDetectorName=="ANNIEp2"){
     
     G4double barrelCellWidth = 2.*WCIDRadius*tan(dPhi/2.)*compressionfactor;
@@ -2003,7 +2017,7 @@ G4LogicalVolume* WCSimDetectorConstruction::ConstructCaps(G4int zflip)
 				                     PMTPosition,                        // its position
 				                     logicWCPMT,                         // its logical volume
 				                     "WCPMT",                            // its name
-				                     logicWCBarrelBorderCell,                  // its mother volume
+				                     logicWCBarrelBorderCell,            // its mother volume
 				                     false,                              // no boolean operations
 				                     counter,                            // a unique ID for this PMT
 				                     true);                              // check overlaps
@@ -2022,11 +2036,14 @@ G4LogicalVolume* WCSimDetectorConstruction::ConstructCaps(G4int zflip)
     G4double barrelCellWidth = 2.*WCIDRadius*tan(dPhi/2.)*compressionfactor;
     G4double horizontalSpacing   = barrelCellWidth/WCPMTperCellHorizontal;
     
+    // adjustment of border PMT position within cell, because ANNIE is not symmetrical
+    G4double zoffset = (zflip<0) ? WCBorderBarrelTopPMTOffset*zflip : 0;
+    
     // only 1 PMT in border rings
     // placements as per nominal WCSim
     G4ThreeVector PMTPosition =  G4ThreeVector(WCIDRadius,
 	                                          -barrelCellWidth/2.+((zflip+1)/2.+0.5)*horizontalSpacing,
-	                                           0);
+	                                           zoffset);
 	
 	G4VPhysicalVolume* physiWCBarrelBorderPMT =
 		new G4PVPlacement(WCPMTRotation,                          // its rotation

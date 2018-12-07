@@ -13,81 +13,90 @@
 # Vis Settings for ANNIE
 /vis/viewer/zoom 2.4
 /vis/viewer/set/viewpointThetaPhi -95 -15
-#/vis/viewer/set/viewpointThetaPhi 80 10 deg
-#/vis/viewer/set/viewpointThetaPhi 90 0 deg
-# angle at which to view a octagon face side-on 
-#/vis/viewer/set/viewpointThetaPhi 112.5 0
+# N.B. /vis/viewer/set/viewpointThetaPhi 0 90 views tank looking UPSTREAM
 /vis/viewer/set/upVector 0 1 0
-/vis/viewer/panTo -2 0.8
-/vis/viewer/pan -5 0
-# add visibility of the hidden parent structures
-#/vis/geometry/set/visibility WCBarrelCell 0
-#/vis/geometry/set/visibility WCBarrelCell 1
-#/vis/geometry/set/visibility WCCapPolygon 1
-#/vis/geometry/set/forceSolid ANNIEp2-glassFaceWCPMT -1 1
-#/vis/geometry/set/forceSolid ANNIEp2-glassFaceWCONLYLAPPDS -1 1
-#/vis/geometry/set/colour ANNIEp2-glassFaceWCPMT -1 1. 1. 1. .3
-#/vis/viewer/zoom 2
-#/vis/viewer/pan -1 0
-## following additional commands show a top-down view zoomed over an ocatgonal side
-#/vis/viewer/set/viewpointThetaPhi 90 90
-#/vis/viewer/zoom 0.7
-#/vis/viewer/set/upVector 0.29 0. 0.71
-#/vis/viewer/zoom 2
-#/vis/viewer/pan -1 -1
-#/vis/viewer/pan 0.4 0.2
-#/vis/viewer/zoom 1.5
+/vis/viewer/panTo 2 0.8
 
-## Color PMTs by type for ANNIEp2v2
-#/vis/geometry/set/forceSolid ANNIEp2v2-glassFaceWCPMT_R7081 -1 1
-#/vis/geometry/set/forceSolid ANNIEp2v2-glassFaceWCPMT_D784KFLB -1 1
-#/vis/geometry/set/forceSolid ANNIEp2v2-glassFaceWCPMT_R5912HQE -1 1
-#/vis/geometry/set/colour ANNIEp2v2-glassFaceWCPMT_R7081 -1 1. .6 1. 1
-#/vis/geometry/set/colour ANNIEp2v2-glassFaceWCPMT_D784KFLB -1 .6 1. 1. 1
-#/vis/geometry/set/colour ANNIEp2v2-glassFaceWCPMT_R5912HQE -1 1.0 0.3 .3 1
+/vis/viewer/set/hiddenEdge 0
+/vis/viewer/set/hiddenMarker 0
+#/vis/viewer/set/viewpointThetaPhi 112.5 0 #0.4
+#/vis/viewer/set/auxiliaryEdge 0
+#/vis/viewer/set/background white 0 # red green blue opacity << opacity has no effect?
+#/vis/viewer/set/rotationStyle freeRotation #constrainUpDirection or 
+#/vis/viewer/set/style s # (for solid) or w for wireframe
+#/vis/viewer/set/targetPoint 0 0 10 m
+#/vis/viewer/set/viewpointVector 0 0 1  # Sets direction from target to camera.
+#/vis/viewer/dolly 1 m #Moves the camera incrementally towards target point
+#/vis/viewer/dollyTo 1 m #Places the camera towards target point relative to standard camera point.
 
-## same colours for ANNIEp2v3
-#/vis/geometry/set/forceSolid ANNIEp2v3-glassFaceWCPMT_R7081 -1 1
-#/vis/geometry/set/forceSolid ANNIEp2v3-glassFaceWCPMT_D784KFLB -1 1
-#/vis/geometry/set/forceSolid ANNIEp2v3-glassFaceWCPMT_R5912HQE -1 1
-#/vis/geometry/set/colour ANNIEp2v3-glassFaceWCPMT_R7081 -1 1. .6 1. 1
-#/vis/geometry/set/colour ANNIEp2v3-glassFaceWCPMT_D784KFLB -1 .6 1. 1. 1
-#/vis/geometry/set/colour ANNIEp2v3-glassFaceWCPMT_R5912HQE -1 1.0 0.3 .3 1
+/vis/geometry/set/visibility cad_logical -1 1
+/vis/geometry/set/forceSolid cad_logical -1 1
+/vis/geometry/set/colour cad_logical -1 0.5 0.5 0.5 1
 
-## same colours for ANNIEp2v4
-#/vis/geometry/set/forceSolid ANNIEp2v4-glassFaceWCPMT_R7081 -1 1
-#/vis/geometry/set/forceSolid ANNIEp2v4-glassFaceWCPMT_D784KFLB -1 1
-#/vis/geometry/set/forceSolid ANNIEp2v4-glassFaceWCPMT_R5912HQE -1 1
-#/vis/geometry/set/colour ANNIEp2v4-glassFaceWCPMT_R7081 -1 1. .6 1. 1
-#/vis/geometry/set/colour ANNIEp2v4-glassFaceWCPMT_D784KFLB -1 .6 1. 1. 1
-#/vis/geometry/set/colour ANNIEp2v4-glassFaceWCPMT_R5912HQE -1 1.0 0.3 .3 1
-#/vis/geometry/set/forceSolid ANNIEp2v4-glassFaceWCONLYLAPPDS -1 1
-
-# same colours for ANNIEp2v5
-#/vis/viewer/set/viewpointThetaPhi 90 90
-/vis/geometry/set/forceSolid ANNIEp2v5-glassFaceWCPMT_R7081 -1 1
-/vis/geometry/set/forceSolid ANNIEp2v5-glassFaceWCPMT_D784KFLB -1 1
-/vis/geometry/set/forceSolid ANNIEp2v5-glassFaceWCPMT_R7081HQE -1 1
-/vis/geometry/set/colour ANNIEp2v5-glassFaceWCPMT_R7081 -1 1. .6 1. 1
-/vis/geometry/set/colour ANNIEp2v5-glassFaceWCPMT_D784KFLB -1 .6 1. 1. 1
-/vis/geometry/set/colour ANNIEp2v5-glassFaceWCPMT_R7081HQE -1 1.0 0.3 .3 1
-/vis/geometry/set/forceSolid ANNIEp2v5-glassFaceWCONLYLAPPDS -1 1
-#/vis/geometry/set/visibility WCBarrelRing 1
-
-## make things invisible
-#/vis/geometry/set/colour totMRDlog -1 0 0 0 0
-#/vis/geometry/set/colour totVetolog -1 0 0 0 0
-#/vis/geometry/set/colour ANNIEp2v5-glassFaceWCONLYLAPPDS -1 0 0 0 0
-#/vis/geometry/set/colour ANNIEp2v5-glassFaceWCPMT_R7081 -1 0 0 0 0
-#/vis/geometry/set/colour ANNIEp2v5-glassFaceWCPMT_D784KFLB -1  0 0 0 0
-#/vis/geometry/set/colour ANNIEp2v5-glassFaceWCPMT_R7081HQE -1  0 0 0 0
+/vis/geometry/set/visibility WCBarrel 1 1   ## barrel contents - use just WC for whole tank
+/vis/geometry/set/forceSolid WCBarrel 1 1   ## this works for the steel though
+/vis/geometry/set/colour WCBarrel 1 1. 1. 1. 0.2
 
 ## show the blacksheets for debug
-#/vis/geometry/set/visibility WCBarrelBorderCellBlackSheet 1
-#/vis/geometry/set/visibility WCBarrelCellBlackSheet 1
+/vis/geometry/set/visibility WCBarrelCellBlackSheet -1 1
+/vis/geometry/set/forceSolid WCBarrelCellBlackSheet -1 1
+/vis/geometry/set/colour WCBarrelCellBlackSheet -1 0.5 0.5 0.5 0.2
+/vis/geometry/set/visibility WCCapBlackSheet -1 1
+/vis/geometry/set/forceSolid WCCapBlackSheet -1 1
+/vis/geometry/set/colour WCCapBlackSheet -1 0.5 0.5 0.5 0.3
 
-# Show inner structure for ANNIEp2v2
-#/vis/geometry/set/visibility cad_logical 1
+# PMT colours
+/vis/geometry/set/visibility ANNIEp2v6-glassFaceWCPMT_R7081 -1 1
+/vis/geometry/set/visibility ANNIEp2v6-glassFaceWCPMT_D784KFLB -1 1
+/vis/geometry/set/visibility ANNIEp2v6-glassFaceWCPMT_R5912HQE -1 1
+/vis/geometry/set/visibility ANNIEp2v6-glassFaceWCPMT_R7081HQE -1 1
+/vis/geometry/set/visibility ANNIEp2v6-glassFaceWCONLYLAPPDS -1 1
+/vis/geometry/set/visibility ANNIEp2v6-glassFaceWCPMT_EMI9954KB -1 1
+/vis/geometry/set/forceSolid ANNIEp2v6-glassFaceWCPMT_R7081 -1 1
+/vis/geometry/set/forceSolid ANNIEp2v6-glassFaceWCPMT_D784KFLB -1 1
+/vis/geometry/set/forceSolid ANNIEp2v6-glassFaceWCPMT_R5912HQE -1 1
+/vis/geometry/set/forceSolid ANNIEp2v6-glassFaceWCPMT_R7081HQE -1 1
+/vis/geometry/set/forceSolid ANNIEp2v6-glassFaceWCONLYLAPPDS -1 1
+/vis/geometry/set/forceSolid ANNIEp2v6-glassFaceWCPMT_EMI9954KB -1 1
+/vis/geometry/set/colour ANNIEp2v6-glassFaceWCPMT_R7081 -1 1. .6 1. 1
+/vis/geometry/set/colour ANNIEp2v6-glassFaceWCPMT_D784KFLB -1 .6 1. 1. 1
+/vis/geometry/set/colour ANNIEp2v6-glassFaceWCPMT_R5912HQE -1 .6 .6 1. 1
+/vis/geometry/set/colour ANNIEp2v6-glassFaceWCPMT_R7081HQE -1 1.0 0.3 .3 1
+/vis/geometry/set/colour ANNIEp2v6-glassFaceWCONLYLAPPDS -1 0.6 0.6 0.6 1
+/vis/geometry/set/colour ANNIEp2v6-glassFaceWCPMT_EMI9954KB -1 1.0 0.3 .3 1
+
+## make things invisible
+#/vis/geometry/set/visibility WC -1 0             # entire tank
+#/vis/geometry/set/colour totMRDlog -1 0 0 0 0
+#/vis/geometry/set/visibility steel_log -1 0
+#/vis/geometry/set/visibility aluStruct -1 0
+#/vis/geometry/set/visibility hpaddle_log -1 0
+#/vis/geometry/set/visibility taper_log -1 0
+#/vis/geometry/set/colour totVetolog -1 0 0 0 0
+#/vis/geometry/set/colour totVetolog -1 1 1 1 0.5  # outline, for orientation
+#/vis/geometry/set/colour ANNIEp2v6-glassFaceWCONLYLAPPDS -1 0 0 0 0
+#/vis/geometry/set/colour ANNIEp2v6-glassFaceWCPMT_R7081 -1 0 0 0 0
+#/vis/geometry/set/colour ANNIEp2v6-glassFaceWCPMT_D784KFLB -1  0 0 0 0
+#/vis/geometry/set/colour ANNIEp2v6-glassFaceWCPMT_R5912HQE -1  0 0 0 0
+#/vis/geometry/set/colour ANNIEp2v6-glassFaceWCPMT_R7081HQE -1  0 0 0 0
+#/vis/geometry/set/colour ANNIEp2v6-glassFaceWCPMT_EMI9954KB -1  0 0 0 0
+#/vis/geometry/set/visibility ANNIEp2v6-glassFaceWCPMT_R7081 -1 0
+#/vis/geometry/set/visibility ANNIEp2v6-glassFaceWCPMT_D784KFLB -1 0
+#/vis/geometry/set/visibility ANNIEp2v6-glassFaceWCPMT_R5912HQE -1 0
+#/vis/geometry/set/visibility ANNIEp2v6-glassFaceWCPMT_R7081HQE -1 0
+#/vis/geometry/set/visibility ANNIEp2v6-glassFaceWCONLYLAPPDS -1 0
+#/vis/geometry/set/colour ANNIEp2v6-glassFaceWCPMT_EMI9954KB -1  0 0 0 0
+
+# colours for the MRD paddles. Not very effective unless really zoomed in.
+#/vis/geometry/set/visibility hpaddle_log  -1 1
+#/vis/geometry/set/visibility vpaddle_log  -1 1
+#/vis/geometry/set/visibility vpaddle_log2 -1 1
+#/vis/geometry/set/forceSolid hpaddle_log  -1 1
+#/vis/geometry/set/forceSolid vpaddle_log  -1 1
+#/vis/geometry/set/forceSolid vpaddle_log2 -1 1
+#/vis/geometry/set/colour hpaddle_log  -1 .6 1. 1. 0.3
+#/vis/geometry/set/colour vpaddle_log  -1 1. .6 1. 0.3
+#/vis/geometry/set/colour vpaddle_log2 -1 1. 1. .6 0.3
 
 # Vis settings for HK
 #/vis/viewer/set/upVector 0 1 0
@@ -124,4 +133,32 @@
 # Default background for OGLSX is black, can change it here (but muons are white)
 #/vis/viewer/set/background 0 0 0 1
 
-/vis/viewer/pan 9 0
+#/vis/viewer/pan 9 0
+#/vis/viewer/panTo -2 0
+/vis/viewer/panTo 2 0.8
+#/vis/viewer/set/viewpointThetaPhi 90 90
+#/vis/viewer/zoom 3
+
+# cut away +'ve x
+#/vis/viewer/addCutawayPlane 0 0 0 m -1 0 0
+#/vis/viewer/addCutawayPlane 0 0 1.6 m 0.7 0 0.3 #<< bisect a face, from upstream RHS to downstream LHS
+#/vis/viewer/addCutawayPlane 0 0 1.2 m 0.7 0 0.3 #<< version to slice a PMT in half
+#/vis/viewer/set/viewpointThetaPhi -112.5 0
+#/vis/viewer/zoom 3
+# use /vis/viewer/set/viewpointThetaPhi -112.5 -30 to view perpendicular to it
+#/vis/viewer/addCutawayPlane 0 0 1.6 m 0 0 -1 #<< show uptream haf of tank
+#/vis/viewer/addCutawayPlane 0 0 1.6 m 0 0 1  #<< show downstream half of tank
+# Use /vis/viewer/clearCutawayPlanes to remove them.
+#/vis/viewer/set/viewpointThetaPhi 90 90
+#/vis/viewer/addCutawayPlane 0 0 0 m -0.2 0 0.2
+#/vis/viewer/set/viewpointThetaPhi 70 0
+#/vis/viewer/set/viewpointThetaPhi 70 0
+#/vis/viewer/zoom 4
+#/vis/viewer/pan 0 0.5
+#/vis/viewer/pan 0.5 0
+#/vis/viewer/set/viewpointThetaPhi 70 20
+#/vis/viewer/zoom 2
+#/vis/viewer/pan 0 -0.2
+#/vis/viewer/pan 0 -2  
+#/vis/viewer/pan 0 -1
+#/vis/viewer/pan 0 3 

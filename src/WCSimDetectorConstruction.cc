@@ -81,7 +81,8 @@ WCSimDetectorConstruction::WCSimDetectorConstruction(G4int DetConfig,WCSimTuning
   //SetANNIEPhase2Geometryv2();
   //SetANNIEPhase2Geometryv3();
   //SetANNIEPhase2Geometryv4();
-  SetANNIEPhase2Geometryv5();
+  //SetANNIEPhase2Geometryv5();
+  SetANNIEPhase2Geometryv6();
 
   //----------------------------------------------------- 
   // Set whether or not Pi0-specific info is saved
@@ -402,6 +403,11 @@ WCSimPMTObject *WCSimDetectorConstruction::CreatePMTObject(G4String PMTType, G4S
   }
   else if (PMTType == "R5912HQE"){
     WCSimPMTObject* PMT = new PMT_R5912HQE;
+    WCSimDetectorConstruction::SetPMTPointer(PMT, CollectionName);
+    return PMT;
+  }
+  else if (PMTType == "R7081HQE"){
+    WCSimPMTObject* PMT = new PMT_R7081HQE;
     WCSimDetectorConstruction::SetPMTPointer(PMT, CollectionName);
     return PMT;
   }

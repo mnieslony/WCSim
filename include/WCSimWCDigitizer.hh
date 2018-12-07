@@ -34,6 +34,7 @@ public:
   //.mac file option setting methods
   void SetDigitizerDeadTime         (int deadtime) { DigitizerDeadTime = deadtime;         }; ///< Override the default digitizer deadtime (ns)
   void SetDigitizerIntegrationWindow(int inttime ) { DigitizerIntegrationWindow = inttime; }; ///< Override the default digitizer integration window (ns)
+  void SetExtendIntegrationWindow   (bool extendwindow) { ExtendDigitizerIntegrationWindow = extendwindow; };
 
   ///Save current values of options
   void SaveOptionsToOutput(WCSimRootOptions * wcopt);
@@ -53,11 +54,13 @@ protected:
   G4String DigitizerClassName;    ///< Name of the digitizer class being run
   int DigitizerDeadTime;          ///< Digitizer deadtime (ns)
   int DigitizerIntegrationWindow; ///< Digitizer integration window (ns)
+  bool ExtendDigitizerIntegrationWindow;  // extend integration window when a new hit arrives in an existing window
 
   DigitizerType_t DigitizerType; ///< Enumeration to say which digitizer we've constructed
 
   virtual int GetDefaultDeadTime() = 0;          ///< Set the default digitizer-specific deadtime (in ns) (overridden by .mac)
   virtual int GetDefaultIntegrationWindow() = 0; ///< Set the default digitizer-specific integration window (in ns) (overridden by .mac)
+  virtual bool GetDefaultExtendIntegrationWindow() = 0;
 
   void GetVariables(); ///< Get the default deadtime, etc. from the derived class, and override with read from the .mac file
   
@@ -84,6 +87,7 @@ public:
 private:
   int GetDefaultDeadTime()          { return 0; }   ///< SKI digitizer deadtime is 0 ns
   int GetDefaultIntegrationWindow() { return 200; } ///< 
+  bool GetDefaultExtendIntegrationWindow(){ return false; }
 
   static void Threshold(double& pe,int& iflag){
     //   CLHEP::HepRandom::setTheSeed(pe+2014);

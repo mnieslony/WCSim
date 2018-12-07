@@ -38,6 +38,8 @@ void WCSimDetectorConstruction::SetANNIEPhase1Geometry()
   expHall_x = 50*m;
   expHall_y = expHall_z = 500*m;
   GDMLFilename = "annie_v04.gdml";
+  constructmrd = true;
+  constructveto = true;
   
   WCLength = tankhy;
   WCRadius = tankouterRadius;
@@ -85,6 +87,8 @@ void WCSimDetectorConstruction::SetANNIEPhase2Geometry()
   expHall_x = 50*m;
   expHall_y = expHall_z = 500*m;
   GDMLFilename = "annie_v04.gdml";
+  constructmrd = true;
+  constructveto = true;
   
   WCSimPMTObject* MRDPMT = CreatePMTObject("FlatFacedPMT2inch",WCMRDCollectionName);
   MRDPMTName = MRDPMT->GetPMTName();
@@ -201,6 +205,8 @@ void WCSimDetectorConstruction::SetANNIEPhase2Geometryv2()
   GDMLFilename = "annie_v04.gdml";
   GDMLInnerStructureFilename = "InnerStructure.gdml";
   addGDMLinnerstructure = false;
+  constructmrd = true;
+  constructveto = true;
   
   WCSimPMTObject* MRDPMT = CreatePMTObject("FlatFacedPMT2inch",WCMRDCollectionName);
   MRDPMTName = MRDPMT->GetPMTName();
@@ -330,6 +336,8 @@ void WCSimDetectorConstruction::SetANNIEPhase2Geometryv3()
   GDMLFilename = "annie_v04.gdml";
   GDMLInnerStructureFilename = "InnerStructure.gdml";
   addGDMLinnerstructure = false;
+  constructmrd = true;
+  constructveto = true;
   
   WCSimPMTObject* MRDPMT = CreatePMTObject("FlatFacedPMT2inch",WCMRDCollectionName);
   MRDPMTName = MRDPMT->GetPMTName();
@@ -456,6 +464,8 @@ void WCSimDetectorConstruction::SetANNIEPhase2Geometryv4()
   GDMLFilename = "annie_v04.gdml";
   GDMLInnerStructureFilename = "InnerStructure.gdml";
   addGDMLinnerstructure = false;
+  constructmrd = true;
+  constructveto = true;
   
   WCSimPMTObject* MRDPMT = CreatePMTObject("FlatFacedPMT2inch",WCMRDCollectionName);
   MRDPMTName = MRDPMT->GetPMTName();
@@ -526,7 +536,7 @@ void WCSimDetectorConstruction::SetANNIEPhase2Geometryv5()
   // above design uses 32 x 10" HQE and 48 x WB - must remove 2 HQE and 3 WB PMTs
   
   // PMTs on hand:
-  // Side: 45 x 10" (Watchboy, R7081) + 40 x 8" (new, HQE(?) R5912)
+  // Side: 45 x 10" (Watchboy, R7081) + 30 x 10" (new R7081HQE)
   // Bottom: 20 x 10” PMTs (LUX, R7081)
   // Top: 19 x 11” PMTs (LBNE, HQE D784KFLB)  // NB. UPDATED NUMBER, DOWN FROM 22
   
@@ -545,7 +555,7 @@ void WCSimDetectorConstruction::SetANNIEPhase2Geometryv5()
   std::string WCIDCollectionName_R7081HQE = WCDetectorName +"-glassFaceWCPMT_R7081HQE";
   WCTankCollectionNames.push_back(WCIDCollectionName_R7081);     // 10" LUX/Watchboy
   WCTankCollectionNames.push_back(WCIDCollectionName_D784KFLB);  // 11" HQE LBNE
-  WCTankCollectionNames.push_back(WCIDCollectionName_R7081HQE);  // 8"  HQE new
+  WCTankCollectionNames.push_back(WCIDCollectionName_R7081HQE);  // new 10" HQE
   
   // other detector element collections
   WCMRDCollectionName = WCDetectorName +"-glassFaceWCPMT_MRD";
@@ -593,8 +603,11 @@ void WCSimDetectorConstruction::SetANNIEPhase2Geometryv5()
   expHall_x = 50*m;
   expHall_y = expHall_z = 500*m;
   GDMLFilename = "annie_v04.gdml";
-  GDMLInnerStructureFilename = "InnerStructure.gdml";
-  addGDMLinnerstructure = false;
+  GDMLInnerStructureFilename = "PHASE2_INNER_STRUCTURE.gdml";
+  addGDMLinnerstructure = true;
+  doOverlapCheck = true;		// check overlaps when adding inner structure
+  constructmrd = false;
+  constructveto = false;
   
   WCSimPMTObject* MRDPMT = CreatePMTObject("FlatFacedPMT2inch",WCMRDCollectionName);
   MRDPMTName = MRDPMT->GetPMTName();
@@ -613,7 +626,7 @@ void WCSimDetectorConstruction::SetANNIEPhase2Geometryv5()
   WCIDDiameter             = 2.554*m;		// 2x shortest distance to the centre of a ocatgonal
 											// cell wall- from blueprints, this is 100.57" = 255.4cm
   WCIDHeight               = 3.96*m;		// full height
-  WCBarrelPMTOffset        = 0.0715*m;		// offset of first barrel ring from tank caps
+  WCBarrelPMTOffset        = 0.5715*m;		// offset of first barrel ring from tank caps
   
   // NOTE: ANNIEp2v2 bypasses the use of multiple identical rings to fill the barrel
   // instead, there is just ONE main barrel ring, in which 5 rings of PMTs are placed manually
@@ -629,11 +642,15 @@ void WCSimDetectorConstruction::SetANNIEPhase2Geometryv5()
   											// 4 vertical PMTs placed within the one main barrel ring
   											// border rings have 1 vertical PMT per cell
   
+  numhatchpmts = 4;
   G4double CapPMTRadius    = WCPMTRadius_D784KFLB;		// 11" on top are largest cap PMTs
   WCCapPMTSpacing          = 3.*(CapPMTRadius+25.*mm);
   WCCapEdgeLimit           = WCIDDiameter/2.0 - CapPMTRadius; // - 10*cm
-  compressionfactor        = 0.9;			// how much to squeeze PMTs together on an octagon face
-  capcompressionratio      = 0.7;			// how much cap PMTs are squeezed in one dir relative to the other
+  WCCapPMTOffset           = 0.35*m;		// offset of the cap PMTs into the tank centre.
+  WCCapTopPMTOffset        = 0.15*m;		// additional offset for the top cap PMTs, the offsets are different
+  WCBorderBarrelTopPMTOffset = 0.2*m;		// top border ring PMTs need pushing down
+  compressionfactor        = 0.62;			// how much to squeeze PMTs together on an octagon face
+  capcompressionratio      = 0.6;			// how much cap PMTs are squeezed in one dir relative to the other
   WCCapPMTPosRadius        = 0.9*m;			// radius at which to position PMTs for the top cap
   WCCapPMTPosRadius2       = 0.3*m;			// radius at which to position PMTs for the hatch
   
@@ -644,6 +661,192 @@ void WCSimDetectorConstruction::SetANNIEPhase2Geometryv5()
   WCCapLAPPDSpacing       = 0.*m;
   WCLAPPDperCellHorizontal= 1;
   WCLAPPDperCellVertical  = 3;
+  barrelcompressionfactor = 0.9;
+  barrelbordercompressionfactor = 1.; // 0.8
+  
+}
+
+
+void WCSimDetectorConstruction::SetANNIEPhase2Geometryv6()
+{
+  
+  // 20 x 10" LUX PMTs on the bottom, arranged in a cross with a 4x4 rectangle, extended on it's narrow
+  // dimension by an extra 2 PMTs in the centre on either side
+  // 19 x 11" LBNE PMTs on the top, arranged in a ring of 16, with 3 on the central hatch
+  //  8",  8"                                     == 16*8"
+  //  WB,  8" << 3 faces //  WB,  WB << 5 faces   == 3*8", 13*WB
+  //  WB,  WM << 2 faces //  8",  WB << 6 faces   == 2*WM, 6*8", 8*WB
+  //  WM,  WB                                     == 8*WM,       8*WB
+  //  WB,  WB                                     == 16 * WB
+  //  8",  8" (missing one)                       == 15*8"
+  // 
+  //                                              == 10*WM, (16+3+6+15=40 8"), (13+8+8+16=45 WB) OK!
+  // 
+  // border rings:       31 *  8" HQE                         ->  9 remaining  8" HQE
+  // central rings:      10 * 10" HQE +  6 * 8" HQE + 16 * WB ->  3 remaining  8" HQE + 29 remaining WB
+  // intermediate rings:  3 *  8" HQE + 29 * WB               ->  none remaining 
+  // 
+  // inner structure has 16*6 = 96 holes
+  // PMTs we should have:
+  // 40 new hamamatsu 8"
+  // 45 WB 10" tubes
+  // 10 WM 10" HQE tubes << new, for barrel
+  // Total: 
+  // 95 PMTs
+  // --> only one hole!
+  // 
+  // PMTs on hand:
+  // Side: 45 x 10" (Watchboy, R7081) + 40 x 8" (new, HQE R5912) + 10 x 10" HQE (Watchman, R7081HQE)
+  // Bottom: 20 x 10” PMTs (LUX, R7081)
+  // Top: 19 x 11” PMTs (LBNE, HQE D784KFLB)  // NB. UPDATED NUMBER, DOWN FROM 22
+  
+  WCPosition=0.;//Set the WC tube offset to zero ???
+  
+  WCTankCollectionNames.clear();
+  WCPMTNameMap.clear();
+  WCPMTRadiusMap.clear();
+  
+  isANNIE=true;
+  WCDetectorName = "ANNIEp2v6";
+  
+  // tank PMT collections - one for each type of PMT.
+  WCIDCollectionName="WCIDCollectionNameIsUnused";  // some default.
+  // the order in the maps is important due to hardcoded hacking in ConstructCylinder
+  std::string WCIDCollectionName_R7081 = WCDetectorName +"-glassFaceWCPMT_R7081";
+  std::string WCIDCollectionName_D784KFLB = WCDetectorName +"-glassFaceWCPMT_D784KFLB";
+  std::string WCIDCollectionName_R5912HQE = WCDetectorName +"-glassFaceWCPMT_R5912HQE";
+  std::string WCIDCollectionName_R7081HQE = WCDetectorName +"-glassFaceWCPMT_R7081HQE";
+  std::string WCODCollectionName_EMI9954KB = WCDetectorName +"-glassFaceWCPMT_EMI9954KB"; // 2" OD PMTs
+  WCTankCollectionNames.push_back(WCIDCollectionName_R7081);     // 10" LUX/Watchboy
+  WCTankCollectionNames.push_back(WCIDCollectionName_D784KFLB);  // 11" HQE LBNE
+  WCTankCollectionNames.push_back(WCIDCollectionName_R5912HQE);  //  8" HQE new
+  WCTankCollectionNames.push_back(WCIDCollectionName_R7081HQE);  // 10" HQE Watchman
+  WCTankCollectionNames.push_back(WCODCollectionName_EMI9954KB); //  2" PMT, for now use same as MRD
+  
+  // other detector element collections
+  WCMRDCollectionName = WCDetectorName +"-glassFaceWCPMT_MRD";
+  WCFACCCollectionName = WCDetectorName +"-glassFaceWCPMT_FACC";
+  WCIDCollectionName2 = WCDetectorName +"-glassFaceWCONLYLAPPDS";
+  
+  // create the tank PMTs and get their info
+  WCSimPMTObject* PMT_R7081 = CreatePMTObject("R7081", WCIDCollectionName_R7081);
+  G4String WCPMTName_R7081 = PMT_R7081->GetPMTName();
+  G4double WCPMTExposeHeight_R7081 = PMT_R7081->GetExposeHeight();
+  G4double WCPMTRadius_R7081 = PMT_R7081->GetRadius();
+  
+  WCSimPMTObject* PMT_D784KFLB = CreatePMTObject("D784KFLB", WCIDCollectionName_D784KFLB);
+  G4String WCPMTName_D784KFLB = PMT_D784KFLB->GetPMTName();
+  G4double WCPMTExposeHeight_D784KFLB = PMT_D784KFLB->GetExposeHeight();
+  G4double WCPMTRadius_D784KFLB = PMT_D784KFLB->GetRadius();
+  
+  WCSimPMTObject* PMT_R5912HQE = CreatePMTObject("R5912HQE", WCIDCollectionName_R5912HQE);
+  G4String WCPMTName_R5912HQE = PMT_R5912HQE->GetPMTName();
+  G4double WCPMTExposeHeight_R5912HQE = PMT_R5912HQE->GetExposeHeight();
+  G4double WCPMTRadius_R5912HQE = PMT_R5912HQE->GetRadius();
+  
+  WCSimPMTObject* PMT_R7081HQE = CreatePMTObject("R7081HQE", WCIDCollectionName_R7081HQE);
+  G4String WCPMTName_R7081HQE = PMT_R7081HQE->GetPMTName();
+  G4double WCPMTExposeHeight_R7081HQE = PMT_R7081HQE->GetExposeHeight();
+  G4double WCPMTRadius_R7081HQE = PMT_R7081HQE->GetRadius();
+  
+  WCSimPMTObject* PMT_EMI9954KB = CreatePMTObject("FlatFacedPMT2inch",WCODCollectionName_EMI9954KB);
+  G4String WCPMTName_EMI9954KB = PMT_EMI9954KB->GetPMTName();
+  G4double WCPMTExposeHeight_EMI9954KB = PMT_EMI9954KB->GetExposeHeight();
+  G4double WCPMTRadius_EMI9954KB = PMT_EMI9954KB->GetRadius();
+  
+  // store info in the maps
+  // names
+  WCPMTNameMap.emplace(WCIDCollectionName_R7081, WCPMTName_R7081);
+  WCPMTNameMap.emplace(WCIDCollectionName_D784KFLB, WCPMTName_D784KFLB);
+  WCPMTNameMap.emplace(WCIDCollectionName_R5912HQE, WCPMTName_R5912HQE);
+  WCPMTNameMap.emplace(WCIDCollectionName_R7081HQE, WCPMTName_R7081HQE);
+  WCPMTNameMap.emplace(WCODCollectionName_EMI9954KB, WCPMTName_EMI9954KB);
+  // radii
+  WCPMTRadiusMap.emplace(WCIDCollectionName_R7081, WCPMTRadius_R7081);
+  WCPMTRadiusMap.emplace(WCIDCollectionName_D784KFLB, WCPMTRadius_D784KFLB);
+  WCPMTRadiusMap.emplace(WCIDCollectionName_R5912HQE, WCPMTRadius_R5912HQE);
+  WCPMTRadiusMap.emplace(WCIDCollectionName_R7081HQE, WCPMTRadius_R7081HQE);
+  WCPMTRadiusMap.emplace(WCODCollectionName_EMI9954KB, WCPMTRadius_EMI9954KB);
+  // expose heights
+  // these are used in ConstructANNIECylinder to account for different inner radii due to different holders
+  WCPMTExposeHeightMap.emplace(WCIDCollectionName_R7081,     20.*cm); // (just fudge factors)
+  WCPMTExposeHeightMap.emplace(WCIDCollectionName_D784KFLB,   0.*cm);
+  WCPMTExposeHeightMap.emplace(WCIDCollectionName_R5912HQE,  10.*cm);
+  WCPMTExposeHeightMap.emplace(WCIDCollectionName_R7081HQE,  20.*cm);
+  WCPMTExposeHeightMap.emplace(WCODCollectionName_EMI9954KB,  10.*cm);
+  
+  WCPMTRadius = WCPMTRadius_D784KFLB;             // the LBNE PMTs are largest at 11"
+  WCPMTExposeHeight = WCPMTRadius_R7081;          // the largest expose height of barrel PMTs
+  
+  WCSimLAPPDObject * lappd = CreateLAPPDObject("lappd", WCIDCollectionName2);
+  WCLAPPDName = lappd->GetLAPPDName();
+  WCLAPPDExposeHeight = lappd->GetExposeHeight();
+  WCLAPPDRadius = lappd->GetRadius();
+  
+  WCAddGd = true;
+  // TODO: convert these with the ones below, and add in other constants from MRD definition etc.
+  tankouterRadius= 1.524*m;		// 120" exactly (TSW blueprint) = 3.048m diameter
+  tankhy = 1.98*m;				// 13ft exactly (TSW blueprint) = 3.96m tall; hy is HALF height
+  tankzoffset = 15.70*cm;		//15.70*cm
+  tankyoffset = 144.64875*mm;
+  expHall_x = 50*m;
+  expHall_y = expHall_z = 500*m;
+  GDMLFilename = "annie_v04.gdml";
+  GDMLInnerStructureFilename = "PHASE2_INNER_STRUCTURE.gdml";
+  addGDMLinnerstructure = true;
+  doOverlapCheck = true;   // check overlaps when adding inner structure
+  constructmrd = true;     // not optional without further work, except for visualization
+  constructveto = true;    // not optional without further work, except for visualization
+  
+  WCSimPMTObject* MRDPMT = CreatePMTObject("FlatFacedPMT2inch",WCMRDCollectionName);
+  MRDPMTName = MRDPMT->GetPMTName();
+  MRDPMTExposeHeight = MRDPMT->GetExposeHeight();
+  MRDPMTRadius = MRDPMT->GetRadius();
+  
+  WCSimPMTObject* FACCPMT = CreatePMTObject("FlatFacedPMT2inch",WCFACCCollectionName);
+  FACCPMTName = FACCPMT->GetPMTName();
+  FACCPMTExposeHeight = FACCPMT->GetExposeHeight();
+  FACCPMTRadius = FACCPMT->GetRadius();
+  
+  // PMT rings and faces counts
+  WCBarrelNumPMTHorizontal = 16;			// this + WCPMTperCellHorizontal define num detector sides
+  WCPMTperCellHorizontal   = 2;				// ^ for octagonal inner structure it must produce 8
+  WCBarrelNRings           = 6;				// N/A
+  WCBarrelRingNPhi         = 8;				// number of faces in the inner structure
+  numhatchpmts = 4;
+  
+  // Offsets and positioning
+  WCLength = tankhy;
+  WCRadius = tankouterRadius;
+  WCIDHeight               = 3.96*m;		// full height
+  WCIDDiameter             = 2.554*m;		// 2x shortest distance to the centre of a ocatgonal
+											// cell wall- from blueprints, this is 100.57" = 255.4cm
+											// from blueprints of inner structure diameter is 106.64",
+											// hexagonal side is 40.81", 100.57" from face-to-face
+											// (note: OUTER dimensions, including steel bar width)
+  WCBarrelPMTOffset        = 0.415*m;			// offset of first barrel ring from tank caps  0.4 -> .34?
+  WCBlackSheetThickness    = 1.01*mm;		// liner is 40 mil. = 40 milli inches. 
+  InnerStructureCentreOffset = -5.6*cm;		// centre of inner structure is closer to the ground
+  
+  // cap positioning
+  G4double CapPMTRadius    = WCPMTRadius_D784KFLB;				// 11" on top are largest cap PMTs
+  WCCapPMTSpacing          = 3.*(CapPMTRadius) + 4*cm;			// wide separation of bottom PMTs
+  capcompressionratio      = 0.62;			// relative spacing of bottom PMTs in x relative to in y
+  capcentrebarwidth        = 4*cm;			// additional offset of bottom PMTs from centre due to central bar
+  WCCapEdgeLimit           = WCIDDiameter/2.0 - CapPMTRadius;	//
+  WCCapPMTPosRadius        = 0.85*m;		// radius at which to position PMTs for the top cap
+  											// TODO this could probably have a squeeze in pairs
+  WCCapPMTPosRadius2       = 0.3*m;			// radius at which to position PMTs for the hatch
+  WCCapTopPMTOffset        = -0.1*cm;		//
+  WCCapBottomPMTOffset     = 0.2*cm;		//
+  
+  // barrel positioning
+  barrelcompressionfactor  = 0.82;			// barrel rings do not span full tank height
+  compressionfactor        = 0.62;			// how much to squeeze PMTs together on an octagon face
+  
+  // LAPPDs at octagon corners
+  WCLAPPDperCellHorizontal= 1;				// 1 LAPPD on each octagon face (corner)
+  WCLAPPDperCellVertical  = 3;				// 3 rings of LAPPDs
   
 }
 

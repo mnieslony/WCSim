@@ -44,6 +44,7 @@ void WCSimRootOptions::Print(Option_t *) const
     << "\tDigitizerClassName: " << DigitizerClassName << endl
     << "\tDigitizerDeadTime: " << DigitizerDeadTime << " ns" << endl
     << "\tDigitizerIntegrationWindow: " << DigitizerIntegrationWindow << " ns" << endl
+    << "\tExtendDigitizerIntegrationWindow: " << ExtendDigitizerIntegrationWindow << endl
     << "Trigger options:" << endl
     << "\tTriggerClassName: " << TriggerClassName << endl
     << "\tMultiDigitsPerTrigger: " << MultiDigitsPerTrigger << endl
@@ -53,6 +54,8 @@ void WCSimRootOptions::Print(Option_t *) const
     << "\tNDigitsAdjustForNoise: " << NDigitsAdjustForNoise << endl
     << "\tNDigitsPreTriggerWindow: " << NDigitsPreTriggerWindow << " ns" << endl
     << "\tNDigitsPostTriggerWindow: " << NDigitsPostTriggerWindow << " ns" << endl
+    << "\tPromptTriggerEnabled: " << enablePromptTrigger << endl
+    << "\tPromptTriggerWindow: " << promptPostTriggerWindow << " ns" << endl
     << "Save failures trigger options:" << endl
     << "\tSaveFailuresMode: " << SaveFailuresMode << endl
     << "\tSaveFailuresTime: " << SaveFailuresTime << " ns" << endl

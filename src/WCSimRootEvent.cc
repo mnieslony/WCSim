@@ -173,7 +173,7 @@ void WCSimRootTrigger::Clear(Option_t */*option*/)
   // remove whatever's in the arrays
   // but don't deallocate the arrays themselves
 
-  fTracks->Clear(); // performs no memory allocation, contains only basic numeric types (no TStrings)
+  fTracks->Clear("C");
   fCherenkovHits->Delete();      
   fCherenkovHitTimes->Delete();   
   fCherenkovDigiHits->Delete();
@@ -265,7 +265,9 @@ WCSimRootTrack *WCSimRootTrigger::AddTrack(Int_t ipnu,
 					   Int_t parenttype,
 					   Float_t time,
 					   Float_t time2,
-					   Int_t id)
+					   Int_t id,
+					   std::string sProcess,
+					   std::string eProcess)
 {
   // Add a new WCSimRootTrack to the list of tracks for this event.
   // To avoid calling the very time consuming operator new for each track,
@@ -292,7 +294,9 @@ WCSimRootTrack *WCSimRootTrigger::AddTrack(Int_t ipnu,
 					   parenttype,
 					   time,
 					   time2,
-					   id);
+					   id,
+					   sProcess,
+					   eProcess);
 
   return track;
 }
@@ -317,7 +321,9 @@ WCSimRootTrack::WCSimRootTrack(Int_t ipnu,
 				 Int_t parenttype,
 				 Float_t time, 
 				 Float_t time2,
-				 Int_t id)
+				 Int_t id,
+				 std::string sProcess,
+				 std::string eProcess)
 {
 
   // Create a WCSimRootTrack object and fill it with stuff
@@ -344,8 +350,16 @@ WCSimRootTrack::WCSimRootTrack(Int_t ipnu,
   fTime = time;
   fTime2 = time2;
   fId = id;
+  fStartProcess = sProcess;
+  fEndProcess = eProcess;
 }
 
+//_____________________________________________________________________________
+void WCSimRootTrack::Clear(Option_t* /*o*/){
+  // must clear any datatypes that could potentially allocate memory
+  fStartProcess.clear();
+  fEndProcess.clear();
+}
 
 //_____________________________________________________________________________
 

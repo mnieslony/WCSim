@@ -1,0 +1,86 @@
+# Macro for controlling DAQ-like options (thresholds, time windows, etc.)
+
+/control/echo executing annie_daq.mac
+
+#first we must set which detector Element we wish to specify settings for
+/DAQ/SetDetectorElement tank
+
+/DAQ/Digitizer SKI                               # the only digitizer choice
+/DAQ/DigitizerOpt/ExtendIntegrationWindow false  # default, suitable for ANNIE DAQ digitizer
+/DAQ/DigitizerOpt/DeadTime 0                     # assume no digitizer deadtime FIXME
+/DAQ/DigitizerOpt/IntegrationWindow 8            # ANNIEDAQ has 8ns sample time
+/DAQ/MultiDigitsPerTrigger true                   # allow more than one hit on any given PMT per event
+
+## configure prompt trigger. This may be enabled for all triggers EXCEPT NoTrigger
+/DAQ/PromptTrigger/Enable true                    # enable recording mrd digits in a prompt beam trigger window
+/DAQ/PromptTrigger/PostTriggerWindow 2000         # 2us prompt trigger window duration
+
+# settings for delayed NDigits events
+#/DAQ/Trigger NDigits                             # default type
+/DAQ/TriggerNDigits/Threshold 5                   # TODO tune this
+/DAQ/TriggerNDigits/Window 32                     # max light propagation time ~22ns: round up to multiple of 8
+/DAQ/TriggerNDigits/AdjustForNoise false          # whether to adjust the NDigits threshold for average occupancy
+/DAQ/TriggerNDigits/PreTriggerWindow -400         # 400ns pre-trigger FIXME ANNIE: should be multiple of 8??
+/DAQ/TriggerNDigits/PostTriggerWindow +1600       # 2us total hefty window size
+
+# settings for events that __DO NOT__ produce a trigger
+/DAQ/TriggerSaveFailures/Mode 0                   # save only events which produce a trigger
+#/DAQ/TriggerSaveFailures/TriggerTime 100         # event trigger time to use if it didn't actually produce a trigger
+#/DAQ/TriggerSaveFailures/PreTriggerWindow -400   # 400ns pre-trigger
+#/DAQ/TriggerSaveFailures/PostTriggerWindow 1600  # 2us total trigger window
+
+##########
+## specify settings for the other detector elements
+/DAQ/SetDetectorElement mrd
+
+/DAQ/Digitizer SKI                                # the only digitizer
+/DAQ/DigitizerOpt/DeadTime 0
+/DAQ/DigitizerOpt/IntegrationWindow 10            # should match the configured DISCRIMINATOR OUTPUT pulse duration
+/DAQ/DigitizerOpt/ExtendIntegrationWindow true    # replicate how LRS 4413 discriminators work
+/DAQ/MultiDigitsPerTrigger true                   # TDC settings are 1, but record all more than 1...
+
+## configure prompt trigger. This may be enabled for all triggers EXCEPT NoTrigger
+/DAQ/PromptTrigger/Enable true                    # enable recording mrd digits in a prompt beam trigger window
+/DAQ/PromptTrigger/PostTriggerWindow 2000         # 2us prompt trigger window duration
+
+# settings for events that _DO_ produce a trigger
+/DAQ/TriggerNDigits/Threshold 500                 # no actual N-Digits trigger, so just set threshold really high
+#/DAQ/TriggerNDigits/Window 200                   # window size to search for NDigits trigger
+#/DAQ/TriggerNDigits/AdjustForNoise false         # whether to adjust the NDigits threshold for average occupancy
+#/DAQ/TriggerNDigits/PreTriggerWindow -400        # 400ns pre-trigger
+#/DAQ/TriggerNDigits/PostTriggerWindow +1600      # 2us total trigger window
+
+## Trigger settings for MRD / FACC are unused, as we currently only use Tank triggers
+# settings for events that __DO NOT__ produce a trigger
+#/DAQ/TriggerSaveFailures/Mode 0                  # save only events which produce a trigger
+#/DAQ/TriggerSaveFailures/TriggerTime 100         # event trigger time to use if it didn't actually produce a trigger
+#/DAQ/TriggerSaveFailures/PreTriggerWindow -100   # not really relevant with prompt trigger
+#/DAQ/TriggerSaveFailures/PostTriggerWindow +1900 # 
+
+##########
+## specify settings for the other detector elements
+/DAQ/SetDetectorElement facc
+#/DAQ/Digitizer SKI                               # the only digitizer
+/DAQ/DigitizerOpt/DeadTime 0                      # for annie these
+/DAQ/DigitizerOpt/IntegrationWindow 10            # should match mrd
+/DAQ/DigitizerOpt/ExtendIntegrationWindow true    # replicate how LRS 4413 discriminators work
+/DAQ/MultiDigitsPerTrigger true                   # digitizer settings say we should only have one... but record all
+
+## configure prompt trigger. This may be enabled for all triggers EXCEPT NoTrigger
+/DAQ/PromptTrigger/Enable true                    # enable recording mrd digits in a prompt beam trigger window
+/DAQ/PromptTrigger/PostTriggerWindow 2000         # 2us prompt trigger window duration
+
+# settings for events that _DO_ produce a trigger
+#/DAQ/Trigger NDigits                             # default
+/DAQ/TriggerNDigits/Threshold 500                 # no actual N-Digits trigger, so just set threshold really high
+#/DAQ/TriggerNDigits/Window 200                   # window size to search for NDigits trigger
+#/DAQ/TriggerNDigits/AdjustForNoise false         # whether to adjust the NDigits threshold for average occupancy
+#/DAQ/TriggerNDigits/PreTriggerWindow -400        # 400ns pre-trigger
+#/DAQ/TriggerNDigits/PostTriggerWindow +1600      # 2us total trigger time
+
+# settings for events that __DO NOT__ produce a trigger
+#/DAQ/TriggerSaveFailures/Mode 0                  # save only events which produce a trigger
+#/DAQ/TriggerSaveFailures/TriggerTime 100         # event trigger time to use if it didn't actually produce a trigger
+#/DAQ/TriggerSaveFailures/PreTriggerWindow -100   # not really relevant with prompt trigger
+#/DAQ/TriggerSaveFailures/PostTriggerWindow +1900 # 
+

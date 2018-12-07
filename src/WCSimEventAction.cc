@@ -86,6 +86,9 @@ WCSimEventAction::WCSimEventAction(WCSimRunAction* myRun,
    ConstructedDAQClasses(false), LAPPDfile(0), SavedOptions(false)
 {
   DAQMessenger = new WCSimWCDAQMessenger(this);
+  DAQMessenger->AddDAQMessengerInstance("tank");
+  DAQMessenger->AddDAQMessengerInstance("mrd");
+  DAQMessenger->AddDAQMessengerInstance("facc");
 
   G4DigiManager* DMman = G4DigiManager::GetDMpointer();
 
@@ -169,67 +172,99 @@ void WCSimEventAction::CreateDAQInstances()
   G4DigiManager* DMman = G4DigiManager::GetDMpointer();
 
   //create your choice of digitizer module
-  if(DigitizerChoice == "SKI") {
+  if(DigitizerChoices.at("tank") == "SKI") {
     WCSimWCDigitizerSKI* WCDM = new WCSimWCDigitizerSKI("WCReadoutDigits", detectorConstructor, DAQMessenger, "tank");
     DMman->AddNewModule(WCDM);
   }
   else {
-    G4cerr << "Unknown DigitizerChoice " << DigitizerChoice << G4endl;
+    G4cerr << "Unknown DigitizerChoice " << DigitizerChoices.at("tank") << G4endl;
     exit(-1);
   }
 
   //create your choice of trigger module
-  if(TriggerChoice == "NDigits") {
+  if(TriggerChoices.at("tank") == "NDigits") {
     WCSimWCTriggerNDigits* WCTM = new WCSimWCTriggerNDigits("WCReadout", detectorConstructor, DAQMessenger, "tank");
     DMman->AddNewModule(WCTM);
   }
-  else if(TriggerChoice == "NDigits2") {
+  else if(TriggerChoices.at("tank") == "NDigits2") {
     WCSimWCTriggerNDigits2* WCTM = new WCSimWCTriggerNDigits2("WCReadout", detectorConstructor, DAQMessenger, "tank");
     DMman->AddNewModule(WCTM);
   }
-  else if(TriggerChoice == "NoTrigger") {
+  else if(TriggerChoices.at("tank") == "NoTrigger") {
     WCSimWCTriggerNoTrigger* WCTM = new WCSimWCTriggerNoTrigger("WCReadout", detectorConstructor, DAQMessenger, "tank");
     DMman->AddNewModule(WCTM);
   }
   else {
-    G4cerr << "Unknown TriggerChoice " << TriggerChoice << G4endl;
+    G4cerr << "Unknown TriggerChoice " << TriggerChoices.at("tank") << G4endl;
     exit(-1);
   }
 
   if(isANNIE){
-  // Repeat for MRD & FACC //
-  if(DigitizerChoice=="SKI"){
     // Repeat for MRD
+    if(DigitizerChoices.at("mrd")=="SKI"){
 #ifdef HYPER_VERBOSITY
-    G4cout<<"WCSimEventAction::CreateDAQInstances ☆ making new WCSimWCDigitizerSKI for mrd with name WCReadoutDigits_MRD"<<G4endl;
+      G4cout<<"WCSimEventAction::CreateDAQInstances ☆ making new WCSimWCDigitizerSKI for mrd with name WCReadoutDigits_MRD"<<G4endl;
 #endif
-    WCSimWCDigitizerSKI* WCDM_MRD = new WCSimWCDigitizerSKI("WCReadoutDigits_MRD", detectorConstructor, DAQMessenger, "mrd");
-    DMman->AddNewModule(WCDM_MRD);
+      WCSimWCDigitizerSKI* WCDM_MRD = new WCSimWCDigitizerSKI("WCReadoutDigits_MRD", detectorConstructor, DAQMessenger, "mrd");
+      DMman->AddNewModule(WCDM_MRD);
+    } else {
+      G4cerr << "Unknown MRD DigitizerChoice " << DigitizerChoices.at("mrd") << G4endl;
+      exit(-1);
+    }
     // repeat for FACC
-    WCSimWCDigitizerSKI* WCDM_FACC = new WCSimWCDigitizerSKI("WCReadoutDigits_FACC", detectorConstructor, DAQMessenger, "facc");
-    DMman->AddNewModule(WCDM_FACC);
-  }
+    if(DigitizerChoices.at("facc")=="SKI"){
+      WCSimWCDigitizerSKI* WCDM_FACC = new WCSimWCDigitizerSKI("WCReadoutDigits_FACC", detectorConstructor, DAQMessenger, "facc");
+      DMman->AddNewModule(WCDM_FACC);
+    } else {
+      G4cerr << "Unknown FACC DigitizerChoice " << DigitizerChoices.at("facc") << G4endl;
+      exit(-1);
+    }
+    
+    
 #ifdef HYPER_VERBOSITY
-  G4cout<<"WCSimEventAction::CreateDAQInstances ☆ making new WCSimWCTriggerOnTankDigits for mrd with name WCReadout_MRD"<<G4endl;
+    G4cout<<"WCSimEventAction::CreateDAQInstances ☆ making new WCSimWCTriggerOnTankDigits for mrd with name WCReadout_MRD"<<G4endl;
 #endif
-  if(TriggerChoice == "NoTrigger") {
-    // for 'NoTrigger' trigger, which just reads out all hits/digits, need to use the same for MRD/FACC.
-    // Usef for things like MRD testing, where we fire muons into the MRD and have no associated tank event.
-    WCSimWCTriggerNoTrigger* WCTM_MRD = new WCSimWCTriggerNoTrigger("WCReadout_MRD", detectorConstructor, DAQMessenger, "mrd");
-    DMman->AddNewModule(WCTM_MRD);
-    // repeat for facc
-    WCSimWCTriggerNoTrigger* WCTM_FACC = new WCSimWCTriggerNoTrigger("WCReadout_FACC", detectorConstructor, DAQMessenger, "facc");
-    DMman->AddNewModule(WCTM_FACC);
-  } else {
-  // for a legit tank trigger style, MRD and FACC read out whatever digits are within tank trigger windows
-    WCSimWCTriggerOnTankDigits* WCTM_MRD = new WCSimWCTriggerOnTankDigits("WCReadout_MRD", detectorConstructor, DAQMessenger, "mrd");
-    DMman->AddNewModule(WCTM_MRD);
-    // repeat for facc
-    WCSimWCTriggerOnTankDigits* WCTM_FACC = new WCSimWCTriggerOnTankDigits("WCReadout_FACC", detectorConstructor, DAQMessenger, "facc");
-    DMman->AddNewModule(WCTM_FACC);
+    if(TriggerChoices.at("mrd") == "NoTrigger") {
+      // for 'NoTrigger' trigger, which just reads out all hits/digits, need to use the same for MRD/FACC.
+      // Used for things like MRD testing, where we fire muons into the MRD
+      WCSimWCTriggerNoTrigger* WCTM_MRD = new WCSimWCTriggerNoTrigger("WCReadout_MRD", detectorConstructor, DAQMessenger, "mrd");
+      DMman->AddNewModule(WCTM_MRD);
+    } else if (TriggerChoices.at("mrd")=="NDigits"){
+      WCSimWCTriggerNDigits* WCTM_MRD = new WCSimWCTriggerNDigits("WCReadout_MRD", detectorConstructor, DAQMessenger, "mrd");
+      DMman->AddNewModule(WCTM_MRD);
+    } else if (TriggerChoices.at("mrd")=="NDigits2"){
+      WCSimWCTriggerNDigits2* WCTM_MRD = new WCSimWCTriggerNDigits2("WCReadout_MRD", detectorConstructor, DAQMessenger, "mrd");
+      DMman->AddNewModule(WCTM_MRD);
+    } else if(TriggerChoices.at("mrd")=="TankDigits"){
+      // for an ANNIE-style tank trigger, MRD and FACC read out whatever digits are within tank trigger windows
+      WCSimWCTriggerOnTankDigits* WCTM_MRD = new WCSimWCTriggerOnTankDigits("WCReadout_MRD", detectorConstructor, DAQMessenger, "mrd");
+      DMman->AddNewModule(WCTM_MRD);
+    } else {
+      G4cerr<<"Unknown trigger choice for mrd: "<<TriggerChoices.at("mrd") <<G4endl;
+      exit(-1);
+    }
+    
+      // repeat for facc
+    if(TriggerChoices.at("facc") == "NoTrigger") {
+      WCSimWCTriggerNoTrigger* WCTM_FACC = new WCSimWCTriggerNoTrigger("WCReadout_FACC", detectorConstructor, DAQMessenger, "facc");
+      DMman->AddNewModule(WCTM_FACC);
+    } else if (TriggerChoices.at("facc")=="NDigits"){
+      WCSimWCTriggerNDigits* WCTM_FACC = new WCSimWCTriggerNDigits("WCReadout_FACC", detectorConstructor, DAQMessenger, "facc");
+      DMman->AddNewModule(WCTM_FACC);
+    } else if (TriggerChoices.at("facc")=="NDigits2"){
+      WCSimWCTriggerNDigits2* WCTM_FACC = new WCSimWCTriggerNDigits2("WCReadout_FACC", detectorConstructor, DAQMessenger, "facc");
+      DMman->AddNewModule(WCTM_FACC);
+    } else if(TriggerChoices.at("facc")=="TankDigits"){
+      // for an ANNIE-style tank trigger, MRD and FACC read out whatever digits are within tank trigger windows
+      WCSimWCTriggerOnTankDigits* WCTM_FACC = new WCSimWCTriggerOnTankDigits("WCReadout_FACC", detectorConstructor, DAQMessenger, "facc");
+      DMman->AddNewModule(WCTM_FACC);
+    } else {
+      G4cerr<<"Unknown trigger choice for mrd: "<<TriggerChoices.at("mrd") <<G4endl;
+      exit(-1);
+    }
+    
   }
-  }
-
+  
   ConstructedDAQClasses = true;
 }
 
@@ -718,11 +753,11 @@ void WCSimEventAction::EndOfEventAction(const G4Event* evt)
 #endif
   }
   
-  G4int         mode     = generatorAction->GetMode();				// neut interaction code
-  G4int         nvtxs   = generatorAction->GetNvtxs();				// always 1
-  G4ThreeVector vtxs[MAX_N_PRIMARIES];								// interaction vertices of the neutrino
-  G4int         vtxsvol[MAX_N_PRIMARIES];							// volumes of the vertices if applicable
-  G4int         vecRecNumber = generatorAction->GetVecRecNumber();	// genie file entry number
+  G4int         mode     = generatorAction->GetMode();			// neut interaction code
+  G4int         nvtxs   = generatorAction->GetNvtxs();			// always 1
+  G4ThreeVector vtxs[MAX_N_PRIMARIES];					// interaction vertices of the neutrino
+  G4int         vtxsvol[MAX_N_PRIMARIES];				// volumes of the vertices if applicable
+  G4int         vecRecNumber = generatorAction->GetVecRecNumber();	// 
 
   // ----------------------------------------------------------------------
   //  Fill Ntuple
@@ -1214,6 +1249,17 @@ void WCSimEventAction::FillRootEvent(G4int event_id,
   wcsimrootevent = wcsimrootsuperevent->GetTrigger(0);
   wcsimrootevent->SetHeader(event_id,0,0); // will be set later.
 
+  // add the information about upstream source
+  G4String      dirtFileName = generatorAction->GetDirtFileName();
+  G4String     genieFileName = generatorAction->GetGenieFileName();
+  G4int      dirtEventNumber = generatorAction->GetDirtEntryNum();
+  G4int     genieEventNumber = generatorAction->GetGenieEntryNum();
+  WCSimRootEventHeader* theheader = wcsimrootevent->GetHeader();
+  theheader->SetDirtFileName(dirtFileName);
+  theheader->SetGenieFileName(genieFileName);
+  theheader->SetDirtEntryNum(dirtEventNumber);
+  theheader->SetGenieEntryNum(genieEventNumber);
+
   // Fill other info for this event
 
   wcsimrootevent->SetMode(jhfNtuple.mode);
@@ -1233,235 +1279,242 @@ void WCSimEventAction::FillRootEvent(G4int event_id,
 
   // Add the tracks with the particle information
   // First two tracks come from jhfNtuple, as they are special
-
+  // only do this for tank event - no need to duplicate particle information in mrd & veto
   int k;
-  //Modify to add decay products
-  for (k=0;k<jhfNtuple.npar;k++) // should be just 2
-  {
-    float dir[3];
-    float pdir[3];
-    float pdir2[3];
-    float stop[3];
-    float start[3];
-    for (int l=0;l<3;l++)
-    {
-      dir[l]=jhfNtuple.dir[k][l];
-      pdir[l]=jhfNtuple.pdir[k][l];
-      pdir2[l]=0.; // stopping momentum not stored in jhfNtuple
-      stop[l]=jhfNtuple.stop[k][l];
-      start[l]=jhfNtuple.start[k][l];
-	//G4cout<< "start[" << k << "][" << l <<"]: "<< jhfNtuple.start[k][l] <<G4endl;
-    }
-
-    // Add the track to the TClonesArray
-     wcsimrootevent->AddTrack(jhfNtuple.ipnu[k],         // particle PDG
-			      jhfNtuple.flag[k],         // neutrino probe, target or other
-			      jhfNtuple.m[k],            // particle rest mass
-			      jhfNtuple.p[k],            // initial momentum mag
-			      jhfNtuple.E[k],            // intial relativistic energy
-			      -1.,                       // stopping mommag not stored in jhfNtuple
-			      -1.,                       // stopping E not stored in jhfNtuple
-			      jhfNtuple.startvol[k],     // intial volume code (10=tank, 20=veto, 30=mrd)
-			      jhfNtuple.stopvol[k],      // final volume code 
-			      dir,                       // intial direction unit vector
-			      pdir,                      // intial momentum vector
-			      pdir2,                     // final momentum vector
-			      stop,                      // stopping vertex
-			      start,                     // start vertex 
-			      jhfNtuple.parent[k],       // parent PDG
-			      jhfNtuple.time[k],         // start time (global)
-			      0,                         // stopping time not stored in jhfNtuple
-			      0);                        // WCSim TrackID not applicable
-  }
-
-  // the rest of the tracks come from WCSimTrajectory
-
-  // Pi0 specific variables
-  Float_t pi0Vtx[3];
-  Int_t   gammaID[2];
-  Float_t gammaE[2];
-  Float_t gammaVtx[2][3];
-  Int_t   r = 0;
-
-  G4int n_trajectories = 0;
-  if (TC)
-    n_trajectories = TC->entries();
-
-  // M Fechner : removed this limit to get to the primaries...
-  //if (n_trajectories>50)  // there is no need for this limit, but it has
-  //n_trajectories=50;    // existed in previous versions of the code.  It also
-                          // makes the ROOT file smaller.  
-
-  for (int i=0; i <n_trajectories; i++) 
-  {
-    WCSimTrajectory* trj = (WCSimTrajectory*)(*TC)[i];
-
-    // Process primary tracks or the secondaries from pizero or muons...
-
-    // we want to record tracks for neutrons. But we don't want many tracks representing the same neutron,
-    // which geant has a habit of doing. so, only record neutrons with an end process of ncapture. 
-    // we may need to override scintillation process, as it can sometimes obscure the true end process.
-    // (G4Scintillation is always invoked, and is applied to all particles except photons and short lived)
-    bool ignoreneutron=false;
-    if(isANNIE){
-      G4int trajectorypdg = trj->GetPDGEncoding();
-      if(trajectorypdg==2112){
-        G4String theProcess = trj->GetCurrentProcess();
-        G4ThreeVector StopVtx = trj->GetStoppingPoint();
-        G4int stopvolint= WCSimEventFindVertexVolume(StopVtx);
-        if(theProcess=="Scintillation"&&(stopvolint==10)){   // fake "scintillation" process.
-          theProcess = trj->GetLastProcess();
-        }
-        if(theProcess!="nCapture"||stopvolint!=10){
-          ignoreneutron=true;
-          //G4cout<<"NOT STORING NEUTRON TRACK, STOPPED IN VOL INDEX "<<stopvolint<<" WITH PROCESS "<<theProcess<<G4endl;
-        } else {
-          //G4cout<<"STORING NEUTRON TRACK, STOPPED IN VOL INDEX "<<stopvolint<<" WITH PROCESS "<<theProcess<<", created with process "<<trj->GetCreatorProcessName()<<G4endl;
-        }
-      }
-    }
-    // XXX only trajectories for particles / processes listed in WCSimTrackingAction are saved!! XXX
-    if ( trj->GetSaveFlag() && !ignoreneutron)
-    {
-      // initial point of the trajectory
-      G4TrajectoryPoint* aa =   (G4TrajectoryPoint*)trj->GetPoint(0) ;   
-      if(detectorElement=="tank") runAction->incrementEventsGenerated();
-	
-      G4int         ipnu   = trj->GetPDGEncoding();
-      G4int         id     = trj->GetTrackID();
-      G4int         flag   = 0;
-      G4double      mass   = trj->GetParticleDefinition()->GetPDGMass();
-      G4ThreeVector mom    = trj->GetInitialMomentum();
-      G4double      mommag = mom.mag();
-      G4double      energy = sqrt(mom.mag2() + mass*mass);
-      G4ThreeVector momend = trj->GetFinalMomentum();
-      G4double      mommagend = momend.mag();
-      G4double      energyend = sqrt(momend.mag2() + mass*mass);
-      G4ThreeVector Stop   = trj->GetStoppingPoint();
-      G4ThreeVector Start  = aa->GetPosition();
-
-      G4String stopVolumeName = trj->GetStoppingVolume()->GetName();
-      G4int    stopvol, startvol;
-      if(!isANNIE){
-        stopvol     = WCSimEventFindStoppingVolume(stopVolumeName);
-        startvol    = WCSimEventFindStartingVolume(Start);
-      } else {
-        stopvol     = WCSimEventFindVertexVolume(Stop);
-        startvol    = WCSimEventFindVertexVolume(Start);
-      }
-
-      G4double ttime = trj->GetGlobalTime(); 
-      G4double ttimeend = trj->GetGlobalTimeEnd(); 
-
-      G4int parentType=-999;
-
-     
-      // Right now only secondaries whose parents are pi0's are stored
-      // This may change later
-      // M Fechner : dec 16, 2004 --> added decay e- from muons
-      // GetParentID stores the *trackID* of the parent, but we need the *trajectory* ID
-      // to retrieve the parent's PDG. Old method kept lists of the track IDs of particles
-      // of notable types. We'd then have to check if the trackID was in any of these lists.
-      // This meant we could only identify the parent PDG if it was of a limited subset.
-      
-      // new method: store the parent PDG in the UserTrackInfo in PostUserTrackingAction 
-      // (via GimmeSecondaries), and copy it from Info into the Trajectory after tracking.
-      parentType=trj->GetParentPdg();
-
-      // G4cout << parentType << " " << ipnu << " " 
-      //	     << id << " " << energy << "\n";
-
-      // fill ntuple
+  if(detectorElement=="tank"){
+    //Modify to add decay products
+    for (k=0;k<jhfNtuple.npar;k++){ // should be just 2
       float dir[3];
       float pdir[3];
       float pdir2[3];
       float stop[3];
       float start[3];
-      for (int l=0;l<3;l++)
-      {
-	dir[l]= (mommag!=0) ? mom[l]/mommag : 0; // direction 
-	pdir[l]=mom[l];        // momentum-vector 
-	pdir2[l]=momend[l];    // end momentum-vector 
-	stop[l]=Stop[l]/CLHEP::cm; // stopping point 
-	start[l]=Start[l]/CLHEP::cm; // starting point 
-	//G4cout<<"part 2 start["<<l<<"]: "<< start[l] <<G4endl;
+      for (int l=0;l<3;l++){
+        dir[l]=jhfNtuple.dir[k][l];
+        pdir[l]=jhfNtuple.pdir[k][l];
+        pdir2[l]=0.; // stopping momentum not stored in jhfNtuple
+        stop[l]=jhfNtuple.stop[k][l];
+        start[l]=jhfNtuple.start[k][l];
+          //G4cout<< "start[" << k << "][" << l <<"]: "<< jhfNtuple.start[k][l] <<G4endl;
       }
-
-      // Add the track to the TClonesArray, watching out for times
-      if ( trj->GetCreatorProcessName()=="nCapture" ?
-      detectorConstructor->SaveCaptureInfo() : ! ( (ipnu==22)&&(parentType==999))  ) {
-
-	int choose_event=0;
-	
-
-	while (choose_event<(ngates-1)){
-	  if ( ttime < (WCTM->GetTriggerTime(choose_event)+WCTM->GetWCTriggerOffset()) )
-		  break;  // did this track start before the end of the current trigger? if so, it's in the current trigger
-	  else 
-		  choose_event++;  // otherwise go to next trigger
-	} // exit (without check) if this is the last trigger
-	
-	wcsimrootevent= wcsimrootsuperevent->GetTrigger(choose_event);
-	wcsimrootevent->AddTrack(ipnu,           // particle PDG
-				  flag,          // neutrino probe, target or other
-				  mass,          // particle rest mass
-				  mommag,        // initial momentum mag
-				  energy,        // intial relativistic energy
-				  mommagend,     // final momentum mag
-				  energyend,     // final relativistic energy
-				  startvol,      // intial volume code (10=tank, 20=veto, 30=mrd)
-				  stopvol,       // final volume code 
-				  dir,           // intial direction unit vector
-				  pdir,          // intial momentum vector
-				  pdir2,         // final momentum vector
-				  stop,          // stopping vertex
-				  start,         // start vertex 
-				  parentType,    // parent PDG
-				  ttime,         // start time (global)
-				  ttimeend,      // end time (global)
-				  id);           // wcsim TrackID
-      }
-
       
-      if (detectorConstructor->SavePi0Info() == true)
-      {
-	G4cout<<"Pi0 parentType: " << parentType <<G4endl;
-	if (parentType == 111)
-	{
-	  if (r>1)
-	    G4cout<<"WARNING: more than 2 primary gammas found"<<G4endl;
-	  else
-	  {
-
-	    for (int y=0;y<3;y++)
-	    {
-	      pi0Vtx[y] = start[y];
-	      gammaVtx[r][y] = stop[y];
-	    }
-
-	    gammaID[r] = id;
-	    gammaE[r] = energy;
-	    r++;
-	
-	    //amb79
-		G4cout<<"Pi0 data: " << id <<G4endl;
-		wcsimrootevent->SetPi0Info(pi0Vtx, gammaID, gammaE, gammaVtx);
-	  }
-	}
-      }
-      if (detectorConstructor->SaveCaptureInfo() && trj->GetCreatorProcessName()=="nCapture"){
-#ifdef NCAPTURE_VERBOSE
-          G4cout << "Capture particle: " << trj->GetParticleName()
-                 << " Parent: " << trj->GetParentID()
-                 << " T:" << ttime
-                 << " vtx:(" << start[0] << "," << start[1] << "," << start[2]
-                 << " dir:(" << dir[0] << "," << dir[1] << "," << dir[2]
-                 << " E:" << energy << G4endl;
-#endif
-          wcsimrootevent->SetCaptureParticle(trj->GetParentID(), ipnu, ttime, start, dir, energy, id);
-      }
+      // Add the track to the TClonesArray
+      wcsimrootevent->AddTrack(jhfNtuple.ipnu[k],         // particle PDG
+                               jhfNtuple.flag[k],         // neutrino probe, target or other
+                               jhfNtuple.m[k],            // particle rest mass
+                               jhfNtuple.p[k],            // initial momentum mag
+                               jhfNtuple.E[k],            // intial relativistic energy
+                               -1.,                       // stopping mommag not stored in jhfNtuple
+                               -1.,                       // stopping E not stored in jhfNtuple
+                               jhfNtuple.startvol[k],     // intial volume code (10=tank, 20=veto, 30=mrd)
+                               jhfNtuple.stopvol[k],      // final volume code 
+                               dir,                       // intial direction unit vector
+                               pdir,                      // intial momentum vector
+                               pdir2,                     // final momentum vector
+                               stop,                      // stopping vertex
+                               start,                     // start vertex 
+                               jhfNtuple.parent[k],       // parent PDG
+                               jhfNtuple.time[k],         // start time (global)
+                               0,                         // stopping time not stored in jhfNtuple
+                               0,                         // WCSim TrackID not applicable
+                               "",                        // creator process name
+                               "NuIntx");                 // end process name
     }
-  }
+    
+    // the rest of the tracks come from WCSimTrajectory
+    
+    // Pi0 specific variables
+    Float_t pi0Vtx[3];
+    Int_t   gammaID[2];
+    Float_t gammaE[2];
+    Float_t gammaVtx[2][3];
+    Int_t   r = 0;
+    
+    G4int n_trajectories = 0;
+    if (TC) n_trajectories = TC->entries();
+    
+    // M Fechner : removed this limit to get to the primaries...
+    //if (n_trajectories>50)  // there is no need for this limit, but it has
+    //n_trajectories=50;    // existed in previous versions of the code.  It also
+                            // makes the ROOT file smaller.  
+    
+    // Process primary tracks or the secondaries from pizero or muons...
+    for (int i=0; i <n_trajectories; i++) {
+      WCSimTrajectory* trj = (WCSimTrajectory*)(*TC)[i];
+      
+      // we want to record tracks for neutrons. But we don't want many tracks representing the same neutron,
+      // which geant has a habit of doing. so, only record neutrons with an end process of ncapture. 
+      // we may need to override scintillation process, as it can sometimes obscure the true end process.
+      // (G4Scintillation is always invoked, and is applied to all particles except photons and short lived)
+      bool ignoreneutron=false;
+//      if(isANNIE){
+//        G4int trajectorypdg = trj->GetPDGEncoding();
+//        if(trajectorypdg==2112){
+//          G4String theProcess = trj->GetCurrentProcess();
+//          G4ThreeVector StopVtx = trj->GetStoppingPoint();
+//          G4int stopvolint= WCSimEventFindVertexVolume(StopVtx);
+//          if(theProcess=="Scintillation"&&(stopvolint==10)){   // fake "scintillation" process.
+//            theProcess = trj->GetLastProcess();
+//          }
+//          if(theProcess!="nCapture"||stopvolint!=10){
+//            ignoreneutron=true;
+//            //G4cout<<"NOT STORING NEUTRON TRACK, STOPPED IN VOL INDEX "<<stopvolint<<" WITH PROCESS "<<theProcess<<G4endl;
+//          } else {
+//            //G4cout<<"STORING NEUTRON TRACK, STOPPED IN VOL INDEX "<<stopvolint<<" WITH PROCESS "<<theProcess<<", created with process "<<trj->GetCreatorProcessName()<<G4endl;
+//          }
+//        }
+//      }
+      // XXX only trajectories for particles / processes listed in WCSimTrackingAction are saved!! XXX
+      if ( trj->GetSaveFlag() && !ignoreneutron){
+        // initial point of the trajectory
+        G4TrajectoryPoint* aa =   (G4TrajectoryPoint*)trj->GetPoint(0);
+        if(detectorElement=="tank") runAction->incrementEventsGenerated();
+        
+        G4int         ipnu   = trj->GetPDGEncoding();
+        G4int         id     = trj->GetTrackID();
+        G4int         flag   = 0;
+        G4double      mass   = trj->GetParticleDefinition()->GetPDGMass();
+        G4ThreeVector mom    = trj->GetInitialMomentum();
+        G4double      mommag = mom.mag();
+        G4double      energy = sqrt(mom.mag2() + mass*mass);
+        G4ThreeVector momend = trj->GetFinalMomentum();
+        G4double      mommagend = momend.mag();
+        G4double      energyend = sqrt(momend.mag2() + mass*mass);
+        G4ThreeVector Stop   = trj->GetStoppingPoint();
+        G4ThreeVector Start  = aa->GetPosition();
+        
+        G4String stopVolumeName = trj->GetStoppingVolume()->GetName();
+        G4int    stopvol, startvol;
+        if(!isANNIE){
+          stopvol     = WCSimEventFindStoppingVolume(stopVolumeName);
+          startvol    = WCSimEventFindStartingVolume(Start);
+        } else {
+          stopvol     = WCSimEventFindVertexVolume(Stop);
+          startvol    = WCSimEventFindVertexVolume(Start);
+        }
+        
+        G4double ttime = trj->GetGlobalTime(); 
+        G4double ttimeend = trj->GetGlobalTimeEnd(); 
+        
+        // Right now only secondaries whose parents are pi0's are stored
+        // This may change later
+        // M Fechner : dec 16, 2004 --> added decay e- from muons
+        // GetParentID stores the *trackID* of the parent, but we need the *trajectory* ID
+        // to retrieve the parent's PDG. Old method kept lists of the track IDs of particles
+        // of notable types. We'd then have to check if the trackID was in any of these lists.
+        // This meant we could only identify the parent PDG if it was of a limited subset.
+        
+        // new method: store the parent PDG in the UserTrackInfo in PostUserTrackingAction 
+        // (via GimmeSecondaries), and copy it from Info into the Trajectory after tracking.
+        G4int parentType=trj->GetParentPdg();
+        
+        // G4cout << parentType << " " << ipnu << " " 
+        //             << id << " " << energy << "\n";
+        
+        // fill ntuple
+        float dir[3];
+        float pdir[3];
+        float pdir2[3];
+        float stop[3];
+        float start[3];
+        for (int l=0;l<3;l++)
+        {
+          dir[l]= (mommag!=0) ? mom[l]/mommag : 0; // direction 
+          pdir[l]=mom[l];        // momentum-vector 
+          pdir2[l]=momend[l];    // end momentum-vector 
+          stop[l]=Stop[l]/CLHEP::cm; // stopping point 
+          start[l]=Start[l]/CLHEP::cm; // starting point 
+          //G4cout<<"part 2 start["<<l<<"]: "<< start[l] <<G4endl;
+        }
+        
+        // Add the track to the TClonesArray, watching out for times
+        if( (ipnu==22) && 
+            (trj->GetCreatorProcessName()=="nCapture") && 
+            (detectorConstructor->SaveCaptureInfo()==false)
+          ){
+            // do not save nCapture gammas if SaveCaptureInfo is false
+        } else {
+          
+          G4String startProcess = trj->GetCreatorProcessName();
+          G4String endProcess = trj->GetCurrentProcess();
+          G4ThreeVector StopVtx = trj->GetStoppingPoint();
+          G4int stopvolint= WCSimEventFindVertexVolume(StopVtx);
+          if(endProcess=="Scintillation"&&(stopvolint==10)){   // fake "scintillation" process.
+            endProcess = trj->GetLastProcess();
+          }
+          
+          int choose_event=0;
+          while (choose_event<(ngates-1)){
+            if ( ttime < (WCTM->GetTriggerTime(choose_event)+WCTM->GetWCTriggerOffset()) )
+              break;  // did this track start before the end of the current trigger? if so, it's in the current trigger
+            else 
+              choose_event++;  // otherwise go to next trigger
+          } // exit (without check) if this is the last trigger
+          wcsimrootevent= wcsimrootsuperevent->GetTrigger(choose_event);
+          
+          wcsimrootevent->AddTrack(ipnu,          // particle PDG
+                                   flag,          // neutrino probe, target or other
+                                   mass,          // particle rest mass
+                                   mommag,        // initial momentum mag
+                                   energy,        // intial relativistic energy
+                                   mommagend,     // final momentum mag
+                                   energyend,     // final relativistic energy
+                                   startvol,      // intial volume code (10=tank, 20=veto, 30=mrd)
+                                   stopvol,       // final volume code 
+                                   dir,           // intial direction unit vector
+                                   pdir,          // intial momentum vector
+                                   pdir2,         // final momentum vector
+                                   stop,          // stopping vertex
+                                   start,         // start vertex 
+                                   parentType,    // parent PDG
+                                   ttime,         // start time (global)
+                                   ttimeend,      // end time (global)
+                                   id,            // wcsim TrackID
+                                   startProcess,  // start process name
+                                   endProcess);   // end process name
+        }
+        
+        
+        if (detectorConstructor->SavePi0Info() == true){
+          G4cout<<"Pi0 parentType: " << parentType <<G4endl;
+          if (parentType == 111){
+            if (r>1){
+              G4cout<<"WARNING: more than 2 primary gammas found"<<G4endl;
+            } else {
+              for (int y=0;y<3;y++){
+                pi0Vtx[y] = start[y];
+                gammaVtx[r][y] = stop[y];
+              }
+              
+              gammaID[r] = id;
+              gammaE[r] = energy;
+              r++;
+              
+              //amb79
+              G4cout<<"Pi0 data: " << id <<G4endl;
+              wcsimrootevent->SetPi0Info(pi0Vtx, gammaID, gammaE, gammaVtx);
+            }
+          }
+        }
+        
+        // TODO figure out what this neutron capture class is doing.
+        // it's adding *gammas* (not neutrons - creator process is ncapture), but not using the AddGamma method
+        // and relates them to the parent via parentID (not ideal?)
+        if (detectorConstructor->SaveCaptureInfo() && trj->GetCreatorProcessName()=="nCapture"){
+  #ifdef NCAPTURE_VERBOSE
+            G4cout << " Capture particle: " << trj->GetParticleName()
+                   << " Parent: " << trj->GetParentID()
+                   << " T:" << ttime
+                   << " vtx:(" << start[0] << "," << start[1] << "," << start[2]
+                   << " dir:(" << dir[0] << "," << dir[1] << "," << dir[2]
+                   << " E:" << energy << G4endl;
+  #endif
+            wcsimrootevent->SetCaptureParticle(trj->GetParentID(), ipnu, ttime, start, dir, energy, id);
+        }
+      } // end loop over saved trajectories
+    }   // end loop over trajectories
+  }     // end if tank wcsimrootevent
+  
   // Add the Cherenkov hits
   wcsimrootevent = wcsimrootsuperevent->GetTrigger(0);
   wcsimrootevent->SetNumTubesHit(jhfNtuple.numTubesHit);
@@ -1586,14 +1639,14 @@ void WCSimEventAction::FillRootEvent(G4int event_id,
     
   }
 
-  for (int i = 0 ; i < wcsimrootsuperevent->GetNumberOfEvents(); i++) {
-    wcsimrootevent = wcsimrootsuperevent->GetTrigger(i);
-    //G4cout << ">>>Root event "
-	  // <<std::setw(5)<<wcsimrootevent->GetHeader()->GetEvtNum()<<"\n";
-    //   if (WCDC){
-    // G4cout <<"WC digi:"<<std::setw(4)<<wcsimrootevent->GetNcherenkovdigihits()<<"  ";
-    // G4cout <<"WC digi sumQ:"<<std::setw(4)<<wcsimrootevent->GetSumQ()<<"  ";
-  }
+//  for (int i = 0 ; i < wcsimrootsuperevent->GetNumberOfEvents(); i++) {
+//    wcsimrootevent = wcsimrootsuperevent->GetTrigger(i);
+//    G4cout << ">>>Root event "
+//	   <<std::setw(5)<<wcsimrootevent->GetHeader()->GetEvtNum()<<"\n";
+//       if (WCDC){
+//     G4cout <<"WC digi:"<<std::setw(4)<<wcsimrootevent->GetNcherenkovdigihits()<<"  ";
+//     G4cout <<"WC digi sumQ:"<<std::setw(4)<<wcsimrootevent->GetSumQ()<<"  ";
+//  }
   
 #ifdef _SAVE_RAW_HITS
   //if (WCHC)
@@ -1606,10 +1659,8 @@ void WCSimEventAction::FillRootEvent(G4int event_id,
   //G4cout <<"WCFV digi:"<<std::setw(4)<<wcsimrootevent->GetNcherenkovdigihits()<<"  ";
   //G4cout <<"WCFV digi sumQ:"<<std::setw(4)<<wcsimrootevent->GetSumQ()<<"  ";
   //  }
-  TTree* tree = GetRunAction()->GetTree();
   TBranch* branch = GetRunAction()->GetBranch(detectorElement);
   branch->Fill();
-  //tree->Fill();
 //  TFile* hfile = tree->GetCurrentFile();
 //  // MF : overwrite the trees -- otherwise we have as many copies of the tree
 //  // as we have events. All the intermediate copies are incomplete, only the

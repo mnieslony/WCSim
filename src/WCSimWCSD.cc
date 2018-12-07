@@ -13,6 +13,7 @@
 #include "G4SystemOfUnits.hh"
 
 #include <sstream>
+#include <limits>
 
 #include "WCSimDetectorConstruction.hh"
 #include "WCSimTrackInformation.hh"
@@ -79,7 +80,7 @@ G4bool WCSimWCSD::ProcessHits(G4Step* aStep, G4TouchableHistory*)
   G4String volumeName  = aStep->GetTrack()->GetVolume()->GetName();
   bool isPMT = (volumeName != fdet->GetIDCollectionName2());
   G4float  stepEnergy  = aStep->GetTrack()->GetTotalEnergy()/CLHEP::eV;
-  G4float  wavelength  = (stepEnergy!=0) ? (2.0*M_PI*197.3)/(stepEnergy) : 0;
+  G4float  wavelength  = (stepEnergy>std::numeric_limits<float>::min()) ? (2.0*M_PI*197.3)/(stepEnergy) : 0;
   
   // Determine from QE whether to reject the hit
   // ===========================================
@@ -98,7 +99,11 @@ G4bool WCSimWCSD::ProcessHits(G4Step* aStep, G4TouchableHistory*)
       ratio = 1./(1.-0.25);
       photonQE = fdet->GetPMTQE(volumeName, wavelength,1,240,660,ratio);
     }else if (fdet->GetPMT_QE_Method()==4){
-      maxQE = fdet->GetPMTQE(volumeName, wavelength,0,240,660,ratio);
+      maxQE = fdet->GetPMTQE(fdet->GetIDCollectionName(), wavelength,0,240,660,ratio);
+      if(maxQE==0){
+        G4cerr<<"MAXQE FOR PHOTON HIT ON VOLUME "<<volumeName<<" IS 0!!"<<G4endl;
+        return false;
+      }
       photonQE = fdet->GetPMTQE(volumeName, wavelength,1,240,660,ratio);
       photonQE = photonQE/maxQE;
     }else{ photonQE=0.3; }
@@ -115,6 +120,10 @@ G4bool WCSimWCSD::ProcessHits(G4Step* aStep, G4TouchableHistory*)
       photonQE = fdet->GetLAPPDQE(volumeName, wavelength,1,240,660,ratio);
     }else if (fdet->GetLAPPD_QE_Method()==4){
       maxQE = fdet->GetPMTQE(fdet->GetIDCollectionName(), wavelength,0,240,660,ratio);
+      if(maxQE==0){
+        G4cerr<<"MAXQE FOR PHOTON HIT ON VOLUME "<<volumeName<<" IS 0!!"<<G4endl;
+        return false;
+      }
       photonQE = fdet->GetLAPPDQE(volumeName, wavelength,1,240,660,ratio);
       photonQE = photonQE/maxQE;
     }else{ photonQE=0.3; }
@@ -147,7 +156,11 @@ G4bool WCSimWCSD::ProcessHits(G4Step* aStep, G4TouchableHistory*)
       G4double local_x = localPosition.x();
       G4double local_y = localPosition.y();
       G4double local_z = localPosition.z();
-      G4float theta_angle = acos(fabs(local_z)/sqrt(pow(local_x,2)+pow(local_y,2)+pow(local_z,2)))/3.1415926*180.;
+      //G4cout<<"local pos = ("<<local_x<<", "<<local_y<<", "<<local_z<<")"<<G4endl;
+      G4double localabspos = sqrt(pow(local_x,2)+pow(local_y,2)+pow(local_z,2));
+      G4float theta_angle;
+      if(localabspos!=0) theta_angle = acos(fabs(local_z)/localabspos)/3.1415926*180.;
+      else theta_angle = 0;
       
       // Retrieve the threshold of detection
       // -----------------------------------

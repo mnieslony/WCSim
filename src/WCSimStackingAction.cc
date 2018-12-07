@@ -31,7 +31,6 @@ G4ClassificationOfNewTrack WCSimStackingAction::ClassifyNewTrack
   //return classification;        //bypass QE photon check
   
   // Make sure it is an optical photon
-  static bool hasreported=false;
   if( particleType == G4OpticalPhoton::OpticalPhotonDefinition() ){
       // MF : translated from skdetsim : better to increase the number of photons
       // than to throw in a global factor at Digitization time !
@@ -40,7 +39,7 @@ G4ClassificationOfNewTrack WCSimStackingAction::ClassifyNewTrack
       // Even with WLS
       G4float photonWavelength = (2.0*M_PI*197.3)/(aTrack->GetTotalEnergy()/CLHEP::eV);
       G4float ratio = 1.; //1./(1.0-0.25); ??? increase the reported QE? Why???
-      G4float wavelengthQE = 0;
+      G4float wavelengthQE = 1.1;
       
       if(aTrack->GetCreatorProcess()==NULL) {
         // primary photons. I don't see why these should be treated differently... 
@@ -66,6 +65,8 @@ G4ClassificationOfNewTrack WCSimStackingAction::ClassifyNewTrack
           }else if (DetConstruct->GetPMT_QE_Method()==3){
             // SensitiveDetector_Only
             wavelengthQE = 1.1;
+          } else {
+            G4cerr<<"Uknown PMT_QE_Method: "<<DetConstruct->GetPMT_QE_Method()<<G4endl;
           }
       }
       // else {
@@ -74,11 +75,6 @@ G4ClassificationOfNewTrack WCSimStackingAction::ClassifyNewTrack
       //}
       
       // prune the photon if desired
-      if(not hasreported){
-        G4cout<<"Stacking action applying global QE of "<<wavelengthQE<<G4endl;
-        hasreported=true;
-      }
-      
       if( G4UniformRand() > wavelengthQE ){ classification = fKill; }
   }
   

@@ -11,6 +11,7 @@
 #include "G4IonTable.hh"
 #include "G4ParticleDefinition.hh"
 #include "G4ThreeVector.hh"
+#include "TFile.h"
 #include "TLorentzVector.h"
 #include "globals.hh"
 #include "Randomize.hh"
@@ -397,7 +398,7 @@ void WCSimPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 		// Load the next entry, with all required trees and files
 		// ------------------------------------------------------
 		loadbeamentry:
-		if(loadNewPrimaries){ LoadNewPrimaries(); }	// update TChain if a new file is loaded by messenger
+		if(loadNewPrimaries){ LoadNewPrimaries(); } // update TChain if a new file is loaded by messenger
 		//inputdata has already had tree loaded at the end of last event's GeneratePrimaries call
 		//localEntry will already be the value of the NEXT entry
 		metadata->LoadTree(inputEntry);
@@ -406,6 +407,7 @@ void WCSimPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 		if(treeNumber!=nextTreeNumber){
 			G4cout<< "Reached end of Tree. Last entries' tree number was "
 						<< treeNumber <<", this entries' tree number is "<< nextTreeNumber <<G4endl;
+			dirtFileName = inputdata->GetCurrentFile()->GetName(); // new tree, new file
 			G4cout<<"Getting new tree branches"<<G4endl;
 			inputdata->SetBranchAddress("run",&runbranchval,&runBranch);
 			inputdata->SetBranchAddress("ntank",&ntankbranchval,&nTankBranch);
@@ -458,6 +460,11 @@ void WCSimPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 		nuvtxmatBranch->GetEntry(localEntry);
 		genieentryBranch->GetEntry(localEntry);
 		nufluxfilenameBranch->GetEntry(localEntry);
+		
+		// note info about this input event for recording into output file
+		dirtEntryNum = localEntry;
+		genieEntryNum = genieentrybranchval;
+		genieFileName = nufluxfilenameval;
 		
 #ifdef ONLY_TANK_EVENTS
 		if(strcmp(numatval,"TankWater")!=0){ // nu intx not in tank
@@ -699,14 +706,14 @@ void WCSimPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 		nvtxs = 1;
 		npar = -1;                                              // ? not used.
 		for(int i=0; i<nvtxs; i++){                             // we only ever have 1 neutrino intx
-			vtxsvol[i] = -10;                               // looked up in EndOfEventAction
+			vtxsvol[i] = -10;                                   // looked up in EndOfEventAction
 			// neutrino vertices are stored in m not cm
 			vtxs[i] = G4ThreeVector(nuvtxxval*CLHEP::m, nuvtxyval*CLHEP::m, nuvtxzval*CLHEP::m);
 			beampdgs[i] = probepdg;
 			beamenergies[i] = probeenergy;
 			targetpdgs[i] = targetnucleuspdg;
 			targetenergies[i] = targetnucleonenergy;
-			G4ThreeVector probemomdir;                      // convert TVector3 to G4ThreeVector
+			G4ThreeVector probemomdir;                          // convert TVector3 to G4ThreeVector
 			G4ThreeVector targetnucleonmomdir;
 			for(int comp=0; comp<2; comp++){
 				probemomdir[comp] = probemomentumdir[comp];
@@ -804,9 +811,9 @@ void WCSimPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 			
 			particleGun->SetParticleEnergy(keval);       // !!!kinetic!!! energy
 			particleGun->SetParticlePosition(thevtx);
-			particleGun->SetParticleTime(vtxtval);
+			//particleGun->SetParticleTime(vtxtval);     // set event time t=0 for prompt trigger.
 			particleGun->SetParticleMomentumDirection(thepdir);
-			particleGun->GeneratePrimaryVertex(anEvent);    //anEvent provided by G4 when invoking the method
+			particleGun->GeneratePrimaryVertex(anEvent); //anEvent provided by G4 when invoking the method
 			//G4cout<<"Vertex set"<<G4endl;
 		}
 		
@@ -976,6 +983,7 @@ void WCSimPrimaryGeneratorAction::LoadNewPrimaries(){
 	G4cout<<"first run: "<<runbranchval<<G4endl;
 	treeNumber=inputdata->GetTreeNumber();
 	localEntry = inputdata->LoadTree(inputEntry);
+	dirtFileName = inputdata->GetCurrentFile()->GetName(); // new tree, new file
 	
 	loadNewPrimaries=false;
 }

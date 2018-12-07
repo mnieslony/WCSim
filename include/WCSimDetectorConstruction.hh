@@ -97,6 +97,7 @@ public:
   void SetANNIEPhase2Geometryv3(); // phase 2 geometry - later PMT layout
   void SetANNIEPhase2Geometryv4(); // phase 2 geometry -  alt later PMT layout
   void SetANNIEPhase2Geometryv5(); // phase 2 geometry -  alt later PMT layout
+  void SetANNIEPhase2Geometryv6(); // phase 2 geometry -  entirely new Cylinder construction
   
   G4int    GetTotalNumPmts(G4String key){
     if(std::find(WCTankCollectionNames.begin(), WCTankCollectionNames.end(), key)!=WCTankCollectionNames.end())
@@ -145,16 +146,30 @@ public:
 
   WCSimPMTObject *CreatePMTObject(G4String, G4String);
 
-  std::map<G4String, WCSimPMTObject*>  CollectionNameMap; 
-  WCSimPMTObject * PMTptr;
+  std::map<G4String, WCSimPMTObject*>  CollectionNameMap;
  
   void SetPMTPointer(WCSimPMTObject* PMT, G4String CollectionName){
-    CollectionNameMap[CollectionName] = PMT;
+    if(CollectionNameMap.count(CollectionName)!=0){
+      G4cerr<<"Repeated call to SetPMTPointer for collection "
+            <<CollectionName<<"! Each collection should only have it's PMT type declared once!"<<G4endl;
+      exit(1);
+    } else {
+      CollectionNameMap.emplace(CollectionName, PMT);
+    }
   }
 
   WCSimPMTObject* GetPMTPointer(G4String CollectionName){
-    PMTptr = CollectionNameMap[CollectionName];
-    if (PMTptr == NULL) {G4cout << CollectionName << " is not a recognized hit collection. Exiting WCSim." << G4endl; exit(1);}
+    WCSimPMTObject* PMTptr = nullptr;
+    if(CollectionNameMap.count(CollectionName)==0){
+      G4cerr << CollectionName << " is not a recognized hit collection. Exiting WCSim." << G4endl;
+      exit(1);
+    } else {
+      PMTptr = CollectionNameMap.at(CollectionName);
+    }
+    if(PMTptr==nullptr){
+      G4cerr<< "PMT pointer in CollectionNameMap for CollectionName "<<CollectionName<<" is null!"<<G4endl;
+      exit(1);
+    }
     return PMTptr;
   }
  
@@ -262,6 +277,12 @@ private:
 
   //Tyvek surface - jl145
   G4OpticalSurface * OpWaterTySurface;
+  
+  //Inner structure surface
+  G4OpticalSurface * InnerStructureOpSurface;
+  
+  // Tank liner surface
+  G4OpticalSurface * LinerOpSurface;
 
   // The messenger we use to change the geometry.
 
@@ -269,14 +290,18 @@ private:
 
   // The Construction routines
   G4LogicalVolume*   ConstructCylinder();
+  G4LogicalVolume*   ConstructANNIECylinder();
   G4LogicalVolume* ConstructPMT(G4String,G4String, G4String detectorElement="tank");
   G4LogicalVolume* ConstructFlatFacedPMT(G4String PMTName, G4String CollectionName, G4String detectorElement="mrd");
   G4LogicalVolume* ConstructLAPPD(G4String,G4String);
 
   G4LogicalVolume* ConstructCaps(G4int zflip);
+  void ConstructANNIECaps(G4int zflip);
 
   void  ConstructMaterials();
 
+  G4LogicalVolume* logicWCBarrel;
+  G4VPhysicalVolume* physiWCBarrel;
   G4LogicalVolume* logicWCBarrelCellBlackSheet;
   G4LogicalVolume* logicWCTowerBlackSheet;
   G4double capAssemblyHeight;
@@ -355,8 +380,9 @@ private:
   G4String WCIDCollectionName; // ⚠
   G4String WCODCollectionName;
 	G4String WCIDCollectionName2;
-  std::map<G4String, G4String> WCPMTNameMap;              // ✩
-  std::map<G4String, G4double> WCPMTRadiusMap;            // ✩
+  std::map<G4String, G4String> WCPMTNameMap;                 // ✩
+  std::map<G4String, G4double> WCPMTRadiusMap;               // ✩
+  std::map<G4String, G4double> WCPMTExposeHeightMap;         // ✩
   std::map<G4String, std::vector<int> > TubeIdsByCollection; // ✩ Store all tubeIDs in each collection
   std::map<Int_t, G4String> WCTubeCollectionMap;             // ✩ Map a tubeID to the collection it's in
   std::vector<G4String> WCTankCollectionNames;               // ✩
@@ -444,10 +470,23 @@ private:
   G4double WCBarrelLength;
   
   // for annie
+  G4int PMTcounter;                  // ANNIEp2v6 needs this available in ConstructANNIECaps 
+  G4double WCCapPMTOffset;           // offset of the cap PMTs toward the centre of the tank.
+  G4double WCBorderBarrelTopPMTOffset; // more fudging for ANNIE
+  G4int numhatchpmts;
+  G4bool constructmrd;
+  G4bool constructveto;
   G4double compressionfactor;        // ratio to squeeze PMTs together on an octagon face, relative to full width
   G4double capcompressionratio;      // aspect ratio of PMT spacing on bottom cap
+  G4double capcentrebarwidth;        // cap PMT offset due to width of central bar
   G4double WCCapPMTPosRadius;        // radius at which to position top cap PMTs, for some ANNIE designs
   G4double WCCapPMTPosRadius2;       // radius at which to position PMTs on the hatch
+  G4double barrelcompressionfactor;  // how much to squeeze barrel PMTs from caps, ANNIE PMTs fill only central ~60%
+  G4double barrelbordercompressionfactor;  // ANNIE border ring sizes also need tuning
+  G4double InnerStructureCentreOffset;
+
+  G4double WCCapTopPMTOffset;        // offsets are different for ANNIE
+  G4double WCCapBottomPMTOffset;     // 
 
   // amb79: to universally make changes in structure and geometry
   bool isUpright;
@@ -575,6 +614,8 @@ private:
   void ConstructMRD(G4LogicalVolume* expHall_log, G4VPhysicalVolume* expHall_phys);
   void ConstructVETO(G4LogicalVolume* expHall_log, G4VPhysicalVolume* expHall_phys);
   void ConstructNCV(G4LogicalVolume* waterTank_log);
+  int GetLayerNum(int copyNo, int* paddlenuminlayer, bool* ishpaddle);
+  int GetNumPaddlesInLayer(int layernum);
   void ComputePaddleTransformation (const G4int copyNo, G4VPhysicalVolume* physVol);
   void ComputeTaperTransformation (const G4int copyNo, G4VPhysicalVolume* physVol, G4int selector, G4bool additionaloffset);
   void ComputeSteelTransformation (const G4int copyNo, G4VPhysicalVolume* physVol);
@@ -612,7 +653,7 @@ private:
   G4double expHall_x;
   G4double expHall_y;
   G4double expHall_z;
-  G4int doOverlapCheck;
+  G4bool doOverlapCheck;
   
   G4String WCMRDCollectionName;
   G4String WCFACCCollectionName;
@@ -639,6 +680,8 @@ private:
 	G4double Xposition, Yposition, Zposition;		// used for positioning parameterisations.
 	G4int numpaddlesperpanelh;									// paddles per h scintillator panel
 	G4int numpaddlesperpanelv;									// paddles per v scintillator panel
+	std::vector<int> numpaddlesperpanelvv;			// not all the same in refurbished MRD
+	G4int nummrdpmts;														// total number of mrd paddles
 	G4int numpanels;														// scintillator panels
 	G4int numhpanels;														// horizontal scintillator panels
 	G4int numvpanels;														// vertical scintillator panels
@@ -659,6 +702,7 @@ private:
 	G4double steelfullzlen;
 
 	G4double scintfullxlen;
+	G4double scintfullxlen2;
 	G4double scintfullzlen;
 	G4double scinthfullylen;
 	G4double scintvfullylen;
@@ -708,9 +752,11 @@ private:
 
 	G4Box* sciMRDhpaddle_box;										// Paddles - h 
 	G4Box* sciMRDvpaddle_box;										// and v
+	G4Box* sciMRDvpaddle_box2;									// kTeV version
 	G4Trd* mrdScintTap_box;											// Paddle Tapered ends
 
 	G4Trd* mrdLG_box;														// Tapered Light Guides
+	G4Trd* mrdLG_box2;													// KTeV version
 	G4Box* mrdSurface_box;											// little box for surface to detect photons
 
 	G4Box* steelMRDplate_box;										// Steel plates
@@ -733,8 +779,10 @@ private:
 
 	G4LogicalVolume* hpaddle_log;
 	G4LogicalVolume* vpaddle_log;
+	G4LogicalVolume* vpaddle_log2;
 	G4LogicalVolume* taper_log;
 	G4LogicalVolume* lg_log;
+	G4LogicalVolume* lg_log2;
 	G4LogicalVolume* steel_log;
 	G4LogicalVolume* mrdsdsurf_log;
 
