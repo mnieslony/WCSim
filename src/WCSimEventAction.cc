@@ -57,6 +57,7 @@
 #define _SAVE_RAW_HITS
 #ifndef _SAVE_RAW_HITS_VERBOSE
 //#define _SAVE_RAW_HITS_VERBOSE
+//#define NPMTS_VERBOSE 10
 #endif
 #endif
 #ifndef SAVE_DIGITS_VERBOSE
@@ -64,10 +65,6 @@
 #endif
 #ifndef TIME_DAQ_STEPS
 //#define TIME_DAQ_STEPS
-#endif
-
-#ifndef NPMTS_VERBOSE
-//#define NPMTS_VERBOSE 10
 #endif
 
 #ifndef HYPER_VERBOSITY
@@ -623,13 +620,13 @@ void WCSimEventAction::EndOfEventAction(const G4Event* evt)
         } //id
 #ifdef _SAVE_RAW_HITS_VERBOSE
         if(digi_tubeid < NPMTS_VERBOSE) {
-          G4cout << "Adding " << truetime2.size()
+          G4cout << "Adding " << lappdhit_truetime2.size()
                  << " Cherenkov hits in tube " << digi_tubeid
                  << " with truetime:smeartime:primaryparentID";
-          for(G4int id = 0; id < truetime2.size(); id++) {
-             G4cout << " " << truetime[id]
-                    << ":" << smeartime[id]
-                    << ":" << primaryParentID[id];
+          for(G4int id = 0; id < lappdhit_truetime2.size(); id++) {
+             G4cout << " " << lappdhit_truetime2[id]
+                    << ":" << lappdhit_smeartime2[id]
+                    << ":" << lappdhit_primaryParentID2[id];
           }//id
          G4cout << G4endl;
         }

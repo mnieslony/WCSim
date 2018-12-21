@@ -74,6 +74,18 @@ void WCSimSteppingAction::UserSteppingAction(const G4Step* aStep)
 //  }
   
   if(track->GetDefinition()==G4OpticalPhoton::OpticalPhotonDefinition()){
+  
+//   if(aStep->IsFirstStepInVolume()){  // FIXME: kill photon if no RINDEX. Should be automatic?!
+//     G4MaterialPropertyVector* RindexVector=nullptr;
+//     G4MaterialPropertiesTable* aMaterialPropertiesTable = track->GetMaterial()->GetMaterialPropertiesTable();
+//     if(aMaterialPropertiesTable) RindexVector = aMaterialPropertiesTable->GetProperty("RINDEX");
+//     if(RindexVector==nullptr){
+//       track->SetTrackStatus(fStopAndKill);  // don't know why it's allowing photons to be transported
+//       fExpectedNextStatus=Undefined;        // in materials with no Rindex
+//       return;
+//     }
+//   }
+    
    //G4cout<<"optical photon StepStatus is          "<<thePostPoint->GetStepStatus()<<G4endl
    //      <<"               fExpectedNextStatus is "<<fExpectedNextStatus<<G4endl
    //      <<"               boundaryStatus is      "<<boundary->GetStatus()<<G4endl;
@@ -249,10 +261,14 @@ double WCSimSteppingAction::FieldLines(G4double /*x*/,G4double /*y*/,G4int /*coo
   return 0;
 }
 
-G4String ToName(G4OpBoundaryProcessStatus boundaryStatus){
-G4String processnames[14]={"Undefined","FresnelRefraction","FresnelReflection","TotalInternalReflection","LambertianReflection","LobeReflection","SpikeReflection","BackScattering","Absorption","Detection","NotAtBoundary","SameMaterial","StepTooSmall","NoRINDEX"};
-return processnames[boundaryStatus];}
+G4String WCSimSteppingAction::ToName(G4OpBoundaryProcessStatus boundaryStatus){
+  static std::vector<G4String> processnames{"Undefined","FresnelRefraction","FresnelReflection",
+  "TotalInternalReflection",  "LambertianReflection","LobeReflection","SpikeReflection",
+  "BackScattering","Absorption","Detection","NotAtBoundary","SameMaterial","StepTooSmall","NoRINDEX"};
+  if(boundaryStatus<processnames.size()) return processnames.at(boundaryStatus);
+  else return std::to_string(boundaryStatus);
+}
 
-G4String ToName2(G4StepStatus stepStatus){
+G4String WCSimSteppingAction::ToName2(G4StepStatus stepStatus){
 G4String processnames[8]={"fWorldBoundary","fGeomBoundary","fAtRestDoItProc","fAlongStepDoItProc","fPostStepDoItProc","fUserDefinedLimit","fExclusivelyForcedProc","fUndefined"};
 return processnames[stepStatus];}
