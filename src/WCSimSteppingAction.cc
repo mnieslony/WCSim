@@ -262,9 +262,20 @@ double WCSimSteppingAction::FieldLines(G4double /*x*/,G4double /*y*/,G4int /*coo
 }
 
 G4String WCSimSteppingAction::ToName(G4OpBoundaryProcessStatus boundaryStatus){
-  static std::vector<G4String> processnames{"Undefined","FresnelRefraction","FresnelReflection",
-  "TotalInternalReflection",  "LambertianReflection","LobeReflection","SpikeReflection",
-  "BackScattering","Absorption","Detection","NotAtBoundary","SameMaterial","StepTooSmall","NoRINDEX"};
+  // convert from names in $G4/src/source/processes/optical/include/G4OpBoundaryProcess.hh
+static std::vector<G4String> processnames {"Undefined","Transmission","FresnelRefraction",
+  "FresnelReflection","TotalInternalReflection","LambertianReflection",
+  "LobeReflection","SpikeReflection","BackScattering","Absorption",
+  "Detection","NotAtBoundary","SameMaterial","StepTooSmall","NoRINDEX",
+  "PolishedLumirrorAirReflection","PolishedLumirrorGlueReflection",
+  "PolishedAirReflection","PolishedTeflonAirReflection","PolishedTiOAirReflection",
+  "PolishedTyvekAirReflection","PolishedVM2000AirReflection","PolishedVM2000GlueReflection",
+  "EtchedLumirrorAirReflection","EtchedLumirrorGlueReflection","EtchedAirReflection",
+  "EtchedTeflonAirReflection","EtchedTiOAirReflection","EtchedTyvekAirReflection",
+  "EtchedVM2000AirReflection","EtchedVM2000GlueReflection","GroundLumirrorAirReflection",
+  "GroundLumirrorGlueReflection","GroundAirReflection","GroundTeflonAirReflection",
+  "GroundTiOAirReflection","GroundTyvekAirReflection","GroundVM2000AirReflection",
+  "GroundVM2000GlueReflection","Dichroic"};
   if(boundaryStatus<processnames.size()) return processnames.at(boundaryStatus);
   else return std::to_string(boundaryStatus);
 }
