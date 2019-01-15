@@ -300,6 +300,32 @@
 #/gps/ene/max 2500 MeV
 #/DAQ/Trigger NoTrigger  # >>>DISABLE NDigits TRIGGER<<< and enable NoTrigger to records everything even w/o a tank event
 
+## Muons shot into the tank from in front of the veto, gaussian energy and beam spread
+#################################################################
+#/mygen/generator gps
+#/gps/particle mu- #geantino
+#/gps/pos/type Plane
+#/gps/pos/shape Rectangle
+#/gps/pos/halfx 1.524 m  # tank radius
+#/gps/pos/halfy 1.98 m   # tank height 
+## place plane centre in front of veto
+#/gps/pos/centre 0 -14.46 -10 cm   # MRD front face at z=325.5cm
+##planes are oriented in the x-y plane, so we need to rotate in the same way as per the cylinder
+##rotate the square be parallel to the front face of the MRD (not true??)
+#/gps/pos/rot1 1 0 0
+#/gps/pos/rot2 0 1 0
+## a gaussian energy spread
+#/gps/ang/type beam1d
+#/gps/ang/sigma_r 35 deg
+##/gps/ang/focuspoint  0 -14.46 -20000 cm  ## generates all particles with momentum TOWARD that point
+#/gps/ang/rot1 -1 0 0      # direction is defined by defining the PERPENDICULAR NORMAL PLANE
+#/gps/ang/rot2 0 1 0
+## gaussian energy spread
+#/gps/ene/type Gauss
+#/gps/ene/mono 500 MeV    # gaussian centre
+#/gps/ene/sigma 400 MeV   # gaussian width
+#/gps/ene/min 10 MeV      # add a minimum because anything <50MeV is undetectable
+
 ## Thermal neutron gun, to test for neutron capture detection
 #############################################################
 ## thermal neutron gun
@@ -351,7 +377,7 @@
 #/gps/ene/max 2500 MeV
 ##/DAQ/Trigger NDigits # normal NDigits 'cut' left on
 
-## Beam muon simulation - gaussian spread of energies and directions
+## Beam muon simulation - gaussian spread of energies and directions (XXX ANGULAR DISTRIBUTION INCORRECT? Use ver above XXX)
 ####################################################################
 ## muons with gaussian spread of ~beam energies, starting in the tank, shot into the mrd with ~suitable angles.
 #/mygen/generator laser
