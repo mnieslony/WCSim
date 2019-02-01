@@ -261,6 +261,7 @@ void WCSimWCDigitizerSKI::DigitizeHits(WCSimWCDigitsCollection* WCHCPMT) {
       int digi_unique_id   = 0;
       int photon_unique_id = 0;
       std::vector<int> digi_comp; 
+      std::vector<float> digi_times;
 
       //loop over the hits on this PMT
       for( G4int ip = 0 ; ip < (*WCHCPMT)[i]->GetTotalPe() ; ip++)
@@ -301,6 +302,7 @@ void WCSimWCDigitizerSKI::DigitizeHits(WCSimWCDigitsCollection* WCHCPMT) {
 	    peSmeared += pe;
 	    photon_unique_id = ip+absoluteindex;
 	    digi_comp.push_back(photon_unique_id);
+	    digi_times.push_back(time);
 	    // extend the integration window, if enabled
 	    if(ExtendDigitizerIntegrationWindow) upperlimit = time + DigitizerIntegrationWindow;
       
@@ -331,12 +333,15 @@ void WCSimWCDigitizerSKI::DigitizeHits(WCSimWCDigitsCollection* WCHCPMT) {
 	    if(iflag == 0) {
 	      //digitize hit
 	      peSmeared *= efficiency;
-	      bool accepted = WCSimWCDigitizerBase::AddNewDigit(tube, digi_unique_id, intgr_start, peSmeared, digi_comp);
+	      // use the median time as the time of the digit
+	      float median_time=std::min(1,int(double(digi_times.size())/2.));
+	      bool accepted = WCSimWCDigitizerBase::AddNewDigit(tube, digi_unique_id, median_time, peSmeared, digi_comp);
 	      if(accepted) {
 		digi_unique_id++;
 	      }
 	      assert(digi_comp.size());
 	      digi_comp.clear();
+	      digi_times.clear();
 	    }
 	    else {
 	      //reject hit
@@ -345,6 +350,7 @@ void WCSimWCDigitizerSKI::DigitizeHits(WCSimWCDigitsCollection* WCHCPMT) {
 		G4cout << "DIGIT REJECTED with time " << intgr_start << G4endl;
 #endif
 	      digi_comp.clear();
+	      digi_times.clear();
 	    }
 	  }
 	  
@@ -368,6 +374,7 @@ void WCSimWCDigitizerSKI::DigitizeHits(WCSimWCDigitsCollection* WCHCPMT) {
 	    //store the digi composition information
 	    photon_unique_id = ip+absoluteindex;
             digi_comp.push_back(photon_unique_id);
+            digi_times.push_back(time);
 
 	    //if this is the last hit we must handle the creation of the digit 
 	    //as the loop will not evaluate again
@@ -377,12 +384,15 @@ void WCSimWCDigitizerSKI::DigitizeHits(WCSimWCDigitsCollection* WCHCPMT) {
 	      if(iflag == 0) {
 		//digitize hit
 		peSmeared *= efficiency;
-		bool accepted = WCSimWCDigitizerBase::AddNewDigit(tube, digi_unique_id, intgr_start, peSmeared, digi_comp);
+		// use the median time as the time of the digit
+		float median_time=std::min(1,int(double(digi_times.size())/2.));
+		bool accepted = WCSimWCDigitizerBase::AddNewDigit(tube, digi_unique_id, median_time, peSmeared, digi_comp);
 		if(accepted) {
 		  digi_unique_id++;
 		}
 		assert(digi_comp.size());
 		digi_comp.clear();
+		digi_times.clear();
 	      }
 	      else {
 		//reject hit
@@ -391,6 +401,7 @@ void WCSimWCDigitizerSKI::DigitizeHits(WCSimWCDigitsCollection* WCHCPMT) {
 		  G4cout << "DIGIT REJECTED with time " << intgr_start << G4endl;
 #endif
 		digi_comp.clear();
+		digi_times.clear();
 	      }
 	    }
 	  }

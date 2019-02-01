@@ -275,7 +275,7 @@ void WCSimWCTriggerBase::AlgNDigits(WCSimWCDigitsCollection* WCDCPMT, bool remov
   int ntrig = 0;
   int window_start_time = 0;
   int window_end_time   = WCSimWCTriggerBase::LongTime - ndigitsWindow;
-  int window_step_size  = 5; //step the search window along this amount if no trigger is found
+  int window_step_size  = 8; //step the search window along this amount if no trigger is found
   float lasthit;
   std::vector<int> digit_times;
   bool first_loop = true;
