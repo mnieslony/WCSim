@@ -43,6 +43,7 @@ void WCSimWCDAQMessenger::Initialize(G4String detectorElementin)
   int defaultDigitizerDeadTime = -99;
   int defaultDigitizerIntegrationWindow = -99;
   bool defaultExtendDigitizerIntegrationWindow = false;
+  bool defaultDoPhotonIntegration = true;
   int defaultSaveFailuresTriggerMode = 0;
   double defaultSaveFailuresTriggerTime = 100;
   int defaultSaveFailuresPreTriggerWindow = -400;
@@ -118,6 +119,11 @@ void WCSimWCDAQMessenger::Initialize(G4String detectorElementin)
     ExtendDigitizerIntegrationWindow->SetGuidance("Extend the digitizer integration window when new hits arrive in an existing one");
     ExtendDigitizerIntegrationWindow->SetParameterName("ExtendDigitizerIntegrationWindow",true);
     ExtendDigitizerIntegrationWindow->SetDefaultValue(defaultExtendDigitizerIntegrationWindow);
+
+    DoPhotonIntegration = new G4UIcmdWithABool("/DAQ/DigitizerOpt/DoPhotonIntegration", this);
+    DoPhotonIntegration->SetGuidance("Integrate photons within a window into one pulse (true) or convert each photon into a digit (false)");
+    DoPhotonIntegration->SetParameterName("DoPhotonIntegration",true);
+    DoPhotonIntegration->SetDefaultValue(defaultDoPhotonIntegration);
 
     //Save failure trigger specific options
     SaveFailuresTriggerDir = new G4UIdirectory("/DAQ/TriggerSaveFailures/");
@@ -220,6 +226,7 @@ void WCSimWCDAQMessenger::Initialize(G4String detectorElementin)
   theseOptions.StoreDigitizerDeadTime = defaultDigitizerDeadTime;
   theseOptions.StoreDigitizerIntegrationWindow = defaultDigitizerIntegrationWindow;
   theseOptions.StoreExtendDigitizerIntegrationWindow = defaultExtendDigitizerIntegrationWindow;
+  theseOptions.StoreDoPhotonIntegration = defaultDoPhotonIntegration;
   theseOptions.StoreDigitizerChoice = defaultDigitizer;
   theseOptions.StorePromptTrigger = defaultPromptTrigger;
   theseOptions.StorePromptPreWindow = defaultPromptPreTriggerWindow;
@@ -289,6 +296,7 @@ WCSimWCDAQMessenger::~WCSimWCDAQMessenger()
   if(DigitizerDeadTime){ delete DigitizerDeadTime; DigitizerDeadTime=nullptr; }
   if(DigitizerIntegrationWindow){ delete DigitizerIntegrationWindow; DigitizerIntegrationWindow=nullptr; }
   if(ExtendDigitizerIntegrationWindow){ delete ExtendDigitizerIntegrationWindow; ExtendDigitizerIntegrationWindow=nullptr; }
+  if(DoPhotonIntegration){ delete DoPhotonIntegration; DoPhotonIntegration=nullptr; }
 
   if(DigitizerChoice){ delete DigitizerChoice; DigitizerChoice=nullptr; }
   if(TriggerChoice){ delete TriggerChoice; TriggerChoice=nullptr; }
@@ -340,6 +348,17 @@ void WCSimWCDAQMessenger::SetNewValue(G4UIcommand* command,G4String newValue)
           << "extend when new hits arrive in an existing window" << initialiseString.c_str() << G4endl;
     StoredOptions.at(detectorElement).StoreExtendDigitizerIntegrationWindow = 
          ExtendDigitizerIntegrationWindow->GetNewBoolValue(newValue);
+  }
+  else if (command == DoPhotonIntegration) {
+    G4cout<< "Digitizer set to ";
+    if(newValue=="true"){
+      G4cout << "integrate photons within the digitizer integration window into Digits ";
+    } else {
+      G4cout << "convert individual photons into Digits ";
+    } 
+    G4cout << initialiseString.c_str() << G4endl;
+    StoredOptions.at(detectorElement).StoreDoPhotonIntegration = 
+         DoPhotonIntegration->GetNewBoolValue(newValue);
   }
 
   //Save failures "trigger"
@@ -510,6 +529,13 @@ void WCSimWCDAQMessenger::SetDigitizerOptions(G4String detectorElementin)
   }
   WCSimDigitize->SetExtendIntegrationWindow(StoredOptions.at(detectorElement).StoreExtendDigitizerIntegrationWindow);
   G4cout<<"\tDigitizer integration window set to " << ((StoredOptions.at(detectorElement).StoreExtendDigitizerIntegrationWindow) ? "" : "not") << " extend when new hits arrive in an existing window" << G4endl;
+  WCSimDigitize->SetDoPhotonIntegration(StoredOptions.at(detectorElement).StoreDoPhotonIntegration);
+  G4cout<<"\tDigitizer set to ";
+  if(StoredOptions.at(detectorElement).StoreExtendDigitizerIntegrationWindow){
+    G4cout << "integrate photons on the same PMT close in time into digits" << G4endl;
+  } else {
+    G4cout << "convert each individual photon into its own digit" << G4endl;
+  }
 }
 
 void WCSimWCDAQMessenger::AddDAQMessengerInstance(G4String detectorElementin){

@@ -9,6 +9,7 @@
 /DAQ/DigitizerOpt/ExtendIntegrationWindow false   # default, suitable for ANNIE DAQ digitizer
 /DAQ/DigitizerOpt/DeadTime 0                      # assume no digitizer deadtime FIXME
 /DAQ/DigitizerOpt/IntegrationWindow 200           # ANNIEDAQ has 8ns sample time
+/DAQ/DigitizerOpt/DoPhotonIntegration false       # Actually just make one digit from each photon, for the tank
 /DAQ/MultiDigitsPerTrigger true                   # allow more than one hit on any given PMT per event
 
 ## configure prompt trigger. This may be enabled for all triggers EXCEPT NoTrigger

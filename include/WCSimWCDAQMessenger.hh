@@ -38,6 +38,7 @@ struct OptionsStore{
   G4int                 StoreDigitizerDeadTime;
   G4String              StoreDigitizerChoice;
   G4bool                StoreExtendDigitizerIntegrationWindow;
+  G4bool                StoreDoPhotonIntegration;
 };
 
 class WCSimWCDAQMessenger: public G4UImessenger
@@ -74,6 +75,7 @@ private:
   G4UIcmdWithAString*   TriggerChoice;
   G4UIcmdWithABool*     MultiDigitsPerTrigger;
   G4UIcmdWithABool*     ExtendDigitizerIntegrationWindow;
+  G4UIcmdWithABool*     DoPhotonIntegration;
   G4bool                MultiDigitsPerTriggerSet;
 
   G4UIdirectory*        DigitizerDir;

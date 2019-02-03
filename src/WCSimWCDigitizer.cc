@@ -73,6 +73,7 @@ void WCSimWCDigitizerBase::GetVariables()
   DigitizerDeadTime          = GetDefaultDeadTime();
   DigitizerIntegrationWindow = GetDefaultIntegrationWindow();
   ExtendDigitizerIntegrationWindow = GetDefaultExtendIntegrationWindow();
+  DoPhotonIntegration        = GetDefaultDoPhotonIntegration();
 
   //read the .mac file to override them
   if(DAQMessenger != NULL) {
@@ -91,6 +92,8 @@ void WCSimWCDigitizerBase::GetVariables()
      << "when new hits arrive within an existing window" <<G4endl;
   else G4cout<<"Will not extend the digitizer integration window "
      << "when new hits arrive within an existing window" <<G4endl;
+  if(DoPhotonIntegration) G4cout<<"Will integrate photons in the digitizer integration window into one digit" << G4endl;
+  else G4cout<<"Will create a digit from each individual photon" <<G4endl;
 }
 
 void WCSimWCDigitizerBase::Digitize()
@@ -191,6 +194,7 @@ void WCSimWCDigitizerBase::SaveOptionsToOutput(WCSimRootOptions * wcopt)
   wcopt->SetDigitizerDeadTime(DigitizerDeadTime);
   wcopt->SetDigitizerIntegrationWindow(DigitizerIntegrationWindow);
   wcopt->SetExtendIntegrationWindow(ExtendDigitizerIntegrationWindow);
+  wcopt->SetDoPhotonIntegration(DoPhotonIntegration);
 }
 
 
@@ -264,6 +268,15 @@ void WCSimWCDigitizerSKI::DigitizeHits(WCSimWCDigitsCollection* WCHCPMT) {
       std::vector<float> digi_times;
 
       //loop over the hits on this PMT
+#ifdef WCSIMWCDIGITIZER_VERBOSE
+      if(detectorElement=="tank"){
+        G4cout<<"tank pmt "<<i<<" had "<<(*WCHCPMT)[i]->GetTotalPe()<<" photon hits"<<G4endl;
+      }
+      int numdigitsrequested=0;
+      int numdigitsrejectedthreshold=0;
+      int numdigitsrejectedpe=0;
+      int numdigitscreated=0;
+#endif
       for( G4int ip = 0 ; ip < (*WCHCPMT)[i]->GetTotalPe() ; ip++)
 	{
 	  float time=0.;
@@ -280,7 +293,7 @@ void WCSimWCDigitizerSKI::DigitizeHits(WCSimWCDigitsCollection* WCHCPMT) {
 
 	  //start the integration time as the time of the first hit
 	  //Hits must be sorted in time
-	  if(ip==0) {
+	  if( (DoPhotonIntegration==false) || (ip==0) ){
 	    intgr_start=time;
 	    peSmeared = 0;
 	    //Set the limits of the integration window [intgr_start,upperlimit]
@@ -311,7 +324,7 @@ void WCSimWCDigitizerSKI::DigitizeHits(WCSimWCDigitsCollection* WCHCPMT) {
 	      G4cout<<"INFO: time "<<time<<" digi_id "<<digi_unique_id<<" p_id "<<photon_unique_id<<G4endl;
 #endif
 	    //if this is the last digit, make sure to make the digit
-	    if(ip + 1 == (*WCHCPMT)[i]->GetTotalPe()){
+	    if( (DoPhotonIntegration==false) || (ip + 1 == (*WCHCPMT)[i]->GetTotalPe()) ){
 	      MakeDigit = true;
 	    }
 	    
@@ -330,14 +343,23 @@ void WCSimWCDigitizerSKI::DigitizeHits(WCSimWCDigitsCollection* WCHCPMT) {
 	    WCSimWCDigitizerSKI::Threshold(peSmeared,iflag);
 
 	    //Check if previous hit passed the threshold.  If so we will digitize the hit
+#ifdef WCSIMWCDIGITIZER_VERBOSE
+	    numdigitsrequested++;
+#endif
 	    if(iflag == 0) {
 	      //digitize hit
 	      peSmeared *= efficiency;
 	      // use the median time as the time of the digit
-	      float median_time=std::min(1,int(double(digi_times.size())/2.));
+	      int median_index=std::min(1,int(double(digi_times.size())/2.));
+	      float median_time = digi_times.at(median_index);
 	      bool accepted = WCSimWCDigitizerBase::AddNewDigit(tube, digi_unique_id, median_time, peSmeared, digi_comp);
 	      if(accepted) {
 		digi_unique_id++;
+#ifdef WCSIMWCDIGITIZER_VERBOSE
+		numdigitscreated++;
+	      } else {
+	        numdigitsrejectedpe++;
+#endif
 	      }
 	      assert(digi_comp.size());
 	      digi_comp.clear();
@@ -346,6 +368,7 @@ void WCSimWCDigitizerSKI::DigitizeHits(WCSimWCDigitsCollection* WCHCPMT) {
 	    else {
 	      //reject hit
 #ifdef WCSIMWCDIGITIZER_VERBOSE
+	      numdigitsrejectedthreshold++;
 	      if(tube < NPMTS_VERBOSE)
 		G4cout << "DIGIT REJECTED with time " << intgr_start << G4endl;
 #endif
@@ -385,7 +408,8 @@ void WCSimWCDigitizerSKI::DigitizeHits(WCSimWCDigitsCollection* WCHCPMT) {
 		//digitize hit
 		peSmeared *= efficiency;
 		// use the median time as the time of the digit
-		float median_time=std::min(1,int(double(digi_times.size())/2.));
+		int median_index=std::min(1,int(double(digi_times.size())/2.));
+		float median_time = digi_times.at(median_index);
 		bool accepted = WCSimWCDigitizerBase::AddNewDigit(tube, digi_unique_id, median_time, peSmeared, digi_comp);
 		if(accepted) {
 		  digi_unique_id++;
@@ -407,6 +431,12 @@ void WCSimWCDigitizerSKI::DigitizeHits(WCSimWCDigitsCollection* WCHCPMT) {
 	  }
 	}//ip (totalpe)
 	absoluteindex+=(*WCHCPMT)[i]->GetTotalPe();
+#ifdef WCSIMWCDIGITIZER_VERBOSE
+	G4cout<<"Requested the creation of "<<numdigitsrequested<<" digits; "
+	      <<numdigitscreated<<" were created, "
+	      <<numdigitsrejectedthreshold<<" were rejected by digitizer threshold, "
+	      <<numdigitsrejectedpe<<" were rejected by pe limit"<<G4endl;
+#endif
     }//i (WCHCPMT->entries())
   G4cout<<"WCSimWCDigitizerSKI::DigitizeHits END DigiStore->entries() " << DigiStore->entries() << "\n";
   

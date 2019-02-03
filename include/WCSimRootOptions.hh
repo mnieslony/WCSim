@@ -56,11 +56,13 @@ public:
   void SetDigitizerDeadTime(int iDigitizerDeadTime) {DigitizerDeadTime = iDigitizerDeadTime;}
   void SetDigitizerIntegrationWindow(int iDigitizerIntegrationWindow) {DigitizerIntegrationWindow = iDigitizerIntegrationWindow;}
   void SetExtendIntegrationWindow(bool iExtendDigitizerIntegrationWindow) {ExtendDigitizerIntegrationWindow = iExtendDigitizerIntegrationWindow;}
+  void SetDoPhotonIntegration(bool iDoPhotonIntegration) {DoPhotonIntegration = iDoPhotonIntegration;}
   //WCSimWCDigitizer* gets
   string GetDigitizerClassName() {return DigitizerClassName;}
   int    GetDigitizerDeadTime() {return DigitizerDeadTime;}
   int    GetDigitizerIntegrationWindow() {return DigitizerIntegrationWindow;}
   bool   GetExtendDigitizerIntegrationWindow() {return ExtendDigitizerIntegrationWindow;}
+  bool   GetDoPhotonIntegration() {return DoPhotonIntegration;}
   //WCSimWCTrigger* sets
   void SetTriggerClassName(string itriggerClassName) {TriggerClassName = itriggerClassName;};
   void SetMultiDigitsPerTrigger(bool imultiDigitsPerTrigger) {MultiDigitsPerTrigger = imultiDigitsPerTrigger;};
@@ -150,6 +152,7 @@ private:
   int    DigitizerDeadTime; // ns
   int    DigitizerIntegrationWindow; // ns
   bool   ExtendDigitizerIntegrationWindow;
+  bool   DoPhotonIntegration;
 
   //WCSimWCTrigger*
   string TriggerClassName;
