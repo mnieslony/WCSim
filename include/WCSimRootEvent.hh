@@ -473,6 +473,10 @@ public:
 
   //  WCSimRootTrigger* GetTrigger(int number) { return fEventList[number];}
   WCSimRootTrigger* GetTrigger(int number) {
+    if(number>=fEventList->GetEntriesFast()){
+      std::cout<<"WCSimRootEvent::GetTrigger("<<number<<") - no such trigger"<<std::endl;
+      return nullptr;
+    }
     WCSimRootTrigger* thetrigger = (WCSimRootTrigger*) (*fEventList)[number];
     thetrigger->SetParentEvent(this);
     return thetrigger;

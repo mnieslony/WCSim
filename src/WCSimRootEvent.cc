@@ -310,6 +310,7 @@ void WCSimRootTrigger::Print(int verbosity, int maxprimariestoprint, int maxtrac
   WCSimRootTrigger* firsttrig=fParentEvent->GetTrigger(0);
   
   std::cout<<"Trigger time : "<<fEvtHdr.GetDate()<<std::endl;
+  std::cout<<"Trigger type : "<<WCSimEnumerations::EnumAsString(fTriggerType)<<std::endl;
   std::cout<<"Number Primary Vertices : "<<fNvtxs<<std::endl;
   // loop over primary vertices. Usually just 1. Delayed triggers may report 0, so coerce to 1. 
   for(int primaryi=0; primaryi<std::max(1,std::min(maxprimariestoprint,fNvtxs)); primaryi++){

@@ -1232,7 +1232,7 @@ void WCSimEventAction::FillRootEvent(G4int event_id,
       if (index >=1 ) {
 	wcsimrootsuperevent->AddSubEvent();
 	wcsimrootevent = wcsimrootsuperevent->GetTrigger(index);
-	wcsimrootevent->SetHeader(event_id,0,
+	wcsimrootevent->SetHeader(event_id,0,  // evtnum, run, date, subeventnum
 				   0,index+1); // date & # of subevent 
 	wcsimrootevent->SetMode(jhfNtuple.mode);
       }
@@ -1242,9 +1242,9 @@ void WCSimEventAction::FillRootEvent(G4int event_id,
   
 
   // Fill the header
-  // Need to add run and date
   wcsimrootevent = wcsimrootsuperevent->GetTrigger(0);
-  wcsimrootevent->SetHeader(event_id,0,0); // will be set later.
+  wcsimrootevent->SetHeader(event_id,0,0); // set evtnum, run=0, date=0, and subevtnum = 1<<< STARTS FROM 1
+                                           // Run and date are added below
 
   // add the information about upstream source
   G4String      dirtFileName = generatorAction->GetDirtFileName();
@@ -1627,7 +1627,7 @@ void WCSimEventAction::FillRootEvent(G4int event_id,
 	       <<" get ntracks = " <<  wcsimrootevent->GetNtrack() << "\n";
 #endif
 	gatestart = WCTM->GetTriggerTime(index);
-	WCSimRootEventHeader*HH = wcsimrootevent->GetHeader();
+	WCSimRootEventHeader *HH = wcsimrootevent->GetHeader();
 	HH->SetDate(int(gatestart));
       }//index (loop over ngates)
     
