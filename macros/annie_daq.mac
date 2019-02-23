@@ -14,6 +14,8 @@
 
 ## configure prompt trigger. This may be enabled for all triggers EXCEPT NoTrigger
 /DAQ/PromptTrigger/Enable true                    # enable recording mrd digits in a prompt beam trigger window
+/DAQ/PromptTrigger/PreTriggerWindow -100          # some times are smeared to negative: assuming from 0 misses digits
+
 /DAQ/PromptTrigger/PostTriggerWindow 2000         # 2us prompt trigger window duration
 
 # settings for delayed NDigits events

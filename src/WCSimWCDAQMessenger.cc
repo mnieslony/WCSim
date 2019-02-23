@@ -190,12 +190,11 @@ void WCSimWCDAQMessenger::Initialize(G4String detectorElementin)
     PromptTriggerEnable->SetParameterName("PromptTriggerEnable",true);
     PromptTriggerEnable->SetDefaultValue(defaultPromptTrigger);
 
-/// removed: this doesn't really make sense if the trigger is prompt; i.e. occurs at time 0
-//    PromptPreTriggerWindow = new G4UIcmdWithAnInteger("/DAQ/PromptTrigger/PreTriggerWindow", this);
-//    PromptPreTriggerWindow->SetGuidance("Set the prompt pretrigger window (in ns)");
-//    PromptPreTriggerWindow->SetParameterName("PromptPreTriggerWindow",false);
-//    PromptPreTriggerWindow->SetDefaultValue(defaultPromptPreTriggerWindow);
-//    //don't SetNewValue -> defaults class-specific and taken from GetDefault*()
+    PromptPreTriggerWindow = new G4UIcmdWithAnInteger("/DAQ/PromptTrigger/PreTriggerWindow", this);
+    PromptPreTriggerWindow->SetGuidance("Set the prompt pretrigger window (in ns)");
+    PromptPreTriggerWindow->SetParameterName("PromptPreTriggerWindow",false);
+    PromptPreTriggerWindow->SetDefaultValue(defaultPromptPreTriggerWindow);
+    //don't SetNewValue -> defaults class-specific and taken from GetDefault*()
 
     PromptPostTriggerWindow = new G4UIcmdWithAnInteger("/DAQ/PromptTrigger/PostTriggerWindow", this);
     PromptPostTriggerWindow->SetGuidance("Set the prompt posttrigger window (in ns)");
@@ -289,7 +288,7 @@ WCSimWCDAQMessenger::~WCSimWCDAQMessenger()
   if(NDigitsPostTriggerWindow){ delete NDigitsPostTriggerWindow; NDigitsPostTriggerWindow=nullptr; }
 
   if(PromptTriggerEnable){ delete PromptTriggerEnable; PromptTriggerEnable=nullptr; }
-//  if(PromptPreTriggerWindow){ delete PromptPreTriggerWindow; PromptPreTriggerWindow=nullptr; }
+  if(PromptPreTriggerWindow){ delete PromptPreTriggerWindow; PromptPreTriggerWindow=nullptr; }
   if(PromptPostTriggerWindow){ delete PromptPostTriggerWindow; PromptPostTriggerWindow=nullptr; }
 
   if(DigitizerDir){ delete DigitizerDir; DigitizerDir=nullptr; }
@@ -420,10 +419,10 @@ void WCSimWCDAQMessenger::SetNewValue(G4UIcommand* command,G4String newValue)
     G4cout << "Will " << ((StoredOptions.at(detectorElement).StorePromptTrigger) ? "" : "not ") 
            << "add a prompt trigger window at the start of the event" << initialiseString.c_str() << G4endl;
   }
-//  else if (command == PromptPreTriggerWindow) {
-//    G4cout << "Prompt pretrigger window set to " << newValue << " ns" << initialiseString.c_str() << G4endl;
-//    StoredOptions.at(detectorElement).StorePromptPreWindow = PromptPreTriggerWindow->GetNewIntValue(newValue);
-//  }
+  else if (command == PromptPreTriggerWindow) {
+    G4cout << "Prompt pretrigger window set to " << newValue << " ns" << initialiseString.c_str() << G4endl;
+    StoredOptions.at(detectorElement).StorePromptPreWindow = PromptPreTriggerWindow->GetNewIntValue(newValue);
+  }
   else if (command == PromptPostTriggerWindow) {
     G4cout << "Prompt posttrigger window set to " << newValue << " ns" << initialiseString.c_str() << G4endl;
     StoredOptions.at(detectorElement).StorePromptPostWindow = PromptPostTriggerWindow->GetNewIntValue(newValue);
@@ -463,7 +462,7 @@ void WCSimWCDAQMessenger::SetTriggerOptions(G4String detectorElementin)
   WCSimTrigger->SetSaveFailuresTime(StoredOptions.at(detectorElement).StoreSaveFailuresTime);
   G4cout << "\tTrigger time for events which fail all triggers will be set to " 
          << StoredOptions.at(detectorElement).StoreSaveFailuresTime << " ns" << G4endl;
-  if(StoredOptions.at(detectorElement).StoreSaveFailuresPreWindow >= -1E6) {
+  if(StoredOptions.at(detectorElement).StoreSaveFailuresPreWindow > -1E6) {
     WCSimTrigger->SetSaveFailuresPreTriggerWindow(StoredOptions.at(detectorElement).StoreSaveFailuresPreWindow);
     G4cout << "\tSaveFailures pretrigger window set to " 
            << StoredOptions.at(detectorElement).StoreSaveFailuresPreWindow << " ns" << G4endl;
@@ -487,7 +486,7 @@ void WCSimWCDAQMessenger::SetTriggerOptions(G4String detectorElementin)
     G4cout << "\tNDigits trigger window set to " 
            << StoredOptions.at(detectorElement).StoreNDigitsWindow << " ns" << G4endl;
   }
-  if(StoredOptions.at(detectorElement).StoreNDigitsPreWindow >= 0) {
+  if(StoredOptions.at(detectorElement).StoreNDigitsPreWindow > -1E6) {
     WCSimTrigger->SetNDigitsPreTriggerWindow(StoredOptions.at(detectorElement).StoreNDigitsPreWindow);
     G4cout << "\tNDigits pretrigger window set to " 
            << StoredOptions.at(detectorElement).StoreNDigitsPreWindow << " ns" << G4endl;
@@ -501,12 +500,12 @@ void WCSimWCDAQMessenger::SetTriggerOptions(G4String detectorElementin)
   WCSimTrigger->SetRecordPromptWindow(StoredOptions.at(detectorElement).StorePromptTrigger);
   G4cout << "\tWill "<<((StoredOptions.at(detectorElement).StorePromptTrigger) ? "" : "not ") 
          << "add a prompt trigger window at the start of the event" << G4endl;
-  if(StoredOptions.at(detectorElement).StoreNDigitsPreWindow >= 0) {
+  if(StoredOptions.at(detectorElement).StorePromptPreWindow > -1E6) {
     WCSimTrigger->SetPromptPreTriggerWindow(StoredOptions.at(detectorElement).StorePromptPreWindow);
     G4cout << "\tPrompt pretrigger window set to " 
            << StoredOptions.at(detectorElement).StorePromptPreWindow << " ns" << G4endl;
   }
-  if(StoredOptions.at(detectorElement).StoreNDigitsPostWindow >= 0) {
+  if(StoredOptions.at(detectorElement).StorePromptPostWindow >= 0) {
     WCSimTrigger->SetPromptPostTriggerWindow(StoredOptions.at(detectorElement).StorePromptPostWindow);
     G4cout << "\tPrompt posttrigger window set to " 
            << StoredOptions.at(detectorElement).StorePromptPostWindow << " ns" << G4endl;

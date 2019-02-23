@@ -19,19 +19,19 @@ class WCSimWCTriggerBase;
 struct OptionsStore{
   // Trigger options
   G4int                 StoreNDigitsPostWindow;
-  G4int                 StoreNDigitsPreWindow;
+  G4int                 StoreNDigitsPreWindow=-1E6;
   G4bool                StoreNDigitsAdjustForNoise;
   G4int                 StoreNDigitsWindow;
   G4int                 StoreNDigitsThreshold;
   G4int                 StoreSaveFailuresPostWindow;
-  G4int                 StoreSaveFailuresPreWindow;
+  G4int                 StoreSaveFailuresPreWindow=-1E6;
   G4double              StoreSaveFailuresTime;
   G4int                 StoreSaveFailuresMode;
   G4String              StoreTriggerChoice;
   G4bool                StoreMultiDigitsPerTrigger;
   G4bool                MultiDigitsPerTriggerSet;
   G4bool                StorePromptTrigger;
-  G4int                 StorePromptPreWindow;
+  G4int                 StorePromptPreWindow=-1E6;
   G4int                 StorePromptPostWindow;
   // Digitizer options
   G4int                 StoreDigitizerIntegrationWindow;
@@ -95,7 +95,7 @@ private:
   G4UIcmdWithAnInteger* NDigitsPreTriggerWindow;
   G4UIcmdWithAnInteger* NDigitsPostTriggerWindow;
   G4UIcmdWithABool*     PromptTriggerEnable;
-//  G4UIcmdWithAnInteger* PromptPreTriggerWindow;
+  G4UIcmdWithAnInteger* PromptPreTriggerWindow;
   G4UIcmdWithAnInteger* PromptPostTriggerWindow;
   
   G4UIcmdWithAString*   SetDetectorElement;
