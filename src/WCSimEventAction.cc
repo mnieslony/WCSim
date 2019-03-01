@@ -133,6 +133,51 @@ WCSimEventAction::WCSimEventAction(WCSimRunAction* myRun,
   lappdhit_objnum = new G4int[klappdhitnmax];     // which geometry object was hit?
   //lappdhit_copynum = new G4int[klappdhitnmax];    // which copy was hit?
   }
+  
+  // Read files if present that tell us where the upstream files came from (for grid jobs)
+  std::ifstream fin ("geniedirectory.txt"); // look for a file with this name in build dir
+  if(not fin.is_open()){
+    G4cout<<"WARNING: No geniedirectory.txt file found, upstream file path will not be recorded!"<<G4endl;
+  } else {
+    std::string Line;
+    std::stringstream ssL;
+    genieDirectory="";
+    while (getline(fin, Line)){
+      if (Line.empty()) continue;    // skip empty lines
+      if (Line[0] == '#') continue;  // skip comment lines
+      ssL.str("");                   // empty the stringstream
+      ssL.clear();                   // clear the IO error status
+      ssL << Line;                   // read the line
+      if (ssL.str() != ""){          // skip empty lines
+        ssL >> genieDirectory;       // space delimited
+        break;                       // take the first accepted line
+      }
+    }
+    G4cout<<"Upstream genie directory is: "<<genieDirectory<<G4endl;
+    fin.close();
+  }
+  // repeat for the dirt directory
+  fin.open("dirtdirectory.txt");
+  if(not fin.is_open()){
+    G4cout<<"WARNING: No dirtdirectory.txt file found, upstream file path will not be recorded!"<<G4endl;
+  } else {
+    std::string Line;
+    std::stringstream ssL;
+    dirtDirectory="";
+    while (getline(fin, Line)){
+      if (Line.empty()) continue;    // skip empty lines
+      if (Line[0] == '#') continue;  // skip comment lines
+      ssL.str("");                   // empty the stringstream
+      ssL.clear();                   // clear the IO error status
+      ssL << Line;                   // read the line
+      if (ssL.str() != ""){          // skip empty lines
+        ssL >> dirtDirectory;        // space delimited
+        break;                       // take the first accepted line
+      }
+    }
+    G4cout<<"Upstream dirt directory is: "<<dirtDirectory<<G4endl;
+    fin.close();
+  }
 
 }
 
@@ -1252,8 +1297,8 @@ void WCSimEventAction::FillRootEvent(G4int event_id,
   G4int      dirtEventNumber = generatorAction->GetDirtEntryNum();
   G4int     genieEventNumber = generatorAction->GetGenieEntryNum();
   WCSimRootEventHeader* theheader = wcsimrootevent->GetHeader();
-  theheader->SetDirtFileName(dirtFileName);
-  theheader->SetGenieFileName(genieFileName);
+  theheader->SetDirtFileName(dirtDirectory+"/"+dirtFileName);
+  theheader->SetGenieFileName(genieDirectory+"/"+genieFileName);
   theheader->SetDirtEntryNum(dirtEventNumber);
   theheader->SetGenieEntryNum(genieEventNumber);
 
