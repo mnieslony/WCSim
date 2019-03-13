@@ -27,6 +27,12 @@ public:
   virtual ~WCSimRootOptions();
   void Print(Option_t *option = "") const;
 
+  //General sets
+  void SetCommitHash(string iCommitHash){CommitHash=iCommitHash;}
+  void SetWCSimVersion(double iWCSimVersion){WCSimVersion=iWCSimVersion;}
+  //General gets
+  double GetWCSimVersion(){return WCSimVersion;}
+  string GetCommitHash(){return CommitHash;}
   //WCSimDetector* gets
   void SetDetectorName(string iDetectorName) {DetectorName = iDetectorName;}
   void SetSavePi0(bool iSavePi0) {SavePi0 = iSavePi0;}
@@ -133,6 +139,9 @@ public:
   WCSimRandomGenerator_t GetRandomGenerator() {return RandomGenerator;}
 
 private:
+  //WCSim General
+  string CommitHash;  // git tag of this commit
+  double WCSimVersion;
   //WCSimDetector*
   string DetectorName;
   bool   SavePi0;
