@@ -65,6 +65,22 @@
 /vis/geometry/set/colour ANNIEp2v6-glassFaceWCONLYLAPPDS -1 0.6 0.6 0.6 1
 /vis/geometry/set/colour ANNIEp2v6-glassFaceWCPMT_EMI9954KB -1 1.0 0.3 .3 1
 
+# MRD
+#/vis/geometry/set/forceSolid hpaddle_log -1 1
+#/vis/geometry/set/forceSolid vpaddle_log -1 1
+#/vis/geometry/set/forceSolid vpaddle_log2 -1 1
+#/vis/geometry/set/forceSolid steel_log -1 1
+#/vis/geometry/set/forceSolid aluStruct -1 1
+#/vis/geometry/set/colour hpaddle_log -1 0.5 0.3 0.7 0.5
+#/vis/geometry/set/colour vpaddle_log -1 1.0 0.5 0.5 0.5
+#/vis/geometry/set/colour vpaddle_log2 -1 0.3 0.7 0.5 0.5
+#/vis/geometry/set/colour taper_log -1 0.3 0.3 0.3 0.4
+#/vis/geometry/set/colour lg_log -1 0.6 0.6 0.3 0.4
+#/vis/geometry/set/colour lg_log2 -1 0.8 0.6 0.4 0.4
+#/vis/geometry/set/colour steel_log -1 0.3 0.3 0.3 0.4
+#/vis/geometry/set/colour aluStruct -1 0.7 0.7 0.7 0.4
+#/vis/geometry/set/colour ANNIEp2v6-glassFaceWCPMT_MRD -1 0.7 0.7 0.7 0.3
+
 ## make things invisible
 #/vis/geometry/set/visibility WC -1 0             # entire tank
 #/vis/geometry/set/colour totMRDlog -1 0 0 0 0
