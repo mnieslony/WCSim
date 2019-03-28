@@ -19,6 +19,12 @@ using std::cout;
 WCSimRootOptions::WCSimRootOptions()
 {
   // Create a WCSimRootOptions object.
+}
+
+//______________________________________________________________________________
+void WCSimRootOptions::PopulateFileVersion()
+{
+  // Populate the WCSimVersion and CommitHash members
   
   // Retrieve the WCSimVersion number from file:
   std::string filepath = "WCSimVersion.txt"; // this file stores a double we can compare within code

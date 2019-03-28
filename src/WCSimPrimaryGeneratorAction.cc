@@ -21,6 +21,7 @@
 #include "G4SystemOfUnits.hh"
 #include "G4PhysicalConstants.hh"
 #include <math.h> 
+#include <libgen.h>
 
 #include "G4Navigator.hh"
 #include "G4TransportationManager.hh"
@@ -408,7 +409,8 @@ void WCSimPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 			G4cout<< "Reached end of Tree. Last entries' tree number was "
 						<< treeNumber <<", this entries' tree number is "<< nextTreeNumber <<G4endl;
 			dirtFileName = inputdata->GetCurrentFile()->GetName(); // new tree, new file
-			G4cout<<"Getting new tree branches"<<G4endl;
+			char* dirtFileNameAsChar = strdup(dirtFileName.c_str());
+			dirtFileName = basename(dirtFileNameAsChar);
 			inputdata->SetBranchAddress("run",&runbranchval,&runBranch);
 			inputdata->SetBranchAddress("ntank",&ntankbranchval,&nTankBranch);
 			inputdata->SetBranchAddress("nupdg",&nupdgval,&nupdgBranch);
@@ -984,6 +986,8 @@ void WCSimPrimaryGeneratorAction::LoadNewPrimaries(){
 	treeNumber=inputdata->GetTreeNumber();
 	localEntry = inputdata->LoadTree(inputEntry);
 	dirtFileName = inputdata->GetCurrentFile()->GetName(); // new tree, new file
+	char* dirtFileNameAsChar = strdup(dirtFileName.c_str());
+	dirtFileName = basename(dirtFileNameAsChar);
 	
 	loadNewPrimaries=false;
 }

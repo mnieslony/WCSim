@@ -26,6 +26,7 @@ public:
   WCSimRootOptions();
   virtual ~WCSimRootOptions();
   void Print(Option_t *option = "") const;
+  void PopulateFileVersion(); // helper function to populate these members
 
   //General sets
   void SetCommitHash(string iCommitHash){CommitHash=iCommitHash;}
