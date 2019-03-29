@@ -93,14 +93,14 @@ void WCSimRootOptions::PopulateFileVersion()
     command = "which git >> /dev/null";
     int dont_have_git = system(command.c_str());  // returns 0 if we *do* have git
     if(dont_have_git) return; // can't do anything more without git
-    command  = "(cd ${WCSIMDIR}/ && git diff --exit-code && return $?)";
-    int unstaged_changes = system(command.c_str());
-    command  = "(cd ${WCSIMDIR}/ && git diff --cached --exit-code && return $?)";
-    int staged_changes = system(command.c_str());
-    // more general command to also check for added/removed files, but still ignoring untracked files
-    command = "(cd ${WCSIMDIR}/ && [ -z \"$(git status -uno --porcelain)\" ] && return $?)";
+    //command  = "(cd ${WCSIMDIR}/ && git diff --exit-code > /dev/null )";
+    //int unstaged_changes = system(command.c_str());
+    //command  = "(cd ${WCSIMDIR}/ && git diff --cached --exit-code > /dev/null )";
+    //int staged_changes = system(command.c_str());
+    //command = "(cd ${WCSIMDIR}/ && rm -f gitstatusstring.txt && git status -uno --porcelain > gitstatusstring.txt && [ -s gitstatusstring.txt ] && rm gitstatusstring.txt)";
+    command = "(cd ${WCSIMDIR}/ && rm -f gitstatusstring.txt && git diff HEAD > gitstatusstring.txt && if [ -s gitstatusstring.txt ]; then /bin/false; fi )";
     int any_changes = system(command.c_str());
-    if(unstaged_changes||staged_changes||any_changes){
+    if(any_changes){
       std::cerr<<"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! "<<std::endl;
       std::cerr<<"WARNING: THERE ARE UNCOMMITTED CHANGES TO THE SOURCE FILES"<<std::endl;
       std::cerr<<"    WCSimRootOptions::CommitHash WILL NOT BE ACCURATE!"<<std::endl;
