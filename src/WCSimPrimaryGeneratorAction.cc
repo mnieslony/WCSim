@@ -567,7 +567,7 @@ void WCSimPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 			if(nuprimarybranchval[i]==1){ primariesinthisentry=true; break; }
 		}
 		if(!primariesinthisentry){ // not genie primaries... (this shouldn't happen)
-			//G4cout<<"---------------SKIPPING NON-TANK ENTRY----------------"<<G4endl;
+			G4cout<<"---------------SKIPPING ENTRY WITH NO GENIE PRIMARIES----------------"<<G4endl;
 			inputEntry++;
 			localEntry = inputdata->LoadTree(inputEntry);
 			if(localEntry<0){
@@ -584,10 +584,10 @@ void WCSimPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 		// ensure the event has at least one muon and skip it if not
 		Bool_t muonsinthisentry=false;
 		for(int i=0;i<ntankbranchval;i++){
-			if(pdgbranchval[i]==1){ muonsinthisentry=true; break; }
+			if(pdgbranchval[i]==13){ muonsinthisentry=true; break; }
 		}
 		if(!muonsinthisentry){ // no muons in the event
-			//G4cout<<"---------------SKIPPING ENTRY WITH NO MUONS ----------------"<<G4endl;
+			G4cout<<"---------------SKIPPING ENTRY WITH NO MUONS ----------------"<<G4endl;
 			inputEntry++;
 			localEntry = inputdata->LoadTree(inputEntry);
 			if(localEntry<0){
@@ -599,7 +599,6 @@ void WCSimPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 				G4cout<<"@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#"<<G4endl;
 			} else { goto loadbeamentry; } // load the next entry
 		}
-		goto loadbeamentry; 
 #endif
 		// First the genie information (largely unused as not currently stored in wcsim output)
 		// ===========================
