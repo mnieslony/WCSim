@@ -158,6 +158,8 @@ G4LogicalVolume* WCSimDetectorConstruction::ConstructANNIECylinder()
 						  logicWCBarrel,
 						  false,
 						  0,true);
+	G4cout<<"Constructed barrel cell blacksheet with radius "<<WCIDRadius<<" to "<<(WCIDRadius+WCBlackSheetThickness)<<G4endl;
+	WCCylInfo[2]=WCIDRadius/10.;
 	
 	G4LogicalBorderSurface * WaterBSBarrelCellSurface 
 		= new G4LogicalBorderSurface("WaterBSBarrelCellSurface",
@@ -428,6 +430,8 @@ void WCSimDetectorConstruction::ConstructANNIECaps(G4int zflip)
 						  false,
 						  0,
 						  true);
+	G4cout<<"constructed cap blacksheet at height "<<capAssemblyHeight*zflip+InnerStructureCentreOffset<<G4endl;
+	WCCylInfo[(zflip>0)]=(capAssemblyHeight*zflip+InnerStructureCentreOffset)/10.;
 	
 	G4LogicalBorderSurface * WaterBSBottomCapSurface 
 			= new G4LogicalBorderSurface("WaterBSCapPolySurface",

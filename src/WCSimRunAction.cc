@@ -188,8 +188,13 @@ void WCSimRunAction::FillGeoTree(){
 
   if (geo_type == 0) {
       //cylinder
-      cylinfo[1] = wcsimdetector->GetGeo_Dm(3);
-      cylinfo[2] = wcsimdetector->GetGeo_Dm(2);
+      if(not isANNIE){
+        cylinfo[1] = wcsimdetector->GetGeo_Dm(3);
+        cylinfo[2] = wcsimdetector->GetGeo_Dm(2);
+      } else {
+        cylinfo[1] = wcsimdetector->GetGeo_Dm(2);
+        cylinfo[2] = abs(wcsimdetector->GetGeo_Dm(0)- wcsimdetector->GetGeo_Dm(1));
+      }
       wcsimrootgeom-> SetWCCylRadius(cylinfo[1]);
       wcsimrootgeom-> SetWCCylLength(cylinfo[2]);
   }

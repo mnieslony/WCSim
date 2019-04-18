@@ -59,6 +59,7 @@ void WCSimDetectorConstruction::GetWCGeom
     // Stash info in data member
     // AH Need to store this in CM for it to be understood by SK code
     WCPMTSize = WCPMTRadius/CLHEP::cm;// I think this is just a variable no if needed
+    WCLAPPDSize = WCLAPPDRadius/CLHEP::cm;// I think this is just a variable no if needed
 
 
     // Note WC can be off-center... get both extremities
@@ -70,20 +71,10 @@ void WCSimDetectorConstruction::GetWCGeom
         ymin=100000,ymax=-100000.; 
         zmin=100000,zmax=-100000.; 
     }
-
-     
-    WCLAPPDSize = WCLAPPDRadius/CLHEP::cm;// I think this is just a variable no if needed
-    // Note WC can be off-center... get both extremities
-    static G4float zmin2=100000,zmax2=-100000.;
-    static G4float xmin2=100000,xmax2=-100000.;
-    static G4float ymin2=100000,ymax2=-100000.;
-    if (aDepth == 0) { // Reset for this traversal
-        xmin2=100000,xmax2=-100000.; 
-        ymin2=100000,ymax2=-100000.; 
-        zmin2=100000,zmax2=-100000.; 
-    }
     //-----
-    if ((aPV->GetName() == "WCCapBlackSheet") || (aPV->GetName().find("glassFaceWCPMT") != std::string::npos)){ 
+    if( ((aPV->GetName()==("WCCapBlackSheet")) || (aPV->GetName().find("glassFaceWCPMT") != std::string::npos)
+          || (aPV->GetName().find("glassFaceWCONLYLAPPDS") != std::string::npos)) &&
+        ((aPV->GetName().find("MRD")==std::string::npos) && (aPV->GetName().find("FACC")==std::string::npos))  ){ 
       G4float x =  aTransform.getTranslation().getX()/CLHEP::cm;
       G4float y =  aTransform.getTranslation().getY()/CLHEP::cm;
       G4float z =  aTransform.getTranslation().getZ()/CLHEP::cm;
@@ -99,31 +90,29 @@ void WCSimDetectorConstruction::GetWCGeom
       
 
  
-      WCCylInfo[0] = xmax-xmin;
-      WCCylInfo[1] = ymax-ymin;
-      WCCylInfo[2] = zmax-zmin;
+//      G4ThreeVector oldextents(WCCylInfo[0],WCCylInfo[1],WCCylInfo[2]);
+      if(not isANNIE){
+        WCCylInfo[0] = xmax-xmin;
+        WCCylInfo[1] = ymax-ymin;
+        WCCylInfo[2] = zmax-zmin;
+      } // this just doesn't work for ANNIE - instead we'll set them in ConstructANNIECylinder
+//      G4ThreeVector newextents(WCCylInfo[0],WCCylInfo[1],WCCylInfo[2]);
+//      if(oldextents!=newextents){
+//        G4cout<<"updated cylinder extents based on "<<aPV->GetName()<<" at ("
+//              <<x<<", "<<y<<", "<<z<<"). Old extents were ("
+//              <<oldextents.getX()<<", "<<oldextents.getY()<<", "<<oldextents.getZ()<<"), new extents are ("
+//              <<newextents.getX()<<", "<<newextents.getY()<<", "<<newextents.getZ()<<") from ("
+//              <<xmin<<", "<<ymin<<", "<<zmin<<") to ("<<xmax<<", "<<ymax<<", "<<zmax<<") "<<G4endl;
+//      }
+//      if(aPV->GetName().find("BlackSheet") != std::string::npos){
+//        G4cout<<"found blacksheet volume: "<<aPV->GetName()<<" at ("
+//              <<x<<", "<<y<<", "<<z<<"). Old extents were ("
+//              <<oldextents.getX()<<", "<<oldextents.getY()<<", "<<oldextents.getZ()<<"), new extents are ("
+//              <<newextents.getX()<<", "<<newextents.getY()<<", "<<newextents.getZ()<<") from ("
+//              <<xmin<<", "<<ymin<<", "<<zmin<<") to ("<<xmax<<", "<<ymax<<", "<<zmax<<") "<<G4endl;
+//      }
       //      G4cout << "determin hight: " << zmin << "  " << zmax << " " << aPV->GetName()<<" " << z  << G4endl;
   } 
-    if( (aPV->GetName().find("glassFaceWCONLYLAPPDS") != std::string::npos)){ 
-      G4float x2 =  aTransform.getTranslation().getX()/CLHEP::cm;
-      G4float y2 =  aTransform.getTranslation().getY()/CLHEP::cm;
-      G4float z2 =  aTransform.getTranslation().getZ()/CLHEP::cm;
-      //G4cout<<"x2= "<<x2<<" y2= "<<y2<<" z2= "<<z2<<G4endl;
-      
-      if (x2<xmin2){xmin2=x2;}
-      if (x2>xmax2){xmax2=x2;}
-      
-      if (y2<ymin2){ymin2=y2;}
-      if (y2>ymax2){ymax2=y2;}
-
-      if (z2<zmin2){zmin2=z2;}
-      if (z2>zmax2){zmax2=z2;}
-       
-      WCCylInfo[0] = xmax2-xmin2;
-      WCCylInfo[1] = ymax2-ymin2;
-      WCCylInfo[2] = zmax2-zmin2;
-      // G4cout << "LAPPD WCCylInfo: " << zmin << "  " << zmax << " " << aPV->GetName()<< G4endl;
-    }
 }
 
 void WCSimDetectorConstruction::DescribeAndRegisterPMT(G4VPhysicalVolume* aPV ,int aDepth, int replicaNo,
