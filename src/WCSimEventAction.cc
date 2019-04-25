@@ -1470,12 +1470,12 @@ void WCSimEventAction::FillRootEvent(G4int event_id,
         }
         
         // Add the track to the TClonesArray, watching out for times
-        if( (ipnu==22) && 
-            (trj->GetCreatorProcessName()=="nCapture") && 
-            (detectorConstructor->SaveCaptureInfo()==false)
+        if( (ipnu==22) &&                                      // if it's a gamma
+            (trj->GetCreatorProcessName()=="nCapture") &&      // from ncapture
+            (detectorConstructor->SaveCaptureInfo()==false)    // but SaveCaptureInfo is *false*
           ){
-            // do not save nCapture gammas if SaveCaptureInfo is false
-        } else {
+            /* do nothing */                                   // ignore it
+        } else {                                               // otherwise, save it
           
           G4String startProcess = trj->GetCreatorProcessName();
           G4String endProcess = trj->GetCurrentProcess();
@@ -1517,24 +1517,24 @@ void WCSimEventAction::FillRootEvent(G4int event_id,
         }
         
         
-        if (detectorConstructor->SavePi0Info() == true){
-          G4cout<<"Pi0 parentType: " << parentType <<G4endl;
-          if (parentType == 111){
-            if (r>1){
+        if (detectorConstructor->SavePi0Info() == true){         // if we're saving pi0 gammas separately as well
+          G4cout<<"Pi0 parentType: " << parentType <<G4endl;     // (technically, if we're saving pi0 daughters)
+          if (parentType == 111){  // pi0                        // and this particle's parent was a pi0
+            if (r>1){                                            // complain if we've found more than 2 daughters
               G4cout<<"WARNING: more than 2 primary gammas found"<<G4endl;
             } else {
               for (int y=0;y<3;y++){
-                pi0Vtx[y] = start[y];
-                gammaVtx[r][y] = stop[y];
+                pi0Vtx[y] = start[y];                            // pi0 decay vtx is gamma start vtx
+                gammaVtx[r][y] = stop[y];                        // gamma vtx is gamma stop vtx
               }
               
-              gammaID[r] = id;
-              gammaE[r] = energy;
+              gammaID[r] = id;                                   // track ID of gamma in WCSimRootTrack array
+              gammaE[r] = energy;                                // gamma energy
               r++;
               
               //amb79
               G4cout<<"Pi0 data: " << id <<G4endl;
-              wcsimrootevent->SetPi0Info(pi0Vtx, gammaID, gammaE, gammaVtx);
+              wcsimrootevent->SetPi0Info(pi0Vtx, gammaID, gammaE, gammaVtx);  // record the gamma
             }
           }
         }
