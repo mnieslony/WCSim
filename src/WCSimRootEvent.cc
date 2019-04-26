@@ -269,7 +269,10 @@ WCSimRootTrack *WCSimRootTrigger::AddTrack(Int_t ipnu,
 					   Float_t time2,
 					   Int_t id,
 					   std::string sProcess,
-					   std::string eProcess)
+					   std::string eProcess,
+					   Float_t tankexitp[3],
+					   Double_t tankexite,
+					   Float_t tankexitmom[3])
 {
   // Add a new WCSimRootTrack to the list of tracks for this event.
   // To avoid calling the very time consuming operator new for each track,
@@ -298,7 +301,10 @@ WCSimRootTrack *WCSimRootTrigger::AddTrack(Int_t ipnu,
 					   time2,
 					   id,
 					   sProcess,
-					   eProcess);
+					   eProcess,
+					   tankexitp,
+					   tankexite,
+					   tankexitmom);
 
   return track;
 }
@@ -350,7 +356,9 @@ void WCSimRootTrigger::Print(int verbosity, int maxprimariestoprint, int maxtrac
     //Float_t   GetTime()             trj->GetGlobalTime(); starting time of particle
     //Float_t   GetStopTime()
     //Int_t     GetId()               wcsim trackid
-    // 
+    //Float_t   GetTankExitPos(Int_t i=0) exit pos, in cm
+    //Double_t  GetTankExitE()        relativistic energy at exit pos
+    //Float_t   GetTankExitMom(Int_t i=0) 3-momentum at exit pos
     //GetFlag=-1; neutrino.           This should be the neutrino. Only stop vertex is stored.
     //GetFlag=-2; primary target.     This is the target nucleus, or if none, a proton. Only stop vertex stored.
     //GetFlag= 0; any other track.    ALL PRIMARY TRACKS ALSO GET STORED HERE.
@@ -410,7 +418,10 @@ WCSimRootTrack::WCSimRootTrack(Int_t ipnu,
 				 Float_t time2,
 				 Int_t id,
 				 std::string sProcess,
-				 std::string eProcess)
+				 std::string eProcess,
+				 Float_t tankexitp[3],
+				 Double_t tankexite,
+				 Float_t tankexitmom[3])
 {
 
   // Create a WCSimRootTrack object and fill it with stuff
@@ -432,6 +443,8 @@ WCSimRootTrack::WCSimRootTrack(Int_t ipnu,
     fPdir2[i] = pdir2[i]; 
     fStop[i] = stop[i]; 
     fStart[i] = start[i];
+    fTankExitPos[i] = tankexitp[i];
+    fTankExitMom[i] = tankexitmom[i];
   }
   fParenttype = parenttype;
   fTime = time;
@@ -439,6 +452,7 @@ WCSimRootTrack::WCSimRootTrack(Int_t ipnu,
   fId = id;
   fStartProcess = sProcess;
   fEndProcess = eProcess;
+  fTankExitE = tankexite;
 }
 
 //_____________________________________________________________________________

@@ -1360,7 +1360,10 @@ void WCSimEventAction::FillRootEvent(G4int event_id,
                                0,                         // stopping time not stored in jhfNtuple
                                0,                         // WCSim TrackID not applicable
                                "",                        // creator process name
-                               "NuIntx");                 // end process name
+                               "NuIntx",                  // end process name
+                               pdir2,                     // tank exit position (N/A)
+                               0,                         // tank exit energy (relativistic)
+                               pdir2);                    // tank exit 3-momentum (N/A)
     }
     
     // the rest of the tracks come from WCSimTrajectory
@@ -1424,6 +1427,9 @@ void WCSimEventAction::FillRootEvent(G4int event_id,
         G4double      energyend = sqrt(momend.mag2() + mass*mass);
         G4ThreeVector Stop   = trj->GetStoppingPoint();
         G4ThreeVector Start  = aa->GetPosition();
+        G4ThreeVector tankExitPos = trj->GetTankExitPoint();
+        G4ThreeVector tankExitMom = trj->GetMomentumOnTankExit();
+        G4double      tankExitE = (tankExitPos==G4ThreeVector()) ? 0 : sqrt(tankExitMom.mag2() + mass*mass);
         
         G4String stopVolumeName = trj->GetStoppingVolume()->GetName();
         G4int    stopvol, startvol;
@@ -1459,6 +1465,8 @@ void WCSimEventAction::FillRootEvent(G4int event_id,
         float pdir2[3];
         float stop[3];
         float start[3];
+        float tankexit[3];
+        float tankexitp[3];
         for (int l=0;l<3;l++)
         {
           dir[l]= (mommag!=0) ? mom[l]/mommag : 0; // direction 
@@ -1467,6 +1475,8 @@ void WCSimEventAction::FillRootEvent(G4int event_id,
           stop[l]=Stop[l]/CLHEP::cm; // stopping point 
           start[l]=Start[l]/CLHEP::cm; // starting point 
           //G4cout<<"part 2 start["<<l<<"]: "<< start[l] <<G4endl;
+          tankexit[l]=tankExitPos[l]/CLHEP::cm; // 
+          tankexitp[l]=tankExitMom[l];
         }
         
         // Add the track to the TClonesArray, watching out for times
@@ -1513,12 +1523,15 @@ void WCSimEventAction::FillRootEvent(G4int event_id,
                                    ttimeend,      // end time (global)
                                    id,            // wcsim TrackID
                                    startProcess,  // start process name
-                                   endProcess);   // end process name
+                                   endProcess,    // end process name
+                                   tankexit,      // tank exit position
+                                   tankExitE,     // tank exit energy (relativistic)
+                                   tankexitp);    // tank exit 3-momentum
         }
         
         
         if (detectorConstructor->SavePi0Info() == true){         // if we're saving pi0 gammas separately as well
-          G4cout<<"Pi0 parentType: " << parentType <<G4endl;     // (technically, if we're saving pi0 daughters)
+          //G4cout<<"Pi0 parentType: " << parentType <<G4endl;     // (technically, if we're saving pi0 daughters)
           if (parentType == 111){  // pi0                        // and this particle's parent was a pi0
             if (r>1){                                            // complain if we've found more than 2 daughters
               G4cout<<"WARNING: more than 2 primary gammas found"<<G4endl;
@@ -1533,7 +1546,7 @@ void WCSimEventAction::FillRootEvent(G4int event_id,
               r++;
               
               //amb79
-              G4cout<<"Pi0 data: " << id <<G4endl;
+              //G4cout<<"Pi0 data: " << id <<G4endl;
               wcsimrootevent->SetPi0Info(pi0Vtx, gammaID, gammaE, gammaVtx);  // record the gamma
             }
           }

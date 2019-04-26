@@ -47,6 +47,9 @@ private:
   Int_t fId;
   std::string fStartProcess;
   std::string fEndProcess;
+  Float_t fTankExitPos[3];
+  Double_t fTankExitE;
+  Float_t fTankExitMom[3];
 
 public:
   WCSimRootTrack() {}
@@ -69,7 +72,10 @@ public:
 		  Float_t endtime,
 		  Int_t id,
 		  std::string sProcess,
-		  std::string eProcess);
+		  std::string eProcess,
+		  Float_t tankexitp[3],
+		  Double_t tankexite,
+		  Float_t tankexitmom[3]);
   
   virtual ~WCSimRootTrack() { }
 
@@ -93,6 +99,9 @@ public:
   Int_t     GetId(){return fId;}
   std::string GetStartProcess(){return fStartProcess;}
   std::string GetEndProcess(){return fEndProcess;}
+  Float_t   GetTankExitPoint(Int_t i=0){return (i<3) ? fTankExitPos[i] : 0;}
+  Double_t  GetTankExitE(){return fTankExitE;}
+  Float_t   GetTankExitMom(Int_t i=0){return (i<3) ? fTankExitMom[i] : 0;}
   
   void Clear(Option_t *option ="");
 
@@ -433,7 +442,10 @@ public:
 				   Float_t time2,
 				   Int_t id,
 				   std::string sProcess,
-				   std::string eProcess);
+				   std::string eProcess,
+				   Float_t TankExitPoint[3],
+				   Double_t TankExitE,
+				   Float_t TankExitMom[3]);
 
   TClonesArray        *GetTracks() const {return fTracks;}
   

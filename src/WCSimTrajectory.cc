@@ -22,7 +22,8 @@ WCSimTrajectory::WCSimTrajectory()
      PDGEncoding( 0 ), PDGCharge(0.0), ParticleName(""),
      initialMomentum( G4ThreeVector() ), finalMomentum( G4ThreeVector() ),
      SaveIt(false),creatorProcess(""), 
-     globalTime(0.0), globalTimeEnd(0.), thisStepsProcess(""),lastStepsProcess("")
+     globalTime(0.0), globalTimeEnd(0.), thisStepsProcess(""),lastStepsProcess(""),
+     tankExitPoint(G4ThreeVector()), momentumOnTankExit(G4ThreeVector())
 {;}
 
 WCSimTrajectory::WCSimTrajectory(const G4Track* aTrack)
@@ -61,6 +62,8 @@ WCSimTrajectory::WCSimTrajectory(const G4Track* aTrack)
       thisStepsProcess=creatorProcess;
     }
   lastStepsProcess="";
+  momentumOnTankExit=G4ThreeVector();
+  tankExitPoint = G4ThreeVector();
 }
 
 WCSimTrajectory::WCSimTrajectory(WCSimTrajectory & right):G4VTrajectory()
@@ -81,6 +84,8 @@ WCSimTrajectory::WCSimTrajectory(WCSimTrajectory & right):G4VTrajectory()
   creatorProcess = right.creatorProcess;
   thisStepsProcess = right.thisStepsProcess;
   lastStepsProcess = right.lastStepsProcess;
+  momentumOnTankExit = right.momentumOnTankExit;
+  tankExitPoint    = right.tankExitPoint;
 
   for(size_t i=0;i<right.positionRecord->size();i++)
   {
@@ -204,6 +209,28 @@ void WCSimTrajectory::AppendStep(const G4Step* aStep)
   } else {
     thisStepsProcess="Undefined";
   }
+  
+  // record the track properties if this step was the particle leaving the tank
+  if(aStep->GetPostStepPoint()->GetStepStatus()==fGeomBoundary){  // if changing volumes
+    G4VPhysicalVolume* thePostPV = aStep->GetPostStepPoint()->GetPhysicalVolume();
+    //G4cout<<"Particle on boundary "<<aStep->GetPreStepPoint()->GetPhysicalVolume()->GetName()
+    //      <<" -> "<<((thePostPV) ? thePostPV->GetName() : "VOID")<<G4endl;
+    if(thePostPV==nullptr) return;                                // if exiting the world, nevermind
+    G4String thePostPVname = thePostPV->GetName();
+    if(thePostPVname=="Hall"){                                    // if entering the hall...
+      G4String thePrePVname  = aStep->GetPreStepPoint()->GetPhysicalVolume()->GetName();
+      if(thePrePVname=="waterTank"){                                 // from the tank...
+        if(tankExitPoint==G4ThreeVector()){
+          tankExitPoint = aStep->GetPostStepPoint()->GetPosition(); // record the properties
+          momentumOnTankExit = aStep->GetTrack()->GetMomentum();
+        } else {
+          // why are we exiting the tank again?
+          G4cerr<<"WCSimTrajectory::AppendStep with PrePV Tank and PostPV Hall called more than once?!"<<G4endl;
+        }  // already have a recorded tank exit
+      }    // else not exiting the tank
+    }      // else not entering the hall
+  }        // else not on a geometry boundary
+  
 }
 
 G4ParticleDefinition* WCSimTrajectory::GetParticleDefinition()
@@ -219,6 +246,18 @@ void WCSimTrajectory::MergeTrajectory(G4VTrajectory* secondTrajectory)
 
   stoppingPoint  = seco->stoppingPoint;
   stoppingVolume = seco->stoppingVolume;
+  if(seco->GetMomentumOnTankExit()!=G4ThreeVector()){
+    if(momentumOnTankExit!=G4ThreeVector()){
+      G4cerr<<"Mergeing two WCSimTrajectories that both have energyOnTankExit defined?!"<<G4endl;
+    }
+    momentumOnTankExit = seco->GetMomentumOnTankExit();
+  }
+  if(seco->GetTankExitPoint()!=G4ThreeVector()){
+    if(tankExitPoint!=G4ThreeVector()){
+       G4cerr<<"Merging two WCSimTrajectories that both have tankExitPoint defined?!"<<G4endl;
+    }
+    tankExitPoint = seco->GetTankExitPoint();
+  }
   
   G4int ent = seco->GetPointEntries();
   for(G4int i=1;i<ent;i++) // initial point of the second trajectory should not be merged
