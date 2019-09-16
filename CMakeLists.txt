@@ -197,6 +197,10 @@ set(WCSIM_SCRIPTS
   macros/setRandomParameters.mac
   pulsecharacteristics.root
   PHASE2_INNER_STRUCTURE.gdml
+  geniedirectory.txt
+  dirtdirectory.txt
+  WCSimVersion.txt
+  CommitHash.txt
   )
 
 foreach(_script ${WCSIM_SCRIPTS})

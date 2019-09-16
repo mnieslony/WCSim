@@ -88,7 +88,7 @@
 /WCSim/PMTCollEff on
 
 # command to choose save or not save the pi0 info 07/03/10 (XQ)
-/WCSim/SavePi0 false
+/WCSim/SavePi0 true
 
 ## select the input nuance-formatted vector file
 ## you can of course use your own
@@ -212,6 +212,23 @@
 #/gun/direction 0 0 1
 #/gun/position 50 50 -500 mm
 
+## Simulating CC1Pi events
+###################################################
+## Use a muon gun for testing scintillator elements
+#/mygen/generator gps
+#/gps/source/intensity 1
+#/gps/particle mu-
+#/gps/energy 500 MeV
+#/gps/direction 0 0 1
+#/gps/pos/centre 0 -14.46 168.1 cm
+#/gps/source/add 1
+#/gps/particle pi+
+#/gps/energy 200 MeV
+#/gps/ang/type iso
+#/gps/pos/centre 0 -14.46 168.1 cm
+## generate both particles in every event; don't randomly choose
+#/gps/source/multiplevertex true
+
 ## Isotropic electron swarm within tank for Bonsai training
 ############################################################
 # use laser for bonsai 
@@ -263,7 +280,7 @@
 #/gps/particle opticalphoton
 #/gps/number 1000
 ## place bomb at centre of tank
-#/gps/pos/centre 0 -14.46 168.1 cm
+#/gps/pos/centre 0 -14.46487518 168.1 cm
 #/gps/ang/type iso
 ## energy equivalent to 430nm
 #/gps/energy 2.883353 eV
@@ -299,6 +316,32 @@
 #/gps/ene/min 100 MeV
 #/gps/ene/max 2500 MeV
 #/DAQ/Trigger NoTrigger  # >>>DISABLE NDigits TRIGGER<<< and enable NoTrigger to records everything even w/o a tank event
+
+## Muons shot into the tank from in front of the veto, gaussian energy and beam spread
+#################################################################
+#/mygen/generator gps
+#/gps/particle mu- #geantino
+#/gps/pos/type Plane
+#/gps/pos/shape Rectangle
+#/gps/pos/halfx 1.524 m  # tank radius
+#/gps/pos/halfy 1.98 m   # tank height 
+## place plane centre in front of veto
+#/gps/pos/centre 0 -14.46 -10 cm   # MRD front face at z=325.5cm
+##planes are oriented in the x-y plane, so we need to rotate in the same way as per the cylinder
+##rotate the square be parallel to the front face of the MRD (not true??)
+#/gps/pos/rot1 1 0 0
+#/gps/pos/rot2 0 1 0
+## a gaussian energy spread
+#/gps/ang/type beam1d
+#/gps/ang/sigma_r 35 deg
+##/gps/ang/focuspoint  0 -14.46 -20000 cm  ## generates all particles with momentum TOWARD that point
+#/gps/ang/rot1 -1 0 0      # direction is defined by defining the PERPENDICULAR NORMAL PLANE
+#/gps/ang/rot2 0 1 0
+## gaussian energy spread
+#/gps/ene/type Gauss
+#/gps/ene/mono 500 MeV    # gaussian centre
+#/gps/ene/sigma 400 MeV   # gaussian width
+#/gps/ene/min 10 MeV      # add a minimum because anything <50MeV is undetectable
 
 ## Thermal neutron gun, to test for neutron capture detection
 #############################################################
@@ -351,7 +394,7 @@
 #/gps/ene/max 2500 MeV
 ##/DAQ/Trigger NDigits # normal NDigits 'cut' left on
 
-## Beam muon simulation - gaussian spread of energies and directions
+## Beam muon simulation - gaussian spread of energies and directions (XXX ANGULAR DISTRIBUTION INCORRECT? Use ver above XXX)
 ####################################################################
 ## muons with gaussian spread of ~beam energies, starting in the tank, shot into the mrd with ~suitable angles.
 #/mygen/generator laser

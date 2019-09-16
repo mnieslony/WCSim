@@ -17,6 +17,7 @@ WCSimTrackingAction::WCSimTrackingAction(){
   ProcessList.insert("MuonMinusCaptureAtRest");
   ProcessList.insert("muMinusCaptureAtRest");  // which syntax is correct?
   //ProcessList.insert("conv");
+  ParticleList.insert(0);    // geantino
   ParticleList.insert(111);  // pi0
   ParticleList.insert(211);  // pion+
   ParticleList.insert(-211); // pion-

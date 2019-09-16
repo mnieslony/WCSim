@@ -43,6 +43,7 @@ void WCSimWCDAQMessenger::Initialize(G4String detectorElementin)
   int defaultDigitizerDeadTime = -99;
   int defaultDigitizerIntegrationWindow = -99;
   bool defaultExtendDigitizerIntegrationWindow = false;
+  bool defaultDoPhotonIntegration = true;
   int defaultSaveFailuresTriggerMode = 0;
   double defaultSaveFailuresTriggerTime = 100;
   int defaultSaveFailuresPreTriggerWindow = -400;
@@ -119,6 +120,11 @@ void WCSimWCDAQMessenger::Initialize(G4String detectorElementin)
     ExtendDigitizerIntegrationWindow->SetParameterName("ExtendDigitizerIntegrationWindow",true);
     ExtendDigitizerIntegrationWindow->SetDefaultValue(defaultExtendDigitizerIntegrationWindow);
 
+    DoPhotonIntegration = new G4UIcmdWithABool("/DAQ/DigitizerOpt/DoPhotonIntegration", this);
+    DoPhotonIntegration->SetGuidance("Integrate photons within a window into one pulse (true) or convert each photon into a digit (false)");
+    DoPhotonIntegration->SetParameterName("DoPhotonIntegration",true);
+    DoPhotonIntegration->SetDefaultValue(defaultDoPhotonIntegration);
+
     //Save failure trigger specific options
     SaveFailuresTriggerDir = new G4UIdirectory("/DAQ/TriggerSaveFailures/");
     SaveFailuresTriggerDir->SetGuidance("Commands specific to the Save Failures trigger");
@@ -184,12 +190,11 @@ void WCSimWCDAQMessenger::Initialize(G4String detectorElementin)
     PromptTriggerEnable->SetParameterName("PromptTriggerEnable",true);
     PromptTriggerEnable->SetDefaultValue(defaultPromptTrigger);
 
-/// removed: this doesn't really make sense if the trigger is prompt; i.e. occurs at time 0
-//    PromptPreTriggerWindow = new G4UIcmdWithAnInteger("/DAQ/PromptTrigger/PreTriggerWindow", this);
-//    PromptPreTriggerWindow->SetGuidance("Set the prompt pretrigger window (in ns)");
-//    PromptPreTriggerWindow->SetParameterName("PromptPreTriggerWindow",false);
-//    PromptPreTriggerWindow->SetDefaultValue(defaultPromptPreTriggerWindow);
-//    //don't SetNewValue -> defaults class-specific and taken from GetDefault*()
+    PromptPreTriggerWindow = new G4UIcmdWithAnInteger("/DAQ/PromptTrigger/PreTriggerWindow", this);
+    PromptPreTriggerWindow->SetGuidance("Set the prompt pretrigger window (in ns)");
+    PromptPreTriggerWindow->SetParameterName("PromptPreTriggerWindow",false);
+    PromptPreTriggerWindow->SetDefaultValue(defaultPromptPreTriggerWindow);
+    //don't SetNewValue -> defaults class-specific and taken from GetDefault*()
 
     PromptPostTriggerWindow = new G4UIcmdWithAnInteger("/DAQ/PromptTrigger/PostTriggerWindow", this);
     PromptPostTriggerWindow->SetGuidance("Set the prompt posttrigger window (in ns)");
@@ -220,6 +225,7 @@ void WCSimWCDAQMessenger::Initialize(G4String detectorElementin)
   theseOptions.StoreDigitizerDeadTime = defaultDigitizerDeadTime;
   theseOptions.StoreDigitizerIntegrationWindow = defaultDigitizerIntegrationWindow;
   theseOptions.StoreExtendDigitizerIntegrationWindow = defaultExtendDigitizerIntegrationWindow;
+  theseOptions.StoreDoPhotonIntegration = defaultDoPhotonIntegration;
   theseOptions.StoreDigitizerChoice = defaultDigitizer;
   theseOptions.StorePromptTrigger = defaultPromptTrigger;
   theseOptions.StorePromptPreWindow = defaultPromptPreTriggerWindow;
@@ -282,13 +288,14 @@ WCSimWCDAQMessenger::~WCSimWCDAQMessenger()
   if(NDigitsPostTriggerWindow){ delete NDigitsPostTriggerWindow; NDigitsPostTriggerWindow=nullptr; }
 
   if(PromptTriggerEnable){ delete PromptTriggerEnable; PromptTriggerEnable=nullptr; }
-//  if(PromptPreTriggerWindow){ delete PromptPreTriggerWindow; PromptPreTriggerWindow=nullptr; }
+  if(PromptPreTriggerWindow){ delete PromptPreTriggerWindow; PromptPreTriggerWindow=nullptr; }
   if(PromptPostTriggerWindow){ delete PromptPostTriggerWindow; PromptPostTriggerWindow=nullptr; }
 
   if(DigitizerDir){ delete DigitizerDir; DigitizerDir=nullptr; }
   if(DigitizerDeadTime){ delete DigitizerDeadTime; DigitizerDeadTime=nullptr; }
   if(DigitizerIntegrationWindow){ delete DigitizerIntegrationWindow; DigitizerIntegrationWindow=nullptr; }
   if(ExtendDigitizerIntegrationWindow){ delete ExtendDigitizerIntegrationWindow; ExtendDigitizerIntegrationWindow=nullptr; }
+  if(DoPhotonIntegration){ delete DoPhotonIntegration; DoPhotonIntegration=nullptr; }
 
   if(DigitizerChoice){ delete DigitizerChoice; DigitizerChoice=nullptr; }
   if(TriggerChoice){ delete TriggerChoice; TriggerChoice=nullptr; }
@@ -340,6 +347,17 @@ void WCSimWCDAQMessenger::SetNewValue(G4UIcommand* command,G4String newValue)
           << "extend when new hits arrive in an existing window" << initialiseString.c_str() << G4endl;
     StoredOptions.at(detectorElement).StoreExtendDigitizerIntegrationWindow = 
          ExtendDigitizerIntegrationWindow->GetNewBoolValue(newValue);
+  }
+  else if (command == DoPhotonIntegration) {
+    G4cout<< "Digitizer set to ";
+    if(newValue=="true"){
+      G4cout << "integrate photons within the digitizer integration window into Digits ";
+    } else {
+      G4cout << "convert individual photons into Digits ";
+    } 
+    G4cout << initialiseString.c_str() << G4endl;
+    StoredOptions.at(detectorElement).StoreDoPhotonIntegration = 
+         DoPhotonIntegration->GetNewBoolValue(newValue);
   }
 
   //Save failures "trigger"
@@ -401,10 +419,10 @@ void WCSimWCDAQMessenger::SetNewValue(G4UIcommand* command,G4String newValue)
     G4cout << "Will " << ((StoredOptions.at(detectorElement).StorePromptTrigger) ? "" : "not ") 
            << "add a prompt trigger window at the start of the event" << initialiseString.c_str() << G4endl;
   }
-//  else if (command == PromptPreTriggerWindow) {
-//    G4cout << "Prompt pretrigger window set to " << newValue << " ns" << initialiseString.c_str() << G4endl;
-//    StoredOptions.at(detectorElement).StorePromptPreWindow = PromptPreTriggerWindow->GetNewIntValue(newValue);
-//  }
+  else if (command == PromptPreTriggerWindow) {
+    G4cout << "Prompt pretrigger window set to " << newValue << " ns" << initialiseString.c_str() << G4endl;
+    StoredOptions.at(detectorElement).StorePromptPreWindow = PromptPreTriggerWindow->GetNewIntValue(newValue);
+  }
   else if (command == PromptPostTriggerWindow) {
     G4cout << "Prompt posttrigger window set to " << newValue << " ns" << initialiseString.c_str() << G4endl;
     StoredOptions.at(detectorElement).StorePromptPostWindow = PromptPostTriggerWindow->GetNewIntValue(newValue);
@@ -444,7 +462,7 @@ void WCSimWCDAQMessenger::SetTriggerOptions(G4String detectorElementin)
   WCSimTrigger->SetSaveFailuresTime(StoredOptions.at(detectorElement).StoreSaveFailuresTime);
   G4cout << "\tTrigger time for events which fail all triggers will be set to " 
          << StoredOptions.at(detectorElement).StoreSaveFailuresTime << " ns" << G4endl;
-  if(StoredOptions.at(detectorElement).StoreSaveFailuresPreWindow >= -1E6) {
+  if(StoredOptions.at(detectorElement).StoreSaveFailuresPreWindow > -1E6) {
     WCSimTrigger->SetSaveFailuresPreTriggerWindow(StoredOptions.at(detectorElement).StoreSaveFailuresPreWindow);
     G4cout << "\tSaveFailures pretrigger window set to " 
            << StoredOptions.at(detectorElement).StoreSaveFailuresPreWindow << " ns" << G4endl;
@@ -468,7 +486,7 @@ void WCSimWCDAQMessenger::SetTriggerOptions(G4String detectorElementin)
     G4cout << "\tNDigits trigger window set to " 
            << StoredOptions.at(detectorElement).StoreNDigitsWindow << " ns" << G4endl;
   }
-  if(StoredOptions.at(detectorElement).StoreNDigitsPreWindow >= 0) {
+  if(StoredOptions.at(detectorElement).StoreNDigitsPreWindow > -1E6) {
     WCSimTrigger->SetNDigitsPreTriggerWindow(StoredOptions.at(detectorElement).StoreNDigitsPreWindow);
     G4cout << "\tNDigits pretrigger window set to " 
            << StoredOptions.at(detectorElement).StoreNDigitsPreWindow << " ns" << G4endl;
@@ -482,12 +500,12 @@ void WCSimWCDAQMessenger::SetTriggerOptions(G4String detectorElementin)
   WCSimTrigger->SetRecordPromptWindow(StoredOptions.at(detectorElement).StorePromptTrigger);
   G4cout << "\tWill "<<((StoredOptions.at(detectorElement).StorePromptTrigger) ? "" : "not ") 
          << "add a prompt trigger window at the start of the event" << G4endl;
-  if(StoredOptions.at(detectorElement).StoreNDigitsPreWindow >= 0) {
+  if(StoredOptions.at(detectorElement).StorePromptPreWindow > -1E6) {
     WCSimTrigger->SetPromptPreTriggerWindow(StoredOptions.at(detectorElement).StorePromptPreWindow);
     G4cout << "\tPrompt pretrigger window set to " 
            << StoredOptions.at(detectorElement).StorePromptPreWindow << " ns" << G4endl;
   }
-  if(StoredOptions.at(detectorElement).StoreNDigitsPostWindow >= 0) {
+  if(StoredOptions.at(detectorElement).StorePromptPostWindow >= 0) {
     WCSimTrigger->SetPromptPostTriggerWindow(StoredOptions.at(detectorElement).StorePromptPostWindow);
     G4cout << "\tPrompt posttrigger window set to " 
            << StoredOptions.at(detectorElement).StorePromptPostWindow << " ns" << G4endl;
@@ -510,6 +528,13 @@ void WCSimWCDAQMessenger::SetDigitizerOptions(G4String detectorElementin)
   }
   WCSimDigitize->SetExtendIntegrationWindow(StoredOptions.at(detectorElement).StoreExtendDigitizerIntegrationWindow);
   G4cout<<"\tDigitizer integration window set to " << ((StoredOptions.at(detectorElement).StoreExtendDigitizerIntegrationWindow) ? "" : "not") << " extend when new hits arrive in an existing window" << G4endl;
+  WCSimDigitize->SetDoPhotonIntegration(StoredOptions.at(detectorElement).StoreDoPhotonIntegration);
+  G4cout<<"\tDigitizer set to ";
+  if(StoredOptions.at(detectorElement).StoreExtendDigitizerIntegrationWindow){
+    G4cout << "integrate photons on the same PMT close in time into digits" << G4endl;
+  } else {
+    G4cout << "convert each individual photon into its own digit" << G4endl;
+  }
 }
 
 void WCSimWCDAQMessenger::AddDAQMessengerInstance(G4String detectorElementin){

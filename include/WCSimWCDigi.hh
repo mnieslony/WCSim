@@ -182,7 +182,7 @@ public:
     int index_primaryparentid;
     std::vector<int> index_digicomp;
     bool sort_digi_compositions = (fDigiComp.size()==time.size());
-    // SortHitTimes is called by WCSimWCDigitizerSKI::DigitizeHits to sort the WCRawPMTSignalCollection.
+    // SortDigiMapsByHitTime is called by WCSimWCDigitizerSKI::DigitizeHits to sort the WCRawPMTSignalCollection.
     // Each entry in WCRawPMTSignalCollection represents the set of photon hits on a PMT.
     // Since a photon hit has no "composition", fDigiComp is empty at this time and needn't be sorted.
     // for generality, sort if the digi composition map has the same size as other maps
@@ -195,6 +195,7 @@ public:
         index_primaryparentid = primaryParentID.at(i);
         for (j = i; j > 0 && time.at(j-1) > index_time; j--) {
           time.at(j) = time.at(j-1);
+          time_presmear.at(j) = time_presmear.at(j-1);
           pe.at(j) = pe.at(j-1);
           if(sort_digi_compositions) fDigiComp.at(j) = fDigiComp.at(j-1);
           primaryParentID.at(j) = primaryParentID.at(j-1);

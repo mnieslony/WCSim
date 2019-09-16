@@ -35,7 +35,7 @@
 //#define HYPER_VERBOSITY
 #endif
 
-const double WCSimWCTriggerBase::offset = 0.;//950.0; // ns. apply offset to the digit time
+const float WCSimWCTriggerBase::offset = 0.;//950.0; // ns. apply offset to the digit time
 const double WCSimWCTriggerBase::LongTime = 1E6; // ns = 1ms. event time
 
 
@@ -54,7 +54,7 @@ WCSimWCTriggerBase::WCSimWCTriggerBase(G4String name,
   }
   collectionName.push_back(colName);
 #ifdef HYPER_VERBOSITY
-  if(detectorElement=="mrd")
+  if(detectorElement=="tank")
   {G4cout<<"WCSimWCTriggerBase::WCSimWCTriggerBase ☆ recording collection name "<<colName<<" for "<<detectorElement<<G4endl;}
 #endif
   ReInitialize();
@@ -116,7 +116,8 @@ if(detectorElement=="tank"){
 	   << "Using SaveFailures event posttrigger window " << saveFailuresPostTriggerWindow << " ns" << G4endl;
   if(enablePromptTrigger){
     G4cout << "Recording digits in a prompt window at the start of the event" << G4endl
-           << "Using Prompt trigger window " << promptPostTriggerWindow << " ns" << G4endl;
+           << "Using Prompt trigger window " << (promptPreTriggerWindow + promptPostTriggerWindow)
+           << " from "<<promptPreTriggerWindow<<" to "<<promptPostTriggerWindow<<" ns" << G4endl;
   }
 }
 #endif
@@ -203,7 +204,7 @@ void WCSimWCTriggerBase::Digitize()
 {
   if(ndigitsAdjustForNoise && !digitizeCalled) {
 #ifdef HYPER_VERBOSITY
-    if(detectorElement=="mrd"){G4cout<<"WCSimWCTriggerBase::Digitize ☆ adjusting threshold for average occupancy"<<G4endl;}
+    if(detectorElement=="tank"){G4cout<<"WCSimWCTriggerBase::Digitize ☆ adjusting threshold for average occupancy"<<G4endl;}
 #endif
     AdjustNDigitsThresholdForNoise();
     digitizeCalled = true;
@@ -239,7 +240,7 @@ void WCSimWCTriggerBase::Digitize()
   // Get the PMT Digits Collection
   WCSimWCDigitsCollection* WCDCPMT = (WCSimWCDigitsCollection*)(DigiMan->GetDigiCollection(WCDCID));
 #ifdef HYPER_VERBOSITY
-  if(detectorElement=="mrd"){
+  if(detectorElement=="tank"){
   G4cout<<"WCSimWCTriggerBase::Digitize ☆ making triggered digits collection "<<collectionName[0]<<" for "<<detectorElement
   <<" and calling DoTheWork on "<<untriggeredcollectionname<<" to fill it."<<G4endl;}
 #endif
@@ -250,7 +251,7 @@ void WCSimWCTriggerBase::Digitize()
   } else {G4cerr<<"could not find trigger PMT digits collection for "<<detectorElement<<G4endl;}
   
 #ifdef HYPER_VERBOSITY
-  if(detectorElement=="mrd"){G4cout<<"WCSimWCTriggerBase::Digitize ☆ storing the triggered digits collection "<<collectionName[0]
+  if(detectorElement=="tank"){G4cout<<"WCSimWCTriggerBase::Digitize ☆ storing the triggered digits collection "<<collectionName[0]
         <<" which has "<<DigitsCollection->entries()<<" entries"<<G4endl;}
 #endif
   StoreDigiCollection(DigitsCollection);
@@ -275,8 +276,8 @@ void WCSimWCTriggerBase::AlgNDigits(WCSimWCDigitsCollection* WCDCPMT, bool remov
   int ntrig = 0;
   int window_start_time = 0;
   int window_end_time   = WCSimWCTriggerBase::LongTime - ndigitsWindow;
-  int window_step_size  = 5; //step the search window along this amount if no trigger is found
-  float lasthit;
+  int window_step_size  = 8; //step the search window along this amount if no trigger is found
+  float lasthit=-999999;
   std::vector<int> digit_times;
   bool first_loop = true;
 
@@ -403,7 +404,7 @@ void WCSimWCTriggerBase::AlgTankDigits(WCSimWCDigitsCollection* WCDCPMT, bool re
   }
   
 #ifdef HYPER_VERBOSITY
-  if(detectorElement=="mrd"){
+  if(detectorElement=="tank"){
     G4String untriggeredcollectionname;
     if(detectorElement=="tank"){
       untriggeredcollectionname="WCDigitizedStoreCollection";
@@ -433,6 +434,12 @@ void WCSimWCTriggerBase::FillDigitsCollection(WCSimWCDigitsCollection* WCDCPMT, 
   //saveFailuresMode = 0 - save only triggered events
   //saveFailuresMode = 1 - save both triggered & not triggered events
   //saveFailuresMode = 2 - save only not triggered events
+#ifdef HYPER_VERBOSITY
+  if(detectorElement=="tank"){
+    G4cout<<"FillDigitsCollection called with trigger type: "
+          <<WCSimEnumerations::EnumAsString(save_triggerType)<<G4endl;
+  }
+#endif
   if(TriggerTimes.size()) {
     if(saveFailuresMode == 2)
       return;
@@ -472,8 +479,10 @@ void WCSimWCTriggerBase::FillDigitsCollection(WCSimWCDigitsCollection* WCDCPMT, 
 	//also need to check whether the previous upperbound is above the upperbound
 	//(different trigger windows for different trigger types can mean this trigger is completely contained within another)
 	// if it is, we skip it
-	if(upperbound_previous >= upperbound)
+	if(upperbound_previous >= upperbound){
+	  triggerstoremove.push_back(itrigger);
 	  continue;
+	}
 	lowerbound = upperbound_previous;
       }
     }
@@ -492,19 +501,33 @@ void WCSimWCTriggerBase::FillDigitsCollection(WCSimWCDigitsCollection* WCDCPMT, 
     for (G4int i = 0; i < WCDCPMT->entries(); i++) {
       int tube=(*WCDCPMT)[i]->GetTubeID();
       //loop over digits in this PMT
-      for (std::map<int,float>::const_iterator digit_time_it = (*WCDCPMT)[i]->GetTimeMapBegin();
-               digit_time_it!=(*WCDCPMT)[i]->GetTimeMapEnd(); digit_time_it++) {
+      // The format of the loop iteration this time is a little unconventional, because erasing elements
+      // (via RemoveDigitizedGate) during iteration would normally invalidate the iterators.
+      // This format is safe.
+      for (std::map<int,float>::const_iterator digit_time_it = (*WCDCPMT)[i]->GetTimeMapBegin(), 
+           next_digit_it=digit_time_it;
+           digit_time_it!=(*WCDCPMT)[i]->GetTimeMapEnd();
+           digit_time_it = next_digit_it){
+        ++next_digit_it;
         int ip = digit_time_it->first;
-	int digit_time=0;
+        G4float time_from_it=-999;
+        try{
+          time_from_it = digit_time_it->second;
+        }
+        catch (...){
+          G4cerr<<"Exception in WCSimWCTriggerBase::AlgNDigits trying to retrieve digit time from iterator"<<G4endl;
+        }
+	G4float digit_time=0;
 	try{
 	  G4float temp_time = (*WCDCPMT)[i]->GetTime(ip);
-	  if(temp_time<(std::numeric_limits<int>::max())) {digit_time = (int)temp_time;} else {digit_time=-999;}
+	  if(temp_time<(std::numeric_limits<float>::max())) {digit_time = temp_time;} else {digit_time=-999;}
 	}
 	catch (...){
 	  G4cerr<<"Exception in WCSimWCTriggerBase::FillDigitsCollection call to WCSimWCDigi::GetTime "
 	        <<G4endl<<"Attempt to retrieve time from pe "<<ip<<" in WCDCPMT entry "<<i<<G4endl;
 	  G4cerr<<"The digi had "<<(*WCDCPMT)[i]->GetTotalPe()<<" total pe's."<<G4endl;
-	  //assert(false);
+	  G4cerr<<"Time retrieved from iterator was "<<time_from_it<<G4endl;
+	  assert(false);
 	  digit_time=-996;
 	}
 	if(digit_time >= lowerbound && digit_time <= upperbound) {
@@ -514,7 +537,7 @@ void WCSimWCTriggerBase::FillDigitsCollection(WCSimWCDigitsCollection* WCDCPMT, 
 
 	  //first apply time offsets
 	  float peSmeared = (*WCDCPMT)[i]->GetPe(ip);
-	  G4double digihittime = 
+	  float digihittime = 
 	     -triggertime + WCSimWCTriggerBase::offset +	// temporarily disable for Bonsai
 	     digit_time;
 
@@ -655,14 +678,14 @@ void WCSimWCTriggerBase::AlgPromptDigits(WCSimWCDigitsCollection* WCDCPMT, bool 
         digit_time=-996;
       }
       //is hit in prompt window
-      if(digit_time < prompt_window_duration) {
+      if(digit_time > promptPreTriggerWindow && digit_time < prompt_window_duration) {
         Ndigits++;
       }
     }
   }
 #ifdef HYPER_VERBOSITY
   if(detectorElement=="tank"){
-    G4cout<<"WCSimWCTriggerBase::AlgPromptDigits ☆ capturing "<<Ndigits<<" digits"<<G4endl;
+    G4cout<<"WCSimWCTriggerBase::AlgPromptDigits ☆ will capture "<<Ndigits<<" digits"<<G4endl;
   }
 #endif
   
@@ -762,6 +785,13 @@ void WCSimWCTriggerNDigits::DoTheWork(WCSimWCDigitsCollection* WCDCPMT) {
   WCSimWCDigitsCollection* WCDCPMTCopy = WCDCPMT;
   
   if(enablePromptTrigger){
+    
+#ifdef HYPER_VERBOSITY
+    if(detectorElement=="tank"){
+      G4cout<<"WCSimWCTriggerNDigits::DoTheWork ☆ calling AlgPromptDigits"<<G4endl;
+    }
+#endif
+    
     //Make a copy of the input DigitsCollection, so we can remove hits from the copy
     WCDCPMTCopy = new WCSimWCDigitsCollection(*WCDCPMT);
     remove_hits = true;
@@ -769,6 +799,12 @@ void WCSimWCTriggerNDigits::DoTheWork(WCSimWCDigitsCollection* WCDCPMT) {
     //Apply the prompt trigger
     AlgPromptDigits(WCDCPMTCopy, remove_hits);
   }
+  
+#ifdef HYPER_VERBOSITY
+    if(detectorElement=="tank"){
+      G4cout<<"WCSimWCTriggerNDigits::DoTheWork ☆ calling AlgNDigits"<<G4endl;
+    }
+#endif
   
   //Apply the NDigits trigger
   AlgNDigits(WCDCPMTCopy, remove_hits);

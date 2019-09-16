@@ -57,6 +57,7 @@
 #define _SAVE_RAW_HITS
 #ifndef _SAVE_RAW_HITS_VERBOSE
 //#define _SAVE_RAW_HITS_VERBOSE
+//#define NPMTS_VERBOSE 10
 #endif
 #endif
 #ifndef SAVE_DIGITS_VERBOSE
@@ -64,10 +65,6 @@
 #endif
 #ifndef TIME_DAQ_STEPS
 //#define TIME_DAQ_STEPS
-#endif
-
-#ifndef NPMTS_VERBOSE
-//#define NPMTS_VERBOSE 10
 #endif
 
 #ifndef HYPER_VERBOSITY
@@ -135,6 +132,51 @@ WCSimEventAction::WCSimEventAction(WCSimRunAction* myRun,
   lappdhit_edep = new G4double[klappdhitnmax];    // how much energy was deposited?
   lappdhit_objnum = new G4int[klappdhitnmax];     // which geometry object was hit?
   //lappdhit_copynum = new G4int[klappdhitnmax];    // which copy was hit?
+  }
+  
+  // Read files if present that tell us where the upstream files came from (for grid jobs)
+  std::ifstream fin ("geniedirectory.txt"); // look for a file with this name in build dir
+  if(not fin.is_open()){
+    G4cout<<"WARNING: No geniedirectory.txt file found, upstream file path will not be recorded!"<<G4endl;
+  } else {
+    std::string Line;
+    std::stringstream ssL;
+    genieDirectory="";
+    while (getline(fin, Line)){
+      if (Line.empty()) continue;    // skip empty lines
+      if (Line[0] == '#') continue;  // skip comment lines
+      ssL.str("");                   // empty the stringstream
+      ssL.clear();                   // clear the IO error status
+      ssL << Line;                   // read the line
+      if (ssL.str() != ""){          // skip empty lines
+        ssL >> genieDirectory;       // space delimited
+        break;                       // take the first accepted line
+      }
+    }
+    G4cout<<"Upstream genie directory is: "<<genieDirectory<<G4endl;
+    fin.close();
+  }
+  // repeat for the dirt directory
+  fin.open("dirtdirectory.txt");
+  if(not fin.is_open()){
+    G4cout<<"WARNING: No dirtdirectory.txt file found, upstream file path will not be recorded!"<<G4endl;
+  } else {
+    std::string Line;
+    std::stringstream ssL;
+    dirtDirectory="";
+    while (getline(fin, Line)){
+      if (Line.empty()) continue;    // skip empty lines
+      if (Line[0] == '#') continue;  // skip comment lines
+      ssL.str("");                   // empty the stringstream
+      ssL.clear();                   // clear the IO error status
+      ssL << Line;                   // read the line
+      if (ssL.str() != ""){          // skip empty lines
+        ssL >> dirtDirectory;        // space delimited
+        break;                       // take the first accepted line
+      }
+    }
+    G4cout<<"Upstream dirt directory is: "<<dirtDirectory<<G4endl;
+    fin.close();
   }
 
 }
@@ -464,7 +506,6 @@ void WCSimEventAction::EndOfEventAction(const G4Event* evt)
          //hitParticleName = aHit->GetParticleName();
          hitTrackID = aHit->GetTrackID();
          for (G4int ip =0; ip < (*WCHClappd)[hitnum]->GetTotalPe(); ip++){
-         //hitPartCode = aHit->GetParticleID();
            lappdhit_process[hitnum] = hitProcessCode;
            double strip_coorx = ((*WCHClappd)[hitnum]->GetStripPosition(ip).x());
            double strip_coory = ((*WCHClappd)[hitnum]->GetStripPosition(ip).y());
@@ -493,6 +534,7 @@ void WCSimEventAction::EndOfEventAction(const G4Event* evt)
            lappdhit_globalcoorz.push_back(global_coorz);
            totalpes_perevt++;
          }
+         //hitPartCode = aHit->GetParticleID();
          //hitPartCode = ConvertParticleNameToCode(hitParticleName); // or use hitParticleID - from PDGEncoding?
          //hitProcessName = aHit->GetProcessName();
          //hitProcessCode = ConvertProcessNameToCode(hitProcessName);
@@ -623,13 +665,13 @@ void WCSimEventAction::EndOfEventAction(const G4Event* evt)
         } //id
 #ifdef _SAVE_RAW_HITS_VERBOSE
         if(digi_tubeid < NPMTS_VERBOSE) {
-          G4cout << "Adding " << truetime2.size()
+          G4cout << "Adding " << lappdhit_truetime2.size()
                  << " Cherenkov hits in tube " << digi_tubeid
                  << " with truetime:smeartime:primaryparentID";
-          for(G4int id = 0; id < truetime2.size(); id++) {
-             G4cout << " " << truetime[id]
-                    << ":" << smeartime[id]
-                    << ":" << primaryParentID[id];
+          for(G4int id = 0; id < lappdhit_truetime2.size(); id++) {
+             G4cout << " " << lappdhit_truetime2[id]
+                    << ":" << lappdhit_smeartime2[id]
+                    << ":" << lappdhit_primaryParentID2[id];
           }//id
          G4cout << G4endl;
         }
@@ -1235,7 +1277,7 @@ void WCSimEventAction::FillRootEvent(G4int event_id,
       if (index >=1 ) {
 	wcsimrootsuperevent->AddSubEvent();
 	wcsimrootevent = wcsimrootsuperevent->GetTrigger(index);
-	wcsimrootevent->SetHeader(event_id,0,
+	wcsimrootevent->SetHeader(event_id,0,  // evtnum, run, date, subeventnum
 				   0,index+1); // date & # of subevent 
 	wcsimrootevent->SetMode(jhfNtuple.mode);
       }
@@ -1245,9 +1287,9 @@ void WCSimEventAction::FillRootEvent(G4int event_id,
   
 
   // Fill the header
-  // Need to add run and date
   wcsimrootevent = wcsimrootsuperevent->GetTrigger(0);
-  wcsimrootevent->SetHeader(event_id,0,0); // will be set later.
+  wcsimrootevent->SetHeader(event_id,0,0); // set evtnum, run=0, date=0, and subevtnum = 1<<< STARTS FROM 1
+                                           // Run and date are added below
 
   // add the information about upstream source
   G4String      dirtFileName = generatorAction->GetDirtFileName();
@@ -1255,8 +1297,8 @@ void WCSimEventAction::FillRootEvent(G4int event_id,
   G4int      dirtEventNumber = generatorAction->GetDirtEntryNum();
   G4int     genieEventNumber = generatorAction->GetGenieEntryNum();
   WCSimRootEventHeader* theheader = wcsimrootevent->GetHeader();
-  theheader->SetDirtFileName(dirtFileName);
-  theheader->SetGenieFileName(genieFileName);
+  theheader->SetDirtFileName(dirtDirectory+"/"+dirtFileName);
+  theheader->SetGenieFileName(genieDirectory+"/"+genieFileName);
   theheader->SetDirtEntryNum(dirtEventNumber);
   theheader->SetGenieEntryNum(genieEventNumber);
 
@@ -1318,7 +1360,10 @@ void WCSimEventAction::FillRootEvent(G4int event_id,
                                0,                         // stopping time not stored in jhfNtuple
                                0,                         // WCSim TrackID not applicable
                                "",                        // creator process name
-                               "NuIntx");                 // end process name
+                               "NuIntx",                  // end process name
+                               pdir2,                     // tank exit position (N/A)
+                               0,                         // tank exit energy (relativistic)
+                               pdir2);                    // tank exit 3-momentum (N/A)
     }
     
     // the rest of the tracks come from WCSimTrajectory
@@ -1382,6 +1427,9 @@ void WCSimEventAction::FillRootEvent(G4int event_id,
         G4double      energyend = sqrt(momend.mag2() + mass*mass);
         G4ThreeVector Stop   = trj->GetStoppingPoint();
         G4ThreeVector Start  = aa->GetPosition();
+        G4ThreeVector tankExitPos = trj->GetTankExitPoint();
+        G4ThreeVector tankExitMom = trj->GetMomentumOnTankExit();
+        G4double      tankExitE = (tankExitPos==G4ThreeVector()) ? 0 : sqrt(tankExitMom.mag2() + mass*mass);
         
         G4String stopVolumeName = trj->GetStoppingVolume()->GetName();
         G4int    stopvol, startvol;
@@ -1417,6 +1465,8 @@ void WCSimEventAction::FillRootEvent(G4int event_id,
         float pdir2[3];
         float stop[3];
         float start[3];
+        float tankexit[3];
+        float tankexitp[3];
         for (int l=0;l<3;l++)
         {
           dir[l]= (mommag!=0) ? mom[l]/mommag : 0; // direction 
@@ -1425,15 +1475,17 @@ void WCSimEventAction::FillRootEvent(G4int event_id,
           stop[l]=Stop[l]/CLHEP::cm; // stopping point 
           start[l]=Start[l]/CLHEP::cm; // starting point 
           //G4cout<<"part 2 start["<<l<<"]: "<< start[l] <<G4endl;
+          tankexit[l]=tankExitPos[l]/CLHEP::cm; // 
+          tankexitp[l]=tankExitMom[l];
         }
         
         // Add the track to the TClonesArray, watching out for times
-        if( (ipnu==22) && 
-            (trj->GetCreatorProcessName()=="nCapture") && 
-            (detectorConstructor->SaveCaptureInfo()==false)
+        if( (ipnu==22) &&                                      // if it's a gamma
+            (trj->GetCreatorProcessName()=="nCapture") &&      // from ncapture
+            (detectorConstructor->SaveCaptureInfo()==false)    // but SaveCaptureInfo is *false*
           ){
-            // do not save nCapture gammas if SaveCaptureInfo is false
-        } else {
+            /* do nothing */                                   // ignore it
+        } else {                                               // otherwise, save it
           
           G4String startProcess = trj->GetCreatorProcessName();
           G4String endProcess = trj->GetCurrentProcess();
@@ -1443,9 +1495,24 @@ void WCSimEventAction::FillRootEvent(G4int event_id,
             endProcess = trj->GetLastProcess();
           }
           
+//          G4cout<<"#########################################################~~~"<<G4endl;
+//          G4cout<<"Scanning "<<ngates<<" triggers for track starting at time "<<ttime<<G4endl;
+//          for(int trigi=0; trigi<ngates; trigi++){
+//            G4cout<<"Trigger "<<trigi<<" was of type "<<WCTM->GetTriggerType(trigi)
+//                  <<", began at "<<WCTM->GetTriggerTime(trigi)
+//                  <<", had a post-trigger window size of "
+//                  <<WCTM->GetPostTriggerWindow(WCTM->GetTriggerType(trigi))
+//                  <<" and ended at "
+//                  <<WCTM->GetTriggerTime(trigi)+ WCTM->GetPostTriggerWindow(WCTM->GetTriggerType(trigi))
+//                  <<G4endl;
+//          }
+          
           int choose_event=0;
           while (choose_event<(ngates-1)){
-            if ( ttime < (WCTM->GetTriggerTime(choose_event)+WCTM->GetWCTriggerOffset()) )
+            auto trigger_end_time = WCTM->GetWCTriggerOffset()  // legacy digit time offset in trigger window
+                                  + WCTM->GetTriggerTime(choose_event)
+                                  + WCTM->GetPostTriggerWindow(WCTM->GetTriggerType(choose_event));
+            if ( ttime < trigger_end_time )
               break;  // did this track start before the end of the current trigger? if so, it's in the current trigger
             else 
               choose_event++;  // otherwise go to next trigger
@@ -1471,28 +1538,31 @@ void WCSimEventAction::FillRootEvent(G4int event_id,
                                    ttimeend,      // end time (global)
                                    id,            // wcsim TrackID
                                    startProcess,  // start process name
-                                   endProcess);   // end process name
+                                   endProcess,    // end process name
+                                   tankexit,      // tank exit position
+                                   tankExitE,     // tank exit energy (relativistic)
+                                   tankexitp);    // tank exit 3-momentum
         }
         
         
-        if (detectorConstructor->SavePi0Info() == true){
-          G4cout<<"Pi0 parentType: " << parentType <<G4endl;
-          if (parentType == 111){
-            if (r>1){
+        if (detectorConstructor->SavePi0Info() == true){         // if we're saving pi0 gammas separately as well
+          //G4cout<<"Pi0 parentType: " << parentType <<G4endl;   // (technically, if we're saving pi0 daughters)
+          if (parentType == 111){  // pi0                        // and this particle's parent was a pi0
+            if (r>1){                                            // complain if we've found more than 2 daughters
               G4cout<<"WARNING: more than 2 primary gammas found"<<G4endl;
             } else {
               for (int y=0;y<3;y++){
-                pi0Vtx[y] = start[y];
-                gammaVtx[r][y] = stop[y];
+                pi0Vtx[y] = start[y];                            // pi0 decay vtx is gamma start vtx
+                gammaVtx[r][y] = stop[y];                        // gamma vtx is gamma stop vtx
               }
               
-              gammaID[r] = id;
-              gammaE[r] = energy;
+              gammaID[r] = id;                                   // track ID of gamma in WCSimRootTrack array
+              gammaE[r] = energy;                                // gamma energy
               r++;
               
               //amb79
-              G4cout<<"Pi0 data: " << id <<G4endl;
-              wcsimrootevent->SetPi0Info(pi0Vtx, gammaID, gammaE, gammaVtx);
+              //G4cout<<"Pi0 data: " << id <<G4endl;
+              wcsimrootevent->SetPi0Info(pi0Vtx, gammaID, gammaE, gammaVtx);  // record the gamma
             }
           }
         }
@@ -1630,7 +1700,7 @@ void WCSimEventAction::FillRootEvent(G4int event_id,
 	       <<" get ntracks = " <<  wcsimrootevent->GetNtrack() << "\n";
 #endif
 	gatestart = WCTM->GetTriggerTime(index);
-	WCSimRootEventHeader*HH = wcsimrootevent->GetHeader();
+	WCSimRootEventHeader *HH = wcsimrootevent->GetHeader();
 	HH->SetDate(int(gatestart));
       }//index (loop over ngates)
     

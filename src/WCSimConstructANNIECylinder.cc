@@ -158,6 +158,8 @@ G4LogicalVolume* WCSimDetectorConstruction::ConstructANNIECylinder()
 						  logicWCBarrel,
 						  false,
 						  0,true);
+	G4cout<<"Constructed barrel cell blacksheet with radius "<<WCIDRadius<<" to "<<(WCIDRadius+WCBlackSheetThickness)<<G4endl;
+	WCCylInfo[2]=WCIDRadius/10.;
 	
 	G4LogicalBorderSurface * WaterBSBarrelCellSurface 
 		= new G4LogicalBorderSurface("WaterBSBarrelCellSurface",
@@ -337,9 +339,9 @@ G4LogicalVolume* WCSimDetectorConstruction::ConstructANNIECylinder()
 	for(int facei=0; facei<WCBarrelRingNPhi; facei++){
 		
 		// facei==0 is x<0, upstream. inner structure is rotated with corners upstream/downstream
-		if( facei!=0 && facei!=7 ) continue;
+		//  if( facei!=0 && facei!=7 ) continue; // ALL faces have od pmts
 		
-		for(G4double i = 0; i < 2; i++){                                     // 2 OD PMTs per face
+//		for(G4double i = 0; i < 2; i++){                                    // 1 OD PMT per face
 			for(G4double j = 0; j<WCBarrelNRings; j+=(WCBarrelNRings-1)){   // ODs at top and bottom of face
 				
 				// Select the appropriate PMT logical volume - from DetectorConfigs:
@@ -350,10 +352,12 @@ G4LogicalVolume* WCSimDetectorConstruction::ConstructANNIECylinder()
 				
 				// account only for rotation of the cell and vertical (ring) translation
 				// ring j==0 is top of tank.
+				G4double zflip = (j==0) ? -1 : 1;
 				G4ThreeVector PMTPosition =
-					G4ThreeVector((-barrelCellWidth/2.+(i+0.5)*horizontalSpacing)*sin((dPhi*facei)+112.5*deg),
-								  (-barrelCellWidth/2.+(i+0.5)*horizontalSpacing)*cos((dPhi*facei)+112.5*deg),
-								   -mainAnnulusHeight/2.+(j+1)*verticalSpacing-InnerStructureCentreOffset/2.);
+					G4ThreeVector((-barrelCellWidth/2.+horizontalSpacing)*sin((dPhi*facei)+112.5*deg),
+								  (-barrelCellWidth/2.+horizontalSpacing)*cos((dPhi*facei)+112.5*deg),
+								   -mainAnnulusHeight/2.-InnerStructureCentreOffset/2.
+								   +(j+1)*verticalSpacing+zflip*verticalSpacing*1.);
 				
 				// add translation of cell centre
 				G4double MountingRadius = WCIDRadius + WCPMTExposeHeightMap.at(pmtCollectionName);
@@ -362,7 +366,7 @@ G4LogicalVolume* WCSimDetectorConstruction::ConstructANNIECylinder()
 				PMTPosition.setX(PMTPosition.getX()+CellCentreX);
 				PMTPosition.setY(PMTPosition.getY()+CellCentreY);
 				
-				G4RotationMatrix* WCPMTRotationNext = (j==0) ? WCODPMTRotationMatrix : nullptr;
+				G4RotationMatrix* WCPMTRotationNext = (j!=0) ? WCODPMTRotationMatrix : nullptr;
 				
 				G4VPhysicalVolume* physiOuterDetectorPMT =
 						new G4PVPlacement(WCPMTRotationNext,    // its rotation
@@ -375,7 +379,7 @@ G4LogicalVolume* WCSimDetectorConstruction::ConstructANNIECylinder()
 										  true);                // check overlaps
 				PMTcounter++;
 			}
-		}
+		//}
 	}
 	
 	
@@ -426,6 +430,8 @@ void WCSimDetectorConstruction::ConstructANNIECaps(G4int zflip)
 						  false,
 						  0,
 						  true);
+	G4cout<<"constructed cap blacksheet at height "<<capAssemblyHeight*zflip+InnerStructureCentreOffset<<G4endl;
+	WCCylInfo[(zflip>0)]=(capAssemblyHeight*zflip+InnerStructureCentreOffset)/10.;
 	
 	G4LogicalBorderSurface * WaterBSBottomCapSurface 
 			= new G4LogicalBorderSurface("WaterBSCapPolySurface",

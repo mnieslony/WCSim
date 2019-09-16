@@ -5,14 +5,17 @@
 #first we must set which detector Element we wish to specify settings for
 /DAQ/SetDetectorElement tank
 
-/DAQ/Digitizer SKI                               # the only digitizer choice
-/DAQ/DigitizerOpt/ExtendIntegrationWindow false  # default, suitable for ANNIE DAQ digitizer
-/DAQ/DigitizerOpt/DeadTime 0                     # assume no digitizer deadtime FIXME
-/DAQ/DigitizerOpt/IntegrationWindow 8            # ANNIEDAQ has 8ns sample time
+/DAQ/Digitizer SKI                                # the only digitizer choice
+/DAQ/DigitizerOpt/ExtendIntegrationWindow false   # default, suitable for ANNIE DAQ digitizer
+/DAQ/DigitizerOpt/DeadTime 0                      # assume no digitizer deadtime FIXME
+/DAQ/DigitizerOpt/IntegrationWindow 200           # ANNIEDAQ has 8ns sample time
+/DAQ/DigitizerOpt/DoPhotonIntegration false       # Actually just make one digit from each photon, for the tank
 /DAQ/MultiDigitsPerTrigger true                   # allow more than one hit on any given PMT per event
 
 ## configure prompt trigger. This may be enabled for all triggers EXCEPT NoTrigger
 /DAQ/PromptTrigger/Enable true                    # enable recording mrd digits in a prompt beam trigger window
+/DAQ/PromptTrigger/PreTriggerWindow -100          # some times are smeared to negative: assuming from 0 misses digits
+
 /DAQ/PromptTrigger/PostTriggerWindow 2000         # 2us prompt trigger window duration
 
 # settings for delayed NDigits events
@@ -35,7 +38,7 @@
 
 /DAQ/Digitizer SKI                                # the only digitizer
 /DAQ/DigitizerOpt/DeadTime 0
-/DAQ/DigitizerOpt/IntegrationWindow 10            # should match the configured DISCRIMINATOR OUTPUT pulse duration
+/DAQ/DigitizerOpt/IntegrationWindow 200           # should match the configured DISCRIMINATOR OUTPUT pulse duration - MUST BE > PMT resn!
 /DAQ/DigitizerOpt/ExtendIntegrationWindow true    # replicate how LRS 4413 discriminators work
 /DAQ/MultiDigitsPerTrigger true                   # TDC settings are 1, but record all more than 1...
 
@@ -62,7 +65,7 @@
 /DAQ/SetDetectorElement facc
 #/DAQ/Digitizer SKI                               # the only digitizer
 /DAQ/DigitizerOpt/DeadTime 0                      # for annie these
-/DAQ/DigitizerOpt/IntegrationWindow 10            # should match mrd
+/DAQ/DigitizerOpt/IntegrationWindow 200           # should match mrd
 /DAQ/DigitizerOpt/ExtendIntegrationWindow true    # replicate how LRS 4413 discriminators work
 /DAQ/MultiDigitsPerTrigger true                   # digitizer settings say we should only have one... but record all
 

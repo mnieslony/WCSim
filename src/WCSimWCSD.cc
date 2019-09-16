@@ -208,17 +208,9 @@ G4bool WCSimWCSD::ProcessHits(G4Step* aStep, G4TouchableHistory*)
       // Then use the tubeTag to get the tube ID
       // See WCSimDetectorConstruction::DescribeAndRegisterPMT() for tag construction.
       std::stringstream tubeTag;
-      std::stringstream lappdTag;
-      if(isPMT){
-        for (G4int i = theTouchable->GetHistoryDepth()-1 ; i >= 0; i--){
-          tubeTag << ":" << theTouchable->GetVolume(i)->GetName();
-          tubeTag << "-" << theTouchable->GetCopyNumber(i);
-        }
-      } else {
-        for (G4int ii = theTouchable->GetHistoryDepth()-1 ; ii >= 0; ii--){
-          lappdTag << ":" << theTouchable->GetVolume(ii)->GetName();
-          lappdTag << "-" << theTouchable->GetCopyNumber(ii);
-        }
+      for (G4int i = theTouchable->GetHistoryDepth()-1 ; i >= 0; i--){
+        tubeTag << ":" << theTouchable->GetVolume(i)->GetName();
+        tubeTag << "-" << theTouchable->GetCopyNumber(i);
       }
       G4int replicaNumber;
       if(isPMT){
@@ -230,7 +222,7 @@ G4bool WCSimWCSD::ProcessHits(G4Step* aStep, G4TouchableHistory*)
           replicaNumber = WCSimDetectorConstruction::GetFaccTubeID(tubeTag.str());
         }
       } else {
-        replicaNumber = WCSimDetectorConstruction::GetLAPPDID(lappdTag.str());
+        replicaNumber = WCSimDetectorConstruction::GetLAPPDID(tubeTag.str());
       }
       
       // Retrieve the pointer to the appropriate hit collection.

@@ -26,7 +26,14 @@ public:
   WCSimRootOptions();
   virtual ~WCSimRootOptions();
   void Print(Option_t *option = "") const;
+  void PopulateFileVersion(); // helper function to populate these members
 
+  //General sets
+  void SetCommitHash(string iCommitHash){CommitHash=iCommitHash;}
+  void SetWCSimVersion(double iWCSimVersion){WCSimVersion=iWCSimVersion;}
+  //General gets
+  double GetWCSimVersion(){return WCSimVersion;}
+  string GetCommitHash(){return CommitHash;}
   //WCSimDetector* gets
   void SetDetectorName(string iDetectorName) {DetectorName = iDetectorName;}
   void SetSavePi0(bool iSavePi0) {SavePi0 = iSavePi0;}
@@ -56,11 +63,13 @@ public:
   void SetDigitizerDeadTime(int iDigitizerDeadTime) {DigitizerDeadTime = iDigitizerDeadTime;}
   void SetDigitizerIntegrationWindow(int iDigitizerIntegrationWindow) {DigitizerIntegrationWindow = iDigitizerIntegrationWindow;}
   void SetExtendIntegrationWindow(bool iExtendDigitizerIntegrationWindow) {ExtendDigitizerIntegrationWindow = iExtendDigitizerIntegrationWindow;}
+  void SetDoPhotonIntegration(bool iDoPhotonIntegration) {DoPhotonIntegration = iDoPhotonIntegration;}
   //WCSimWCDigitizer* gets
   string GetDigitizerClassName() {return DigitizerClassName;}
   int    GetDigitizerDeadTime() {return DigitizerDeadTime;}
   int    GetDigitizerIntegrationWindow() {return DigitizerIntegrationWindow;}
   bool   GetExtendDigitizerIntegrationWindow() {return ExtendDigitizerIntegrationWindow;}
+  bool   GetDoPhotonIntegration() {return DoPhotonIntegration;}
   //WCSimWCTrigger* sets
   void SetTriggerClassName(string itriggerClassName) {TriggerClassName = itriggerClassName;};
   void SetMultiDigitsPerTrigger(bool imultiDigitsPerTrigger) {MultiDigitsPerTrigger = imultiDigitsPerTrigger;};
@@ -131,6 +140,9 @@ public:
   WCSimRandomGenerator_t GetRandomGenerator() {return RandomGenerator;}
 
 private:
+  //WCSim General
+  string CommitHash;  // git tag of this commit
+  double WCSimVersion;
   //WCSimDetector*
   string DetectorName;
   bool   SavePi0;
@@ -150,6 +162,7 @@ private:
   int    DigitizerDeadTime; // ns
   int    DigitizerIntegrationWindow; // ns
   bool   ExtendDigitizerIntegrationWindow;
+  bool   DoPhotonIntegration;
 
   //WCSimWCTrigger*
   string TriggerClassName;

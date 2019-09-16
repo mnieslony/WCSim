@@ -628,6 +628,7 @@ private:
   void PlaceMylarOnMRDPaddles(G4VPhysicalVolume* expHall_phys, G4VPhysicalVolume* totMRD_phys);
   void PlaceSteels(G4LogicalVolume* totMRD_log);
   void makeAlu(G4AssemblyVolume* totMRD);
+  void MakeAluSciBooNE(G4LogicalVolume* totMRD_log);
   void PlaceVetoPaddles(G4LogicalVolume* totVeto_log);
   void PlaceVetoLGs(G4LogicalVolume* totVeto_log);
   void PlaceVetoSDsurfs(G4LogicalVolume* totVeto_log);
@@ -704,6 +705,7 @@ private:
 	G4double scintfullxlen;
 	G4double scintfullxlen2;
 	G4double scintfullzlen;
+	G4double scintfullzlen2;
 	G4double scinthfullylen;
 	G4double scintvfullylen;
 

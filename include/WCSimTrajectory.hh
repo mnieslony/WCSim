@@ -66,6 +66,12 @@ public: // with description
   inline G4String GetLastProcess() const {
     return lastStepsProcess;
   }
+  inline G4ThreeVector GetMomentumOnTankExit() const {
+    return momentumOnTankExit;
+  }
+  inline G4ThreeVector GetTankExitPoint() const {
+    return tankExitPoint;
+  }
   
   
   inline G4double GetGlobalTime() const
@@ -89,6 +95,10 @@ public: // with description
    { finalMomentum = currentMomentum;}
    inline void SetStoppingTime(G4double currentTime)
    { globalTimeEnd = currentTime; }
+   inline void SetMomentumOnTankExit(G4ThreeVector& currentMomentum)
+   { momentumOnTankExit = currentMomentum; }
+   inline void SetTankExitPoint(G4ThreeVector& currentPosition)
+   { tankExitPoint = currentPosition; }
 
 
 // Other member functions
@@ -131,6 +141,9 @@ public: // with description
   
   G4String                   thisStepsProcess;
   G4String                   lastStepsProcess;
+  
+  G4ThreeVector             momentumOnTankExit;
+  G4ThreeVector             tankExitPoint;
 };
 
 /***            TEMP  : M FECHNER ***********

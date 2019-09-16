@@ -69,6 +69,7 @@ void WCSimDetectorConstruction::DefineANNIEdimensions(){
 	scintfullxlen = 20*cm;
 	scintfullxlen2 = 15*cm;   // 2 upstream most layers of the MRD have narrower kTeV paddles
 	scintfullzlen= 0.6*cm;
+	scintfullzlen2 = 1.3*cm;  // based on caliper measurements, without cladding/wrapping
 	scinthfullylen = 147.2*cm; //155cm - 7.8cm tapered section		147.1 according to sciboone gdml export		//swapped???
 	scintvfullylen= 130.2*cm;  //138cm - 7.8cm tapered section		129.4 according to sciboone gdml export
 
@@ -86,7 +87,7 @@ void WCSimDetectorConstruction::DefineANNIEdimensions(){
 	windowwidth = (steelfullxlen-(4*alufullxthickness))/3;	// (full length - 4 beams) / 3 windows
 	windowheight= (steelfullylen-(4*alufullythickness))/3;
 	
-	mrdZlen = numplates*steelfullzlen + (numhpanels+numvpanels+1)*scintfullzlen + numalustructs*alufullzlen + (numhpanels+numvpanels)*layergap + scintalugap + MRDPMTRadius; 
+	mrdZlen = numplates*steelfullzlen + (numhpanels+numvpanels-1)*scintfullzlen + (2*scintfullzlen2) + numalustructs*alufullzlen + (numhpanels+numvpanels)*layergap + scintalugap + MRDPMTRadius; 
 	// add another panel to full length because last alu struct is placed back assuming it's there. Maybe need to change... 
 
 	vetopaddlefullxlen = 320.0*cm;
@@ -289,11 +290,13 @@ void WCSimDetectorConstruction::ConstructMRD(G4LogicalVolume* expHall_log, G4VPh
 
   // ADD ALU STRUCTURE
   // =================
-  G4AssemblyVolume* aluMRDassembly = new G4AssemblyVolume();
-  makeAlu(aluMRDassembly);
-  G4RotationMatrix rot (0,0,0);
-  G4ThreeVector trans(0,0,0);
-  G4cout<<"Making aluminium assembly"<<G4endl;						aluMRDassembly->MakeImprint(totMRD_log,trans,&rot);
+//  G4AssemblyVolume* aluMRDassembly = new G4AssemblyVolume();
+//  makeAlu(aluMRDassembly);
+//  G4RotationMatrix rot (0,0,0);
+//  G4ThreeVector trans(0,0,0);
+//  G4cout<<"Making aluminium assembly"<<G4endl;						aluMRDassembly->MakeImprint(totMRD_log,trans,&rot);
+  G4cout<<"Making aluminium assembly"<<G4endl;
+  MakeAluSciBooNE(totMRD_log);
   
   // ADD VIS ATTRIBS
   //================
@@ -480,7 +483,16 @@ void WCSimDetectorConstruction::PlaceMylarOnFACCPaddles(G4VPhysicalVolume* expHa
 void WCSimDetectorConstruction::ComputeSteelTransformation (const G4int copyNo, G4VPhysicalVolume* physVol) {
 		Xposition=0, Yposition=0, Zposition=0;
 			
-		Zposition=(copyNo)*(steelfullzlen + scintfullzlen + alufullzlen + layergap);	// layer width offset is always constant
+		// since layers are not all equal thickness, add up the z layer thicknesses to calculate offset
+		for(int precedinglayer=0; precedinglayer<copyNo; precedinglayer++){ // scan over the preceding layers and add up the z offsets
+			double thescintzlen;
+			if((precedinglayer%2==1)&&(precedinglayer<4)){
+				thescintzlen=scintfullzlen2;
+			} else {
+				thescintzlen=scintfullzlen;
+			}
+			Zposition += steelfullzlen + alufullzlen + layergap + thescintzlen;
+		}
 		//Zposition=Zposition + (scintfullzlen + scintalugap + alufullzlen + alusteelgap); 							// offset of first layer 
 		// no z offset of steel: front of first layer is front face of MRD.
 		Zposition=Zposition + (steelfullzlen/2);													// offset by half depth so we are placing front face not centre
@@ -503,12 +515,22 @@ void WCSimDetectorConstruction::ComputePaddleTransformation (const G4int copyNo,
 		G4int panelnum = GetLayerNum(copyNo, &paddlenum, &ishpaddle); 				// extra args are also set
 		G4int pairnum = floor(paddlenum/2);																		// Paddles 0&1 are a pair; 
 																																					// then X offset is the same for every pair
-		Zposition = panelnum*(steelfullzlen + alufullzlen + scintfullzlen + layergap);
+		// since layers are not all equal thickness, add up the z layer thicknesses to calculate offset
+		for(int precedinglayer=0; precedinglayer<panelnum; precedinglayer++){ // scan over the preceding layers and add up the z offsets
+			double thescintzlen;
+			if((precedinglayer%2==1)&&(precedinglayer<4)){
+				thescintzlen=scintfullzlen2;
+			} else {
+				thescintzlen=scintfullzlen;
+			}
+			Zposition += steelfullzlen + alufullzlen + layergap + thescintzlen;
+		}
 																																					// layer width offset is always constant (except first)
 		//if(panelnum==0){Zposition = Zposition + alufullzlen + scintalugap;}	// first layer intrudes into 'layer offset' 
 		Zposition = Zposition + steelfullzlen + steelscintgap;								// scint follows closely behind first steel
-		Zposition = Zposition + (scintfullzlen/2);														// offset by half depth so we place front face not centre
-		Zposition = Zposition + MRDPMTRadius - (mrdZlen/2);										// offset by half total length to shift to front
+		double thescintzlen = ((panelnum%2==1)&&(panelnum<4)) ? scintfullzlen2 : scintfullzlen;
+		Zposition = Zposition + (thescintzlen/2.);															// offset by half depth so we place front face not centre
+		Zposition = Zposition + MRDPMTRadius - (mrdZlen/2.);										// offset by half total length to shift to front
 		
 		//if(paddlenum==0){G4cout<<"scint layer placed at z = " << (Zposition + (mrdZlen/2) - (scintfullzlen/2) + tankouterRadius + 2*cm)<< " cm to "<< (Zposition + (mrdZlen/2) + (scintfullzlen/2) + tankouterRadius + 2*cm) << " cm." << G4endl;}
 		
@@ -596,12 +618,21 @@ void WCSimDetectorConstruction::ComputeTaperTransformation (const G4int copyNo, 
 		}*/
 		
 		// exact same z position calculations as paddles
-		Zposition = panelnum*(steelfullzlen + alufullzlen + scintfullzlen + layergap);
+		for(int precedinglayer=0; precedinglayer<panelnum; precedinglayer++){
+			double thescintzlen;
+			if((precedinglayer%2==1)&&(precedinglayer<4)){
+				thescintzlen=scintfullzlen2;
+			} else {
+				thescintzlen=scintfullzlen;
+			}
+			Zposition += steelfullzlen + alufullzlen + layergap + thescintzlen;
+		}
 																																					// layer width offset is always constant (except first)
 		//if(panelnum==0){Zposition = Zposition + alufullzlen + scintalugap;}		// first layer intrudes into 'layer offset' 
 		Zposition = Zposition + steelfullzlen + steelscintgap;								// scint follows closely behind first steel
-		Zposition = Zposition + (scintfullzlen/2);														// offset by half depth so we place front face not centre
-		Zposition=Zposition + MRDPMTRadius - (mrdZlen/2);																		// offset by half total length to shift to front
+		double thescintzlen = ((panelnum%2==1)&&(panelnum<4)) ? scintfullzlen2 : scintfullzlen;
+		Zposition = Zposition + (thescintzlen/2.);															// offset by half depth so we place front face not centre
+		Zposition=Zposition + MRDPMTRadius - (mrdZlen/2.);																		// offset by half total length to shift to front
 		if(additionaloffset){																									// when adding on top of SciBooNE code
 			Zposition+= (mrdZoffset - ((alufullzlen + scintfullzlen)/2));
 		}
@@ -762,7 +793,7 @@ void WCSimDetectorConstruction::PlacePaddles(G4LogicalVolume* totMRD_log){
 		else if((layernum%2)==0)     paddle_log = hpaddle_log;  // first, even paddles are horizontal
 		else                         paddle_log = vpaddle_log;  // sciboone vertical paddle
 		
-		paddle_phys = new G4PVPlacement(noRot,G4ThreeVector(), paddle_log, "paddle_phys", totMRD_log, false, i);
+		paddle_phys = new G4PVPlacement(noRot,G4ThreeVector(), paddle_log, "paddle_phys", totMRD_log, true, i);
 		ComputePaddleTransformation(i, paddle_phys);
 		paddles_phys.push_back(paddle_phys);
 	}
@@ -777,7 +808,7 @@ void WCSimDetectorConstruction::PlaceTapers(G4LogicalVolume* totMRD_log){
 	for(G4int i=0;i<nummrdpmts;i++){
 		int layernum = GetLayerNum(i);
 		if(layernum==1||layernum==3) continue; // first 2 vertical layers have no tapered scintillator
-		taper_phys = new G4PVPlacement(noRot,G4ThreeVector(), taper_log, "taper_phys", totMRD_log, false, i);
+		taper_phys = new G4PVPlacement(noRot,G4ThreeVector(), taper_log, "taper_phys", totMRD_log, true, i);
 		ComputeTaperTransformation(i, taper_phys, 0, false);
 		tapers_phys.push_back(taper_phys);
 	}
@@ -796,7 +827,7 @@ void WCSimDetectorConstruction::PlaceLGs(G4LogicalVolume* totMRD_log){
 		if(layernum==1||layernum==3) this_lg_log = lg_log2; // kTeV paddle
 		else                         this_lg_log = lg_log;
 		
-		lg_phys = new G4PVPlacement(noRot,G4ThreeVector(), this_lg_log, "lg_phys", totMRD_log, false, i);
+		lg_phys = new G4PVPlacement(noRot,G4ThreeVector(), this_lg_log, "lg_phys", totMRD_log, true, i);
 		ComputeTaperTransformation(i, lg_phys, 1, false);
 		lgs_phys.push_back(lg_phys);
 	}
@@ -813,7 +844,7 @@ void WCSimDetectorConstruction::PlaceMRDSDSurfs(G4LogicalVolume* totMRD_log){
 	G4VPhysicalVolume* mrdsdsurf_phys;
 	
 	for(G4int i=0;i<nummrdpmts;i++){
-			mrdsdsurf_phys = new G4PVPlacement(noRot,G4ThreeVector(), mrdsdsurf_log, "mrdsdsurf_phys", totMRD_log, false, i);
+			mrdsdsurf_phys = new G4PVPlacement(noRot,G4ThreeVector(), mrdsdsurf_log, "mrdsdsurf_phys", totMRD_log, true, i);
 			ComputeTaperTransformation(i, mrdsdsurf_phys, 3, useadditionaloffset);
 			mrdsdsurfs_phys.push_back(mrdsdsurf_phys);
 	}
@@ -863,7 +894,7 @@ void WCSimDetectorConstruction::PlaceSteels(G4LogicalVolume* totMRD_log){
 	steel_log = new G4LogicalVolume(steelMRDplate_box, G4Material::GetMaterial("Steel"), "steel_log");
 	G4VPhysicalVolume* steel_phys;
 	for(G4int i=0;i<(numplates);i++){		// first layer of steel has been removed
-			steel_phys = new G4PVPlacement(noRot,G4ThreeVector(), steel_log, "steel_phys", totMRD_log, false, i);
+			steel_phys = new G4PVPlacement(noRot,G4ThreeVector(), steel_log, "steel_phys", totMRD_log, true, i);
 			ComputeSteelTransformation(i, steel_phys);
 	}
 }
@@ -912,6 +943,203 @@ void WCSimDetectorConstruction::makeAlu(G4AssemblyVolume* aluMRDassembly){
 	}
 	//aluMRDassembly->MakeImprint(expHall->GetLogicalVolume(), Tm,&Rm);  //placement done in DetectorConstruction
 }
+
+// new version based on old SciBooNE code, more accurate structure geometry
+void WCSimDetectorConstruction::MakeAluSciBooNE(G4LogicalVolume* totMRD_log){
+  // extracted from/based on DefineMRD.icc
+  mrddb = new SBsimMRDDB();
+  MRDModule*   mrdmod = mrddb->GetMRDModuleInfo();
+  //MRDPosition* mrdpos = mrddb->GetMRDPositionInfo();   // global positions of layer centers
+  
+  G4double dx,dy,dz,dx1,dx2,dy1,dy2,dt;
+  G4RotationMatrix  Rm (0,0,0);
+  G4ThreeVector  Tm (0,0,400*cm);
+  
+  dx = mrdmod->AlSizeV1[3]*INCH;
+  dy = mrdmod->AlSizeV1[0]*INCH;
+  dt = mrdmod->AlSizeV1[2]*INCH;
+  dz = mrdmod->AlSizeV1[1]*INCH;
+  MRDAlV1_Outer = new G4Box("MRDAlV1_Outer", dx, dy, dz);
+  MRDAlV1_Inner = new G4Box("MRDAlV1_Inner", dx, dy-dt, dz-dt);
+  MRDAlV1_Solid = new G4SubtractionSolid("MRDAlV1_Solid",MRDAlV1_Outer,MRDAlV1_Inner) ;
+  MRDAlV1_LV = new G4LogicalVolume(MRDAlV1_Solid, G4Material::GetMaterial("Aluminum"), "MRDAlV1_LV") ;
+
+  dx = mrdmod->AlSizeV2[3]*INCH;
+  dy = mrdmod->AlSizeV2[0]*INCH;
+  dt = mrdmod->AlSizeV2[2]*INCH;
+  dz = mrdmod->AlSizeV2[1]*INCH;
+  MRDAlV2_Outer = new G4Box("MRDAlV2_Outer", dx, dy, dz);
+  MRDAlV2_Inner = new G4Box("MRDAlV2_Inner", dx, dy-dt, dz-dt);
+  MRDAlV2_Solid = new G4SubtractionSolid("MRDAlV2_Solid",MRDAlV2_Outer,MRDAlV2_Inner) ;
+  MRDAlV2_LV = new G4LogicalVolume(MRDAlV2_Solid, G4Material::GetMaterial("Aluminum"), "MRDAlV2_LV") ;
+
+  dx = mrdmod->AlSizeV3[0]*INCH;
+  dy = mrdmod->AlSizeV3[3]*INCH;
+  dt = mrdmod->AlSizeV3[2]*INCH;
+  dz = mrdmod->AlSizeV3[1]*INCH;
+  MRDAlV3_Outer = new G4Box("MRDAlV3_Outer", dx, dy, dz);
+  MRDAlV3_Inner = new G4Box("MRDAlV3_Inner", dx-dt, dy, dz-dt);
+  MRDAlV3_Solid = new G4SubtractionSolid("MRDAlV3_Solid",MRDAlV3_Outer,MRDAlV3_Inner) ;
+  MRDAlV3_LV = new G4LogicalVolume(MRDAlV3_Solid, G4Material::GetMaterial("Aluminum"), "MRDAlV3_LV") ;
+
+  dx = mrdmod->AlSizeV4[0]*INCH;
+  dy = mrdmod->AlSizeV4[3]*INCH;
+  dt = mrdmod->AlSizeV4[2]*INCH;
+  dz = mrdmod->AlSizeV4[1]*INCH;
+  MRDAlV4_Outer = new G4Box("MRDAlV4_Outer", dx, dy, dz);
+  MRDAlV4_Inner = new G4Box("MRDAlV4_Inner", dx-dt, dy, dz-dt);
+  MRDAlV4_Solid = new G4SubtractionSolid("MRDAlV4_Solid",MRDAlV4_Outer,MRDAlV4_Inner) ;
+  MRDAlV4_LV = new G4LogicalVolume(MRDAlV4_Solid, G4Material::GetMaterial("Aluminum"), "MRDAlV4_LV") ;
+
+  dx = mrdmod->AlSizeV5[0]*INCH;
+  dy = mrdmod->AlSizeV5[3]*INCH;
+  dt = mrdmod->AlSizeV5[2]*INCH;
+  dz = mrdmod->AlSizeV5[1]*INCH;
+  MRDAlV5_Outer = new G4Box("MRDAlV5_Outer", dx, dy, dz);
+  MRDAlV5_Inner = new G4Box("MRDAlV5_Inner", dx-dt, dy, dz-dt);
+  MRDAlV5_Solid = new G4SubtractionSolid("MRDAlV5_Solid",MRDAlV5_Outer,MRDAlV5_Inner) ;
+  MRDAlV5_LV = new G4LogicalVolume(MRDAlV5_Solid, G4Material::GetMaterial("Aluminum"), "MRDAlV5_LV") ;
+
+  dx = mrdmod->AlSizeH1[0]*INCH;
+  dy = mrdmod->AlSizeH1[3]*INCH;
+  dt = mrdmod->AlSizeH1[2]*INCH;
+  dz = mrdmod->AlSizeH1[1]*INCH;
+  MRDAlH1_Outer = new G4Box("MRDAlH1_Outer", dx, dy, dz);
+  MRDAlH1_Inner = new G4Box("MRDAlH1_Inner", dx-dt, dy, dz-dt);
+  MRDAlH1_Solid = new G4SubtractionSolid("MRDAlH1_Solid",MRDAlH1_Outer,MRDAlH1_Inner) ;
+  MRDAlH1_LV = new G4LogicalVolume(MRDAlH1_Solid, G4Material::GetMaterial("Aluminum"), "MRDAlH1_LV") ;
+
+  dx = mrdmod->AlSizeH2[3]*INCH;
+  dy = mrdmod->AlSizeH2[0]*INCH;
+  dt = mrdmod->AlSizeH2[2]*INCH;
+  dz = mrdmod->AlSizeH2[1]*INCH;
+  MRDAlH2_Outer = new G4Box("MRDAlH2_Outer", dx, dy, dz);
+  MRDAlH2_Inner = new G4Box("MRDAlH2_Inner", dx, dy-dt, dz-dt);
+  MRDAlH2_Solid = new G4SubtractionSolid("MRDAlH2_Solid",MRDAlH2_Outer,MRDAlH2_Inner) ;
+  MRDAlH2_LV = new G4LogicalVolume(MRDAlH2_Solid, G4Material::GetMaterial("Aluminum"), "MRDAlH2_LV") ;
+
+  dx = mrdmod->AlSizeH3[3]*INCH;
+  dy = mrdmod->AlSizeH3[0]*INCH;
+  dt = mrdmod->AlSizeH3[2]*INCH;
+  dz = mrdmod->AlSizeH3[1]*INCH;
+  MRDAlH3_Outer = new G4Box("MRDAlH3_Outer", dx, dy, dz);
+  MRDAlH3_Inner = new G4Box("MRDAlH3_Inner", dx, dy-dt, dz-dt);
+  MRDAlH3_Solid = new G4SubtractionSolid("MRDAlH3_Solid",MRDAlH3_Outer,MRDAlH3_Inner) ;
+  MRDAlH3_LV = new G4LogicalVolume(MRDAlH3_Solid, G4Material::GetMaterial("Aluminum"), "MRDAlH3_LV") ;
+
+// assembly AL support
+  MRDAlSupportV = new G4AssemblyVolume();
+  MRDAlSupportH = new G4AssemblyVolume();
+
+  G4RotationMatrix  Ra (0,0,0);
+  G4ThreeVector  Ta (0,0,0);
+
+  Ta.set(0,47.*INCH,0);
+  MRDAlSupportV->AddPlacedVolume(MRDAlV1_LV, Ta,&Ra);
+  Ta.set(0,-47.*INCH,0);
+  MRDAlSupportV->AddPlacedVolume(MRDAlV1_LV, Ta,&Ra);
+
+  Ta.set(0,18.*INCH,0);
+  MRDAlSupportV->AddPlacedVolume(MRDAlV2_LV, Ta,&Ra);
+  Ta.set(0,-18.*INCH,0);
+  MRDAlSupportV->AddPlacedVolume(MRDAlV2_LV, Ta,&Ra);
+
+  Ta.set(18.*INCH,32.5*INCH,0);
+  MRDAlSupportV->AddPlacedVolume(MRDAlV3_LV, Ta,&Ra);
+  Ta.set(18.*INCH,-32.5*INCH,0);
+  MRDAlSupportV->AddPlacedVolume(MRDAlV3_LV, Ta,&Ra);
+  Ta.set(-18.*INCH,32.5*INCH,0);
+  MRDAlSupportV->AddPlacedVolume(MRDAlV3_LV, Ta,&Ra);
+  Ta.set(-18.*INCH,-32.5*INCH,0);
+  MRDAlSupportV->AddPlacedVolume(MRDAlV3_LV, Ta,&Ra);
+  Ta.set(54.*INCH,32.5*INCH,0);
+  MRDAlSupportV->AddPlacedVolume(MRDAlV3_LV, Ta,&Ra);
+  Ta.set(54.*INCH,-32.5*INCH,0);
+  MRDAlSupportV->AddPlacedVolume(MRDAlV3_LV, Ta,&Ra);
+  Ta.set(-54.*INCH,32.5*INCH,0);
+  MRDAlSupportV->AddPlacedVolume(MRDAlV3_LV, Ta,&Ra);
+  Ta.set(-54.*INCH,-32.5*INCH,0);
+  MRDAlSupportV->AddPlacedVolume(MRDAlV3_LV, Ta,&Ra);
+
+  Ta.set(-54.*INCH,0,0);
+  MRDAlSupportV->AddPlacedVolume(MRDAlV4_LV, Ta,&Ra);
+  Ta.set(-18.*INCH,0,0);
+  MRDAlSupportV->AddPlacedVolume(MRDAlV4_LV, Ta,&Ra);
+  Ta.set(18.*INCH,0,0);
+  MRDAlSupportV->AddPlacedVolume(MRDAlV4_LV, Ta,&Ra);
+  Ta.set(54.*INCH,0,0);
+  MRDAlSupportV->AddPlacedVolume(MRDAlV4_LV, Ta,&Ra);
+
+  Ta.set(61.5*INCH,51.*INCH,0);
+  MRDAlSupportV->AddPlacedVolume(MRDAlV5_LV, Ta,&Ra);
+  Ta.set(61.5*INCH,-51.*INCH,0);
+  MRDAlSupportV->AddPlacedVolume(MRDAlV5_LV, Ta,&Ra);
+  Ta.set(-61.5*INCH,51.*INCH,0);
+  MRDAlSupportV->AddPlacedVolume(MRDAlV5_LV, Ta,&Ra);
+  Ta.set(-61.5*INCH,-51.*INCH,0);
+  MRDAlSupportV->AddPlacedVolume(MRDAlV5_LV, Ta,&Ra);
+
+  // horizontal frame
+  Ta.set(18.*INCH,0,0);
+  MRDAlSupportH->AddPlacedVolume(MRDAlH1_LV, Ta,&Ra);
+  Ta.set(-18.*INCH,0,0);
+  MRDAlSupportH->AddPlacedVolume(MRDAlH1_LV, Ta,&Ra);
+  Ta.set(54.*INCH,0,0);
+  MRDAlSupportH->AddPlacedVolume(MRDAlH1_LV, Ta,&Ra);
+  Ta.set(-54.*INCH,0,0);
+  MRDAlSupportH->AddPlacedVolume(MRDAlH1_LV, Ta,&Ra);
+
+  Ta.set(0,53.*INCH,0);
+  MRDAlSupportH->AddPlacedVolume(MRDAlH2_LV, Ta,&Ra);
+  Ta.set(0,-53.*INCH,0);
+  MRDAlSupportH->AddPlacedVolume(MRDAlH2_LV, Ta,&Ra);
+
+  Ta.set(0,18.*INCH,0);
+  MRDAlSupportH->AddPlacedVolume(MRDAlH3_LV, Ta,&Ra);
+  Ta.set(0,-18.*INCH,0);
+  MRDAlSupportH->AddPlacedVolume(MRDAlH3_LV, Ta,&Ra);
+  Ta.set(36*INCH,18.*INCH,0);
+  MRDAlSupportH->AddPlacedVolume(MRDAlH3_LV, Ta,&Ra);
+  Ta.set(36*INCH,-18.*INCH,0);
+  MRDAlSupportH->AddPlacedVolume(MRDAlH3_LV, Ta,&Ra);
+  Ta.set(-36*INCH,18.*INCH,0);
+  MRDAlSupportH->AddPlacedVolume(MRDAlH3_LV, Ta,&Ra);
+  Ta.set(-36*INCH,-18.*INCH,0);
+  MRDAlSupportH->AddPlacedVolume(MRDAlH3_LV, Ta,&Ra);
+  
+  G4double xpos,ypos,zpos;
+  for (G4int layer=0; layer<numalustructs; layer++){
+    // new calculated version instead of read from file
+    xpos = 0;
+    ypos = 0;
+    zpos = MRDPMTRadius - mrdZlen/2.;  // offset by half total length to shift to front
+    // sum up total offset of this layer
+    for(int precedinglayer=0; precedinglayer<layer; precedinglayer++){
+      double thescintzlen;
+      if((precedinglayer%2==1)&&(precedinglayer<4)){
+        thescintzlen=scintfullzlen2;
+      } else {
+        thescintzlen=scintfullzlen;
+      }
+      zpos += steelfullzlen + alufullzlen + layergap + thescintzlen;
+    }
+    // offset of this alu structure relative to the start of the layer
+    zpos+= steelfullzlen + steelscintgap + scintfullzlen + scintalugap;
+    
+    if (layer % 2 ==0) {
+      zpos = zpos +scintfullzlen + 0.75*INCH;
+      Tm.set(xpos,ypos,zpos);
+      MRDAlSupportH->MakeImprint(totMRD_log, Tm,&Rm); //placement
+    } else {
+      G4double thescintzlen;
+      if(layer<4) thescintzlen = scintfullzlen2;
+      else thescintzlen = scintfullzlen;
+      zpos = zpos + thescintzlen + 0.75*INCH;
+      Tm.set(xpos,ypos,zpos);
+      MRDAlSupportV->MakeImprint(totMRD_log, Tm,&Rm); //placement
+    }
+  }  // end loop over Al layers
+}    // end of SciBooNE make MRD Al
 
 // Code to do generation and placement of veto paddles
 // ===================================================

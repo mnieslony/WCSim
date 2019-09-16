@@ -21,6 +21,7 @@
 #include "G4SystemOfUnits.hh"
 #include "G4PhysicalConstants.hh"
 #include <math.h> 
+#include <libgen.h>
 
 #include "G4Navigator.hh"
 #include "G4TransportationManager.hh"
@@ -36,7 +37,7 @@
 
 // when loading dirt primaries, skip entries that are from upstream rock interactions. 
 #ifndef ONLY_TANK_EVENTS
-#define ONLY_TANK_EVENTS
+//#define ONLY_TANK_EVENTS
 #endif
 
 // as help for reconstruction, a sample where light is only from muons, no other primary particles from the event.
@@ -408,7 +409,8 @@ void WCSimPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 			G4cout<< "Reached end of Tree. Last entries' tree number was "
 						<< treeNumber <<", this entries' tree number is "<< nextTreeNumber <<G4endl;
 			dirtFileName = inputdata->GetCurrentFile()->GetName(); // new tree, new file
-			G4cout<<"Getting new tree branches"<<G4endl;
+			char* dirtFileNameAsChar = strdup(dirtFileName.c_str());
+			dirtFileName = basename(dirtFileNameAsChar);
 			inputdata->SetBranchAddress("run",&runbranchval,&runBranch);
 			inputdata->SetBranchAddress("ntank",&ntankbranchval,&nTankBranch);
 			inputdata->SetBranchAddress("nupdg",&nupdgval,&nupdgBranch);
@@ -565,7 +567,7 @@ void WCSimPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 			if(nuprimarybranchval[i]==1){ primariesinthisentry=true; break; }
 		}
 		if(!primariesinthisentry){ // not genie primaries... (this shouldn't happen)
-			//G4cout<<"---------------SKIPPING NON-TANK ENTRY----------------"<<G4endl;
+			G4cout<<"---------------SKIPPING ENTRY WITH NO GENIE PRIMARIES----------------"<<G4endl;
 			inputEntry++;
 			localEntry = inputdata->LoadTree(inputEntry);
 			if(localEntry<0){
@@ -582,10 +584,10 @@ void WCSimPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 		// ensure the event has at least one muon and skip it if not
 		Bool_t muonsinthisentry=false;
 		for(int i=0;i<ntankbranchval;i++){
-			if(pdgbranchval[i]==1){ muonsinthisentry=true; break; }
+			if(pdgbranchval[i]==13){ muonsinthisentry=true; break; }
 		}
 		if(!muonsinthisentry){ // no muons in the event
-			//G4cout<<"---------------SKIPPING ENTRY WITH NO MUONS ----------------"<<G4endl;
+			G4cout<<"---------------SKIPPING ENTRY WITH NO MUONS ----------------"<<G4endl;
 			inputEntry++;
 			localEntry = inputdata->LoadTree(inputEntry);
 			if(localEntry<0){
@@ -597,7 +599,6 @@ void WCSimPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 				G4cout<<"@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#"<<G4endl;
 			} else { goto loadbeamentry; } // load the next entry
 		}
-		goto loadbeamentry; 
 #endif
 		// First the genie information (largely unused as not currently stored in wcsim output)
 		// ===========================
@@ -852,13 +853,30 @@ void WCSimPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
       double tote = anEvent->GetPrimaryVertex()->GetPrimary()->GetTotalEnergy();
       double ke = anEvent->GetPrimaryVertex()->GetPrimary()->GetKineticEnergy();
       
-      G4ParticleDefinition* parttype = particleTable->FindParticle(pdg);
-      G4String particlename;
-      particlename = (parttype!=0) ? (std::string(parttype->GetParticleName())) : (std::to_string(pdg));
-      G4cout<<"Generating primary "<<particlename<<" with total energy "
-            <<tote/MeV<<"MeV and kinetic energy "<<ke/MeV
-            <<"MeV at ("<<vtx.x()<<", "<<vtx.y()<<", "<<vtx.z()<<") in direction ("
-            <<dir.x()<<", "<<dir.y()<<", "<<dir.z()<<") "<<G4endl;
+      int nprimaryvertices = anEvent->GetNumberOfPrimaryVertex();
+      G4cout<<"Generating event with "<<nprimaryvertices<<" primary vertices"<<G4endl;
+      for(int evtvtxi=0; evtvtxi<nprimaryvertices; evtvtxi++){
+        G4PrimaryVertex* thevertex = anEvent->GetPrimaryVertex(evtvtxi);
+        int nparticles = thevertex->GetNumberOfParticle();
+        G4cout<<"Primary vertex "<<evtvtxi<<" has "<<nparticles<<" particles"<<G4endl;
+        vtx  = thevertex->GetPosition();
+        
+        for(int parti=0; parti<nparticles; parti++){
+          G4PrimaryParticle* theprimary = thevertex->GetPrimary(parti);
+          pdg  = theprimary->GetPDGcode();
+          tote = theprimary->GetTotalEnergy();
+          ke   = theprimary->GetKineticEnergy();
+          dir  = theprimary->GetMomentum().unit();
+          
+          G4ParticleDefinition* parttype = particleTable->FindParticle(pdg);
+          G4String particlename;
+          particlename = (parttype!=0) ? (std::string(parttype->GetParticleName())) : (std::to_string(pdg));
+          G4cout<<"Generating primary "<<particlename<<" with total energy "
+                <<tote/MeV<<"MeV and kinetic energy "<<ke/MeV
+                <<"MeV at ("<<vtx.x()<<", "<<vtx.y()<<", "<<vtx.z()<<") in direction ("
+                <<dir.x()<<", "<<dir.y()<<", "<<dir.z()<<") "<<G4endl;
+        }
+      }
     }
 }
 
@@ -984,6 +1002,8 @@ void WCSimPrimaryGeneratorAction::LoadNewPrimaries(){
 	treeNumber=inputdata->GetTreeNumber();
 	localEntry = inputdata->LoadTree(inputEntry);
 	dirtFileName = inputdata->GetCurrentFile()->GetName(); // new tree, new file
+	char* dirtFileNameAsChar = strdup(dirtFileName.c_str());
+	dirtFileName = basename(dirtFileNameAsChar);
 	
 	loadNewPrimaries=false;
 }
