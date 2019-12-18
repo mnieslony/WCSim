@@ -3,6 +3,8 @@
 
 #include "G4VUserPrimaryGeneratorAction.hh"
 #include "G4ThreeVector.hh"
+#include "G4SPSAngDistribution.hh"
+#include "G4SPSPosDistribution.hh"
 #include "globals.hh"
 #include "TTree.h"
 #include "TChain.h"
@@ -45,6 +47,10 @@ public:
   void SetNvtxs(G4int i)     { nvtxs = i; };
   void SetVtxs(G4int i, G4ThreeVector v)     { vtxs[i] = v; };
 
+  G4double ShootEnergyPositronCustom();
+  G4double ShootEnergyNeutron();
+
+
   // These go with jhfNtuple
   G4int GetVecRecNumber(){return vecRecNumber;}
   G4int GetMode() {return mode;};
@@ -83,15 +89,25 @@ private:
   G4ParticleGun*                  particleGun;
   G4GeneralParticleSource*        MyGPS;  //T. Akiri: GPS to run Laser
   WCSimPrimaryGeneratorMessenger* messenger;
-  
+
+  // Angular and positional generators (AntiNu generator)
+  G4SPSAngDistribution *theSPSAng = nullptr;
+  G4SPSPosDistribution *theSPSPos = nullptr;
+  G4ThreeVector thePosition;
+  G4ThreeVector theDirection;
+  G4bool isFirstEvent;
+
   // Variables set by the messenger
   G4bool   useMulineEvt;
   G4bool   useGunEvt;
   G4bool   useLaserEvt;  //T. Akiri: Laser flag
   G4bool   useBeamEvt;
   G4bool   useGPSEvt;
+  G4bool   useAntiNuEvt;
   std::fstream inputFile;
+  std::fstream inputSpecFile;
   G4String vectorFileName;
+  G4String spectrumFileName;
   G4bool   GenerateVertexInRock;
   
   G4String dirtFileName;
@@ -141,7 +157,12 @@ private:
 	G4String primariesDirectory;
 	G4String neutrinosDirectory;
 	G4bool loadNewPrimaries;
-	G4int primariesoffset;
+	G4int primariesoffset;	
+
+  // antinu read-in of the energy spectrum
+  std::vector<G4double> Espectrum;
+  std::vector<G4double> Espectrum_positron;
+  std::vector<G4double> ProbabilitySpec;
 	
 public:
 
@@ -158,6 +179,9 @@ public:
   inline void SetBeamEvtGenerator(G4bool choice) { useBeamEvt = choice; }
   inline G4bool IsUsingBeamEvtGenerator()  { return useBeamEvt; }
 
+  inline void SetAntiNuEvtGenerator(G4bool choice) { useAntiNuEvt = choice; }
+  inline G4bool IsUsingAntiNuEvtGenerator()  { return useAntiNuEvt; }
+  
   inline void SetGPSEvtGenerator(G4bool choice) { useGPSEvt = choice; }
   inline G4bool IsUsingGPSEvtGenerator()  { return useGPSEvt; }
 
@@ -174,7 +198,28 @@ public:
       exit(-1);
     }
   }
-  
+
+  inline void OpenSpectrumFile(G4String spectrumFile)
+  {
+    if ( inputSpecFile.is_open() )
+      inputSpecFile.close();
+
+    spectrumFileName = spectrumFile;
+    inputSpecFile.open(spectrumFileName, std::fstream::in);
+
+    if (!inputSpecFile.is_open() ) {
+      G4cout << "Energy spectrum file "<< spectrumFileName << "not found" << G4endl;
+      exit(-1);
+    }
+  }
+ 
+  void SetPosition(G4ThreeVector position) {theSPSPos->SetCentreCoords(position);}
+  void SetRadius(G4double radius) {theSPSPos->SetRadius(radius);}
+  void SetHalfZ(G4double height) {theSPSPos->SetHalfZ(height);}
+  void SetRot1(G4ThreeVector rot) {theSPSPos->SetPosRot1(rot);}
+  void SetRot2(G4ThreeVector rot) {theSPSPos->SetPosRot2(rot);}
+
+ 
   inline void SetPrimaryFilesDirectory(G4String directoryName) { primariesDirectory = directoryName; }
   inline void SetNeutrinoFilesDirectory(G4String directoryName) { neutrinosDirectory = directoryName; }
   inline void SetNewPrimariesFlag(G4bool flagin){ loadNewPrimaries=flagin; }
