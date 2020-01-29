@@ -233,18 +233,19 @@ G4LogicalVolume* WCSimDetectorConstruction::ConstructANNIECylinder()
 		for(G4double i = 0; i < WCPMTperCellHorizontal; i++){
 			for(G4double j = 0; j < WCBarrelNRings; j++){
 				
-				// we have one hole: skip PMT placement
-				if( j==5 && facei==0 && i==0 ) continue;
+				// we have three holes: skip PMT placement
+				if( j==0 && i==0 && facei%2==1) continue;
 				
 				// Select the appropriate PMT logical volume
 				// PMTs are placed in the vector in the order their collections are defined
 				// - i.e. in the order they are declared in DetectorConfigs: 
 				// {R7081 (10" WB/LUX), D784KFLB (11" LBNE), R5912HQE (8" HQE), R7081HQE (10" HQE WM)}
 				
+				// this all needs checking and updating from https://docs.google.com/spreadsheets/d/1ibLTn5LwGrklDwCx7HrJDo3ol8Ba3MdKZw3MDzxbjsM/edit#gid=0
 				// 0:  8",  8"
 				// 1:  WB,  8" << 3 faces //  WB,  WB << 5 faces   (3 * 8" on downstream... is upstream better?)
-				// 2:  WB,  WM << 2 faces //  WB,  8" << 6 faces
-				// 3:  WM,  WB
+				// 2:  WB,  WB
+				// 3:  WM/WB, WB/None  << odd faces have 2xWB, even faces have 1xWM, 1xgap
 				// 4:  WB,  WB
 				// 5:  8",  8" (missing one)
 				// N.B. facei==0 is x<0, upstream.
@@ -303,8 +304,8 @@ G4LogicalVolume* WCSimDetectorConstruction::ConstructANNIECylinder()
 		
 		// position LAPPD on corner of the inner strucutre
 		// Note PMTs use double facei=0.5, using int facei=0 accounts for the relative rotation
-		G4double CellCentreX = WCIDRadius * sin(dPhi*facei);
-		G4double CellCentreY = WCIDRadius * cos(dPhi*facei);
+		G4double CellCentreX = (WCIDRadius - WCLAPPDSliderThickness) * sin(dPhi*facei);
+		G4double CellCentreY = (WCIDRadius - WCLAPPDSliderThickness) * cos(dPhi*facei);
 		
 		double verticalSpacingLAPPD	= mainAnnulusHeight/(WCLAPPDperCellVertical+1);
 		

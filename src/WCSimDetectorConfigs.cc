@@ -698,7 +698,7 @@ void WCSimDetectorConstruction::SetANNIEPhase2Geometryv6()
   // PMTs on hand:
   // Side: 45 x 10" (Watchboy, R7081) + 40 x 8" (new, HQE R5912) + 10 x 10" HQE (Watchman, R7081HQE)
   // Bottom: 20 x 10” PMTs (LUX, R7081)
-  // Top: 19 x 11” PMTs (LBNE, HQE D784KFLB)  // NB. UPDATED NUMBER, DOWN FROM 22
+  // Top: 20 x 11” PMTs (LBNE, HQE D784KFLB)  // NB. UPDATED NUMBER, DOWN FROM 22
   
   WCPosition=0.;//Set the WC tube offset to zero ???
   
@@ -847,6 +847,7 @@ void WCSimDetectorConstruction::SetANNIEPhase2Geometryv6()
   // LAPPDs at octagon corners
   WCLAPPDperCellHorizontal= 1;				// 1 LAPPD on each octagon face (corner)
   WCLAPPDperCellVertical  = 3;				// 3 rings of LAPPDs
+  WCLAPPDSliderThickness  = 20*cm;			// offset of the LAPPD from inner structure corner
   
 }
 
