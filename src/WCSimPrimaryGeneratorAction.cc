@@ -76,7 +76,7 @@ inline int   atoi( const string& s ) {return std::atoi( s.c_str() );}
 
 WCSimPrimaryGeneratorAction::WCSimPrimaryGeneratorAction(
 					  WCSimDetectorConstruction* myDC)
-  :myDetector(myDC), loadNewPrimaries(true), inputdata(0), primariesDirectory(""), neutrinosDirectory(""), vectorFileName("")
+  :myDetector(myDC), loadNewPrimaries(true), loadNewGenie(true), inputdata(0), geniedata(0), primariesDirectory(""), neutrinosDirectory(""), genieDirectory(""), vectorFileName("")
 {
   //T. Akiri: Initialize GPS to allow for the laser use 
   MyGPS = new G4GeneralParticleSource();
@@ -127,7 +127,8 @@ WCSimPrimaryGeneratorAction::WCSimPrimaryGeneratorAction(
   useBeamEvt = true;
   useGPSEvt = false;
   useAntiNuEvt = false; 
-     
+  useGenieEvt = false; 
+    
 #ifndef NO_GENIE
   genierecordval = new genie::NtpMCEventRecord;
 #endif
@@ -163,6 +164,13 @@ WCSimPrimaryGeneratorAction::~WCSimPrimaryGeneratorAction()
 #endif
     }
   }
+
+  if(useGenieEvt){
+    if(geniedata){
+      geniedata->ResetBranchAddresses();
+      delete geniedata;
+    }
+   }
 
 }
 
@@ -841,6 +849,7 @@ void WCSimPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 			G4VPhysicalVolume* primaryPV = theNavigator->LocateGlobalPointAndSetup(thevtx); 
 			G4cout<<" in "<< primaryPV->GetName()<<G4endl;
 			
+
 			particleGun->SetParticleEnergy(keval);       // !!!kinetic!!! energy
 			particleGun->SetParticlePosition(thevtx);
 			//particleGun->SetParticleTime(vtxtval);     // set event time t=0 for prompt trigger.
@@ -867,7 +876,7 @@ void WCSimPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
   else if (useGPSEvt)
     {
       MyGPS->GeneratePrimaryVertex(anEvent);
-      
+
       G4ThreeVector P   =anEvent->GetPrimaryVertex()->GetPrimary()->GetMomentum();
       G4ThreeVector vtx =anEvent->GetPrimaryVertex()->GetPosition();
       G4double m        =anEvent->GetPrimaryVertex()->GetPrimary()->GetMass(); // this is rest mass
@@ -908,6 +917,251 @@ void WCSimPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
                 <<dir.x()<<", "<<dir.y()<<", "<<dir.z()<<") "<<G4endl;
         }
       }
+    } else if (useGenieEvt){
+
+      G4cout <<"Genie + TALYS event generator: Initialising..."<<G4endl;
+
+      if (localEntry!=0) loadNewGenie = false;
+      G4cout <<"loadNewGenie: "<<loadNewGenie<<G4endl;      
+
+      // Load the next entry, with all required trees and files
+      // -----------------------------------------------------
+      
+      loadgenieentry:
+      if(loadNewGenie){
+        G4cout <<"Loading new GENIE File"<<G4endl;
+        LoadNewGENIEFile(); 
+      } // update TChain if a new file is loaded by messenger
+      
+      G4cout <<"loadNewGenie (after loading GENIE File): "<<loadNewGenie<<G4endl;
+     
+      //inputdata has already had tree loaded at the end of last event's GeneratePrimaries call
+      //localEntry will already be the value of the NEXT entry
+      
+      G4cout <<"Get tree number..."<<G4endl;
+      Int_t nextTreeNumber = geniedata->GetTreeNumber();
+      G4cout <<"treeNumber: "<<treeNumber<<", nextTreeNumber: "<<nextTreeNumber<<G4endl;
+      if(treeNumber!=nextTreeNumber){
+  
+        G4cout<< "Reached end of Tree. Last entries' tree number was "
+                                                << treeNumber <<", this entries' tree number is "<< nextTreeNumber <<G4endl;
+        genieFileName = inputdata->GetCurrentFile()->GetName(); // new tree, new file
+        char* genieFileNameAsChar = strdup(genieFileName.c_str());
+        genieFileName = basename(genieFileNameAsChar);
+
+        geniedata->SetBranchAddress("iev",&genie_entry,&genie_entry_branch);
+        geniedata->SetBranchAddress("neu",&genie_neutrinoflav,&genie_neutrinoflav_branch);
+        geniedata->SetBranchAddress("Ev",&genie_neutrinoE,&genie_neutrinoE_branch);
+        geniedata->SetBranchAddress("pxv",&genie_neutrinopx,&genie_neutrinopx_branch);
+        geniedata->SetBranchAddress("pyv",&genie_neutrinopy,&genie_neutrinopy_branch);
+        geniedata->SetBranchAddress("pzv",&genie_neutrinopz,&genie_neutrinopz_branch);
+        geniedata->SetBranchAddress("cc",&genie_cc,&genie_cc_branch);
+        geniedata->SetBranchAddress("nc",&genie_nc,&genie_nc_branch);
+        geniedata->SetBranchAddress("Z",&genie_Z,&genie_Z_branch);
+        geniedata->SetBranchAddress("A",&genie_A,&genie_A_branch);
+        geniedata->SetBranchAddress("nfn",&genie_final_n,&genie_final_n_branch);
+        geniedata->SetBranchAddress("nfp",&genie_final_p,&genie_final_p_branch);
+        geniedata->SetBranchAddress("nfpip",&genie_final_pip,&genie_final_pip_branch);
+        geniedata->SetBranchAddress("nfpim",&genie_final_pim,&genie_final_pim_branch);
+        geniedata->SetBranchAddress("nfpi0",&genie_final_pi0,&genie_final_pi0_branch);
+        geniedata->SetBranchAddress("nfkp",&genie_final_kp,&genie_final_kp_branch);
+        geniedata->SetBranchAddress("nfkm",&genie_final_km,&genie_final_km_branch);
+        geniedata->SetBranchAddress("nfk0",&genie_final_k0,&genie_final_k0_branch);
+        geniedata->SetBranchAddress("nf",&genie_num_final,&genie_num_final_branch);
+        geniedata->SetBranchAddress("pdgf",&genie_pdg_final,&genie_pdg_final_branch);
+        geniedata->SetBranchAddress("Ef",&genie_E_final,&genie_E_final_branch);
+        geniedata->SetBranchAddress("pxf",&genie_px_final,&genie_px_final_branch);
+        geniedata->SetBranchAddress("pyf",&genie_py_final,&genie_py_final_branch);
+        geniedata->SetBranchAddress("pzf",&genie_pz_final,&genie_pz_final_branch);
+        geniedata->SetBranchAddress("vtxx",&genie_vtxx,&genie_vtxx_branch);
+        geniedata->SetBranchAddress("vtxy",&genie_vtxy,&genie_vtxy_branch);
+        geniedata->SetBranchAddress("vtxz",&genie_vtxz,&genie_vtxz_branch);
+        geniedata->SetBranchAddress("vtxt",&genie_vtxt,&genie_vtxt_branch);
+
+        //Load GENIE gst branches to check whether they are zombies
+        
+        if(genie_entry_branch==0 || genie_neutrinoflav_branch==0 || genie_neutrinoE_branch==0 || genie_neutrinopx_branch==0 || genie_neutrinopy_branch==0 || genie_neutrinopz_branch==0 || genie_cc_branch==0 || genie_nc_branch==0 || genie_Z_branch==0 || genie_A_branch==0 || genie_final_n_branch==0 || genie_final_p_branch==0 || genie_final_pip_branch==0 || genie_final_pim_branch==0 || genie_final_pi0_branch==0 || genie_final_kp_branch==0 || genie_final_km_branch==0 || genie_final_k0_branch==0 || genie_pdg_final_branch==0 || genie_E_final_branch==0 || genie_px_final_branch==0 || genie_py_final_branch==0 || genie_pz_final_branch==0 || genie_vtxx_branch==0 || genie_vtxy_branch==0 || genie_vtxz_branch==0){
+          G4cout<<"LoadNewGENIEFile: BRANCHES ARE ZOMBIES ARGH!"<<G4endl;
+        } else {
+	  G4cout <<"Current genie file, num entries: "<<genie_vtxx_branch->GetEntries()<<G4endl;
+        }
+        entriesInThisTree = genie_vtxx_branch->GetEntries();
+        treeNumber=nextTreeNumber;
+      }
+
+      G4cout<<"Loading primaries from entry "<<inputEntry<<", localentry "<<localEntry<<"/"<<entriesInThisTree<<G4endl;
+
+      genie_entry_branch->GetEntry(localEntry);
+      genie_neutrinoflav_branch->GetEntry(localEntry);
+      genie_neutrinoE_branch->GetEntry(localEntry);
+      genie_neutrinopx_branch->GetEntry(localEntry);
+      genie_neutrinopy_branch->GetEntry(localEntry);
+      genie_neutrinopz_branch->GetEntry(localEntry);
+      genie_cc_branch->GetEntry(localEntry);
+      genie_nc_branch->GetEntry(localEntry);
+      genie_Z_branch->GetEntry(localEntry);
+      genie_A_branch->GetEntry(localEntry);
+      genie_final_n_branch->GetEntry(localEntry);
+      genie_final_p_branch->GetEntry(localEntry);
+      genie_final_pip_branch->GetEntry(localEntry);
+      genie_final_pim_branch->GetEntry(localEntry);
+      genie_final_pi0_branch->GetEntry(localEntry);
+      genie_final_kp_branch->GetEntry(localEntry);
+      genie_final_km_branch->GetEntry(localEntry);
+      genie_final_k0_branch->GetEntry(localEntry);
+      genie_num_final_branch->GetEntry(localEntry);
+      genie_vtxx_branch->GetEntry(localEntry);
+      genie_vtxy_branch->GetEntry(localEntry);
+      genie_vtxz_branch->GetEntry(localEntry);
+      genie_vtxt_branch->GetEntry(localEntry);
+
+      genie_vtxy -= 0.1441;
+      genie_vtxz += 1.681;
+
+
+      G4cout <<"genie_entry: "<<genie_entry<<", genie_neutrinoflav: "<<genie_neutrinoflav<<", genie_neutrinoE: "<<genie_neutrinoE<<", genie_neutrinopx: "<<genie_neutrinopx<<", genie_neutrinopy: "<<genie_neutrinopy<<", genie_neutrinopz: "<<genie_neutrinopz<<", genie_cc: "<<genie_cc<<", genie_nc: "<<genie_nc<<", genie_Z: "<<genie_Z<<", genie_A: "<<genie_A<<", genie_final_n: "<<genie_final_n<<", genie_final_p: "<<genie_final_p<<G4endl;
+
+      //Define neutrino particle properties
+      G4ParticleDefinition* parttype = particleTable->FindParticle(genie_neutrinoflav);
+      TLorentzVector neutrinovertex(genie_vtxt*CLHEP::s, genie_vtxx*CLHEP::m, genie_vtxy*CLHEP::m, genie_vtxz*CLHEP::m);  // position in m, times in s, convert to cm and ns
+      G4cout<<"The origin interaction was a "<<(parttype->GetParticleName())<<" at ("<<genie_vtxt*1000000000.<<","<<genie_vtxx*100.<<","<<genie_vtxy*100.<<","<<genie_vtxz*100.<<")[ns, cm] in (Z,A) = ("<<genie_Z<<","<<genie_A<<")"<<G4endl;
+      G4cout<<"This entry has "<<genie_num_final<<" primaries"<<G4endl;
+
+      if(pxbranchval){delete[] pxbranchval;}
+      if(pybranchval){delete[] pybranchval;}
+      if(pzbranchval){delete[] pzbranchval;}
+      if(ebranchval){delete[] ebranchval;}
+      if(pdgbranchval){delete[] pdgbranchval;}
+
+      pxbranchval = new Double_t[genie_num_final];
+      pybranchval = new Double_t[genie_num_final];
+      pzbranchval = new Double_t[genie_num_final];
+      ebranchval = new Double_t[genie_num_final];
+      pdgbranchval = new Int_t[genie_num_final];
+
+      if(pxbranchval==0||pybranchval==0||pzbranchval==0||ebranchval==0||pdgbranchval==0){
+        G4cout<<"Arrays are zombies!"<<G4endl;
+      }
+
+      G4cout <<"Setting branch addresses"<<G4endl;
+      genie_px_final_branch->SetAddress(pxbranchval);
+      genie_py_final_branch->SetAddress(pybranchval);
+      genie_pz_final_branch->SetAddress(pzbranchval);
+      genie_E_final_branch->SetAddress(ebranchval);
+      genie_pdg_final_branch->SetAddress(pdgbranchval);
+
+      G4cout <<"Getting entries"<<G4endl;
+
+      genie_px_final_branch->GetEntry(localEntry);
+      genie_py_final_branch->GetEntry(localEntry);
+      genie_pz_final_branch->GetEntry(localEntry);
+      genie_E_final_branch->GetEntry(localEntry);
+      genie_pdg_final_branch->GetEntry(localEntry);
+      
+      double genie_vtxx_temp, genie_vtxy_temp, genie_vtxz_temp, genie_vtxt_temp;
+
+      for (int i_final=0; i_final<genie_num_final; i_final++){
+
+        G4cout <<"Loading details of GENIE primary" << G4endl;
+        genie_vtxx_temp=genie_vtxx*100*CLHEP::cm;
+        genie_vtxy_temp=genie_vtxy*100*CLHEP::cm;
+        genie_vtxz_temp=genie_vtxz*100*CLHEP::cm;
+        genie_vtxt_temp=genie_vtxt*CLHEP::ns;
+        pxval=pxbranchval[i_final]*GeV;
+        pyval=pybranchval[i_final]*GeV;
+        pzval=pzbranchval[i_final]*GeV;
+        eval=ebranchval[i_final]*GeV;
+        pdgval=pdgbranchval[i_final];
+        G4ThreeVector thevtx = G4ThreeVector(genie_vtxx_temp, genie_vtxy_temp, genie_vtxz_temp);
+        G4ThreeVector thepdir = G4ThreeVector(pxval, pyval, pzval);
+        thepdir.unit();         // normalise to unit vector
+     
+        G4cout <<"thevtx: "<<genie_vtxx<<","<<genie_vtxy<<","<<genie_vtxz<<G4endl;
+        G4cout <<"thepdir: "<<pxval<<","<<pyval<<","<<pzval<<G4endl;
+        G4cout <<"thepdir.mag(): "<<thepdir.mag()<<G4endl;
+        if (thepdir.mag()<1) {
+          thepdir.setX(0);
+          thepdir.setY(0);
+          thepdir.setZ(1);
+        }
+
+        //Get PDG number & containers to store possible ion information
+        char strPDG[11];
+        char strA[10]={0};
+        char strZ[10]={0};
+        long int A=0,Z=0;
+        G4cout <<"PDG value is "<<pdgval<<G4endl;
+
+	//Check if primary particle is ion or not
+        if(abs(pdgval) >= 1000000000){
+          
+          G4cout <<"Ion case!"<<G4endl;
+          //ION case
+          sprintf(strPDG,"%i",abs(pdgval));
+          strncpy(strZ, &strPDG[3], 3);
+          strncpy(strA, &strPDG[6], 3);
+          strA[3]='\0';
+          strZ[3]='\0';
+          A=atoi(strA);
+          Z=atoi(strZ);
+          parttype =  G4IonTable::GetIonTable()->GetIon(Z, A, 0.);
+          if(parttype){
+            particleGun->SetParticleDefinition(parttype);
+            particleGun->SetParticleCharge(0);
+          } else {
+            G4cerr << "skipping primary with PDG " << pdgval << G4endl;
+            continue;
+          }
+        } else {
+
+          G4cout <<"Non-ION case1"<<G4endl;
+          //NON-ION case
+          parttype = particleTable->FindParticle(pdgval);
+          if(parttype){
+            particleGun->SetParticleDefinition(parttype);
+          } else {
+            G4cerr << "skipping primary with PDG " << pdgval << G4endl;
+            continue;
+          }
+        }
+
+	G4double mass = parttype->GetPDGMass()*0.001*GeV;
+        keval = eval - mass;
+        G4cout<<keval<<" ("<<keval/GeV<<" GeV) ";
+        if(parttype==0){G4cout<<"PDG: "<<pdgval;} else {G4cout<<parttype->GetParticleName();}
+
+        //Get navigator for transportation
+        G4Navigator* theNavigator = G4TransportationManager::GetTransportationManager()->GetNavigatorForTracking();
+        
+        //Get interaction volume
+        G4VPhysicalVolume* primaryPV = theNavigator->LocateGlobalPointAndSetup(thevtx);
+        G4cout<<" in "<< primaryPV->GetName()<<G4endl;
+
+        if(keval==0){keval+=1.*eV; eval+=1.*eV; thepdir=G4ThreeVector(0.,0.,1.);}
+        
+	//Set properties of the primary particle
+	particleGun->SetParticleEnergy(keval);
+        particleGun->SetParticlePosition(thevtx);
+        particleGun->SetParticleMomentumDirection(thepdir);
+
+        //Fire the particle away
+        particleGun->GeneratePrimaryVertex(anEvent); 
+      }      
+
+      G4cout<<"inputEntry: "<<inputEntry<<G4endl;
+      inputEntry++;
+      localEntry = geniedata->LoadTree(inputEntry);
+      G4cout <<"localEntry: "<<localEntry<<G4endl;
+      if(localEntry<0){
+        // get the pointer to the UI manager
+	G4UImanager* UI = G4UImanager::GetUIpointer();
+	UI->ApplyCommand("/run/abort 1");	// abort after processing current event
+	G4cout<<"@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#"<<G4endl;
+	G4cout<<"@#@#@#@#@#@#@#@#@#@ REACHED END OF INPUT FILE! #@#@#@#@#@#@#@#@#@#@#@#"<<G4endl;
+	G4cout<<"@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#"<<G4endl;
+      }
+  
+
     }
     else if (useAntiNuEvt){
 
@@ -932,9 +1186,6 @@ void WCSimPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 	isFirstEvent = false;
 	}
 
-      std::cout <<"Starting new antineutrino event, Espectrum_positron size = "<<Espectrum_positron.size()<<", ProbabilitySpec.size() = "<<ProbabilitySpec.size()<<std::endl;
-      std::cout << "First entry: E = "<<Espectrum_positron.at(0)<<", Probability = "<<ProbabilitySpec.at(0)<<std::endl;
-
 
 	theSPSAng->SetAngDistType("iso");
         theSPSAng->SetPosDistribution(theSPSPos);
@@ -944,7 +1195,6 @@ void WCSimPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
         G4double KinE = 0.;
         KinE = ShootEnergyPositronCustom()/MeV;
         G4double energy = KinE + positron->GetPDGMass();
-	G4cout <<"ShootEnergyPositronCustom = "<<KinE<<G4endl;
 
         theDirection = theSPSAng->GenerateOne();
         G4double pmom = std::sqrt(pow(energy,2.) - pow(positron->GetPDGMass(),2.));
@@ -1028,6 +1278,7 @@ void WCSimPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 }
 
 
+
 void WCSimPrimaryGeneratorAction::SaveOptionsToOutput(WCSimRootOptions * wcopt)
 {
   if(useMulineEvt)
@@ -1051,6 +1302,8 @@ G4String WCSimPrimaryGeneratorAction::GetGeneratorTypeString()
     return "beam";
   else if (useAntiNuEvt)
     return "antinu";
+  else if (useGenieEvt)
+    return "genie";
   return "";
 }
 
@@ -1158,6 +1411,170 @@ void WCSimPrimaryGeneratorAction::LoadNewPrimaries(){
 	loadNewPrimaries=false;
 }
 
+void WCSimPrimaryGeneratorAction::LoadNewGENIEFile(){
+
+	//Alternative implementation for loading GENIE files when not using an additional primary file (only information from the ghep.root file)
+        //Use gst-converted file version
+
+        G4cout <<"genieDirectory is "<<genieDirectory<<G4endl;
+
+	if(genieDirectory==""){
+                G4cout<<"No genie files specified! Cannot generate genie events!"<<G4endl;
+                assert(false);
+        }
+
+        if(geniedata){ geniedata->ResetBranchAddresses(); delete geniedata; }
+        geniedata = new TChain("gst");
+        geniedata->Add(genieDirectory);
+        geniedata->LoadTree(0);
+	
+
+	G4cout <<"Setting branch addresses for geniedata tree"<<G4endl;
+	//Set all branch addresses for important variables
+	geniedata->SetBranchAddress("iev",&genie_entry,&genie_entry_branch);
+	geniedata->SetBranchAddress("neu",&genie_neutrinoflav,&genie_neutrinoflav_branch);
+	geniedata->SetBranchAddress("Ev",&genie_neutrinoE,&genie_neutrinoE_branch);
+	geniedata->SetBranchAddress("pxv",&genie_neutrinopx,&genie_neutrinopx_branch);
+	geniedata->SetBranchAddress("pyv",&genie_neutrinopy,&genie_neutrinopy_branch);
+	geniedata->SetBranchAddress("pzv",&genie_neutrinopz,&genie_neutrinopz_branch);
+	geniedata->SetBranchAddress("cc",&genie_cc,&genie_cc_branch);
+	geniedata->SetBranchAddress("nc",&genie_nc,&genie_nc_branch);
+	geniedata->SetBranchAddress("Z",&genie_Z,&genie_Z_branch);
+	geniedata->SetBranchAddress("A",&genie_A,&genie_A_branch);
+	geniedata->SetBranchAddress("nfn",&genie_final_n,&genie_final_n_branch);
+	geniedata->SetBranchAddress("nfp",&genie_final_p,&genie_final_p_branch);
+	geniedata->SetBranchAddress("nfpip",&genie_final_pip,&genie_final_pip_branch);
+	geniedata->SetBranchAddress("nfpim",&genie_final_pim,&genie_final_pim_branch);
+	geniedata->SetBranchAddress("nfpi0",&genie_final_pi0,&genie_final_pi0_branch);
+	geniedata->SetBranchAddress("nfkp",&genie_final_kp,&genie_final_kp_branch);
+	geniedata->SetBranchAddress("nfkm",&genie_final_km,&genie_final_km_branch);
+	geniedata->SetBranchAddress("nfk0",&genie_final_k0,&genie_final_k0_branch);
+	geniedata->SetBranchAddress("nf",&genie_num_final,&genie_num_final_branch);
+	geniedata->SetBranchAddress("pdgf",&genie_pdg_final,&genie_pdg_final_branch);
+	geniedata->SetBranchAddress("Ef",&genie_E_final,&genie_E_final_branch);
+	geniedata->SetBranchAddress("pxf",&genie_px_final,&genie_px_final_branch);
+	geniedata->SetBranchAddress("pyf",&genie_py_final,&genie_py_final_branch);
+	geniedata->SetBranchAddress("pzf",&genie_pz_final,&genie_pz_final_branch);
+	geniedata->SetBranchAddress("vtxx",&genie_vtxx,&genie_vtxx_branch);
+	geniedata->SetBranchAddress("vtxy",&genie_vtxy,&genie_vtxy_branch);
+	geniedata->SetBranchAddress("vtxz",&genie_vtxz,&genie_vtxz_branch);
+	geniedata->SetBranchAddress("vtxt",&genie_vtxt,&genie_vtxt_branch);
+
+	//Load GENIE gst branches to check whether they are zombies
+
+	if(genie_entry_branch==0 || genie_neutrinoflav_branch==0 || genie_neutrinoE_branch==0 || genie_neutrinopx_branch==0 || genie_neutrinopy_branch==0 || genie_neutrinopz_branch==0 || genie_cc_branch==0 || genie_nc_branch==0 || genie_Z_branch==0 || genie_A_branch==0 || genie_final_n_branch==0 || genie_final_p_branch==0 || genie_final_pip_branch==0 || genie_final_pim_branch==0 || genie_final_pi0_branch==0 || genie_final_kp_branch==0 || genie_final_km_branch==0 || genie_final_k0_branch==0 || genie_pdg_final_branch==0 || genie_E_final_branch==0 || genie_px_final_branch==0 || genie_py_final_branch==0 || genie_pz_final_branch==0 || genie_vtxx_branch==0 || genie_vtxy_branch==0 || genie_vtxz_branch==0){
+                G4cout<<"LoadNewGENIEFile: BRANCHES ARE ZOMBIES ARGH!"<<G4endl;
+        }
+
+        G4cout <<"Getting entries in tree..."<<G4endl;
+	entriesInThisTree=geniedata->GetEntries();
+        G4cout <<"Entries in this tree: "<<entriesInThisTree<<G4endl;
+	inputEntry = primariesoffset;
+	primariesoffset=0;
+	//geniedata->GetEntry(inputEntry);
+        
+        G4cout<<"first run: "<<runbranchval<<G4endl;
+        treeNumber=geniedata->GetTreeNumber();
+        localEntry = geniedata->LoadTree(inputEntry);
+        genieFileName = geniedata->GetCurrentFile()->GetName(); // new tree, new file
+        std::cout <<"Current genieFileName: "<<genieFileName<<std::endl;
+        char* genieFileNameAsChar = strdup(genieFileName.c_str());
+        genieFileName = basename(genieFileNameAsChar);	
+
+	loadNewGenie=false;
+
+}
+
+void WCSimPrimaryGeneratorAction::LoadNewTalysFile(){
+
+	//Load nuclear de-excitation information from TALYS-generated root-files
+	//Version of talys file depends on how many neutrons & protons have been knocked out of the nucleus
+	//
+	
+        if(talysDirectory==""){
+		G4cout<<"No talys files specified! Cannot look-up nuclear de-excitation modes!"<<G4endl;
+		assert(false);
+	}
+
+        std::string filename_O15 = "O15gamma.root";
+        std::string filename_N15 = "N15gamma.root";
+        std::string filename_N14 = "N14gamma.root";
+        std::string filename_Li9 = "Li9gamma.root";
+        std::string filename_Li7 = "Li7gamma.root";
+        std::string filename_C14 = "C14gamma.root";
+        std::string filename_C13 = "C13gamma.root";
+        std::string filename_C11 = "C11gamma.root";
+        std::string filename_C10 = "C10gamma.root";
+        std::string filename_Be10 = "Be10gamma.root";
+        std::string filename_Be9 = "Be9gamma.root";
+        std::string filename_B11 = "B11gamma.root";
+        std::string filename_B10 = "B10gamma.root";
+        std::string filename_B9 = "B9gamma.root";
+	
+        std::string filepath_O15 =talysDirectory + filename_O15;
+        std::string filepath_N15 =talysDirectory + filename_N15;
+        std::string filepath_N14 =talysDirectory + filename_N14;
+        std::string filepath_Li9 =talysDirectory + filename_Li9;
+        std::string filepath_Li7 =talysDirectory + filename_Li7;
+        std::string filepath_C14 =talysDirectory + filename_C14;
+        std::string filepath_C13 =talysDirectory + filename_C13;
+        std::string filepath_C11 =talysDirectory + filename_C11;
+        std::string filepath_C10 =talysDirectory + filename_C10;
+        std::string filepath_Be10 =talysDirectory + filename_Be10;
+        std::string filepath_Be9 =talysDirectory + filename_Be9;
+        std::string filepath_B11 =talysDirectory + filename_B11;
+        std::string filepath_B10 =talysDirectory + filename_B10;
+        std::string filepath_B9 =talysDirectory + filename_B9;
+
+        f_O15 = new TFile(filepath_O15.c_str(),"READ");
+        f_N15 = new TFile(filepath_N15.c_str(),"READ");
+        f_N14 = new TFile(filepath_N14.c_str(),"READ");
+        f_Li9 = new TFile(filepath_Li9.c_str(),"READ");
+        f_Li7 = new TFile(filepath_Li7.c_str(),"READ");
+        f_C14 = new TFile(filepath_C14.c_str(),"READ");
+        f_C13 = new TFile(filepath_C13.c_str(),"READ");
+        f_C11 = new TFile(filepath_C11.c_str(),"READ");
+        f_C10 = new TFile(filepath_C10.c_str(),"READ");
+        f_Be10 = new TFile(filepath_Be10.c_str(),"READ");
+        f_Be9 = new TFile(filepath_Be9.c_str(),"READ");
+        f_B11 = new TFile(filepath_B11.c_str(),"READ");
+        f_B10 = new TFile(filepath_B10.c_str(),"READ");
+        f_B9 = new TFile(filepath_B9.c_str(),"READ");
+        
+
+	talys_O15 = (TTree*) f_O15->Get("TreeNucldeex");
+        talys_O15->SetName("talys_O15");
+	talys_N15 = (TTree*) f_N15->Get("TreeNucldeex");
+        talys_N15->SetName("talys_N15");
+	talys_N14 = (TTree*) f_N14->Get("TreeNucldeex");
+        talys_N14->SetName("talys_N14");
+	talys_Li9 = (TTree*) f_Li9->Get("TreeNucldeex");
+        talys_Li9->SetName("talys_Li9");
+	talys_Li7 = (TTree*) f_Li7->Get("TreeNucldeex");
+        talys_Li7->SetName("talys_Li7");
+	talys_C14 = (TTree*) f_C14->Get("TreeNucldeex");
+        talys_C14->SetName("talys_C14");
+	talys_C13 = (TTree*) f_C13->Get("TreeNucldeex");
+        talys_C13->SetName("talys_C13");
+	talys_C11 = (TTree*) f_C11->Get("TreeNucldeex");
+        talys_C11->SetName("talys_C11");
+	talys_C10 = (TTree*) f_C10->Get("TreeNucldeex");
+        talys_C10->SetName("talys_C10");
+        talys_Be10 = (TTree*) f_Be10->Get("TreeNucldeex");
+        talys_Be10->SetName("talys_Be10");
+        talys_Be9 = (TTree*) f_Be9->Get("TreeNucldeex");
+        talys_Be9->SetName("talys_Be9");
+        talys_B11 = (TTree*) f_B11->Get("TreeNucldeex");
+        talys_B11->SetName("talys_B11");
+        talys_B10 = (TTree*) f_B10->Get("TreeNucldeex");
+        talys_B10->SetName("talys_B10");
+        talys_B9 = (TTree*) f_B9->Get("TreeNucldeex");
+        talys_B9->SetName("talys_B9");
+
+        G4cout <<"Loaded complete de-excitation information for relevenat nuclei from talys *gamma-files."<<G4endl;
+
+}
+
 G4double WCSimPrimaryGeneratorAction::ShootEnergyNeutron() {
 
 	G4double sum = 0.;
@@ -1207,6 +1624,7 @@ G4double WCSimPrimaryGeneratorAction::ShootEnergyNeutron() {
 
 	return 0;
 }
+
 
 G4double WCSimPrimaryGeneratorAction::ShootEnergyPositronCustom(){
 

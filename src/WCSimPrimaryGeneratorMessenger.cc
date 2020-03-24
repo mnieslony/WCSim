@@ -16,12 +16,12 @@ WCSimPrimaryGeneratorMessenger::WCSimPrimaryGeneratorMessenger(WCSimPrimaryGener
 
   genCmd = new G4UIcmdWithAString("/mygen/generator",this);
   genCmd->SetGuidance("Select primary generator.");
-  //T. Akiri: Addition of laser, M.Nieslony: Addition of AntiNu
-  genCmd->SetGuidance(" Available generators : muline, gun, laser, gps, beam, antinu");
+  //T. Akiri: Addition of laser, M.Nieslony: Addition of antinu, genie
+  genCmd->SetGuidance(" Available generators : muline, gun, laser, gps, beam, antinu, genie");
   genCmd->SetParameterName("generator",true);
   genCmd->SetDefaultValue("beam");	// previously muline
-  //T. Akiri: Addition of laser, M.Nieslony: Addition of AntiNu
-  genCmd->SetCandidates("muline gun laser gps beam antinu");
+  //T. Akiri: Addition of laser, M.Nieslony: Addition of antinu, genie
+  genCmd->SetCandidates("muline gun laser gps beam antinu genie");
 
   fileNameCmd = new G4UIcmdWithAString("/mygen/vecfile",this);
   fileNameCmd->SetGuidance("Select the file of vectors.");
@@ -73,6 +73,11 @@ WCSimPrimaryGeneratorMessenger::WCSimPrimaryGeneratorMessenger(WCSimPrimaryGener
   primariesStartEventCmd->SetGuidance("The starting entry number for reading primaries");
   primariesStartEventCmd->SetParameterName("primariesoffset",true);
   primariesStartEventCmd->SetDefaultValue(0);
+  
+  geniefileDirectoryCmd = new G4UIcmdWithAString("/mygen/geniedirectory", this);
+  geniefileDirectoryCmd->SetGuidance("Specify the directory containing genie (non-beam) root files");
+  geniefileDirectoryCmd->SetParameterName("directoryName",true);
+  geniefileDirectoryCmd->SetDefaultValue("");
 }
 
 WCSimPrimaryGeneratorMessenger::~WCSimPrimaryGeneratorMessenger()
@@ -81,6 +86,7 @@ WCSimPrimaryGeneratorMessenger::~WCSimPrimaryGeneratorMessenger()
   delete fileNameCmd;
   delete primariesfileDirectoryCmd;
   delete neutrinosfileDirectoryCmd;
+  delete geniefileDirectoryCmd;
   delete mydetDirectory;
   delete primariesStartEventCmd;
 
@@ -104,6 +110,7 @@ void WCSimPrimaryGeneratorMessenger::SetNewValue(G4UIcommand * command,G4String 
       myAction->SetBeamEvtGenerator(false);
       myAction->SetGPSEvtGenerator(false);
       myAction->SetAntiNuEvtGenerator(false);
+      myAction->SetGenieEvtGenerator(false);
     }
     else if ( newValue == "gun")
     {
@@ -114,6 +121,7 @@ void WCSimPrimaryGeneratorMessenger::SetNewValue(G4UIcommand * command,G4String 
       myAction->SetBeamEvtGenerator(false);
       myAction->SetGPSEvtGenerator(false);
       myAction->SetAntiNuEvtGenerator(false);
+      myAction->SetGenieEvtGenerator(false);
     }
     else if ( newValue == "laser")   //T. Akiri: Addition of laser
     {
@@ -124,6 +132,7 @@ void WCSimPrimaryGeneratorMessenger::SetNewValue(G4UIcommand * command,G4String 
       myAction->SetBeamEvtGenerator(false);
       myAction->SetGPSEvtGenerator(false);
       myAction->SetAntiNuEvtGenerator(false);
+      myAction->SetGenieEvtGenerator(false);
     }
     else if ( newValue == "beam")
     {
@@ -134,6 +143,7 @@ void WCSimPrimaryGeneratorMessenger::SetNewValue(G4UIcommand * command,G4String 
       myAction->SetBeamEvtGenerator(true);
       myAction->SetGPSEvtGenerator(false);
       myAction->SetAntiNuEvtGenerator(false);
+      myAction->SetGenieEvtGenerator(false);
     }
     else if ( newValue == "gps")
     {
@@ -144,6 +154,7 @@ void WCSimPrimaryGeneratorMessenger::SetNewValue(G4UIcommand * command,G4String 
       myAction->SetBeamEvtGenerator(false);
       myAction->SetGPSEvtGenerator(true);
       myAction->SetAntiNuEvtGenerator(false);
+      myAction->SetGenieEvtGenerator(false);
     } 
     else if ( newValue == "antinu")
     {
@@ -154,6 +165,18 @@ void WCSimPrimaryGeneratorMessenger::SetNewValue(G4UIcommand * command,G4String 
       myAction->SetBeamEvtGenerator(false);
       myAction->SetGPSEvtGenerator(false);
       myAction->SetAntiNuEvtGenerator(true);
+      myAction->SetGenieEvtGenerator(false);
+    }
+    else if ( newValue == "genie")
+    {
+      G4cout<<"Setting generator source to genie"<<G4endl;
+      myAction->SetMulineEvtGenerator(false);
+      myAction->SetGunEvtGenerator(false);
+      myAction->SetLaserEvtGenerator(false);
+      myAction->SetBeamEvtGenerator(false);
+      myAction->SetGPSEvtGenerator(false);
+      myAction->SetAntiNuEvtGenerator(false);
+      myAction->SetGenieEvtGenerator(true);
     }
   }
 
@@ -172,13 +195,19 @@ void WCSimPrimaryGeneratorMessenger::SetNewValue(G4UIcommand * command,G4String 
   {
     myAction->SetPrimaryFilesDirectory(newValue);
     myAction->SetNewPrimariesFlag(true);
-    G4cout << "Input directory set to " << newValue << G4endl;
+    G4cout << "Input directory set to " << newValue << " (PrimariesFiles)" << G4endl;
   }
   
   if( command == neutrinosfileDirectoryCmd )
   {
     myAction->SetNeutrinoFilesDirectory(newValue);
-    G4cout << "Input directory set to " << newValue << G4endl;
+    G4cout << "Input directory set to " << newValue << " (NeutrinoFiles)" << G4endl;
+  }
+  
+  if( command == geniefileDirectoryCmd )
+  {
+    myAction->SetGenieFilesDirectory(newValue);
+    G4cout << "Input directory set to " << newValue << " (GENIE)" << G4endl;
   }
   
   if( command == primariesStartEventCmd )
@@ -237,6 +266,8 @@ G4String WCSimPrimaryGeneratorMessenger::GetCurrentValue(G4UIcommand* command)
       { cv = "gps"; }
     else if(myAction->IsUsingAntiNuEvtGenerator())
       { cv = "antinu"; }
+    else if(myAction->IsUsingGenieEvtGenerator())
+      { cv = "genie"; }
   }
   
   return cv;

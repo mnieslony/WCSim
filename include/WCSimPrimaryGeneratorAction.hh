@@ -104,6 +104,7 @@ private:
   G4bool   useBeamEvt;
   G4bool   useGPSEvt;
   G4bool   useAntiNuEvt;
+  G4bool   useGenieEvt;
   std::fstream inputFile;
   std::fstream inputSpecFile;
   G4String vectorFileName;
@@ -137,27 +138,47 @@ private:
   TChain* inputdata;
   TChain* metadata;
   TChain* geniedata;
-	
-	Long64_t localEntry;
-	Int_t inputEntry;
-	Int_t entriesInThisTree;
-	Int_t treeNumber;
-	TBranch* runBranch=0, *vtxxBranch=0, *vtxyBranch=0, *vtxzBranch=0, *vtxtBranch=0, *pxBranch=0, *pyBranch=0, *pzBranch=0, *EBranch=0, *KEBranch=0, *pdgBranch=0, *nTankBranch=0, *nupdgBranch=0, *nuvtxxBranch=0, *nuvtxyBranch=0, *nuvtxzBranch=0, *nuvtxtBranch=0, *nuPVBranch=0, *nuvtxmatBranch=0, *nuprimaryBranch=0, *nufluxfilenameBranch=0, *genieentryBranch=0, *genierecordBranch=0;
-	Int_t runbranchval, entrybranchval, ntankbranchval, nupdgval, genieentrybranchval, pdgval, nuprimaryval;
-	Double_t vtxxval, vtxyval, vtxzval, vtxtval, pxval, pyval, pzval, eval, keval, nuvtxxval, nuvtxyval, nuvtxzval, nuvtxtval;
-	Int_t* pdgbranchval=0, *nuprimarybranchval=0;
-	Double_t* vtxxbranchval=0, *vtxybranchval=0, *vtxzbranchval=0, *vtxtbranchval=0, *pxbranchval=0, *pybranchval=0, *pzbranchval=0, *ebranchval=0, *kebranchval=0;
-	Char_t nupvval[100];
-	Char_t numatval[100];
-	Char_t nufluxfilenameval[100];
+
+  Long64_t localEntry;
+  Int_t inputEntry;
+  Int_t entriesInThisTree;
+  Int_t treeNumber;
+  TBranch* runBranch=0, *vtxxBranch=0, *vtxyBranch=0, *vtxzBranch=0, *vtxtBranch=0, *pxBranch=0, *pyBranch=0, *pzBranch=0, *EBranch=0, *KEBranch=0, *pdgBranch=0, *nTankBranch=0, *nupdgBranch=0, *nuvtxxBranch=0, *nuvtxyBranch=0, *nuvtxzBranch=0, *nuvtxtBranch=0, *nuPVBranch=0, *nuvtxmatBranch=0, *nuprimaryBranch=0, *nufluxfilenameBranch=0, *genieentryBranch=0, *genierecordBranch=0;
+  Int_t runbranchval, entrybranchval, ntankbranchval, nupdgval, genieentrybranchval, pdgval, nuprimaryval;
+  Double_t vtxxval, vtxyval, vtxzval, vtxtval, pxval, pyval, pzval, eval, keval, nuvtxxval, nuvtxyval, nuvtxzval, nuvtxtval;
+  Int_t* pdgbranchval=0, *nuprimarybranchval=0;
+  Double_t* vtxxbranchval=0, *vtxybranchval=0, *vtxzbranchval=0, *vtxtbranchval=0, *pxbranchval=0, *pybranchval=0, *pzbranchval=0, *ebranchval=0, *kebranchval=0;
+  Char_t nupvval[100];
+  Char_t numatval[100];
+  Char_t nufluxfilenameval[100];
 #ifndef NO_GENIE
-	genie::NtpMCEventRecord* genierecordval;
+  genie::NtpMCEventRecord* genierecordval;
 #endif
-	
-	G4String primariesDirectory;
-	G4String neutrinosDirectory;
-	G4bool loadNewPrimaries;
-	G4int primariesoffset;	
+
+  //GENIE gst tree variables
+  TBranch* genie_entry_branch=0, *genie_neutrinoflav_branch=0, *genie_cc_branch=0, *genie_nc_branch=0, *genie_Z_branch=0, *genie_A_branch=0, *genie_final_n_branch=0, *genie_final_p_branch=0, *genie_final_pip_branch=0, *genie_final_pim_branch=0, *genie_final_pi0_branch=0, *genie_final_kp_branch=0, *genie_final_km_branch=0, *genie_final_k0_branch=0, *genie_neutrinoE_branch=0, *genie_neutrinopx_branch=0, *genie_neutrinopy_branch=0, *genie_neutrinopz_branch=0, *genie_vtxx_branch=0, *genie_vtxy_branch=0, *genie_vtxz_branch=0, *genie_pdg_final_branch=0, *genie_E_final_branch=0, *genie_px_final_branch=0, *genie_py_final_branch=0, *genie_pz_final_branch=0, *genie_vtxt_branch=0, *genie_num_final_branch=0;
+  Int_t genie_entry, genie_neutrinoflav, genie_Z, genie_A, genie_final_n, genie_final_p, genie_final_pip, genie_final_pim, genie_final_pi0, genie_final_kp, genie_final_km, genie_final_k0, genie_num_final;
+  Bool_t genie_cc, genie_nc;
+  Double_t genie_neutrinoE, genie_neutrinopx, genie_neutrinopy, genie_neutrinopz, genie_vtxx, genie_vtxy, genie_vtxz, genie_vtxt;
+  Int_t* genie_pdg_final;
+  Double_t* genie_E_final, genie_px_final, genie_py_final, genie_pz_final;
+
+  //TALYS tree variables
+  TFile *f_O15 = 0, *f_N15 = 0,*f_N14 = 0,*f_Li9 = 0,*f_Li7 = 0,*f_C14 = 0,*f_C13 = 0,*f_C11 = 0,*f_C10 = 0,*f_Be10 = 0,*f_Be9 = 0, *f_B11 = 0,*f_B10 = 0,*f_B9 = 0;
+  TTree *talys_O15 = 0, *talys_N15 = 0, *talys_N14 = 0, *talys_Li9 = 0, *talys_Li7 = 0, *talys_C14 = 0, *talys_C13 = 0, *talys_C11 = 0, *talys_C10 = 0, *talys_Be10 = 0, *talys_Be9 = 0, *talys_B11 = 0, *talys_B10 = 0, *talys_B9 = 0;
+  Int_t resnuclZ, resnuclA;
+  std::vector<int> resnuclLevel;
+  std::vector<double> resnuclEnergy, resnuclPop;
+  TBranch *branch_resnuclZ = 0, *branch_resnuclA = 0, *branch_resnuclLevel = 0, *branch_resnuclEnergy = 0, *branch_resnuclPop = 0; 
+
+
+  G4String primariesDirectory;
+  G4String neutrinosDirectory;
+  G4String genieDirectory;
+  G4String talysDirectory;
+  G4bool loadNewPrimaries;
+  G4bool loadNewGenie;
+  G4int primariesoffset;	
 
   // antinu read-in of the energy spectrum
   std::vector<G4double> Espectrum;
@@ -181,6 +202,9 @@ public:
 
   inline void SetAntiNuEvtGenerator(G4bool choice) { useAntiNuEvt = choice; }
   inline G4bool IsUsingAntiNuEvtGenerator()  { return useAntiNuEvt; }
+  
+  inline void SetGenieEvtGenerator(G4bool choice) { useGenieEvt = choice; }
+  inline G4bool IsUsingGenieEvtGenerator()  { return useGenieEvt; }
   
   inline void SetGPSEvtGenerator(G4bool choice) { useGPSEvt = choice; }
   inline G4bool IsUsingGPSEvtGenerator()  { return useGPSEvt; }
@@ -219,11 +243,14 @@ public:
   void SetRot1(G4ThreeVector rot) {theSPSPos->SetPosRot1(rot);}
   void SetRot2(G4ThreeVector rot) {theSPSPos->SetPosRot2(rot);}
 
- 
   inline void SetPrimaryFilesDirectory(G4String directoryName) { primariesDirectory = directoryName; }
   inline void SetNeutrinoFilesDirectory(G4String directoryName) { neutrinosDirectory = directoryName; }
+  inline void SetGenieFilesDirectory(G4String directoryName) { genieDirectory = directoryName; }
+  inline void SetTalysFilesDirectory(G4String directoryName) { talysDirectory = directoryName; }
   inline void SetNewPrimariesFlag(G4bool flagin){ loadNewPrimaries=flagin; }
   void LoadNewPrimaries();
+  void LoadNewGENIEFile();
+  //void LoadNewTalysFile();
   void SetPrimariesOffset(G4int offset){ primariesoffset=offset; }
   inline G4bool IsGeneratingVertexInRock() { return GenerateVertexInRock; }
   inline void SetGenerateVertexInRock(G4bool choice) { GenerateVertexInRock = choice; }
