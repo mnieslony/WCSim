@@ -34,6 +34,7 @@ class WCSimPrimaryGeneratorMessenger: public G4UImessenger
   G4UIcmdWithAString* primariesfileDirectoryCmd;
   G4UIcmdWithAString* neutrinosfileDirectoryCmd;
   G4UIcmdWithAString* geniefileDirectoryCmd;
+  G4UIcmdWithAString* talysfileDirectoryCmd;
   G4UIcmdWithAnInteger* primariesStartEventCmd;
  
   G4UIcmdWith3VectorAndUnit* positionCmd;

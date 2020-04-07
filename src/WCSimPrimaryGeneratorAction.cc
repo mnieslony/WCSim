@@ -922,6 +922,9 @@ void WCSimPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
       G4cout <<"Genie + TALYS event generator: Initialising..."<<G4endl;
 
       if (localEntry!=0) loadNewGenie = false;
+      else {
+        LoadTalysFiles();    //Load Talys root files once at the beginning!
+      }
       G4cout <<"loadNewGenie: "<<loadNewGenie<<G4endl;      
 
       // Load the next entry, with all required trees and files
@@ -1026,6 +1029,15 @@ void WCSimPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
       TLorentzVector neutrinovertex(genie_vtxt*CLHEP::s, genie_vtxx*CLHEP::m, genie_vtxy*CLHEP::m, genie_vtxz*CLHEP::m);  // position in m, times in s, convert to cm and ns
       G4cout<<"The origin interaction was a "<<(parttype->GetParticleName())<<" at ("<<genie_vtxt*1000000000.<<","<<genie_vtxx*100.<<","<<genie_vtxy*100.<<","<<genie_vtxz*100.<<")[ns, cm] in (Z,A) = ("<<genie_Z<<","<<genie_A<<")"<<G4endl;
       G4cout<<"This entry has "<<genie_num_final<<" primaries"<<G4endl;
+
+      if (genie_Z == 8 && genie_A == 16){
+        G4cout <<"Oxygen nucleus detected! Read in talys-information."<<G4endl;
+        G4cout <<"Number of final n: "<<genie_final_n<<", number of final p: "<<genie_final_p<<G4endl;
+        G4cout <<"TALYS file name: "<<CalculateResNucleus(genie_final_n,genie_final_p);
+      } else {
+        G4cout <<"No oxygen nucleus, don't read in TALYS information. (Z = "<<genie_Z<<", A = "<<genie_A<<")"<<G4endl;
+      }
+
 
       if(pxbranchval){delete[] pxbranchval;}
       if(pybranchval){delete[] pybranchval;}
@@ -1485,7 +1497,7 @@ void WCSimPrimaryGeneratorAction::LoadNewGENIEFile(){
 
 }
 
-void WCSimPrimaryGeneratorAction::LoadNewTalysFile(){
+void WCSimPrimaryGeneratorAction::LoadTalysFiles(){
 
 	//Load nuclear de-excitation information from TALYS-generated root-files
 	//Version of talys file depends on how many neutrons & protons have been knocked out of the nucleus
@@ -1496,20 +1508,35 @@ void WCSimPrimaryGeneratorAction::LoadNewTalysFile(){
 		assert(false);
 	}
 
-        std::string filename_O15 = "O15gamma.root";
-        std::string filename_N15 = "N15gamma.root";
-        std::string filename_N14 = "N14gamma.root";
-        std::string filename_Li9 = "Li9gamma.root";
-        std::string filename_Li7 = "Li7gamma.root";
-        std::string filename_C14 = "C14gamma.root";
-        std::string filename_C13 = "C13gamma.root";
-        std::string filename_C11 = "C11gamma.root";
-        std::string filename_C10 = "C10gamma.root";
-        std::string filename_Be10 = "Be10gamma.root";
-        std::string filename_Be9 = "Be9gamma.root";
-        std::string filename_B11 = "B11gamma.root";
-        std::string filename_B10 = "B10gamma.root";
-        std::string filename_B9 = "B9gamma.root";
+        std::string filename_O15 = "O15.root";
+        std::string filename_N15 = "N15.root";
+        std::string filename_N14 = "N14.root";
+        std::string filename_Li9 = "Li9.root";
+        std::string filename_Li7 = "Li7.root";
+        std::string filename_C14 = "C14.root";
+        std::string filename_C13 = "C13.root";
+        std::string filename_C11 = "C11.root";
+        std::string filename_C10 = "C10.root";
+        std::string filename_Be10 = "Be10.root";
+        std::string filename_Be9 = "Be9.root";
+        std::string filename_B11 = "B11.root";
+        std::string filename_B10 = "B10.root";
+        std::string filename_B9 = "B9.root";
+        
+        std::string filename_O15gamma = "O15gamma.root";
+        std::string filename_N15gamma = "N15gamma.root";
+        std::string filename_N14gamma = "N14gamma.root";
+        std::string filename_Li9gamma = "Li9gamma.root";
+        std::string filename_Li7gamma = "Li7gamma.root";
+        std::string filename_C14gamma = "C14gamma.root";
+        std::string filename_C13gamma = "C13gamma.root";
+        std::string filename_C11gamma = "C11gamma.root";
+        std::string filename_C10gamma = "C10gamma.root";
+        std::string filename_Be10gamma = "Be10gamma.root";
+        std::string filename_Be9gamma = "Be9gamma.root";
+        std::string filename_B11gamma = "B11gamma.root";
+        std::string filename_B10gamma = "B10gamma.root";
+        std::string filename_B9gamma = "B9gamma.root";
 	
         std::string filepath_O15 =talysDirectory + filename_O15;
         std::string filepath_N15 =talysDirectory + filename_N15;
@@ -1525,6 +1552,21 @@ void WCSimPrimaryGeneratorAction::LoadNewTalysFile(){
         std::string filepath_B11 =talysDirectory + filename_B11;
         std::string filepath_B10 =talysDirectory + filename_B10;
         std::string filepath_B9 =talysDirectory + filename_B9;
+        
+        std::string filepath_O15gamma =talysDirectory + filename_O15gamma;
+        std::string filepath_N15gamma =talysDirectory + filename_N15gamma;
+        std::string filepath_N14gamma =talysDirectory + filename_N14gamma;
+        std::string filepath_Li9gamma =talysDirectory + filename_Li9gamma;
+        std::string filepath_Li7gamma =talysDirectory + filename_Li7gamma;
+        std::string filepath_C14gamma =talysDirectory + filename_C14gamma;
+        std::string filepath_C13gamma =talysDirectory + filename_C13gamma;
+        std::string filepath_C11gamma =talysDirectory + filename_C11gamma;
+        std::string filepath_C10gamma =talysDirectory + filename_C10gamma;
+        std::string filepath_Be10gamma =talysDirectory + filename_Be10gamma;
+        std::string filepath_Be9gamma =talysDirectory + filename_Be9gamma;
+        std::string filepath_B11gamma =talysDirectory + filename_B11gamma;
+        std::string filepath_B10gamma =talysDirectory + filename_B10gamma;
+        std::string filepath_B9gamma =talysDirectory + filename_B9gamma;
 
         f_O15 = new TFile(filepath_O15.c_str(),"READ");
         f_N15 = new TFile(filepath_N15.c_str(),"READ");
@@ -1540,6 +1582,21 @@ void WCSimPrimaryGeneratorAction::LoadNewTalysFile(){
         f_B11 = new TFile(filepath_B11.c_str(),"READ");
         f_B10 = new TFile(filepath_B10.c_str(),"READ");
         f_B9 = new TFile(filepath_B9.c_str(),"READ");
+        
+        f_O15gamma = new TFile(filepath_O15gamma.c_str(),"READ");
+        f_N15gamma = new TFile(filepath_N15gamma.c_str(),"READ");
+        f_N14gamma = new TFile(filepath_N14gamma.c_str(),"READ");
+        f_Li9gamma = new TFile(filepath_Li9gamma.c_str(),"READ");
+        f_Li7gamma = new TFile(filepath_Li7gamma.c_str(),"READ");
+        f_C14gamma = new TFile(filepath_C14gamma.c_str(),"READ");
+        f_C13gamma = new TFile(filepath_C13gamma.c_str(),"READ");
+        f_C11gamma = new TFile(filepath_C11gamma.c_str(),"READ");
+        f_C10gamma = new TFile(filepath_C10gamma.c_str(),"READ");
+        f_Be10gamma = new TFile(filepath_Be10gamma.c_str(),"READ");
+        f_Be9gamma = new TFile(filepath_Be9gamma.c_str(),"READ");
+        f_B11gamma = new TFile(filepath_B11gamma.c_str(),"READ");
+        f_B10gamma = new TFile(filepath_B10gamma.c_str(),"READ");
+        f_B9gamma = new TFile(filepath_B9gamma.c_str(),"READ");
         
 
 	talys_O15 = (TTree*) f_O15->Get("TreeNucldeex");
@@ -1570,6 +1627,35 @@ void WCSimPrimaryGeneratorAction::LoadNewTalysFile(){
         talys_B10->SetName("talys_B10");
         talys_B9 = (TTree*) f_B9->Get("TreeNucldeex");
         talys_B9->SetName("talys_B9");
+	
+        talys_O15gamma = (TTree*) f_O15gamma->Get("TreeNucldeex");
+        talys_O15gamma->SetName("talys_O15gamma");
+	talys_N15gamma = (TTree*) f_N15gamma->Get("TreeNucldeex");
+        talys_N15gamma->SetName("talys_N15gamma");
+	talys_N14gamma = (TTree*) f_N14gamma->Get("TreeNucldeex");
+        talys_N14gamma->SetName("talys_N14gamma");
+	talys_Li9gamma = (TTree*) f_Li9gamma->Get("TreeNucldeex");
+        talys_Li9gamma->SetName("talys_Li9gamma");
+	talys_Li7gamma = (TTree*) f_Li7gamma->Get("TreeNucldeex");
+        talys_Li7gamma->SetName("talys_Li7gamma");
+	talys_C14gamma = (TTree*) f_C14gamma->Get("TreeNucldeex");
+        talys_C14gamma->SetName("talys_C14gamma");
+	talys_C13gamma = (TTree*) f_C13gamma->Get("TreeNucldeex");
+        talys_C13gamma->SetName("talys_C13gamma");
+	talys_C11gamma = (TTree*) f_C11gamma->Get("TreeNucldeex");
+        talys_C11gamma->SetName("talys_C11gamma");
+	talys_C10gamma = (TTree*) f_C10gamma->Get("TreeNucldeex");
+        talys_C10gamma->SetName("talys_C10gamma");
+        talys_Be10gamma = (TTree*) f_Be10gamma->Get("TreeNucldeex");
+        talys_Be10gamma->SetName("talys_Be10gamma");
+        talys_Be9gamma = (TTree*) f_Be9gamma->Get("TreeNucldeex");
+        talys_Be9gamma->SetName("talys_Be9gamma");
+        talys_B11gamma = (TTree*) f_B11gamma->Get("TreeNucldeex");
+        talys_B11gamma->SetName("talys_B11gamma");
+        talys_B10gamma = (TTree*) f_B10gamma->Get("TreeNucldeex");
+        talys_B10gamma->SetName("talys_B10gamma");
+        talys_B9gamma = (TTree*) f_B9gamma->Get("TreeNucldeex");
+        talys_B9gamma->SetName("talys_B9gamma");
 
         G4cout <<"Loaded complete de-excitation information for relevenat nuclei from talys *gamma-files."<<G4endl;
 
@@ -1641,5 +1727,28 @@ G4double WCSimPrimaryGeneratorAction::ShootEnergyPositronCustom(){
 			return (deltaX*y/x + Espectrum_positron.at(i));
 		}
 	}
+
+}
+
+std::string WCSimPrimaryGeneratorAction::CalculateResNucleus(int num_n, int num_p){
+
+	std::string res_nucleus = "none";
+
+        if (num_n == 1 && num_p == 0) res_nucleus = "O15";
+	if (num_n == 0 && num_p == 1) res_nucleus = "N15";
+	if (num_n == 1 && num_p == 1) res_nucleus = "N14";
+	if (num_n == 0 && num_p == 2) res_nucleus = "C14";
+	if (num_n == 1 && num_p == 2) res_nucleus = "C13";
+	if (num_n == 3 && num_p == 2) res_nucleus = "C11";
+	if (num_n == 4 && num_p == 2) res_nucleus = "C10";
+	if (num_n == 2 && num_p == 3) res_nucleus = "B11";
+	if (num_n == 3 && num_p == 3) res_nucleus = "B10";
+	if (num_n == 4 && num_p == 3) res_nucleus = "B9";
+	if (num_n == 2 && num_p == 4) res_nucleus = "Be10";
+	if (num_n == 3 && num_p == 4) res_nucleus = "Be9";
+	if (num_n == 2 && num_p == 5) res_nucleus = "Li9";
+	if (num_n == 4 && num_p == 5) res_nucleus = "Li7";
+
+	return res_nucleus;
 
 }

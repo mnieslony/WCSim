@@ -78,6 +78,12 @@ WCSimPrimaryGeneratorMessenger::WCSimPrimaryGeneratorMessenger(WCSimPrimaryGener
   geniefileDirectoryCmd->SetGuidance("Specify the directory containing genie (non-beam) root files");
   geniefileDirectoryCmd->SetParameterName("directoryName",true);
   geniefileDirectoryCmd->SetDefaultValue("");
+
+  talysfileDirectoryCmd = new G4UIcmdWithAString("/mygen/talysdirectory", this);
+  talysfileDirectoryCmd->SetGuidance("Specify the directory containing talys root files");
+  talysfileDirectoryCmd->SetParameterName("directoryName",true);
+  talysfileDirectoryCmd->SetDefaultValue("");
+
 }
 
 WCSimPrimaryGeneratorMessenger::~WCSimPrimaryGeneratorMessenger()
@@ -86,6 +92,7 @@ WCSimPrimaryGeneratorMessenger::~WCSimPrimaryGeneratorMessenger()
   delete fileNameCmd;
   delete primariesfileDirectoryCmd;
   delete neutrinosfileDirectoryCmd;
+  delete talysfileDirectoryCmd;
   delete geniefileDirectoryCmd;
   delete mydetDirectory;
   delete primariesStartEventCmd;
@@ -208,6 +215,12 @@ void WCSimPrimaryGeneratorMessenger::SetNewValue(G4UIcommand * command,G4String 
   {
     myAction->SetGenieFilesDirectory(newValue);
     G4cout << "Input directory set to " << newValue << " (GENIE)" << G4endl;
+  }
+  
+  if( command == talysfileDirectoryCmd )
+  {
+    myAction->SetTalysFilesDirectory(newValue);
+    G4cout << "Input directory set to " << newValue << " (Talys)" << G4endl;
   }
   
   if( command == primariesStartEventCmd )

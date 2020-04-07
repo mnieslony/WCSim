@@ -49,7 +49,7 @@ public:
 
   G4double ShootEnergyPositronCustom();
   G4double ShootEnergyNeutron();
-
+  std::string CalculateResNucleus(int num_n, int num_p);
 
   // These go with jhfNtuple
   G4int GetVecRecNumber(){return vecRecNumber;}
@@ -166,6 +166,12 @@ private:
   //TALYS tree variables
   TFile *f_O15 = 0, *f_N15 = 0,*f_N14 = 0,*f_Li9 = 0,*f_Li7 = 0,*f_C14 = 0,*f_C13 = 0,*f_C11 = 0,*f_C10 = 0,*f_Be10 = 0,*f_Be9 = 0, *f_B11 = 0,*f_B10 = 0,*f_B9 = 0;
   TTree *talys_O15 = 0, *talys_N15 = 0, *talys_N14 = 0, *talys_Li9 = 0, *talys_Li7 = 0, *talys_C14 = 0, *talys_C13 = 0, *talys_C11 = 0, *talys_C10 = 0, *talys_Be10 = 0, *talys_Be9 = 0, *talys_B11 = 0, *talys_B10 = 0, *talys_B9 = 0;
+  Int_t talys_channel;
+  std::vector<double> talys_gammaEnergy, talys_neutronEnergy, talys_protonEnergy, talys_deuteronEnergy, talys_tritiumEnergy, talys_heliumEnergy, talys_alphaEnergy;
+  TBranch *branch_talys_channel = 0, *branch_talys_gammaE = 0, *branch_talys_neutronE = 0, *branch_talys_protonE = 0, *branch_talys_deuteronE = 0, *branch_talys_tritiumE = 0, *branch_talys_heliumE = 0, *branch_talys_alphaE = 0;  
+
+  TFile *f_O15gamma = 0, *f_N15gamma = 0,*f_N14gamma = 0,*f_Li9gamma = 0,*f_Li7gamma = 0,*f_C14gamma = 0,*f_C13gamma = 0,*f_C11gamma = 0,*f_C10gamma = 0,*f_Be10gamma = 0,*f_Be9gamma = 0, *f_B11gamma = 0,*f_B10gamma = 0,*f_B9gamma = 0;
+  TTree *talys_O15gamma = 0, *talys_N15gamma = 0, *talys_N14gamma = 0, *talys_Li9gamma = 0, *talys_Li7gamma = 0, *talys_C14gamma = 0, *talys_C13gamma = 0, *talys_C11gamma = 0, *talys_C10gamma = 0, *talys_Be10gamma = 0, *talys_Be9gamma = 0, *talys_B11gamma = 0, *talys_B10gamma = 0, *talys_B9gamma = 0;
   Int_t resnuclZ, resnuclA;
   std::vector<int> resnuclLevel;
   std::vector<double> resnuclEnergy, resnuclPop;
@@ -250,7 +256,7 @@ public:
   inline void SetNewPrimariesFlag(G4bool flagin){ loadNewPrimaries=flagin; }
   void LoadNewPrimaries();
   void LoadNewGENIEFile();
-  //void LoadNewTalysFile();
+  void LoadTalysFiles();
   void SetPrimariesOffset(G4int offset){ primariesoffset=offset; }
   inline G4bool IsGeneratingVertexInRock() { return GenerateVertexInRock; }
   inline void SetGenerateVertexInRock(G4bool choice) { GenerateVertexInRock = choice; }
