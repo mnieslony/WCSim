@@ -5,6 +5,7 @@
 #include "G4ThreeVector.hh"
 #include "G4SPSAngDistribution.hh"
 #include "G4SPSPosDistribution.hh"
+#include "G4RandomDirection.hh"
 #include "globals.hh"
 #include "TTree.h"
 #include "TChain.h"
@@ -49,7 +50,9 @@ public:
 
   G4double ShootEnergyPositronCustom();
   G4double ShootEnergyNeutron();
-  std::string CalculateResNucleus(int num_n, int num_p);
+  std::string CalculateResNucleus(int resNuclA, int resNuclZ);
+  void LoadDeexcitationProb();
+  void GenerateDeexcitation(std::vector<int> *Talys_pdg, std::vector<G4ThreeVector> *Talys_momdir, std::vector<double> *Talys_energy, int resNuclA, int resNuclZ);
 
   // These go with jhfNtuple
   G4int GetVecRecNumber(){return vecRecNumber;}
@@ -156,10 +159,10 @@ private:
 #endif
 
   //GENIE gst tree variables
-  TBranch* genie_entry_branch=0, *genie_neutrinoflav_branch=0, *genie_cc_branch=0, *genie_nc_branch=0, *genie_Z_branch=0, *genie_A_branch=0, *genie_final_n_branch=0, *genie_final_p_branch=0, *genie_final_pip_branch=0, *genie_final_pim_branch=0, *genie_final_pi0_branch=0, *genie_final_kp_branch=0, *genie_final_km_branch=0, *genie_final_k0_branch=0, *genie_neutrinoE_branch=0, *genie_neutrinopx_branch=0, *genie_neutrinopy_branch=0, *genie_neutrinopz_branch=0, *genie_vtxx_branch=0, *genie_vtxy_branch=0, *genie_vtxz_branch=0, *genie_pdg_final_branch=0, *genie_E_final_branch=0, *genie_px_final_branch=0, *genie_py_final_branch=0, *genie_pz_final_branch=0, *genie_vtxt_branch=0, *genie_num_final_branch=0;
-  Int_t genie_entry, genie_neutrinoflav, genie_Z, genie_A, genie_final_n, genie_final_p, genie_final_pip, genie_final_pim, genie_final_pi0, genie_final_kp, genie_final_km, genie_final_k0, genie_num_final;
-  Bool_t genie_cc, genie_nc;
-  Double_t genie_neutrinoE, genie_neutrinopx, genie_neutrinopy, genie_neutrinopz, genie_vtxx, genie_vtxy, genie_vtxz, genie_vtxt;
+  TBranch* genie_entry_branch=0, *genie_neutrinoflav_branch=0, *genie_cc_branch=0, *genie_nc_branch=0, *genie_Z_branch=0, *genie_A_branch=0, *genie_hitnuc_branch=0, *genie_qel_branch=0, *genie_res_branch=0, *genie_dis_branch=0, *genie_coh_branch=0, *genie_imd_branch=0, *genie_El_branch=0, *genie_pxl_branch=0, *genie_pyl_branch=0, *genie_pzl_branch=0, *genie_final_n_branch=0, *genie_final_p_branch=0, *genie_final_pip_branch=0, *genie_final_pim_branch=0, *genie_final_pi0_branch=0, *genie_final_kp_branch=0, *genie_final_km_branch=0, *genie_final_k0_branch=0, *genie_neutrinoE_branch=0, *genie_neutrinopx_branch=0, *genie_neutrinopy_branch=0, *genie_neutrinopz_branch=0, *genie_vtxx_branch=0, *genie_vtxy_branch=0, *genie_vtxz_branch=0, *genie_pdg_final_branch=0, *genie_E_final_branch=0, *genie_px_final_branch=0, *genie_py_final_branch=0, *genie_pz_final_branch=0, *genie_vtxt_branch=0, *genie_num_final_branch=0;
+  Int_t genie_entry, genie_neutrinoflav, genie_Z, genie_A, genie_hitnuc, genie_final_n, genie_final_p, genie_final_pip, genie_final_pim, genie_final_pi0, genie_final_kp, genie_final_km, genie_final_k0, genie_num_final;
+  Bool_t genie_cc, genie_nc, genie_qel, genie_res, genie_dis, genie_coh, genie_imd;
+  Double_t genie_neutrinoE, genie_neutrinopx, genie_neutrinopy, genie_neutrinopz, genie_vtxx, genie_vtxy, genie_vtxz, genie_vtxt, genie_El, genie_pxl, genie_pyl, genie_pzl;
   Int_t* genie_pdg_final;
   Double_t* genie_E_final, genie_px_final, genie_py_final, genie_pz_final;
 
@@ -177,7 +180,27 @@ private:
   std::vector<double> resnuclEnergy, resnuclPop;
   TBranch *branch_resnuclZ = 0, *branch_resnuclA = 0, *branch_resnuclLevel = 0, *branch_resnuclEnergy = 0, *branch_resnuclPop = 0; 
 
+  //TALYS additional variables
+  double ExcitationProb = 0.25;	//probability to be in an excited state for O16 after nucleon was knocked out
+  std::map<std::string,TTree*> talys_treemap;
+  std::map<std::string,TTree*> talys_gammatreemap;
+  TTree *talys_current = 0;
+  TTree *talys_currentgamma = 0;
 
+  std::vector<int> talys_pdg;       //additional de-excitation final state pdgs
+  std::vector<G4ThreeVector> talys_momdir; //additional de-excitation final state momenta
+  std::vector<double> talys_energy; //de-excitation final state energies
+
+  std::vector<std::vector<int>> deex_part_pdg;
+  std::vector<std::vector<double>> deex_part_energy;
+  std::vector<int> deex_channel;
+  std::vector<int> deex_resnuclZ;
+  std::vector<int> deex_resnuclA;
+  std::vector<std::vector<int>> deex_resnuclLevel;
+  std::vector<std::vector<double>> deex_resnuclEnergy;
+  std::vector<std::vector<double>> deex_resnuclPopulation;
+
+  //Strings containing different file directories
   G4String primariesDirectory;
   G4String neutrinosDirectory;
   G4String genieDirectory;

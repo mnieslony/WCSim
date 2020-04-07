@@ -953,16 +953,33 @@ void WCSimPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
         genieFileName = basename(genieFileNameAsChar);
 
         geniedata->SetBranchAddress("iev",&genie_entry,&genie_entry_branch);
+	//neutrino
         geniedata->SetBranchAddress("neu",&genie_neutrinoflav,&genie_neutrinoflav_branch);
         geniedata->SetBranchAddress("Ev",&genie_neutrinoE,&genie_neutrinoE_branch);
         geniedata->SetBranchAddress("pxv",&genie_neutrinopx,&genie_neutrinopx_branch);
         geniedata->SetBranchAddress("pyv",&genie_neutrinopy,&genie_neutrinopy_branch);
         geniedata->SetBranchAddress("pzv",&genie_neutrinopz,&genie_neutrinopz_branch);
-        geniedata->SetBranchAddress("cc",&genie_cc,&genie_cc_branch);
+        
+	//target
+	geniedata->SetBranchAddress("cc",&genie_cc,&genie_cc_branch);
         geniedata->SetBranchAddress("nc",&genie_nc,&genie_nc_branch);
         geniedata->SetBranchAddress("Z",&genie_Z,&genie_Z_branch);
         geniedata->SetBranchAddress("A",&genie_A,&genie_A_branch);
-        geniedata->SetBranchAddress("nfn",&genie_final_n,&genie_final_n_branch);
+        geniedata->SetBranchAddress("hitnuc",&genie_hitnuc,&genie_hitnuc_branch);
+        geniedata->SetBranchAddress("qel",&genie_qel,&genie_qel_branch);
+        geniedata->SetBranchAddress("res",&genie_res,&genie_res_branch);
+        geniedata->SetBranchAddress("dis",&genie_dis,&genie_dis_branch);
+        geniedata->SetBranchAddress("coh",&genie_coh,&genie_coh_branch);
+        geniedata->SetBranchAddress("imd",&genie_imd,&genie_imd_branch);
+
+	//lepton
+	geniedata->SetBranchAddress("El",&genie_El,&genie_El_branch);
+	geniedata->SetBranchAddress("pxl",&genie_pxl,&genie_pxl_branch);
+	geniedata->SetBranchAddress("pyl",&genie_pyl,&genie_pyl_branch);
+	geniedata->SetBranchAddress("pzl",&genie_pzl,&genie_pzl_branch);
+        
+	//Counts of final state particles
+	geniedata->SetBranchAddress("nfn",&genie_final_n,&genie_final_n_branch);
         geniedata->SetBranchAddress("nfp",&genie_final_p,&genie_final_p_branch);
         geniedata->SetBranchAddress("nfpip",&genie_final_pip,&genie_final_pip_branch);
         geniedata->SetBranchAddress("nfpim",&genie_final_pim,&genie_final_pim_branch);
@@ -970,7 +987,9 @@ void WCSimPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
         geniedata->SetBranchAddress("nfkp",&genie_final_kp,&genie_final_kp_branch);
         geniedata->SetBranchAddress("nfkm",&genie_final_km,&genie_final_km_branch);
         geniedata->SetBranchAddress("nfk0",&genie_final_k0,&genie_final_k0_branch);
-        geniedata->SetBranchAddress("nf",&genie_num_final,&genie_num_final_branch);
+       
+	//Detailed information about final state particles
+	geniedata->SetBranchAddress("nf",&genie_num_final,&genie_num_final_branch);
         geniedata->SetBranchAddress("pdgf",&genie_pdg_final,&genie_pdg_final_branch);
         geniedata->SetBranchAddress("Ef",&genie_E_final,&genie_E_final_branch);
         geniedata->SetBranchAddress("pxf",&genie_px_final,&genie_px_final_branch);
@@ -983,7 +1002,7 @@ void WCSimPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 
         //Load GENIE gst branches to check whether they are zombies
         
-        if(genie_entry_branch==0 || genie_neutrinoflav_branch==0 || genie_neutrinoE_branch==0 || genie_neutrinopx_branch==0 || genie_neutrinopy_branch==0 || genie_neutrinopz_branch==0 || genie_cc_branch==0 || genie_nc_branch==0 || genie_Z_branch==0 || genie_A_branch==0 || genie_final_n_branch==0 || genie_final_p_branch==0 || genie_final_pip_branch==0 || genie_final_pim_branch==0 || genie_final_pi0_branch==0 || genie_final_kp_branch==0 || genie_final_km_branch==0 || genie_final_k0_branch==0 || genie_pdg_final_branch==0 || genie_E_final_branch==0 || genie_px_final_branch==0 || genie_py_final_branch==0 || genie_pz_final_branch==0 || genie_vtxx_branch==0 || genie_vtxy_branch==0 || genie_vtxz_branch==0){
+        if(genie_entry_branch==0 || genie_neutrinoflav_branch==0 || genie_neutrinoE_branch==0 || genie_neutrinopx_branch==0 || genie_neutrinopy_branch==0 || genie_neutrinopz_branch==0 || genie_cc_branch==0 || genie_nc_branch==0 || genie_Z_branch==0 || genie_A_branch==0 || genie_hitnuc_branch == 0 || genie_qel_branch == 0 || genie_res_branch == 0 || genie_dis_branch == 0 || genie_coh_branch == 0 || genie_imd_branch == 0 || genie_El_branch == 0 || genie_pxl_branch == 0 || genie_pyl_branch == 0 || genie_pzl_branch == 0 || genie_final_n_branch==0 || genie_final_p_branch==0 || genie_final_pip_branch==0 || genie_final_pim_branch==0 || genie_final_pi0_branch==0 || genie_final_kp_branch==0 || genie_final_km_branch==0 || genie_final_k0_branch==0 || genie_pdg_final_branch==0 || genie_E_final_branch==0 || genie_px_final_branch==0 || genie_py_final_branch==0 || genie_pz_final_branch==0 || genie_vtxx_branch==0 || genie_vtxy_branch==0 || genie_vtxz_branch==0){
           G4cout<<"LoadNewGENIEFile: BRANCHES ARE ZOMBIES ARGH!"<<G4endl;
         } else {
 	  G4cout <<"Current genie file, num entries: "<<genie_vtxx_branch->GetEntries()<<G4endl;
@@ -1004,6 +1023,16 @@ void WCSimPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
       genie_nc_branch->GetEntry(localEntry);
       genie_Z_branch->GetEntry(localEntry);
       genie_A_branch->GetEntry(localEntry);
+      genie_hitnuc_branch->GetEntry(localEntry);
+      genie_qel_branch->GetEntry(localEntry);
+      genie_res_branch->GetEntry(localEntry);
+      genie_dis_branch->GetEntry(localEntry);
+      genie_coh_branch->GetEntry(localEntry);
+      genie_imd_branch->GetEntry(localEntry);
+      genie_El_branch->GetEntry(localEntry);
+      genie_pxl_branch->GetEntry(localEntry);
+      genie_pyl_branch->GetEntry(localEntry);
+      genie_pzl_branch->GetEntry(localEntry);
       genie_final_n_branch->GetEntry(localEntry);
       genie_final_p_branch->GetEntry(localEntry);
       genie_final_pip_branch->GetEntry(localEntry);
@@ -1022,21 +1051,13 @@ void WCSimPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
       genie_vtxz += 1.681;
 
 
-      G4cout <<"genie_entry: "<<genie_entry<<", genie_neutrinoflav: "<<genie_neutrinoflav<<", genie_neutrinoE: "<<genie_neutrinoE<<", genie_neutrinopx: "<<genie_neutrinopx<<", genie_neutrinopy: "<<genie_neutrinopy<<", genie_neutrinopz: "<<genie_neutrinopz<<", genie_cc: "<<genie_cc<<", genie_nc: "<<genie_nc<<", genie_Z: "<<genie_Z<<", genie_A: "<<genie_A<<", genie_final_n: "<<genie_final_n<<", genie_final_p: "<<genie_final_p<<G4endl;
+      G4cout <<"genie_entry: "<<genie_entry<<", genie_neutrinoflav: "<<genie_neutrinoflav<<", genie_neutrinoE: "<<genie_neutrinoE<<", genie_neutrinopx: "<<genie_neutrinopx<<", genie_neutrinopy: "<<genie_neutrinopy<<", genie_neutrinopz: "<<genie_neutrinopz<<", genie_cc: "<<genie_cc<<", genie_nc: "<<genie_nc<<", genie_Z: "<<genie_Z<<", genie_A: "<<genie_A<<", genie_hitnuc: "<<genie_hitnuc<<", genie_final_n: "<<genie_final_n<<", genie_final_p: "<<genie_final_p<<G4endl;
 
       //Define neutrino particle properties
       G4ParticleDefinition* parttype = particleTable->FindParticle(genie_neutrinoflav);
       TLorentzVector neutrinovertex(genie_vtxt*CLHEP::s, genie_vtxx*CLHEP::m, genie_vtxy*CLHEP::m, genie_vtxz*CLHEP::m);  // position in m, times in s, convert to cm and ns
       G4cout<<"The origin interaction was a "<<(parttype->GetParticleName())<<" at ("<<genie_vtxt*1000000000.<<","<<genie_vtxx*100.<<","<<genie_vtxy*100.<<","<<genie_vtxz*100.<<")[ns, cm] in (Z,A) = ("<<genie_Z<<","<<genie_A<<")"<<G4endl;
       G4cout<<"This entry has "<<genie_num_final<<" primaries"<<G4endl;
-
-      if (genie_Z == 8 && genie_A == 16){
-        G4cout <<"Oxygen nucleus detected! Read in talys-information."<<G4endl;
-        G4cout <<"Number of final n: "<<genie_final_n<<", number of final p: "<<genie_final_p<<G4endl;
-        G4cout <<"TALYS file name: "<<CalculateResNucleus(genie_final_n,genie_final_p);
-      } else {
-        G4cout <<"No oxygen nucleus, don't read in TALYS information. (Z = "<<genie_Z<<", A = "<<genie_A<<")"<<G4endl;
-      }
 
 
       if(pxbranchval){delete[] pxbranchval;}
@@ -1069,7 +1090,59 @@ void WCSimPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
       genie_pz_final_branch->GetEntry(localEntry);
       genie_E_final_branch->GetEntry(localEntry);
       genie_pdg_final_branch->GetEntry(localEntry);
-      
+
+      //Get TALYS de-excitation information
+
+      G4cout <<"Clearing vectors"<<G4endl;
+      talys_pdg.clear();	//additional de-excitation final state pdgs
+      talys_momdir.clear();     //additional de-excitation final state momenta
+      talys_energy.clear();     //de-excitation final state energies
+
+      G4cout <<"Check de excitation prob"<<G4endl;
+      bool do_deexcitation=false;
+      double random_deex = G4UniformRand();
+      G4cout <<"random_deex = "<<random_deex<<", ExcitationProb = "<<ExcitationProb<<G4endl;
+      if (random_deex < ExcitationProb){
+        do_deexcitation=true;
+      }
+
+      G4cout <<"do_deexcitation: "<<do_deexcitation<<G4endl;
+      if (do_deexcitation){
+        int resNuclA=0, resNuclZ=0;
+        double charge=0;
+        for (int i_final = 0; i_final < genie_num_final; i_final++){
+          charge+=particleTable->FindParticle(pdgbranchval[i_final])->GetPDGCharge();
+        }
+        resNuclZ=genie_Z-charge;
+        resNuclA=genie_A-genie_final_n-genie_final_p;
+        G4cout <<"resNuclZ = "<<resNuclZ<<", resNuclA = "<<resNuclA<<G4endl;
+
+        if (genie_hitnuc == 2112 || genie_hitnuc == 2212) //neutron or proton was knocked out
+        {
+          if (genie_Z == 8 && genie_A == 16){
+            G4cout <<"Oxygen nucleus detected! Read in talys-information."<<G4endl;
+            G4cout <<"Number of final n: "<<genie_final_n<<", number of final p: "<<genie_final_p<<G4endl;
+            std::string res_nucleus_name = CalculateResNucleus(resNuclA,resNuclZ);
+	    G4cout <<"TALYS file name: "<<res_nucleus_name<<G4endl;
+            if (res_nucleus_name != "none"){
+		LoadDeexcitationProb();
+                GenerateDeexcitation(&talys_pdg,&talys_momdir,&talys_energy,resNuclA,resNuclZ);
+            }
+            else {
+              G4cout <<"TALYS de-excitation information could not be loaded for residual nucleus (A,Z) = ("<<resNuclA<<","<<resNuclZ<<"). Use no de-excitation in this event"<<G4endl;
+            }
+          } else {
+            G4cout <<"No oxygen nucleus, don't read in TALYS information. (Z = "<<genie_Z<<", A = "<<genie_A<<")"<<G4endl;
+          }
+        }
+        G4cout <<"Summary of TALYS-generated de-excitation particles:"<<G4endl;
+        G4cout <<"Number of particles: "<<talys_pdg.size()<<G4endl;
+        for (unsigned int i_par =0; i_par < talys_pdg.size(); i_par ++){
+          G4cout <<"PDG: "<<talys_pdg.at(i_par)<<", Energy: "<<talys_energy.at(i_par)<<", Momentum direction: ("<<talys_momdir.at(i_par).getX()<<","<<talys_momdir.at(i_par).getY()<<","<<talys_momdir.at(i_par).getZ()<<")"<<G4endl;
+        }
+      }
+
+
       double genie_vtxx_temp, genie_vtxy_temp, genie_vtxz_temp, genie_vtxt_temp;
 
       for (int i_final=0; i_final<genie_num_final; i_final++){
@@ -1158,7 +1231,50 @@ void WCSimPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 
         //Fire the particle away
         particleGun->GeneratePrimaryVertex(anEvent); 
-      }      
+      } 
+
+      //Simulate additional TALYS-deexcitation particles:
+      for (unsigned int i_deexc = 0; i_deexc < talys_pdg.size(); i_deexc++){
+
+        double momentum,mass,kinE;
+        genie_vtxx_temp=genie_vtxx*100*CLHEP::cm;
+        genie_vtxy_temp=genie_vtxy*100*CLHEP::cm;
+        genie_vtxz_temp=genie_vtxz*100*CLHEP::cm;
+        kinE = talys_energy[i_deexc]*MeV; 
+  
+        /*if (talys_pdg.at(i_deexc)==2112) n_deexNeutron++;
+        else if (talys_pdg.at(i_deexc)==2212) n_deexProton++;
+        else if (talys_pdg.at(i_deexc)==1000010020) n_deexDeuterium++;
+        else if (talys_pdg.at(i_deexc)==1000010030) n_deexTritium++;
+        else if (talys_pdg.at(i_deexc)==1000020030) n_deexHelium++;
+        else if (talys_pdg.at(i_deexc)==1000020040) n_deexAlpha++;
+        */
+
+        G4ParticleDefinition* deexc_particle = particleTable->FindParticle(talys_pdg.at(i_deexc));
+        if (deexc_particle) //does particle type exist?
+        {
+          mass=deexc_particle->GetPDGMass();
+          if (fabs(mass)<1E-9) momentum = kinE;
+          else momentum = sqrt(2*mass*kinE);//use non-relativistic formula since the procued nuclei are pretty heavy and won't be at relativistic speeds
+	  
+
+          G4ThreeVector deexc_vtx = G4ThreeVector(genie_vtxx_temp, genie_vtxy_temp, genie_vtxz_temp);
+
+          //Set properties of this de-excitation particle
+          particleGun->SetParticleDefinition(deexc_particle);
+          particleGun->SetParticleEnergy(kinE);
+          particleGun->SetParticlePosition(deexc_vtx);
+          particleGun->SetParticleMomentumDirection(talys_momdir[i_deexc]);
+
+          G4cout <<"Add de-excitation particle with pdg "<<talys_pdg[i_deexc]<<", energy "<<talys_energy[i_deexc]<<", vtx = ("<<genie_vtxx_temp<<","<<genie_vtxy_temp<<","<<genie_vtxz_temp<<"), dir = ("<<talys_momdir[i_deexc].getX()<<","<<talys_momdir[i_deexc].getY()<<","<<talys_momdir[i_deexc].getZ()<<")"<<G4endl;
+
+          //Fire the particle away
+          particleGun->GeneratePrimaryVertex(anEvent);
+        }
+        else {
+          G4cerr <<"Could not find de-excitation particle with pdg "<<talys_pdg[i_deexc]<<", energy "<<talys_energy[i_deexc]<<G4endl;
+        }
+      }
 
       G4cout<<"inputEntry: "<<inputEntry<<G4endl;
       inputEntry++;
@@ -1453,6 +1569,16 @@ void WCSimPrimaryGeneratorAction::LoadNewGENIEFile(){
 	geniedata->SetBranchAddress("nc",&genie_nc,&genie_nc_branch);
 	geniedata->SetBranchAddress("Z",&genie_Z,&genie_Z_branch);
 	geniedata->SetBranchAddress("A",&genie_A,&genie_A_branch);
+        geniedata->SetBranchAddress("hitnuc",&genie_hitnuc,&genie_hitnuc_branch);
+        geniedata->SetBranchAddress("qel",&genie_qel,&genie_qel_branch);
+        geniedata->SetBranchAddress("res",&genie_res,&genie_res_branch);
+	geniedata->SetBranchAddress("dis",&genie_dis,&genie_dis_branch);
+	geniedata->SetBranchAddress("coh",&genie_coh,&genie_coh_branch);
+	geniedata->SetBranchAddress("imd",&genie_imd,&genie_imd_branch);
+	geniedata->SetBranchAddress("El",&genie_El,&genie_El_branch);
+	geniedata->SetBranchAddress("pxl",&genie_pxl,&genie_pxl_branch);
+	geniedata->SetBranchAddress("pyl",&genie_pyl,&genie_pyl_branch);
+	geniedata->SetBranchAddress("pzl",&genie_pzl,&genie_pzl_branch);
 	geniedata->SetBranchAddress("nfn",&genie_final_n,&genie_final_n_branch);
 	geniedata->SetBranchAddress("nfp",&genie_final_p,&genie_final_p_branch);
 	geniedata->SetBranchAddress("nfpip",&genie_final_pip,&genie_final_pip_branch);
@@ -1474,7 +1600,7 @@ void WCSimPrimaryGeneratorAction::LoadNewGENIEFile(){
 
 	//Load GENIE gst branches to check whether they are zombies
 
-	if(genie_entry_branch==0 || genie_neutrinoflav_branch==0 || genie_neutrinoE_branch==0 || genie_neutrinopx_branch==0 || genie_neutrinopy_branch==0 || genie_neutrinopz_branch==0 || genie_cc_branch==0 || genie_nc_branch==0 || genie_Z_branch==0 || genie_A_branch==0 || genie_final_n_branch==0 || genie_final_p_branch==0 || genie_final_pip_branch==0 || genie_final_pim_branch==0 || genie_final_pi0_branch==0 || genie_final_kp_branch==0 || genie_final_km_branch==0 || genie_final_k0_branch==0 || genie_pdg_final_branch==0 || genie_E_final_branch==0 || genie_px_final_branch==0 || genie_py_final_branch==0 || genie_pz_final_branch==0 || genie_vtxx_branch==0 || genie_vtxy_branch==0 || genie_vtxz_branch==0){
+	if(genie_entry_branch==0 || genie_neutrinoflav_branch==0 || genie_neutrinoE_branch==0 || genie_neutrinopx_branch==0 || genie_neutrinopy_branch==0 || genie_neutrinopz_branch==0 || genie_cc_branch==0 || genie_nc_branch==0 || genie_Z_branch==0 || genie_A_branch==0 || genie_hitnuc_branch==0 || genie_qel_branch==0 || genie_res_branch==0 || genie_dis_branch==0 || genie_coh_branch==0 || genie_imd_branch==0 || genie_El_branch==0 || genie_pxl_branch==0 || genie_pyl_branch==0 || genie_pzl_branch==0 || genie_final_n_branch==0 || genie_final_p_branch==0 || genie_final_pip_branch==0 || genie_final_pim_branch==0 || genie_final_pi0_branch==0 || genie_final_kp_branch==0 || genie_final_km_branch==0 || genie_final_k0_branch==0 || genie_pdg_final_branch==0 || genie_E_final_branch==0 || genie_px_final_branch==0 || genie_py_final_branch==0 || genie_pz_final_branch==0 || genie_vtxx_branch==0 || genie_vtxy_branch==0 || genie_vtxz_branch==0){
                 G4cout<<"LoadNewGENIEFile: BRANCHES ARE ZOMBIES ARGH!"<<G4endl;
         }
 
@@ -1601,61 +1727,89 @@ void WCSimPrimaryGeneratorAction::LoadTalysFiles(){
 
 	talys_O15 = (TTree*) f_O15->Get("TreeNucldeex");
         talys_O15->SetName("talys_O15");
+        talys_treemap.emplace("O15",talys_O15);
 	talys_N15 = (TTree*) f_N15->Get("TreeNucldeex");
         talys_N15->SetName("talys_N15");
+        talys_treemap.emplace("N15",talys_N15);
 	talys_N14 = (TTree*) f_N14->Get("TreeNucldeex");
         talys_N14->SetName("talys_N14");
+        talys_treemap.emplace("N14",talys_N14);
 	talys_Li9 = (TTree*) f_Li9->Get("TreeNucldeex");
         talys_Li9->SetName("talys_Li9");
+        talys_treemap.emplace("Li9",talys_Li9);
 	talys_Li7 = (TTree*) f_Li7->Get("TreeNucldeex");
         talys_Li7->SetName("talys_Li7");
+        talys_treemap.emplace("Li7",talys_Li7);
 	talys_C14 = (TTree*) f_C14->Get("TreeNucldeex");
         talys_C14->SetName("talys_C14");
+        talys_treemap.emplace("C14",talys_C14);
 	talys_C13 = (TTree*) f_C13->Get("TreeNucldeex");
         talys_C13->SetName("talys_C13");
+        talys_treemap.emplace("C13",talys_C13);
 	talys_C11 = (TTree*) f_C11->Get("TreeNucldeex");
         talys_C11->SetName("talys_C11");
+        talys_treemap.emplace("C11",talys_C11);
 	talys_C10 = (TTree*) f_C10->Get("TreeNucldeex");
         talys_C10->SetName("talys_C10");
+        talys_treemap.emplace("C10",talys_C10);
         talys_Be10 = (TTree*) f_Be10->Get("TreeNucldeex");
         talys_Be10->SetName("talys_Be10");
+        talys_treemap.emplace("Be10",talys_Be10);
         talys_Be9 = (TTree*) f_Be9->Get("TreeNucldeex");
         talys_Be9->SetName("talys_Be9");
+        talys_treemap.emplace("Be9",talys_Be9);
         talys_B11 = (TTree*) f_B11->Get("TreeNucldeex");
         talys_B11->SetName("talys_B11");
+        talys_treemap.emplace("B11",talys_B11);
         talys_B10 = (TTree*) f_B10->Get("TreeNucldeex");
         talys_B10->SetName("talys_B10");
+        talys_treemap.emplace("B10",talys_B10);
         talys_B9 = (TTree*) f_B9->Get("TreeNucldeex");
         talys_B9->SetName("talys_B9");
+        talys_treemap.emplace("B9",talys_B9);
 	
         talys_O15gamma = (TTree*) f_O15gamma->Get("TreeNucldeex");
         talys_O15gamma->SetName("talys_O15gamma");
+        talys_gammatreemap.emplace("O15",talys_O15gamma);
 	talys_N15gamma = (TTree*) f_N15gamma->Get("TreeNucldeex");
         talys_N15gamma->SetName("talys_N15gamma");
+        talys_gammatreemap.emplace("N15",talys_N15gamma);
 	talys_N14gamma = (TTree*) f_N14gamma->Get("TreeNucldeex");
         talys_N14gamma->SetName("talys_N14gamma");
+        talys_gammatreemap.emplace("N14",talys_N14gamma);
 	talys_Li9gamma = (TTree*) f_Li9gamma->Get("TreeNucldeex");
         talys_Li9gamma->SetName("talys_Li9gamma");
+        talys_gammatreemap.emplace("Li9",talys_Li9gamma);
 	talys_Li7gamma = (TTree*) f_Li7gamma->Get("TreeNucldeex");
         talys_Li7gamma->SetName("talys_Li7gamma");
+        talys_gammatreemap.emplace("Li7",talys_Li7gamma);
 	talys_C14gamma = (TTree*) f_C14gamma->Get("TreeNucldeex");
         talys_C14gamma->SetName("talys_C14gamma");
+        talys_gammatreemap.emplace("C14",talys_C14gamma);
 	talys_C13gamma = (TTree*) f_C13gamma->Get("TreeNucldeex");
         talys_C13gamma->SetName("talys_C13gamma");
+        talys_gammatreemap.emplace("C13",talys_C13gamma);
 	talys_C11gamma = (TTree*) f_C11gamma->Get("TreeNucldeex");
         talys_C11gamma->SetName("talys_C11gamma");
+        talys_gammatreemap.emplace("C11",talys_C11gamma);
 	talys_C10gamma = (TTree*) f_C10gamma->Get("TreeNucldeex");
         talys_C10gamma->SetName("talys_C10gamma");
+        talys_gammatreemap.emplace("C10",talys_C10gamma);
         talys_Be10gamma = (TTree*) f_Be10gamma->Get("TreeNucldeex");
         talys_Be10gamma->SetName("talys_Be10gamma");
+        talys_gammatreemap.emplace("Be10",talys_Be10gamma);
         talys_Be9gamma = (TTree*) f_Be9gamma->Get("TreeNucldeex");
         talys_Be9gamma->SetName("talys_Be9gamma");
+        talys_gammatreemap.emplace("Be9",talys_Be9gamma);
         talys_B11gamma = (TTree*) f_B11gamma->Get("TreeNucldeex");
         talys_B11gamma->SetName("talys_B11gamma");
+        talys_gammatreemap.emplace("B11",talys_B11gamma);
         talys_B10gamma = (TTree*) f_B10gamma->Get("TreeNucldeex");
         talys_B10gamma->SetName("talys_B10gamma");
+        talys_gammatreemap.emplace("B10",talys_B10gamma);
         talys_B9gamma = (TTree*) f_B9gamma->Get("TreeNucldeex");
         talys_B9gamma->SetName("talys_B9gamma");
+        talys_gammatreemap.emplace("B9",talys_B9gamma);
 
         G4cout <<"Loaded complete de-excitation information for relevenat nuclei from talys *gamma-files."<<G4endl;
 
@@ -1730,25 +1884,221 @@ G4double WCSimPrimaryGeneratorAction::ShootEnergyPositronCustom(){
 
 }
 
-std::string WCSimPrimaryGeneratorAction::CalculateResNucleus(int num_n, int num_p){
+std::string WCSimPrimaryGeneratorAction::CalculateResNucleus(int resNuclA, int resNuclZ){
 
 	std::string res_nucleus = "none";
 
-        if (num_n == 1 && num_p == 0) res_nucleus = "O15";
-	if (num_n == 0 && num_p == 1) res_nucleus = "N15";
-	if (num_n == 1 && num_p == 1) res_nucleus = "N14";
-	if (num_n == 0 && num_p == 2) res_nucleus = "C14";
-	if (num_n == 1 && num_p == 2) res_nucleus = "C13";
-	if (num_n == 3 && num_p == 2) res_nucleus = "C11";
-	if (num_n == 4 && num_p == 2) res_nucleus = "C10";
-	if (num_n == 2 && num_p == 3) res_nucleus = "B11";
-	if (num_n == 3 && num_p == 3) res_nucleus = "B10";
-	if (num_n == 4 && num_p == 3) res_nucleus = "B9";
-	if (num_n == 2 && num_p == 4) res_nucleus = "Be10";
-	if (num_n == 3 && num_p == 4) res_nucleus = "Be9";
-	if (num_n == 2 && num_p == 5) res_nucleus = "Li9";
-	if (num_n == 4 && num_p == 5) res_nucleus = "Li7";
+        if (resNuclA == 15 && resNuclZ == 8) res_nucleus = "O15";
+	if (resNuclA == 15 && resNuclZ == 7) res_nucleus = "N15";
+	if (resNuclA == 14 && resNuclZ == 7) res_nucleus = "N14";
+	if (resNuclA == 14 && resNuclZ == 6) res_nucleus = "C14";
+	if (resNuclA == 13 && resNuclZ == 6) res_nucleus = "C13";
+	if (resNuclA == 11 && resNuclZ == 6) res_nucleus = "C11";
+	if (resNuclA == 10 && resNuclZ == 6) res_nucleus = "C10";
+	if (resNuclA == 11 && resNuclZ == 5) res_nucleus = "B11";
+	if (resNuclA == 10 && resNuclZ == 5) res_nucleus = "B10";
+	if (resNuclA == 9 && resNuclZ == 5) res_nucleus = "B9";
+	if (resNuclA == 10 && resNuclZ == 4) res_nucleus = "Be10";
+	if (resNuclA == 9 && resNuclZ == 4) res_nucleus = "Be9";
+	if (resNuclA == 9 && resNuclZ == 3) res_nucleus = "Li9";
+	if (resNuclA == 7 && resNuclZ == 3) res_nucleus = "Li7";
+
+	if (res_nucleus != "none"){
+	  talys_current = talys_treemap[res_nucleus];
+	  talys_currentgamma = talys_gammatreemap[res_nucleus];
+	}
 
 	return res_nucleus;
 
+}
+
+void WCSimPrimaryGeneratorAction::LoadDeexcitationProb(){
+
+  //vectors storing information about nucleusXX.root
+  deex_channel.clear();
+  deex_part_pdg.clear();
+  deex_part_energy.clear();
+
+  //temporary storing vectors
+  int channel;
+  std::vector<double> *gamma_energy=nullptr;
+  std::vector<double> *neutron_energy=nullptr;
+  std::vector<double> *proton_energy=nullptr;
+  std::vector<double> *deuteron_energy=nullptr;
+  std::vector<double> *tritium_energy=nullptr;
+  std::vector<double> *helium_energy=nullptr;
+  std::vector<double> *alpha_energy=nullptr;
+  std::vector<int> pdg;
+  std::vector<double> energy;
+  int n_entries=0;
+
+  if (talys_current){ //make sure tree exists and was read in correctly
+    talys_current->SetBranchAddress("Channel",&channel);
+    talys_current->SetBranchAddress("GammaEnergy",&gamma_energy);
+    talys_current->SetBranchAddress("NeutronEnergy",&neutron_energy);
+    talys_current->SetBranchAddress("ProtonEnergy",&proton_energy);
+    talys_current->SetBranchAddress("DeuteronEnergy",&deuteron_energy);
+    talys_current->SetBranchAddress("TritiumEnergy",&tritium_energy);
+    talys_current->SetBranchAddress("Helium3Energy",&helium_energy);
+    talys_current->SetBranchAddress("AlphaEnergy",&alpha_energy);
+    n_entries = (int) talys_current->GetEntries();
+  }
+
+  if (n_entries == 0){
+    G4cerr << "Nuclear de-excitation data could not be loaded"<<G4endl;
+    return;
+  }
+
+  for (int i_entry=0; i_entry < n_entries; i_entry++){
+
+    talys_current->GetEntry(i_entry);
+    pdg.clear();
+    energy.clear();
+    deex_channel.push_back(channel);
+    for (unsigned int i=0; i< gamma_energy->size(); i++){
+      pdg.push_back(22);
+      energy.push_back(gamma_energy->at(i));
+    }
+    for (unsigned int i=0; i< neutron_energy->size(); i++){
+      pdg.push_back(2112);
+      energy.push_back(neutron_energy->at(i));
+    }
+    for (unsigned int i=0; i< proton_energy->size(); i++){
+      pdg.push_back(2212);
+      energy.push_back(proton_energy->at(i));
+    }
+    for (unsigned int i=0; i< deuteron_energy->size(); i++){
+      pdg.push_back(1000010020);
+      energy.push_back(deuteron_energy->at(i));
+    }
+    for (unsigned int i=0; i< tritium_energy->size(); i++){
+      pdg.push_back(1000010030);
+      energy.push_back(tritium_energy->at(i));
+    }
+    for (unsigned int i=0; i< helium_energy->size(); i++){
+      pdg.push_back(1000020030);
+      energy.push_back(helium_energy->at(i));
+    }
+    for (unsigned int i=0; i< alpha_energy->size(); i++){
+      pdg.push_back(1000020040);
+      energy.push_back(alpha_energy->at(i));
+    }
+
+    deex_part_pdg.push_back(pdg);
+    deex_part_energy.push_back(energy);
+
+  }
+
+  //vectors storing information about nucleusgammaXX.root
+  deex_resnuclZ.clear();
+  deex_resnuclA.clear();
+  deex_resnuclLevel.clear();
+  deex_resnuclEnergy.clear();
+  deex_resnuclPopulation.clear();
+
+  //temp vectors for tree information
+  int Z,A;
+  std::vector<int> tempLevel;
+  std::vector<double> tempEnergy;
+  std::vector<double> tempPopulation;
+  std::vector<int>* pLevel=nullptr;
+  std::vector<double>* pEnergy=nullptr;
+  std::vector<double>* pPopulation=nullptr;
+  n_entries = 0;
+
+  //Loop through talys gamma tree and store the information
+  if (talys_currentgamma){
+    talys_currentgamma->SetBranchAddress("ResNuclZ",&Z);
+    talys_currentgamma->SetBranchAddress("ResNuclA",&A);
+    talys_currentgamma->SetBranchAddress("ResNuclLevel",&pLevel);
+    talys_currentgamma->SetBranchAddress("ResNuclEnergy",&pEnergy);   
+    talys_currentgamma->SetBranchAddress("ResNuclPopulation",&pPopulation);   
+    n_entries = (int) talys_currentgamma->GetEntries();
+  } 
+
+  if (n_entries==0){
+    G4cerr <<"Nuclear de-excitation data could not be loaded."<<G4endl;
+    return;
+  }
+
+  for (int i_entry=0; i_entry < n_entries; i_entry++){
+    talys_currentgamma->GetEntry(i_entry);
+    deex_resnuclZ.push_back(Z);
+    deex_resnuclA.push_back(A);
+    tempLevel.clear();
+    tempEnergy.clear();
+    tempPopulation.clear();
+    for (unsigned int i = 0; i< pLevel->size(); i++){
+      tempLevel.push_back(pLevel->at(i));
+      tempEnergy.push_back(pEnergy->at(i));
+      tempPopulation.push_back(pPopulation->at(i));
+    }
+    deex_resnuclLevel.push_back(tempLevel);
+    deex_resnuclEnergy.push_back(tempEnergy);
+    deex_resnuclPopulation.push_back(tempPopulation);
+  }
+
+}
+
+void WCSimPrimaryGeneratorAction::GenerateDeexcitation(std::vector<int> *Talys_pdg, std::vector<G4ThreeVector> *Talys_momdir, std::vector<double> *Talys_energy, int resNuclA, int resNuclZ){
+
+  //GENERAL Deexcitation Tree
+
+  int rand,Z,A,channel;
+  A = resNuclA;
+  Z = resNuclZ; 
+  G4ParticleTable* particleTable = G4ParticleTable::GetParticleTable();
+  rand = (int)floor(G4UniformRand()*deex_part_pdg.size());
+
+  Talys_pdg->insert(Talys_pdg->end(),deex_part_pdg[rand].begin(),deex_part_pdg[rand].end());
+  Talys_energy->insert(Talys_energy->end(),deex_part_energy[rand].begin(),deex_part_energy[rand].end());
+
+  channel = deex_channel[rand];
+
+  for (unsigned int i=0; i< deex_part_pdg[rand].size(); i++){
+  
+    Talys_momdir->push_back(G4RandomDirection());
+    G4ParticleDefinition *particle = particleTable->FindParticle(deex_part_pdg[rand][i]);
+    Z-=particle->GetPDGCharge();
+    A-=particle->GetBaryonNumber();
+
+  }
+
+  int nuclDeexZ = Z;
+  int nuclDeexA = A;
+
+  //GAMMA Deexcitation Tree
+
+  double sum_branch=0,x=0;
+  double energy_temp;
+  std::vector<double> branch_ratio;
+  int n=0;
+
+  //Get population of discrete energy levels of residual nucleus
+  for (unsigned int i_Z=0; i_Z < deex_resnuclZ.size(); i_Z++){
+    if (deex_resnuclZ.at(i_Z)==nuclDeexZ && deex_resnuclA.at(i_Z)==nuclDeexA){
+      n=i_Z;
+      break;
+    }
+  }
+
+  //Calculate branching rtio of energy levels from populations of levels
+  for (unsigned int i_level=0; i_level < deex_resnuclLevel[n].size(); i_level++){
+    sum_branch+=deex_resnuclPopulation[n][i_level];
+    branch_ratio.push_back(sum_branch);
+  } 
+
+  x = G4UniformRand()*sum_branch;
+  for (unsigned int i = 0; i< branch_ratio.size(); i++){
+    if (x < branch_ratio[i]){
+      energy_temp = deex_resnuclEnergy[n][i];
+    }
+  }
+
+  //Add Gamma with random momentum to de-excitation particle list
+  if (energy_temp){
+    Talys_pdg->push_back(22);
+    Talys_momdir->push_back(G4RandomDirection());
+    Talys_energy->push_back(energy_temp);
+  }
 }
