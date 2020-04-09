@@ -973,6 +973,7 @@ void WCSimPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
         geniedata->SetBranchAddress("imd",&genie_imd,&genie_imd_branch);
 
 	//lepton
+	geniedata->SetBranchAddress("fspl",&genie_fspl,&genie_fspl_branch);
 	geniedata->SetBranchAddress("El",&genie_El,&genie_El_branch);
 	geniedata->SetBranchAddress("pxl",&genie_pxl,&genie_pxl_branch);
 	geniedata->SetBranchAddress("pyl",&genie_pyl,&genie_pyl_branch);
@@ -1002,7 +1003,7 @@ void WCSimPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 
         //Load GENIE gst branches to check whether they are zombies
         
-        if(genie_entry_branch==0 || genie_neutrinoflav_branch==0 || genie_neutrinoE_branch==0 || genie_neutrinopx_branch==0 || genie_neutrinopy_branch==0 || genie_neutrinopz_branch==0 || genie_cc_branch==0 || genie_nc_branch==0 || genie_Z_branch==0 || genie_A_branch==0 || genie_hitnuc_branch == 0 || genie_qel_branch == 0 || genie_res_branch == 0 || genie_dis_branch == 0 || genie_coh_branch == 0 || genie_imd_branch == 0 || genie_El_branch == 0 || genie_pxl_branch == 0 || genie_pyl_branch == 0 || genie_pzl_branch == 0 || genie_final_n_branch==0 || genie_final_p_branch==0 || genie_final_pip_branch==0 || genie_final_pim_branch==0 || genie_final_pi0_branch==0 || genie_final_kp_branch==0 || genie_final_km_branch==0 || genie_final_k0_branch==0 || genie_pdg_final_branch==0 || genie_E_final_branch==0 || genie_px_final_branch==0 || genie_py_final_branch==0 || genie_pz_final_branch==0 || genie_vtxx_branch==0 || genie_vtxy_branch==0 || genie_vtxz_branch==0){
+        if(genie_entry_branch==0 || genie_neutrinoflav_branch==0 || genie_neutrinoE_branch==0 || genie_neutrinopx_branch==0 || genie_neutrinopy_branch==0 || genie_neutrinopz_branch==0 || genie_cc_branch==0 || genie_nc_branch==0 || genie_Z_branch==0 || genie_A_branch==0 || genie_hitnuc_branch == 0 || genie_qel_branch == 0 || genie_res_branch == 0 || genie_dis_branch == 0 || genie_coh_branch == 0 || genie_imd_branch == 0 || genie_fspl_branch == 0 || genie_El_branch == 0 || genie_pxl_branch == 0 || genie_pyl_branch == 0 || genie_pzl_branch == 0 || genie_final_n_branch==0 || genie_final_p_branch==0 || genie_final_pip_branch==0 || genie_final_pim_branch==0 || genie_final_pi0_branch==0 || genie_final_kp_branch==0 || genie_final_km_branch==0 || genie_final_k0_branch==0 || genie_pdg_final_branch==0 || genie_E_final_branch==0 || genie_px_final_branch==0 || genie_py_final_branch==0 || genie_pz_final_branch==0 || genie_vtxx_branch==0 || genie_vtxy_branch==0 || genie_vtxz_branch==0){
           G4cout<<"LoadNewGENIEFile: BRANCHES ARE ZOMBIES ARGH!"<<G4endl;
         } else {
 	  G4cout <<"Current genie file, num entries: "<<genie_vtxx_branch->GetEntries()<<G4endl;
@@ -1029,6 +1030,7 @@ void WCSimPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
       genie_dis_branch->GetEntry(localEntry);
       genie_coh_branch->GetEntry(localEntry);
       genie_imd_branch->GetEntry(localEntry);
+      genie_fspl_branch->GetEntry(localEntry);
       genie_El_branch->GetEntry(localEntry);
       genie_pxl_branch->GetEntry(localEntry);
       genie_pyl_branch->GetEntry(localEntry);
@@ -1232,6 +1234,29 @@ void WCSimPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
         //Fire the particle away
         particleGun->GeneratePrimaryVertex(anEvent); 
       } 
+
+      //Simulate primary lepton
+      int pdg_lepton = genie_fspl;
+      G4double kinE_lepton = genie_El*GeV;
+      genie_vtxx_temp=genie_vtxx*100*CLHEP::cm;
+      genie_vtxy_temp=genie_vtxy*100*CLHEP::cm;
+      genie_vtxz_temp=genie_vtxz*100*CLHEP::cm;      
+      G4ThreeVector lepton_vertex = G4ThreeVector(genie_vtxx_temp,genie_vtxy_temp,genie_vtxz_temp);     
+      G4double px_lepton = genie_pxl*GeV;
+      G4double py_lepton = genie_pyl*GeV;
+      G4double pz_lepton = genie_pzl*GeV;
+      G4ThreeVector lepton_dir = G4ThreeVector(px_lepton,py_lepton,pz_lepton);
+
+      G4ParticleDefinition* primary_lepton = particleTable->FindParticle(pdg_lepton);
+      particleGun->SetParticleDefinition(primary_lepton);
+      particleGun->SetParticleEnergy(kinE_lepton);
+      particleGun->SetParticlePosition(lepton_vertex);
+      particleGun->SetParticleMomentumDirection(lepton_dir);
+
+      G4cout <<"Add primary lepton particle with pdg "<<pdg_lepton<<", energy "<<kinE_lepton<<", vtx = ("<<genie_vtxx_temp<<","<<genie_vtxy_temp<<","<<genie_vtxz_temp<<"), dir = ("<<px_lepton<<","<<py_lepton<<","<<pz_lepton<<")"<<G4endl;
+
+      //Fire the primary lepton away
+      particleGun->GeneratePrimaryVertex(anEvent);
 
       //Simulate additional TALYS-deexcitation particles:
       for (unsigned int i_deexc = 0; i_deexc < talys_pdg.size(); i_deexc++){
@@ -1575,6 +1600,7 @@ void WCSimPrimaryGeneratorAction::LoadNewGENIEFile(){
 	geniedata->SetBranchAddress("dis",&genie_dis,&genie_dis_branch);
 	geniedata->SetBranchAddress("coh",&genie_coh,&genie_coh_branch);
 	geniedata->SetBranchAddress("imd",&genie_imd,&genie_imd_branch);
+        geniedata->SetBranchAddress("fspl",&genie_fspl,&genie_fspl_branch);
 	geniedata->SetBranchAddress("El",&genie_El,&genie_El_branch);
 	geniedata->SetBranchAddress("pxl",&genie_pxl,&genie_pxl_branch);
 	geniedata->SetBranchAddress("pyl",&genie_pyl,&genie_pyl_branch);
@@ -1600,7 +1626,7 @@ void WCSimPrimaryGeneratorAction::LoadNewGENIEFile(){
 
 	//Load GENIE gst branches to check whether they are zombies
 
-	if(genie_entry_branch==0 || genie_neutrinoflav_branch==0 || genie_neutrinoE_branch==0 || genie_neutrinopx_branch==0 || genie_neutrinopy_branch==0 || genie_neutrinopz_branch==0 || genie_cc_branch==0 || genie_nc_branch==0 || genie_Z_branch==0 || genie_A_branch==0 || genie_hitnuc_branch==0 || genie_qel_branch==0 || genie_res_branch==0 || genie_dis_branch==0 || genie_coh_branch==0 || genie_imd_branch==0 || genie_El_branch==0 || genie_pxl_branch==0 || genie_pyl_branch==0 || genie_pzl_branch==0 || genie_final_n_branch==0 || genie_final_p_branch==0 || genie_final_pip_branch==0 || genie_final_pim_branch==0 || genie_final_pi0_branch==0 || genie_final_kp_branch==0 || genie_final_km_branch==0 || genie_final_k0_branch==0 || genie_pdg_final_branch==0 || genie_E_final_branch==0 || genie_px_final_branch==0 || genie_py_final_branch==0 || genie_pz_final_branch==0 || genie_vtxx_branch==0 || genie_vtxy_branch==0 || genie_vtxz_branch==0){
+	if(genie_entry_branch==0 || genie_neutrinoflav_branch==0 || genie_neutrinoE_branch==0 || genie_neutrinopx_branch==0 || genie_neutrinopy_branch==0 || genie_neutrinopz_branch==0 || genie_cc_branch==0 || genie_nc_branch==0 || genie_Z_branch==0 || genie_A_branch==0 || genie_hitnuc_branch==0 || genie_qel_branch==0 || genie_res_branch==0 || genie_dis_branch==0 || genie_coh_branch==0 || genie_imd_branch==0 || genie_fspl_branch==0 || genie_El_branch==0 || genie_pxl_branch==0 || genie_pyl_branch==0 || genie_pzl_branch==0 || genie_final_n_branch==0 || genie_final_p_branch==0 || genie_final_pip_branch==0 || genie_final_pim_branch==0 || genie_final_pi0_branch==0 || genie_final_kp_branch==0 || genie_final_km_branch==0 || genie_final_k0_branch==0 || genie_pdg_final_branch==0 || genie_E_final_branch==0 || genie_px_final_branch==0 || genie_py_final_branch==0 || genie_pz_final_branch==0 || genie_vtxx_branch==0 || genie_vtxy_branch==0 || genie_vtxz_branch==0){
                 G4cout<<"LoadNewGENIEFile: BRANCHES ARE ZOMBIES ARGH!"<<G4endl;
         }
 
@@ -1612,8 +1638,8 @@ void WCSimPrimaryGeneratorAction::LoadNewGENIEFile(){
 	//geniedata->GetEntry(inputEntry);
         
         G4cout<<"first run: "<<runbranchval<<G4endl;
-        treeNumber=geniedata->GetTreeNumber();
         localEntry = geniedata->LoadTree(inputEntry);
+        treeNumber=geniedata->GetTreeNumber();
         genieFileName = geniedata->GetCurrentFile()->GetName(); // new tree, new file
         std::cout <<"Current genieFileName: "<<genieFileName<<std::endl;
         char* genieFileNameAsChar = strdup(genieFileName.c_str());

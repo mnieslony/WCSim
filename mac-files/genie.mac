@@ -1,0 +1,100 @@
+#!/bin/sh 
+# Sample setup macro with no visualization
+
+/run/verbose 0
+/tracking/verbose 0
+/hits/verbose 0
+/process/em/verbose 0
+#/process/had/particle_hp/verbose 0
+/process/had/cascade/verbose 0
+/process/verbose 0
+/process/setVerbose 0
+/run/initialize
+/vis/disable
+
+/WCSim/PMTQEMethod      Multi_Tank_Types
+/WCSim/LAPPDQEMethod    Multi_Tank_Types
+
+#turn on or off the collection efficiency
+/WCSim/PMTCollEff on
+/WCSim/SavePi0 true
+
+## select the input nuance-formatted vector file
+## you can of course use your own
+#/mygen/generator muline
+#/mygen/vecfile inputvectorfile
+#/mygen/vecfile h2o.2km.001-009x3_G4.kin
+#/mygen/vecfile mu+.out
+
+#grab the DAQ options (digitizer type, thresholds, timing windows, etc.)
+/control/execute macros/annie_daq.mac
+
+/DarkRate/SetDetectorElement tank
+/DarkRate/SetDarkMode 1
+/DarkRate/SetDarkHigh 100000
+/DarkRate/SetDarkLow 0
+/DarkRate/SetDarkWindow 4000
+
+/DarkRate/SetDetectorElement mrd
+/DarkRate/SetDarkMode 1
+/DarkRate/SetDarkHigh 100000
+/DarkRate/SetDarkLow 0
+/DarkRate/SetDarkWindow 4000
+
+/DarkRate/SetDetectorElement facc
+/DarkRate/SetDarkMode 1
+/DarkRate/SetDarkHigh 100000
+/DarkRate/SetDarkLow 0
+/DarkRate/SetDarkWindow 4000
+
+#Uncomment one of the lines below if you want to use the OGLSX or RayTracer visualizer
+#/control/execute macros/visOGLSX.mac
+#/control/execute macros/visRayTracer.mac
+
+#####################################
+## PRIMARY SOURCES
+#####################################
+
+#/mygen/neutrinosdirectory /pnfs/annie/persistent/users/vfischer/genie_files/BNB_Water_10k_22-05-17/gntp.*ghep.root
+#/mygen/primariesdirectory /pnfs/annie/persistent/users/moflaher/g4dirt_vincentsgenie/BNB_Water_10k_22-05-17/annie_tank_flux.*.root
+#/mygen/geniedirectory /annie/app/users/mnieslon/genie/output_gst/atmospheric_*.root
+#/mygen/talysdirectory /pnfs/annie/persistent/users/mnieslon/genie/talys_files/
+#/mygen/primariesoffset 5000
+
+########################################################################################
+########################## GENIE + TALYS generator #####################################
+########################################################################################
+
+/mygen/generator genie
+
+########################################################################################
+############### Antineutrino event generator (DSNB spectrum) ###########################
+########################################################################################
+
+#/mygen/generator antinu
+#/mygen/Efile DSNB_antinu_prob_cumulative.txt
+#/mygen/position 0 -14.46 168.1 cm
+#/mygen/cylradius 1.5 m
+#/mygen/cylhalfz 1.97 m
+#/mygen/cylradius 1.5 m
+#/mygen/cylhalfz 1.97 m
+##cylinders are defined with the z axis as the axis of the cylinder
+##rotate the cylinder to align with ANNIE's y-parallel tank
+#/mygen/rot1 1 0 0
+#/mygen/rot2 0 0 1
+
+##/DAQ/Trigger NDigits # normal NDigits 'cut' left on
+
+##################################
+## END OF PRIMARY SOURCES
+##################################
+
+/control/execute macros/setRandomParameters.mac
+
+## change the name of the output root file, default = wcsim (the .root is appended internally)
+/WCSimIO/RootFile wcsim_atmospheric
+
+#/run/beamOn 10
+
+#exit
+
