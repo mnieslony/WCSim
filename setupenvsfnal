@@ -25,3 +25,6 @@ export ROOT_PATH=/grid/fermiapp/products/larsoft/root/v6_06_08/Linux64bit+2.6-2.
 export GEANT4_PATH=/grid/fermiapp/products/larsoft/geant4/v4_10_1_p02a/Linux64bit+2.6-2.12-e9-qt-prof/lib64/Geant4-10.1.2
 export GEANT4_MAKEFULL_PATH=/grid/fermiapp/products/larsoft/geant4/v4_10_1_p02a/source/geant4.10.01.p02
 
+#SL7 stuff
+export LIBRARY_PATH=${LIBRARY_PATH}:/cvmfs/annie.opensciencegrid.org/products/toolanalysis/v0_0_0/extras_for_oasis_build
+export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/cvmfs/annie.opensciencegrid.org/products/toolanalysis/v0_0_0/extras_for_oasis_build

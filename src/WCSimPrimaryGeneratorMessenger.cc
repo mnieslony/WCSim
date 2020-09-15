@@ -3,6 +3,7 @@
 #include "G4UIdirectory.hh"
 #include "G4UIcmdWithAString.hh"
 #include "G4UIcmdWithAnInteger.hh"
+#include "G4UIcmdWithADouble.hh"
 #include "G4UIcmdWithADoubleAndUnit.hh"
 #include "G4UIcmdWith3Vector.hh"
 #include "G4UIcmdWith3VectorAndUnit.hh"
@@ -17,11 +18,11 @@ WCSimPrimaryGeneratorMessenger::WCSimPrimaryGeneratorMessenger(WCSimPrimaryGener
   genCmd = new G4UIcmdWithAString("/mygen/generator",this);
   genCmd->SetGuidance("Select primary generator.");
   //T. Akiri: Addition of laser, M.Nieslony: Addition of antinu, genie
-  genCmd->SetGuidance(" Available generators : muline, gun, laser, gps, beam, antinu, genie");
+  genCmd->SetGuidance(" Available generators : muline, gun, laser, gps, beam, antinu, genie, led");
   genCmd->SetParameterName("generator",true);
   genCmd->SetDefaultValue("beam");	// previously muline
   //T. Akiri: Addition of laser, M.Nieslony: Addition of antinu, genie
-  genCmd->SetCandidates("muline gun laser gps beam antinu genie");
+  genCmd->SetCandidates("muline gun laser gps beam antinu genie led");
 
   fileNameCmd = new G4UIcmdWithAString("/mygen/vecfile",this);
   fileNameCmd->SetGuidance("Select the file of vectors.");
@@ -84,6 +85,26 @@ WCSimPrimaryGeneratorMessenger::WCSimPrimaryGeneratorMessenger(WCSimPrimaryGener
   talysfileDirectoryCmd->SetParameterName("directoryName",true);
   talysfileDirectoryCmd->SetDefaultValue("");
 
+  sourcepositionCmd = new G4UIcmdWith3VectorAndUnit("/mygen/LEDsourcepos",this);
+  sourcepositionCmd->SetGuidance("Set LED Source Position");
+  sourcepositionCmd->SetUnitCategory("Length");
+  sourcepositionCmd->SetDefaultUnit("cm");
+  sourcepositionCmd->SetUnitCandidates("mm cm m");
+
+  targetpositionCmd = new G4UIcmdWith3VectorAndUnit("/mygen/LEDtargetpos",this);
+  targetpositionCmd->SetGuidance("Set LED Target Position");
+  targetpositionCmd->SetUnitCategory("Length");
+  targetpositionCmd->SetDefaultUnit("cm");
+  targetpositionCmd->SetUnitCandidates("mm cm m");
+
+  angleCmd = new G4UIcmdWithADouble("/mygen/LEDangle",this);
+  angleCmd->SetGuidance("Set LED Opening Angle");
+  angleCmd->SetDefaultValue(30.);
+
+  nphotonsCmd = new G4UIcmdWithAnInteger("/mygen/LEDphotons",this);
+  nphotonsCmd->SetGuidance("Set LED number of photons");
+  nphotonsCmd->SetDefaultValue(5000);
+
 }
 
 WCSimPrimaryGeneratorMessenger::~WCSimPrimaryGeneratorMessenger()
@@ -102,6 +123,10 @@ WCSimPrimaryGeneratorMessenger::~WCSimPrimaryGeneratorMessenger()
   delete heightCmd;
   delete rot1Cmd;
   delete rot2Cmd;
+  delete sourcepositionCmd;
+  delete targetpositionCmd;
+  delete angleCmd;
+  delete nphotonsCmd;
 }
 
 void WCSimPrimaryGeneratorMessenger::SetNewValue(G4UIcommand * command,G4String newValue)
@@ -118,6 +143,7 @@ void WCSimPrimaryGeneratorMessenger::SetNewValue(G4UIcommand * command,G4String 
       myAction->SetGPSEvtGenerator(false);
       myAction->SetAntiNuEvtGenerator(false);
       myAction->SetGenieEvtGenerator(false);
+      myAction->SetLEDEvtGenerator(false);
     }
     else if ( newValue == "gun")
     {
@@ -129,6 +155,7 @@ void WCSimPrimaryGeneratorMessenger::SetNewValue(G4UIcommand * command,G4String 
       myAction->SetGPSEvtGenerator(false);
       myAction->SetAntiNuEvtGenerator(false);
       myAction->SetGenieEvtGenerator(false);
+      myAction->SetLEDEvtGenerator(false);
     }
     else if ( newValue == "laser")   //T. Akiri: Addition of laser
     {
@@ -140,6 +167,7 @@ void WCSimPrimaryGeneratorMessenger::SetNewValue(G4UIcommand * command,G4String 
       myAction->SetGPSEvtGenerator(false);
       myAction->SetAntiNuEvtGenerator(false);
       myAction->SetGenieEvtGenerator(false);
+      myAction->SetLEDEvtGenerator(false);
     }
     else if ( newValue == "beam")
     {
@@ -151,6 +179,7 @@ void WCSimPrimaryGeneratorMessenger::SetNewValue(G4UIcommand * command,G4String 
       myAction->SetGPSEvtGenerator(false);
       myAction->SetAntiNuEvtGenerator(false);
       myAction->SetGenieEvtGenerator(false);
+      myAction->SetLEDEvtGenerator(false);
     }
     else if ( newValue == "gps")
     {
@@ -162,6 +191,7 @@ void WCSimPrimaryGeneratorMessenger::SetNewValue(G4UIcommand * command,G4String 
       myAction->SetGPSEvtGenerator(true);
       myAction->SetAntiNuEvtGenerator(false);
       myAction->SetGenieEvtGenerator(false);
+      myAction->SetLEDEvtGenerator(false);
     } 
     else if ( newValue == "antinu")
     {
@@ -173,6 +203,7 @@ void WCSimPrimaryGeneratorMessenger::SetNewValue(G4UIcommand * command,G4String 
       myAction->SetGPSEvtGenerator(false);
       myAction->SetAntiNuEvtGenerator(true);
       myAction->SetGenieEvtGenerator(false);
+      myAction->SetLEDEvtGenerator(false);
     }
     else if ( newValue == "genie")
     {
@@ -184,6 +215,19 @@ void WCSimPrimaryGeneratorMessenger::SetNewValue(G4UIcommand * command,G4String 
       myAction->SetGPSEvtGenerator(false);
       myAction->SetAntiNuEvtGenerator(false);
       myAction->SetGenieEvtGenerator(true);
+      myAction->SetLEDEvtGenerator(false);
+    }
+    else if ( newValue == "led")
+    {
+      G4cout<<"Setting generator source to LED"<<G4endl;
+      myAction->SetMulineEvtGenerator(false);
+      myAction->SetGunEvtGenerator(false);
+      myAction->SetLaserEvtGenerator(false);
+      myAction->SetBeamEvtGenerator(false);
+      myAction->SetGPSEvtGenerator(false);
+      myAction->SetAntiNuEvtGenerator(false);
+      myAction->SetGenieEvtGenerator(false);
+      myAction->SetLEDEvtGenerator(true);
     }
   }
 
@@ -259,6 +303,30 @@ void WCSimPrimaryGeneratorMessenger::SetNewValue(G4UIcommand * command,G4String 
     G4cout << " Second rotation for antinu event distribution is set. " << G4endl;
   }
 
+  if ( command == sourcepositionCmd )
+  {
+    myAction->SetLEDSourcePosition(sourcepositionCmd->ConvertToDimensioned3Vector(newValue));
+    G4cout << "Source Position for LED set." << G4endl;   
+  }
+
+  if ( command == targetpositionCmd )
+  {
+    myAction->SetLEDTargetPosition(targetpositionCmd->ConvertToDimensioned3Vector(newValue));
+    G4cout << "Target Position for LED set." << G4endl;   
+  }
+
+  if ( command == angleCmd )
+  {
+    myAction->SetLEDAngle(angleCmd->ConvertToDouble(newValue));
+    G4cout << "Openind angle for LED set." << G4endl;
+  }
+
+  if ( command == nphotonsCmd )
+  {
+    myAction->SetLEDPhotons(nphotonsCmd->GetNewIntValue(newValue));
+    G4cout << "Number of photons for LED set." << G4endl;
+  }
+
 }
 
 G4String WCSimPrimaryGeneratorMessenger::GetCurrentValue(G4UIcommand* command)
@@ -281,6 +349,8 @@ G4String WCSimPrimaryGeneratorMessenger::GetCurrentValue(G4UIcommand* command)
       { cv = "antinu"; }
     else if(myAction->IsUsingGenieEvtGenerator())
       { cv = "genie"; }
+    else if(myAction->IsUsingLEDEvtGenerator())
+      { cv = "led"; }
   }
   
   return cv;

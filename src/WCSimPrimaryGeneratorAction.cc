@@ -15,6 +15,7 @@
 #include "G4SPSPosDistribution.hh"
 #include "TFile.h"
 #include "TLorentzVector.h"
+#include "TRandom3.h"
 #include "globals.hh"
 #include "Randomize.hh"
 #include <fstream>
@@ -128,7 +129,8 @@ WCSimPrimaryGeneratorAction::WCSimPrimaryGeneratorAction(
   useGPSEvt = false;
   useAntiNuEvt = false; 
   useGenieEvt = false; 
-    
+  useLEDEvt = false; 
+   
 #ifndef NO_GENIE
   genierecordval = new genie::NtpMCEventRecord;
 #endif
@@ -1226,6 +1228,8 @@ void WCSimPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 
         if(keval==0){keval+=1.*eV; eval+=1.*eV; thepdir=G4ThreeVector(0.,0.,1.);}
         
+	G4cout <<"keval after correction: "<<keval<<G4endl;
+
 	//Set properties of the primary particle
 	particleGun->SetParticleEnergy(keval);
         particleGun->SetParticlePosition(thevtx);
@@ -1261,11 +1265,11 @@ void WCSimPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
       //Simulate additional TALYS-deexcitation particles:
       for (unsigned int i_deexc = 0; i_deexc < talys_pdg.size(); i_deexc++){
 
-        double momentum,mass,kinE;
+        G4double momentum,mass;
         genie_vtxx_temp=genie_vtxx*100*CLHEP::cm;
         genie_vtxy_temp=genie_vtxy*100*CLHEP::cm;
         genie_vtxz_temp=genie_vtxz*100*CLHEP::cm;
-        kinE = talys_energy[i_deexc]*MeV; 
+        G4double kinE = talys_energy[i_deexc]*MeV; 
   
         /*if (talys_pdg.at(i_deexc)==2112) n_deexNeutron++;
         else if (talys_pdg.at(i_deexc)==2212) n_deexProton++;
@@ -1426,8 +1430,74 @@ void WCSimPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
                 		<<"MeV at ("<<vtx.x()<<", "<<vtx.y()<<", "<<vtx.z()<<") in direction ("
                 		<<dir.x()<<", "<<dir.y()<<", "<<dir.z()<<") "<<G4endl;
         	}
+      	}
+    }
+
+    else if (useLEDEvt){
+     
+      G4ThreeVector leddirection = ledtargetpos - ledsourcepos;
+      G4ThreeVector eulerangle = EulerAngle(leddirection);
+
+      G4cout<<"Generating LED event with "<<  photons_per_pulse <<" photons from source ( "
+                <<ledsourcepos.x()<<","<<ledsourcepos.y()<<","<<ledsourcepos.z()<<") to target ("
+                <<ledtargetpos.x()<<","<<ledtargetpos.y()<<","<<ledtargetpos.z()<<")."<<G4endl;
+
+      G4ParticleTable* theParticleTable = G4ParticleTable::GetParticleTable();
+      G4ParticleDefinition* theParticleDefinition   = theParticleTable->FindParticle("opticalphoton");
+     
+      TRandom3 rand;
+      rand.SetSeed(0);
+      //RandGauss gauss(hep_rndm,0,0.66);
+
+      for (int i_pulse=0; i_pulse < photons_per_pulse; i_pulse++){
+        
+        G4float myRandom1 = G4UniformRand();
+        G4float myRandom2 = G4UniformRand();
+        //G4cout <<"myRandom1: "<<myRandom1<<", myRandom2: "<<myRandom2<<G4endl;
+	//G4float myRandomTheta = asin(0.5*myRandom1*sin(ledopening*deg/2));
+        //G4float myRandom3 = gauss->shoot();
+	G4float myRandom3 = rand.Gaus(0,0.66);
+        if (myRandom3 < 0) myRandom3 = -myRandom3;
+	if (myRandom3 > TMath::Pi()) {
+		photons_per_pulse++;
+		continue;
+	}
+	G4float myRandomTheta = myRandom3;
+	G4float myRandomPhi = myRandom2*2*TMath::Pi();
+
+ 	G4ThreeVector myRandomXYZ(sin(myRandomTheta)*cos(myRandomPhi),sin(myRandomTheta)*sin(myRandomPhi),cos(myRandomTheta));
+   
+        G4ThreeVector dir = EulerTransform(myRandomXYZ,eulerangle,leddirection.y()).unit();
+       
+        thePosition = ledsourcepos;        
+
+        G4double KinE = 3.061*eV;	//405nm LED light
+        G4double px = KinE*dir.x();
+        G4double py = KinE*dir.y();
+        G4double pz = KinE*dir.z();
+
+        G4ThreeVector thePolarization = DefineRandomPolarization(dir).unit();
+
+	G4double polx = thePolarization.x();
+        G4double poly = thePolarization.y();
+        G4double polz = thePolarization.z();
+
+        G4PrimaryVertex* vertex = new G4PrimaryVertex(thePosition,0);
+        G4PrimaryParticle *particle = new G4PrimaryParticle(theParticleDefinition,px,py,pz);
+        particle->SetPolarization(polx,poly,polz);
+        vertex->SetPrimary( particle );
+        anEvent->AddPrimaryVertex( vertex );             
+
+	if (i_pulse == 0){
+          SetVtx(thePosition);
+          SetBeamEnergy(KinE);
+          SetBeamDir(dir);
+          SetBeamPDG(0);
+        }
+
       }
-    }   
+      
+    } 
 }
 
 
@@ -1457,6 +1527,8 @@ G4String WCSimPrimaryGeneratorAction::GetGeneratorTypeString()
     return "antinu";
   else if (useGenieEvt)
     return "genie";
+  else if (useLEDEvt)
+    return "led";
   return "";
 }
 
@@ -2127,4 +2199,83 @@ void WCSimPrimaryGeneratorAction::GenerateDeexcitation(std::vector<int> *Talys_p
     Talys_momdir->push_back(G4RandomDirection());
     Talys_energy->push_back(energy_temp);
   }
+}
+
+G4ThreeVector WCSimPrimaryGeneratorAction::EulerAngle(G4ThreeVector _leddirection){
+
+  _leddirection = _leddirection.unit();
+
+  G4double Psi ;
+  G4double Phi = 0;
+  G4double z = _leddirection.z();
+  G4double x = _leddirection.x();
+
+  G4double Theta = acos(z);
+  G4double Norma = sqrt(1 - pow(z,2));
+  if(Norma != 0) {
+    Psi = acos(x/Norma) + 0.5*TMath::Pi() ;
+  } else {
+    Psi = 0 ;
+  }
+  G4ThreeVector VectorEuler;
+  VectorEuler.set(Theta, Psi, Phi);
+
+  return VectorEuler; 
+
+}
+
+G4ThreeVector WCSimPrimaryGeneratorAction::EulerTransform(G4ThreeVector _ledxyz, G4ThreeVector _ledeuler, G4double _leddiry){
+
+  G4int flag = 0;
+  if (_leddiry < 0) flag = 1;
+
+  G4double Theta = _ledeuler.getX();
+  G4double Psi   = _ledeuler.getY();
+  G4double Phi   = _ledeuler.getZ();
+  G4double S1 = sin(Theta);
+  G4double C1 = cos(Theta);
+  G4double S2 = sin(Psi);
+  G4double C2 = cos(Psi);
+  G4double S3 = sin(Phi);
+  G4double C3 = cos(Phi);
+  G4double A11=C2*C3-C1*S2*S3;
+  G4double A12=-C2*S3-C1*S2*C3;
+  G4double A13=S1*S2;
+  G4double A21=S2*C3+C1*C2*S3;
+  G4double A22=-S2*S3+C1*C2*C3;
+  G4double A23=-S1*C2;
+  G4double A31=S1*S3;
+  G4double A32=S1*C3;
+  G4double A33=C1;
+  G4ThreeVector Rotated ;
+
+  Rotated.setX(+A11*_ledxyz.x()+A12*_ledxyz.y()+A13*_ledxyz.z());
+  if(flag == 0) {
+    Rotated.setY(+A21*_ledxyz.x()+A22*_ledxyz.y()+A23*_ledxyz.z());
+  } else {
+    Rotated.setY(-A21*_ledxyz.x()-A22*_ledxyz.y()-A23*_ledxyz.z());
+  }
+  Rotated.setZ(+A31*_ledxyz.x()+A32*_ledxyz.y()+A33*_ledxyz.z());
+
+  return  Rotated ;
+}
+
+G4ThreeVector WCSimPrimaryGeneratorAction::DefineRandomPolarization(G4ThreeVector PhotonDirection) {
+
+  G4ThreeVector PhotonPolarization, Perp;
+  G4double      Phi, SinPhi, CosPhi;
+
+  PhotonPolarization = PhotonDirection.orthogonal();
+
+  Perp = PhotonDirection.cross(PhotonPolarization);
+
+  Phi = 2*TMath::Pi()*G4UniformRand();
+  SinPhi = sin(Phi);
+  CosPhi = cos(Phi);
+
+  PhotonPolarization = CosPhi * PhotonPolarization + SinPhi * Perp;
+
+  PhotonPolarization = PhotonPolarization.unit();
+
+  return PhotonPolarization;
 }

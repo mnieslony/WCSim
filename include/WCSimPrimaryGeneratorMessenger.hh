@@ -5,6 +5,7 @@ class WCSimPrimaryGeneratorAction;
 class G4UIdirectory;
 class G4UIcmdWithAString;
 class G4UIcmdWithAnInteger;
+class G4UIcmdWithADouble;
 class G4UIcmdWith3Vector;
 class G4UIcmdWith3VectorAndUnit;
 class G4UIcmdWithADoubleAndUnit;
@@ -42,7 +43,12 @@ class WCSimPrimaryGeneratorMessenger: public G4UImessenger
   G4UIcmdWithADoubleAndUnit* heightCmd;
   G4UIcmdWith3Vector* rot1Cmd;
   G4UIcmdWith3Vector* rot2Cmd;
- 
+
+  G4UIcmdWith3VectorAndUnit* sourcepositionCmd;
+  G4UIcmdWith3VectorAndUnit* targetpositionCmd;
+  G4UIcmdWithADouble* angleCmd;
+  G4UIcmdWithAnInteger* nphotonsCmd;
+
 };
 
 #endif

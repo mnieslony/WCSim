@@ -234,7 +234,7 @@ G4LogicalVolume* WCSimDetectorConstruction::ConstructANNIECylinder()
 			for(G4double j = 0; j < WCBarrelNRings; j++){
 				
 				// we have one hole: skip PMT placement
-				if( j==5 && facei==0 && i==0 ) continue;
+				// if( j==5 && facei==0 && i==0 ) continue;
 				
 				// Select the appropriate PMT logical volume
 				// PMTs are placed in the vector in the order their collections are defined
@@ -249,7 +249,7 @@ G4LogicalVolume* WCSimDetectorConstruction::ConstructANNIECylinder()
 				// 5:  8",  8" (missing one)
 				// N.B. facei==0 is x<0, upstream.
 				// ring j==0 is top of tank.
-				
+				/*
 				int PMTindex=-1;
 				if( j==0 || j==5 || 
 				   (j==1&&(facei>1&&facei<5)&&i==0) || 
@@ -261,6 +261,19 @@ G4LogicalVolume* WCSimDetectorConstruction::ConstructANNIECylinder()
 				} else {
 					PMTindex = 0;  // WB 10"
 				}
+				*/
+
+				//New mapping with actual PMT type positions:
+				int PMTindex = -1;
+				//Holes
+				if ( j == 0 && i == 0 && (facei==1 || facei == 3 || facei == 5 || facei ==7)) continue; 	
+
+				//PMTs
+				if (j == 2 || j == 4 || (j == 1 && i == 1)) PMTindex = 2;	// 8" HQE new (Hamamatsu/ANNIE)
+				else if (j ==3 && i == 0 && (facei==1 || facei ==3 || facei ==5 || facei == 7)) PMTindex = 3;	// WM 10" HQE
+				else PMTindex = 0;	//WB 10"
+
+
 				logicWCPMT = logicWCPMTs.at(PMTindex);
 				G4String pmtCollectionName = WCTankCollectionNames.at(PMTindex);
 				
@@ -502,8 +515,14 @@ void WCSimDetectorConstruction::ConstructANNIECaps(G4int zflip)
 				yoffset = (j*WCCapPMTSpacing + WCCapPMTSpacing*0.5)*capcompressionratio+(capcentrebarwidth*yside);
 				zoffset = -capAssemblyHeight*zflip+InnerStructureCentreOffset+WCCapBottomPMTOffset;
 				
-				G4ThreeVector cellpos = G4ThreeVector(xoffset, yoffset, zoffset);
-				if (((sqrt(xoffset*xoffset + yoffset*yoffset) + WCPMTRadius) < WCCapEdgeLimit) ) {
+				//G4ThreeVector cellpos = G4ThreeVector(xoffset, yoffset, zoffset);
+				//if (((sqrt(xoffset*xoffset + yoffset*yoffset) + WCPMTRadius) < WCCapEdgeLimit) ) {
+				
+				G4double xoffset_rot45 = 1./sqrt(2)*(yoffset+xoffset);
+				G4double yoffset_rot45 = 1./sqrt(2)*(yoffset-xoffset);
+
+				G4ThreeVector cellpos = G4ThreeVector(xoffset_rot45, yoffset_rot45, zoffset);
+				if (((sqrt(xoffset_rot45*xoffset_rot45 + yoffset_rot45*yoffset_rot45) + WCPMTRadius) < WCCapEdgeLimit) ) {
 					//G4cout<<"Constructing bottom cap PMT "<<i<<","<<j<<" at ("
 					//		<<xoffset<<", "<<yoffset<<")"<<G4endl;
 					G4VPhysicalVolume* physiCapPMT =

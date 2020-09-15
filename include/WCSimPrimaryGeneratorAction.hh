@@ -108,6 +108,7 @@ private:
   G4bool   useGPSEvt;
   G4bool   useAntiNuEvt;
   G4bool   useGenieEvt;
+  G4bool   useLEDEvt;
   std::fstream inputFile;
   std::fstream inputSpecFile;
   G4String vectorFileName;
@@ -213,7 +214,13 @@ private:
   std::vector<G4double> Espectrum;
   std::vector<G4double> Espectrum_positron;
   std::vector<G4double> ProbabilitySpec;
-	
+
+  // LED variables
+  G4ThreeVector ledsourcepos;
+  G4ThreeVector ledtargetpos;
+  G4double ledopening;
+  G4int photons_per_pulse; 	
+
 public:
 
   inline void SetMulineEvtGenerator(G4bool choice) { useMulineEvt = choice; }
@@ -237,6 +244,9 @@ public:
   
   inline void SetGPSEvtGenerator(G4bool choice) { useGPSEvt = choice; }
   inline G4bool IsUsingGPSEvtGenerator()  { return useGPSEvt; }
+
+  inline void SetLEDEvtGenerator(G4bool choice) { useLEDEvt = choice; }
+  inline G4bool IsUsingLEDEvtGenerator() { return useLEDEvt; }
 
   inline void OpenVectorFile(G4String fileName) 
   {
@@ -271,6 +281,14 @@ public:
   void SetHalfZ(G4double height) {theSPSPos->SetHalfZ(height);}
   void SetRot1(G4ThreeVector rot) {theSPSPos->SetPosRot1(rot);}
   void SetRot2(G4ThreeVector rot) {theSPSPos->SetPosRot2(rot);}
+
+  void SetLEDSourcePosition(G4ThreeVector position) {ledsourcepos = position;}
+  void SetLEDTargetPosition(G4ThreeVector position) {ledtargetpos = position;}
+  void SetLEDAngle(G4double opening) {ledopening = opening;}
+  void SetLEDPhotons(G4int nph) {photons_per_pulse = nph;}
+  G4ThreeVector EulerTransform(G4ThreeVector _ledxyz, G4ThreeVector _ledeuler, G4double _leddiry);
+  G4ThreeVector EulerAngle(G4ThreeVector _leddirection);
+  G4ThreeVector DefineRandomPolarization(G4ThreeVector PhotonDirection);
 
   inline void SetPrimaryFilesDirectory(G4String directoryName) { primariesDirectory = directoryName; }
   inline void SetNeutrinoFilesDirectory(G4String directoryName) { neutrinosDirectory = directoryName; }
