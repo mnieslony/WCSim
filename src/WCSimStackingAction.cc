@@ -62,7 +62,7 @@ G4ClassificationOfNewTrack WCSimStackingAction::ClassifyNewTrack
 	    classification = fKill;
 	}
     }
-  
+
   return classification;
 }
 
