@@ -34,7 +34,7 @@ ROOTOBJS  := $(G4WORKDIR)/tmp/$(G4SYSTEM)/WCSim/WCSimRootEvent.o $(G4WORKDIR)/tm
 
 .PHONY: directories
 
-all: directories libWCSimRoot.so
+all: directories libWCSimRoot.so movedict
 
 directories: $(G4TMPDIR)
 
@@ -52,6 +52,12 @@ libWCSimRoot.so : $(ROOTOBJS)
 	rootcint  -f ./src/WCSimRootDict.cc -c -I./include -I$(shell root-config --incdir) WCSimRootEvent.hh WCSimRootGeom.hh  WCSimPmtInfo.hh WCSimEnumerations.hh WCSimRootOptions.hh WCSimRootTools.hh WCSimRootLinkDef.hh
 
 rootcint: ./src/WCSimRootDict.cc
+
+movedict: rootcint
+ifneq (,$(wildcard ./src/WCSimRootDict_rdict.pcm))
+	cp -f ./src/WCSimRootDict_rdict.pcm .
+	cp -f ./src/WCSimRootDict_rdict.pcm ${G4TMPDIR}
+endif
 
 $(G4TMPDIR)/%.o: src/%.cc
 	@echo Compiling $*.cc ...
