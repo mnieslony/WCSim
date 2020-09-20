@@ -1,0 +1,30 @@
+# put in your .bashrc
+setup_annie_g410()
+{
+  source /grid/fermiapp/products/common/etc/setup
+  export PRODUCTS=${PRODUCTS}:/grid/fermiapp/products/larsoft
+  setup geant4 v4_10_1_p02a -q e9:prof:qt
+}
+
+# type at the command line (but NOT in .bashrc!)
+setup_annie_g410
+
+setup cmake	#sets up 2_8_8 
+
+setup -f Linux64bit+2.6-2.12 -q prof:e10:nu root v6_06_08
+source /grid/fermiapp/products/larsoft/root/v6_06_08/Linux64bit+2.6-2.12-e10-nu-prof/bin/thisroot.sh
+setup -f Linux64bit+2.6-2.12 -q prof:e10:r6 genie v2_12_0a
+
+#overwrite the clhep setup set by genie
+setup -f Linux64bit+2.6-2.12 -q prof:e9 clhep v2_2_0_8
+setup -f Linux64bit+2.6-2.12 -q prof:e10 xerces_c v3_1_3
+export XERCESROOT=/grid/fermiapp/products/larsoft/xerces_c/v3_1_3/Linux64bit+2.6-2.12-e10-prof
+
+export G4SYSTEM=Linux-g++
+export ROOT_PATH=/grid/fermiapp/products/larsoft/root/v6_06_08/Linux64bit+2.6-2.12-e10-nu-prof/cmake
+export GEANT4_PATH=/grid/fermiapp/products/larsoft/geant4/v4_10_1_p02a/Linux64bit+2.6-2.12-e9-qt-prof/lib64/Geant4-10.1.2
+export GEANT4_MAKEFULL_PATH=/grid/fermiapp/products/larsoft/geant4/v4_10_1_p02a/source/geant4.10.01.p02
+
+#SL7 stuff
+export LIBRARY_PATH=${LIBRARY_PATH}:/cvmfs/annie.opensciencegrid.org/products/toolanalysis/v0_0_0/extras_for_oasis_build
+export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/cvmfs/annie.opensciencegrid.org/products/toolanalysis/v0_0_0/extras_for_oasis_build

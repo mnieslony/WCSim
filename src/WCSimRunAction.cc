@@ -35,6 +35,7 @@ WCSimRunAction::WCSimRunAction(WCSimDetectorConstruction* test, WCSimRandomParam
   messenger = new WCSimRunActionMessenger(this);
 
   wcsimrootoptions = new WCSimRootOptions();
+  G4cout <<"RunAction started"<<G4endl;
 }
 
 WCSimRunAction::~WCSimRunAction()
@@ -44,6 +45,7 @@ WCSimRunAction::~WCSimRunAction()
 
 void WCSimRunAction::BeginOfRunAction(const G4Run* /*aRun*/)
 {
+  G4cout <<"Begin of run action"<<G4endl;
   if(useTimer) {
     timer.Reset();
     timer.Start();
@@ -147,7 +149,8 @@ void WCSimRunAction::EndOfRunAction(const G4Run*)
 }
 
 void WCSimRunAction::FillGeoTree(){
-  // Fill the geometry tree
+ G4cout <<"Fill geo tree"<<std::endl; 
+ // Fill the geometry tree
   G4int geo_type;
   G4double cylinfo[3];
   G4double pmtradius;
@@ -237,6 +240,10 @@ void WCSimRunAction::FillGeoTree(){
   wcsimrootgeom-> SetWCNumPMT(numpmt);
   wcsimrootgeom-> SetODWCNumPMT(numpmtOD);
 
+  G4cout <<"geotree fill"<<G4endl;
+  G4cout <<"geotree address: "<<geoTree<<G4endl;
   geoTree->Fill();
+  G4cout <<"geotree write"<<G4endl;
   geoTree->Write();
+  G4cout <<"end of geo fill"<<G4endl;
 }

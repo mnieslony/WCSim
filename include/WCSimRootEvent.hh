@@ -35,6 +35,7 @@ private:
   Float_t fM;
   Float_t fP;
   Float_t fE;
+  Float_t fE2;
   Int_t   fStartvol;
   Int_t   fStopvol;
   Float_t fDir[3];
@@ -43,6 +44,7 @@ private:
   Float_t fStart[3];
   Int_t fParenttype;
   Double_t fTime;
+  Double_t fTime2;
   Int_t fId;
 
 public:
@@ -52,6 +54,7 @@ public:
 		  Double_t m,
 		  Double_t p,
 		  Double_t E,
+                  Double_t endE,
 		  Int_t startvol, 
 		  Int_t stopvol, 
 		  Double_t dir[3],
@@ -59,7 +62,9 @@ public:
 		  Double_t stop[3],
 		  Double_t start[3],
 		  Int_t parenttype,
-		 Double_t time,Int_t id);
+		 Double_t time,
+	         Double_t endtime,
+                 Int_t id);
   virtual ~WCSimRootTrack() { }
   bool CompareAllVariables(const WCSimRootTrack * c) const;
 
@@ -68,6 +73,7 @@ public:
   Float_t   GetM() const { return fM;}
   Float_t   GetP() const { return fP;}
   Float_t   GetE() const { return fE;}
+  Float_t   GetEndE() const { return fE2;}
   Int_t     GetStartvol() const { return fStartvol;}
   Int_t     GetStopvol() const { return fStopvol;}
   Float_t   GetDir(Int_t i=0) const {return (i<3) ? fDir[i] : 0;} 
@@ -76,6 +82,7 @@ public:
   Float_t   GetStart(Int_t i=0) const {return (i<3) ? fStart[i] : 0;}
   Int_t     GetParenttype(/*Int_t i=0*/) const {return fParenttype;}
   Double_t   GetTime() const { return fTime;}
+  Double_t  GetStopTime() { return fTime2; }
   Int_t     GetId() const {return fId;}
 
   ClassDef(WCSimRootTrack,1)  
@@ -321,6 +328,7 @@ public:
 				   Double_t m,
 				   Double_t p,
 				   Double_t E,
+	                           Double_t E2,
 				   Int_t startvol, 
 				   Int_t stopvol, 
 				   Double_t dir[3],
@@ -329,6 +337,7 @@ public:
 				   Double_t start[3],
 				   Int_t parenttype,
 				   Double_t time,
+                                   Double_t time2,
 				   Int_t id);
 
   WCSimRootTrack * AddTrack   (WCSimRootTrack * track);

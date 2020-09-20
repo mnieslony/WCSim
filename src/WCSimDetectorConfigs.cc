@@ -37,7 +37,7 @@ void WCSimDetectorConstruction::SetSuperKGeometry()
   WCCapPMTSpacing       = 0.707*m; // distance between centers of top and bottom pmts
   WCCapEdgeLimit        = 16.9*m;
   WCBlackSheetThickness = 2.0*cm;
-  WCAddGd               = false;
+  WCAddGd               = true;
 }
 
 
@@ -62,7 +62,7 @@ void WCSimDetectorConstruction::SuperK_20inchPMT_20perCent()
   WCCapPMTSpacing       = (pi*WCIDDiameter/WCBarrelNumPMTHorizontal); // distance between centers of top and bottom pmts
   WCCapEdgeLimit        = WCIDDiameter/2.0 - WCPMTRadius;
   WCBlackSheetThickness = 2.0*cm;
-  WCAddGd               = false;
+  WCAddGd               = true;
 }
 
 
@@ -87,7 +87,7 @@ void WCSimDetectorConstruction::SuperK_20inchBandL_20perCent()
   WCCapPMTSpacing       = (pi*WCIDDiameter/WCBarrelNumPMTHorizontal); // distance between centers of top and bottom pmts
   WCCapEdgeLimit        = WCIDDiameter/2.0 - WCPMTRadius;
   WCBlackSheetThickness = 2.0*cm;
-  WCAddGd               = false;
+  WCAddGd               = true;
 }
 
 
@@ -112,7 +112,7 @@ void WCSimDetectorConstruction::SuperK_12inchBandL_15perCent()
   WCCapPMTSpacing       = (pi*WCIDDiameter/WCBarrelNumPMTHorizontal); // distance between centers of top and bottom pmts
   WCCapEdgeLimit        = WCIDDiameter/2.0 - WCPMTRadius;
   WCBlackSheetThickness = 2.0*cm;
-  WCAddGd               = false;
+  WCAddGd               = true;
 }
 
 
@@ -137,7 +137,7 @@ void WCSimDetectorConstruction::SuperK_20inchBandL_14perCent()
   WCCapPMTSpacing       = (pi*WCIDDiameter/WCBarrelNumPMTHorizontal); // distance between centers of top and bottom pmts
   WCCapEdgeLimit        = WCIDDiameter/2.0 - WCPMTRadius;
   WCBlackSheetThickness = 2.0*cm;
-  WCAddGd               = false;
+  WCAddGd               = true;
 }
 
 void WCSimDetectorConstruction::Cylinder_60x74_20inchBandL_14perCent()
@@ -160,7 +160,7 @@ void WCSimDetectorConstruction::Cylinder_60x74_20inchBandL_14perCent()
   WCCapPMTSpacing       = (pi*WCIDDiameter/WCBarrelNumPMTHorizontal); // distance between centers of top and bottom pmts
   WCCapEdgeLimit        = WCIDDiameter/2.0 - WCPMTRadius;
   WCBlackSheetThickness = 2.0*cm;
-  WCAddGd               = false;
+  WCAddGd               = true;
 }
 
 void WCSimDetectorConstruction::Cylinder_60x74_20inchBandL_40perCent()
@@ -183,7 +183,7 @@ void WCSimDetectorConstruction::Cylinder_60x74_20inchBandL_40perCent()
   WCCapPMTSpacing       = (pi*WCIDDiameter/WCBarrelNumPMTHorizontal); // distance between centers of top and bottom pmts
   WCCapEdgeLimit        = WCIDDiameter/2.0 - WCPMTRadius;
   WCBlackSheetThickness = 2.0*cm;
-  WCAddGd               = false;
+  WCAddGd               = true;
 }
 
 void WCSimDetectorConstruction::Cylinder_12inchHPD_15perCent()
@@ -208,7 +208,7 @@ void WCSimDetectorConstruction::Cylinder_12inchHPD_15perCent()
   WCCapPMTSpacing       = (pi*WCIDDiameter/WCBarrelNumPMTHorizontal); // distance between centers of top and bottom pmts
   WCCapEdgeLimit        = WCIDDiameter/2.0 - WCPMTRadius;
   WCBlackSheetThickness = 2.0*cm;
-  WCAddGd               = false;
+  WCAddGd               = true;
 }
 
 void WCSimDetectorConstruction::SetHyperKGeometry()
@@ -231,7 +231,7 @@ void WCSimDetectorConstruction::SetHyperKGeometry()
   WCCapPMTSpacing       = (pi*WCIDDiameter/WCBarrelNumPMTHorizontal); // distance between centers of top and bottom pmts
   WCCapEdgeLimit        = WCIDDiameter/2.0 - WCPMTRadius;
   WCBlackSheetThickness = 2.0*cm;
-  WCAddGd               = false;
+  WCAddGd               = true;
 
 }
 
@@ -255,7 +255,7 @@ void WCSimDetectorConstruction::SetHyperKWithODGeometry()
   WCCapPMTSpacing       = (pi*WCIDDiameter/WCBarrelNumPMTHorizontal); // distance between centers of top and bottom pmts
   WCCapEdgeLimit        = WCIDDiameter/2.0 - WCPMTRadius;
   WCBlackSheetThickness = 2.0*cm;
-  WCAddGd               = false;
+  WCAddGd               = true;
 
   //////////////////////////////////////
   // Cave Parameters --- Beta version //
@@ -321,7 +321,7 @@ void WCSimDetectorConstruction::SetHyperKGeometry_20perCent()
   WCCapPMTSpacing       = (pi*WCIDDiameter/WCBarrelNumPMTHorizontal); // distance between centers of top and bottom pmts
   WCCapEdgeLimit        = WCIDDiameter/2.0 - WCPMTRadius;
   WCBlackSheetThickness = 2.0*cm;
-  WCAddGd               = false;
+  WCAddGd               = true;
 }
 
 void WCSimDetectorConstruction::SetEggShapedHyperKGeometry()
