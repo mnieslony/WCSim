@@ -888,7 +888,8 @@ void WCSimEventAction::FillRootEvent(G4int event_id,
 			      jhfNtuple.flag[k], 
 			      jhfNtuple.m[k], 
 			      jhfNtuple.p[k], 
-			      jhfNtuple.E[k], 
+			      jhfNtuple.E[k],
+                              -1.,
 			      jhfNtuple.startvol[k], 
 			      jhfNtuple.stopvol[k], 
 			      dir, 
@@ -896,7 +897,8 @@ void WCSimEventAction::FillRootEvent(G4int event_id,
 			      stop,
 			      start,
 			      jhfNtuple.parent[k],
-			     jhfNtuple.time[k],0); 
+			     jhfNtuple.time[k],
+                              0,0); 
   }
 
   // the rest of the tracks come from WCSimTrajectory
@@ -954,7 +956,9 @@ void WCSimEventAction::FillRootEvent(G4int event_id,
       G4double      mass   = trj->GetParticleDefinition()->GetPDGMass();
       G4ThreeVector mom    = trj->GetInitialMomentum();
       G4double      mommag = mom.mag();
+      G4ThreeVector momend = trj->GetFinalMomentum();
       G4double      energy = sqrt(mom.mag2() + mass*mass);
+      G4double      energyend = sqrt(momend.mag2() + mass*mass);
       G4ThreeVector Stop   = trj->GetStoppingPoint();
       G4ThreeVector Start  = aa->GetPosition();
 
@@ -963,6 +967,7 @@ void WCSimEventAction::FillRootEvent(G4int event_id,
       G4int    startvol    = WCSimEventFindStartingVolume(Start);
 
       G4double ttime = trj->GetGlobalTime(); 
+      G4double ttimeend = trj->GetGlobalTimeEnd();
 
       G4int parentType;
 
@@ -1025,6 +1030,7 @@ void WCSimEventAction::FillRootEvent(G4int event_id,
 				  mass, 
 				  mommag, 
 				  energy,
+                                  energyend,
 				  startvol, 
 				  stopvol, 
 				  dir, 
@@ -1032,7 +1038,7 @@ void WCSimEventAction::FillRootEvent(G4int event_id,
 				  stop,
 				  start,
 				  parentType,
-				 ttime,id); 
+				 ttime,ttimeend,id); 
       }
       
 

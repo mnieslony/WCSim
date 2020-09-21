@@ -303,6 +303,7 @@ WCSimRootTrack *WCSimRootTrigger::AddTrack(Int_t ipnu,
 					   Double_t m,
 					   Double_t p,
 					   Double_t E,
+                                           Double_t E2,
 					   Int_t startvol, 
 					   Int_t stopvol, 
 					   Double_t dir[3],
@@ -311,6 +312,7 @@ WCSimRootTrack *WCSimRootTrigger::AddTrack(Int_t ipnu,
 					   Double_t start[3],
 					   Int_t parenttype,
 					   Double_t time,
+                                           Double_t time2,
 					   Int_t id)
 {
   // Add a new WCSimRootTrack to the list of tracks for this event.
@@ -326,6 +328,7 @@ WCSimRootTrack *WCSimRootTrigger::AddTrack(Int_t ipnu,
 					   m,
 					   p,
 					   E,
+					   E2,
 					   startvol,
 					   stopvol,
 					   dir,
@@ -333,7 +336,8 @@ WCSimRootTrack *WCSimRootTrigger::AddTrack(Int_t ipnu,
 					   stop,
 					   start,
 					   parenttype,
-					  time,id);
+					  time,
+                                           time2,id);
   fNtrack++;
   return track;
 }
@@ -362,6 +366,7 @@ WCSimRootTrack *WCSimRootTrigger::AddTrack(WCSimRootTrack * track)
 					  track->GetM(),
 					  track->GetP(),
 					  track->GetE(),
+                                          track->GetEndE(),
 					  track->GetStartvol(),
 					  track->GetStopvol(),
 					  dir,
@@ -370,6 +375,7 @@ WCSimRootTrack *WCSimRootTrigger::AddTrack(WCSimRootTrack * track)
 					  start,
 					  track->GetParenttype(),
 					  track->GetTime(),
+                                          track->GetStopTime(),
 					  track->GetId());
   fNtrack++;
   return track_out;
@@ -392,6 +398,7 @@ WCSimRootTrack::WCSimRootTrack(Int_t ipnu,
 				 Double_t m,
 				 Double_t p,
 				 Double_t E,
+                                 Double_t E2,
 				 Int_t startvol, 
 				 Int_t stopvol, 
 				 Double_t dir[3],
@@ -399,7 +406,9 @@ WCSimRootTrack::WCSimRootTrack(Int_t ipnu,
 				 Double_t stop[3],
 				 Double_t start[3],
 				 Int_t parenttype,
-			         Double_t time,Int_t id)
+			         Double_t time,
+                                 Double_t time2,
+                                 Int_t id)
 {
 
   // Create a WCSimRootTrack object and fill it with stuff
@@ -409,6 +418,7 @@ WCSimRootTrack::WCSimRootTrack(Int_t ipnu,
   fM = m;
   fP = p;
   fE = E;
+  fE2 = E2;
   fStartvol = startvol;
   fStopvol = stopvol;
   int i;
@@ -421,6 +431,7 @@ WCSimRootTrack::WCSimRootTrack(Int_t ipnu,
   }
   fParenttype = parenttype;
   fTime = time;
+  fTime2 = time2;
   fId = id;
 }
 

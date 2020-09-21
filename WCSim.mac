@@ -10,7 +10,8 @@
 #
 # The tube size is fixed for SK to 20 inch
 # These are fixed geometries for validation
-#/WCSim/WCgeom SuperK
+/WCSim/WCgeom SuperK
+/WCSim/Construct
 
 # Some other SuperK options:
 #/WCSim/WCgeom SuperK_20inchPMT_20perCent # Note: the actual coverage is 20.27%
@@ -138,12 +139,12 @@
 # Or you can use the G4 Particle Gun
 # for a full list of /gun/ commands see:
 # http://geant4.web.cern.ch/geant4/G4UsersDocuments/UsersGuides/ForApplicationDeveloper/html/Control/UIcommands/_gun_.html
-/mygen/generator gun
-/gun/particle e-
+#/mygen/generator gun
+#/gun/particle mu-
 #/gun/particle pi0
-/gun/energy 500 MeV
-/gun/direction 1 0 0 
-/gun/position 0 0 0  
+#/gun/energy 500 MeV
+#/gun/direction 1 0 0
+#/gun/position 0 0 0  
 
 # Or you can use the G4 General Particle Source
 # you can do a lot more with this than a monoenergetic, monodirectional, single-particle gun
@@ -160,13 +161,14 @@
 # for a full list of /gps/ commands see:
 # https://geant4.web.cern.ch/geant4/UserDocumentation/UsersGuides/ForApplicationDeveloper/html/ch02s07.html
 # It is used for laser calibration simulation
-#/mygen/generator laser
-#/gps/particle opticalphoton
+/mygen/generator laser
+/gps/particle mu-
+/gps/energy 500 MeV
 #/gps/energy 2.505 eV
 #/gps/direction 1 0 0
-#/gps/position 0 0 0
-#/gps/number 1000
-#/gps/ang/type iso
+/gps/position 0 0 0
+/gps/number 1
+/gps/ang/type iso
 #/gps/ang/mintheta 0 deg
 #/gps/ang/maxtheta 30 deg
 #/gps/ang/minphi 0 deg
@@ -205,16 +207,16 @@
 ## change the name of the output root file, default = wcsim.root
 
 # Needed to prevent other decay than Bi-214
-/grdm/nucleusLimits 214 214 83 83 
+#/grdm/nucleusLimits 214 214 83 83 
 # if you need to use time bias
 #/grdm/decayBiasProfile biasprofile.dat
 #/grdm/analogueMC 0
 #/grdm/BRbias 0
 
-/WCSimIO/RootFile wcsim.root
+/WCSimIO/RootFile wcsim_muon_SK_uniform.root
 
 ## set a timer running on WCSimRunAction
 #/WCSimIO/Timer false
 
-/run/beamOn 10
+/run/beamOn 100
 #exit
