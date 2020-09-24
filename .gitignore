@@ -25,3 +25,12 @@ geofile.txt
 
 ##ignore compiled python scripts
 *.pyc
+
+#ignore gedit backups
+*~
+
+#ingore root dictionary files? made automatically...
+src/WCSimRootDict.cxx
+src/WCSimRootDict_rdict.pcm
+WCSimRootDict_rdict.pcm
+libWCSimRoot.rootmap

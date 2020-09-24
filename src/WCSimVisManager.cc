@@ -141,6 +141,7 @@ void WCSimVisManager::RegisterGraphicsSystems () {
     G4cout <<
       "\nYou have successfully chosen to use the following graphics systems."
 	 << G4endl;
+    //PrintAvailableGraphicsSystems (G4VisManager::warnings);
     PrintAvailableGraphicsSystems (); //use this version for Geant4.10.1
     //PrintAvailableGraphicsSystems (GetVerbosityValue(fVerbose)); //use this version for Geant4.10.2+
   }

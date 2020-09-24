@@ -7,6 +7,10 @@ set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 #set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -Wall -fdiagnostics-color=always -fno-omit-frame-pointer")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -fdiagnostics-color=always -std=c++14") #-fmax-errors=1
+#Alternative version below:
+#set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -Wall -fdiagnostics-color=always")
+#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -fdiagnostics-color=always")
+#End of alternative version
 # NOTE: Geant4.10.2 changes the way VisualizationManager is instantiated - requires a verbosity argument.  
 # To handle the two types of instantiation: this env variable needs to be defined for geant versions > 10.1:
 if(DEFINED ENV{GEANT4_10_2})
