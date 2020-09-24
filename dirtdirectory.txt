@@ -1,0 +1,3 @@
+# this file is used to provide the directory of the upstream dirt file to the EventAction
+# it's appended to the dirt file name read in the PrimaryGeneratorAction and saved into the WCSimRootHeader
+/pnfs/annie/persistent/users/moflaher/g4dirt_vincentsgenie/BNB_Water_10k_22-05-17

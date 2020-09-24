@@ -1,0 +1,7 @@
+# set the list of root files containing primaries to import into the primary generator TChain
+# be sure that the neutrinosDirectory is set before setting the primariesDirectory!
+/mygen/neutrinosdirectory /pnfs/annie/persistent/users/vfischer/genie_files/BNB_Water_10k_22-05-17/gntp.*ghep.root
+/mygen/primariesdirectory /pnfs/annie/persistent/users/moflaher/g4dirt_vincentsgenie/BNB_Water_10k_22-05-17/annie_tank_flux.*.root
+/mygen/geniedirectory /pnfs/annie/persistent/users/mnieslon/genie/Atmospheric_2020-03-16/atmospheric*.root
+/mygen/talysdirectory /pnfs/annie/persistent/users/mnieslon/genie/talys_files/
+/mygen/primariesoffset 0
