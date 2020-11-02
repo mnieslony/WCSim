@@ -56,12 +56,9 @@ void WCSimWCSD::Initialize(G4HCofThisEvent* HCE)
 
   // Initilize the Hit map to all tubes not hit.
   PMTHitMap.clear();
-  // Trick to access the static maxPE variable.  This will go away with the 
-  // variable.
 
-  WCSimWCHit* newHit = new WCSimWCHit();
-  newHit->SetMaxPe(0);
-  delete newHit;
+  // clear maximum PE of a hit in this event
+  WCSimWCHit::SetMaxPe(0);
 }
 
 G4bool WCSimWCSD::ProcessHits(G4Step* aStep, G4TouchableHistory*)

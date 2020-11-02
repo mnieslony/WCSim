@@ -129,10 +129,13 @@ void WCSimVisManager::RegisterModelFactories () {
   mymodel->Set("anti_nu_e","yellow");
   mymodel->Set("anti_nu_mu","yellow");
   mymodel->Set("e-","blue");    
-  mymodel->Set("mu-","white");
-  mymodel->Set("e+","red");
+  mymodel->Set("mu-","red");
+//  mymodel->Set("mu-","white");
+//  mymodel->Set("e+","red");
+  mymodel->Set("e+","magenta");
   mymodel->Set("mu+",G4Colour(0.78, 0.78, 0.78));  //to distinguish mu+ from mu- on black background.
-  mymodel->Set("proton","magenta");
+//  mymodel->Set("proton","magenta");
+  mymodel->Set("proton","orange");
   mymodel->Set("neutron","cyan");
 
   /*if (fVerbose > 0) {
