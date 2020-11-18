@@ -219,7 +219,7 @@ G4LogicalVolume* WCSimDetectorConstruction::ConstructANNIE()
 			} else {
 				G4RotationMatrix* rotm2 = new G4RotationMatrix();
 				rotm2->rotateZ(90*deg);
-				rotm2->rotateZ(22.5*deg);
+				rotm2->rotateZ(67.5*deg);
 				G4VPhysicalVolume* innerstructure_phys_placed = 
 					new G4PVPlacement(rotm2, G4ThreeVector(0,0,-.5*WCLength), innerstructure_log, 
 					"innerstructure_phys", water_log, false, 0, false);
