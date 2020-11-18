@@ -233,24 +233,25 @@ G4LogicalVolume* WCSimDetectorConstruction::ConstructANNIECylinder()
 		for(G4double i = 0; i < WCPMTperCellHorizontal; i++){
 			for(G4double j = 0; j < WCBarrelNRings; j++){
 				
+				// we have one hole: skip PMT placement
+				// if( j==5 && facei==0 && i==0 ) continue;
 				// we have three holes: skip PMT placement
-				if( j==0 && i==0 && facei%2==1) continue;
-				
+                                // if( j==0 && i==0 && facei%2==1) continue;	
+			
 				// Select the appropriate PMT logical volume
 				// PMTs are placed in the vector in the order their collections are defined
 				// - i.e. in the order they are declared in DetectorConfigs: 
 				// {R7081 (10" WB/LUX), D784KFLB (11" LBNE), R5912HQE (8" HQE), R7081HQE (10" HQE WM)}
 				
-				// this all needs checking and updating from https://docs.google.com/spreadsheets/d/1ibLTn5LwGrklDwCx7HrJDo3ol8Ba3MdKZw3MDzxbjsM/edit#gid=0
 				// 0:  8",  8"
 				// 1:  WB,  8" << 3 faces //  WB,  WB << 5 faces   (3 * 8" on downstream... is upstream better?)
-				// 2:  WB,  WB
-				// 3:  WM/WB, WB/None  << odd faces have 2xWB, even faces have 1xWM, 1xgap
+				// 2:  WB,  WM << 2 faces //  WB,  8" << 6 faces
+				// 3:  WM,  WB
 				// 4:  WB,  WB
 				// 5:  8",  8" (missing one)
 				// N.B. facei==0 is x<0, upstream.
 				// ring j==0 is top of tank.
-				
+				/*
 				int PMTindex=-1;
 				if( j==0 || j==5 || 
 				   (j==1&&(facei>1&&facei<5)&&i==0) || 
@@ -262,6 +263,19 @@ G4LogicalVolume* WCSimDetectorConstruction::ConstructANNIECylinder()
 				} else {
 					PMTindex = 0;  // WB 10"
 				}
+				*/
+
+				//New mapping with actual PMT type positions:
+				int PMTindex = -1;
+				//Holes
+				if ( j == 0 && i == 0 && (facei==1 || facei == 3 || facei == 5 || facei ==7)) continue; 	
+
+				//PMTs
+				if (j == 2 || j == 4 || (j == 1 && i == 1)) PMTindex = 2;	// 8" HQE new (Hamamatsu/ANNIE)
+				else if (j ==3 && i == 0 && (facei==1 || facei ==3 || facei ==5 || facei == 7)) PMTindex = 3;	// WM 10" HQE
+				else PMTindex = 0;	//WB 10"
+
+
 				logicWCPMT = logicWCPMTs.at(PMTindex);
 				G4String pmtCollectionName = WCTankCollectionNames.at(PMTindex);
 				
@@ -304,9 +318,11 @@ G4LogicalVolume* WCSimDetectorConstruction::ConstructANNIECylinder()
 		
 		// position LAPPD on corner of the inner strucutre
 		// Note PMTs use double facei=0.5, using int facei=0 accounts for the relative rotation
+		//G4double CellCentreX = WCIDRadius * sin(dPhi*facei);
+		//G4double CellCentreY = WCIDRadius * cos(dPhi*facei);
 		G4double CellCentreX = (WCIDRadius - WCLAPPDSliderThickness) * sin(dPhi*facei);
 		G4double CellCentreY = (WCIDRadius - WCLAPPDSliderThickness) * cos(dPhi*facei);
-		
+
 		double verticalSpacingLAPPD	= mainAnnulusHeight/(WCLAPPDperCellVertical+1);
 		
 		for(G4double j = 0; j < WCLAPPDperCellVertical; j++){	// num LAPPD cols in the central ring
@@ -503,8 +519,14 @@ void WCSimDetectorConstruction::ConstructANNIECaps(G4int zflip)
 				yoffset = (j*WCCapPMTSpacing + WCCapPMTSpacing*0.5)*capcompressionratio+(capcentrebarwidth*yside);
 				zoffset = -capAssemblyHeight*zflip+InnerStructureCentreOffset+WCCapBottomPMTOffset;
 				
-				G4ThreeVector cellpos = G4ThreeVector(xoffset, yoffset, zoffset);
-				if (((sqrt(xoffset*xoffset + yoffset*yoffset) + WCPMTRadius) < WCCapEdgeLimit) ) {
+				//G4ThreeVector cellpos = G4ThreeVector(xoffset, yoffset, zoffset);
+				//if (((sqrt(xoffset*xoffset + yoffset*yoffset) + WCPMTRadius) < WCCapEdgeLimit) ) {
+				
+				G4double xoffset_rot45 = 1./sqrt(2)*(yoffset+xoffset);
+				G4double yoffset_rot45 = 1./sqrt(2)*(yoffset-xoffset);
+
+				G4ThreeVector cellpos = G4ThreeVector(xoffset_rot45, yoffset_rot45, zoffset);
+				if (((sqrt(xoffset_rot45*xoffset_rot45 + yoffset_rot45*yoffset_rot45) + WCPMTRadius) < WCCapEdgeLimit) ) {
 					//G4cout<<"Constructing bottom cap PMT "<<i<<","<<j<<" at ("
 					//		<<xoffset<<", "<<yoffset<<")"<<G4endl;
 					G4VPhysicalVolume* physiCapPMT =
