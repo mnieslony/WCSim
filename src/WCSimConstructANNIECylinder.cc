@@ -235,7 +235,9 @@ G4LogicalVolume* WCSimDetectorConstruction::ConstructANNIECylinder()
 				
 				// we have one hole: skip PMT placement
 				// if( j==5 && facei==0 && i==0 ) continue;
-				
+				// we have three holes: skip PMT placement
+                                // if( j==0 && i==0 && facei%2==1) continue;	
+			
 				// Select the appropriate PMT logical volume
 				// PMTs are placed in the vector in the order their collections are defined
 				// - i.e. in the order they are declared in DetectorConfigs: 
@@ -320,9 +322,11 @@ G4LogicalVolume* WCSimDetectorConstruction::ConstructANNIECylinder()
 		
 		// position LAPPD on corner of the inner strucutre
 		// Note PMTs use double facei=0.5, using int facei=0 accounts for the relative rotation
-		G4double CellCentreX = WCIDRadius * sin(dPhi*facei);
-		G4double CellCentreY = WCIDRadius * cos(dPhi*facei);
-		
+		//G4double CellCentreX = WCIDRadius * sin(dPhi*facei);
+		//G4double CellCentreY = WCIDRadius * cos(dPhi*facei);
+		G4double CellCentreX = (WCIDRadius - WCLAPPDSliderThickness) * sin(dPhi*facei);
+		G4double CellCentreY = (WCIDRadius - WCLAPPDSliderThickness) * cos(dPhi*facei);
+
 		double verticalSpacingLAPPD	= mainAnnulusHeight/(WCLAPPDperCellVertical+1);
 		
 		for(G4double j = 0; j < WCLAPPDperCellVertical; j++){	// num LAPPD cols in the central ring
@@ -524,7 +528,6 @@ void WCSimDetectorConstruction::ConstructANNIECaps(G4int zflip)
 				
 				G4double xoffset_rot45 = 1./sqrt(2)*(yoffset+xoffset);
 				G4double yoffset_rot45 = 1./sqrt(2)*(yoffset-xoffset);
-				G4cout <<"Bottom position ("<<xoffset_rot45<<","<<yoffset_rot45<<","<<zoffset<<")"<<G4endl;
 
 				G4ThreeVector cellpos = G4ThreeVector(xoffset_rot45, yoffset_rot45, zoffset);
 				if (((sqrt(xoffset_rot45*xoffset_rot45 + yoffset_rot45*yoffset_rot45) + WCPMTRadius) < WCCapEdgeLimit) ) {
