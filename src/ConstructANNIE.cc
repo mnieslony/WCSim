@@ -71,6 +71,11 @@
 #include "G4SystemOfUnits.hh"
 #include "G4GDMLParser.hh"
 
+//Markers for debugging
+#include "G4Point3D.hh"
+#include "G4VMarker.hh"
+#include "G4Circle.hh"
+
 #include "WCSimWCSD.hh"
 #include "WCSimPMTObject.hh"
 #include "WCSimLAPPDObject.hh"
@@ -165,6 +170,7 @@ G4LogicalVolume* WCSimDetectorConstruction::ConstructANNIE()
   G4VPhysicalVolume* waterTank_phys;  // steel barrel physical volume
   G4VPhysicalVolume* water_phys;      // water volume within it
   G4LogicalVolume* water_log;         // water logical volume
+  G4cout <<"Constructing ANNIE Tank & Inner Structure with version " << WCDetectorName << G4endl;
   if(WCDetectorName=="ANNIEp1") {
 		//============================================================
 		//               ANNIE Phase 1 Tank Construction
@@ -182,12 +188,14 @@ G4LogicalVolume* WCSimDetectorConstruction::ConstructANNIE()
 		//                 General Tank Construction
 		//============================================================
 		if(WCDetectorName=="ANNIEp2v6") waterTank_log = ConstructANNIECylinder();
+		else if(WCDetectorName="ANNIEp2v7") waterTank_log = ConstructANNIECylinderScan();
 		else  waterTank_log = ConstructCylinder();
 		//rotm->rotateZ(22.5*deg);
+		G4cout << "Putting tank at y_offset = "<<-tankyoffset<<", z_offset = "<<tankouterRadius+tankzoffset<<G4endl;
 		waterTank_phys = 
 			new G4PVPlacement(rotm,G4ThreeVector(0,-tankyoffset,tankouterRadius+tankzoffset),waterTank_log,"waterTank",expHall_log,false,0);
 		
-		if(WCDetectorName=="ANNIEp2v6"){
+		if(WCDetectorName=="ANNIEp2v6" || WCDetectorName=="ANNIEp2v7"){
 			// Get logical and physical volumes of the water, within the steel barrel
 			int nDaughters = waterTank_log->GetNoDaughters();
 			for (int iDaughter = 0; iDaughter < nDaughters; iDaughter++){
@@ -219,6 +227,7 @@ G4LogicalVolume* WCSimDetectorConstruction::ConstructANNIE()
 			} else {
 				G4RotationMatrix* rotm2 = new G4RotationMatrix();
 				rotm2->rotateZ(90*deg);
+				//rotm2->rotateZ(22.5*deg);
 				rotm2->rotateZ(67.5*deg);
 				G4VPhysicalVolume* innerstructure_phys_placed = 
 					new G4PVPlacement(rotm2, G4ThreeVector(0,0,-.5*WCLength), innerstructure_log, 
@@ -235,8 +244,35 @@ G4LogicalVolume* WCSimDetectorConstruction::ConstructANNIE()
 			}
 		}
 	}
-  
-  //============================================================
+
+  // Add markers for debugging
+  G4Box* marker = new G4Box("marker",1*cm,1*cm,1*cm);
+  G4LogicalVolume* marker_log = 
+    new G4LogicalVolume(marker,G4Material::GetMaterial("Air"),"Marker",0,0,0);
+  std::ifstream pmt_position_file("PMTPositions_Scan_Glass.txt");
+  std::string next_pmt;
+  double pmt_x, pmt_y, pmt_z, pmt_dirx, pmt_diry, pmt_dirz;
+  int panel_nr, pmt_type;
+  int PMTID=0;
+  while (!pmt_position_file.eof()){
+    pmt_position_file >> PMTID >> panel_nr >> pmt_x >> pmt_y >> pmt_z >> pmt_dirx >> pmt_diry >> pmt_dirz >> pmt_type;
+	if (pmt_position_file.eof()) break;
+	G4cout << "Read in PMT "<<PMTID<<", panel nr: "<<panel_nr<<", Position ("<<pmt_x<<","<<pmt_y<<","<<pmt_z<<"), PMT type: "<<pmt_type<<G4endl;
+    G4ThreeVector MarkerPosition(pmt_x*cm,pmt_y*cm,pmt_z*cm);
+    G4RotationMatrix *MarkerRotation = new G4RotationMatrix();
+   	G4VPhysicalVolume *physicalMarker = new G4PVPlacement(MarkerRotation,	//its rotation
+															MarkerPosition,		//its position
+															marker_log,			//its logical volume
+															"WCMarker",			//its name
+															expHall_log,		//its mother volume
+															false,				//no boolean operations
+															PMTID,				//ID for this PMT (=channelkey in data)
+															true);				//check overlaps*/
+															PMTID++;
+  }
+  pmt_position_file.close();
+
+    //============================================================
   //                    Add NCV for Phase 1
   //============================================================
   if (WCDetectorName=="ANNIEp1"){

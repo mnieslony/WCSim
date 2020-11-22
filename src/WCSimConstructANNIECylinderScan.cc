@@ -34,6 +34,8 @@
 
 #include "WCSimTuningParameters.hh" //jl145
 
+#include <fstream>
+
 /***********************************************************
  *
  * This file containts the functions which construct a 
@@ -43,16 +45,20 @@
  *
  * Sourcefile for the WCSimDetectorConstruction class
  *
+ * This modified file (ConstructANNIECylinderScan) is designed 
+ * explicitly for constructing the ANNIE detector, with 
+ * the PMT positions extracted from laser scan data. 
  ***********************************************************/
 
-G4LogicalVolume* WCSimDetectorConstruction::ConstructANNIECylinder()
+G4LogicalVolume* WCSimDetectorConstruction::ConstructANNIECylinderScan()
 {
 	G4cout << "**** Building Cylindrical Detector ****" << G4endl;
-	
+	G4cout << "ConstructANNIECylinderScan" << G4endl;
+
 	debugMode = false;
 	
 	//-----------------------------------------------------
-	// Steel Barrel 
+	//---------------------Steel Barrel-------------------- 
 	//-----------------------------------------------------
 	
 	totalAngle = 2.0*pi*rad;
@@ -87,10 +93,10 @@ G4LogicalVolume* WCSimDetectorConstruction::ConstructANNIECylinder()
 	//logicWC->SetVisAttributes(G4VisAttributes::Invisible); //amb79
 	
 	//-----------------------------------------------------
-	// Water in the Barrel
+	//---------------Water in the Barrel-------------------
 	//-----------------------------------------------------
 	
-	//Decide if adding Gd
+	// Decide if adding Gd
 	water = (WCAddGd) ? "Doped Water" : "Water";
 	
 	G4Tubs* solidWCBarrel = new G4Tubs("WCBarrel",
@@ -189,7 +195,7 @@ G4LogicalVolume* WCSimDetectorConstruction::ConstructANNIECylinder()
 	}
 	
 	//-----------------------------------------------------
-	// The PMT
+	//--------------------- The PMT -----------------------
 	//-----------------------------------------------------
 	
 	G4LogicalVolume* logicWCPMT;
@@ -208,111 +214,76 @@ G4LogicalVolume* WCSimDetectorConstruction::ConstructANNIECylinder()
 	WClogic->SetForceAuxEdgeVisible(true);
 	
 	//logicWCPMT->SetVisAttributes(WClogic);
+	//TODO: Re-enable Invisible attribute for PMTs after testing
 	for(auto alogicWCPMT : logicWCPMTs) alogicWCPMT->SetVisAttributes(G4VisAttributes::Invisible);
 	if(logicWCLAPPD) logicWCLAPPD->SetVisAttributes(G4VisAttributes::Invisible);
 	
-	//////----------- Barrel PMT placement --------------
+	//////--------------------------------------------------------------
+	//////----------- Barrel + Top + Bottom PMT placement --------------
+	//////--------------------------------------------------------------
+
+	// Rotate in a way that the y axis points upwards (into the sky)
 	G4RotationMatrix* WCPMTRotation = new G4RotationMatrix;
 	WCPMTRotation->rotateY(90.*deg);
 	
-	// azimuthal PMT spacing in rings
-	G4double barrelCellWidth   = 2.*WCIDRadius*tan(dPhi/2.)*compressionfactor;
-	G4double horizontalSpacing = barrelCellWidth/WCPMTperCellHorizontal;
-	// vertical PMT spacing between rings
-	G4double verticalSpacing   = (mainAnnulusHeight/WCBarrelNRings)*barrelcompressionfactor;
-	
-	// extra loop over barrel faces
-	PMTcounter=0;
+	// Create rotation matrices for the orientations of the PMTs
+	std::vector<G4RotationMatrix*> pmt_rotation_matrices;
+	// Bottom PMTs have panel number 0
+	G4RotationMatrix *WCBottomCapRotation = new G4RotationMatrix();
+	pmt_rotation_matrices.push_back(WCBottomCapRotation);	
+	// Barrel PMTs have panel numbers 1-8
 	for(int facei=0; facei<WCBarrelRingNPhi; facei++){
-		// rotate the PMT. We need a new rotation matrix for each volume
 		G4RotationMatrix* WCPMTRotationNext = new G4RotationMatrix(*WCPMTRotation);
-		WCPMTRotationNext->rotateX((dPhi*facei)-67.5*deg);
-//		G4double CellCentreX = WCIDRadius * sin(dPhi*(facei+0.5));
-//		G4double CellCentreY = WCIDRadius * cos(dPhi*(facei+0.5));
-		
-		for(G4double i = 0; i < WCPMTperCellHorizontal; i++){
-			for(G4double j = 0; j < WCBarrelNRings; j++){
-				
-				// we have one hole: skip PMT placement
-				// if( j==5 && facei==0 && i==0 ) continue;
-				
-				// Select the appropriate PMT logical volume
-				// PMTs are placed in the vector in the order their collections are defined
-				// - i.e. in the order they are declared in DetectorConfigs: 
-				// {R7081 (10" WB/LUX), D784KFLB (11" LBNE), R5912HQE (8" HQE), R7081HQE (10" HQE WM)}
-				
-				// 0:  8",  8"
-				// 1:  WB,  8" << 3 faces //  WB,  WB << 5 faces   (3 * 8" on downstream... is upstream better?)
-				// 2:  WB,  WM << 2 faces //  WB,  8" << 6 faces
-				// 3:  WM,  WB
-				// 4:  WB,  WB
-				// 5:  8",  8" (missing one)
-				// N.B. facei==0 is x<0, upstream.
-				// ring j==0 is top of tank.
-				/*
-				int PMTindex=-1;
-				if( j==0 || j==5 || 
-				   (j==1&&(facei>1&&facei<5)&&i==0) || 
-				   (j==2&&(facei!=3&&facei!=4)&&i==1)
-				  ){
-					PMTindex = 2;  // 8" HQE new
-				} else if( (j==3&&i==0) || (j==2&&(facei==3||facei==4)&&i==1) ){
-					PMTindex = 3;  // WM 10" HQE
-				} else {
-					PMTindex = 0;  // WB 10"
-				}
-				*/
-
-				//New mapping with actual PMT type positions:
-				int PMTindex = -1;
-				//Holes
-				if ( j == 0 && i == 0 && (facei==1 || facei == 3 || facei == 5 || facei ==7)) continue; 	
-
-				//PMTs
-				if (j == 2 || j == 4 || (j == 1 && i == 1)) PMTindex = 2;	// 8" HQE new (Hamamatsu/ANNIE)
-				else if (j ==3 && i == 0 && (facei==1 || facei ==3 || facei ==5 || facei == 7)) PMTindex = 3;	// WM 10" HQE
-				else PMTindex = 0;	//WB 10"
-
-
-				logicWCPMT = logicWCPMTs.at(PMTindex);
-				G4String pmtCollectionName = WCTankCollectionNames.at(PMTindex);
-				
-				// account only for rotation of the cell and vertical (ring) translation
-				G4ThreeVector PMTPosition =
-					G4ThreeVector((-barrelCellWidth/2.+(i+0.5)*horizontalSpacing)*sin((dPhi*facei)+112.5*deg),
-								  (-barrelCellWidth/2.+(i+0.5)*horizontalSpacing)*cos((dPhi*facei)+112.5*deg),
-								   -mainAnnulusHeight/2.+(j+1)*verticalSpacing-InnerStructureCentreOffset/2.);
-				
-
-				// add translation of cell centre
-				// this will depend on the PMT type, because of different mounting radii
-				G4double MountingRadius = WCIDRadius - WCPMTExposeHeightMap.at(pmtCollectionName);
-				G4double CellCentreX = MountingRadius * sin(dPhi*(facei+0.5));
-				G4double CellCentreY = MountingRadius * cos(dPhi*(facei+0.5));
-				PMTPosition.setX(PMTPosition.getX()+CellCentreX);
-				PMTPosition.setY(PMTPosition.getY()+CellCentreY);
-
-				G4cout <<"PMTID: "<<PMTcounter<<", Position ("<<PMTPosition.getX()<<","<<PMTPosition.getY()<<","<<PMTPosition.getZ()<<")"<<G4endl;
-
-				
-				G4VPhysicalVolume* physiWCBarrelPMT =
-						new G4PVPlacement(WCPMTRotationNext,    // its rotation
-										  PMTPosition,          // its position
-										  logicWCPMT,           // its logical volume
-										  "WCPMT",              // its name
-										  logicWCBarrel,        // its mother volume
-										  false,                // no boolean operations
-										  PMTcounter,           // a unique ID for this PMT
-										  true);                // check overlaps
-				PMTcounter++;
-			}
-		}
+		WCPMTRotationNext->rotateX((dPhi*facei)-67.5*deg+180*deg);
+		pmt_rotation_matrices.push_back(WCPMTRotationNext);
 	}
+	// Top PMTs have panel number 9
+	G4RotationMatrix *WCTopCapRotation = new G4RotationMatrix();
+	WCTopCapRotation->rotateY(180.*deg);
+	pmt_rotation_matrices.push_back(WCTopCapRotation);
+
+	G4cout <<"Size of pmt_rotation_matrices: "<<pmt_rotation_matrices.size()<<G4endl;
+
+	// Read in file with PMT positions, create PMTs
+	std::ifstream pmt_position_file("PMTPositions_Scan.txt");
+	std::string next_pmt;
+	double pmt_x, pmt_y, pmt_z, pmt_dirx, pmt_diry, pmt_dirz;
+	double pmt_x_shift, pmt_y_shift, pmt_z_shift;
+	int panel_nr, pmt_type;
+	int PMTID;
+	while (!pmt_position_file.eof()){
+		pmt_position_file >> PMTID >> panel_nr >> pmt_x >> pmt_y >> pmt_z >> pmt_dirx >> pmt_diry >> pmt_dirz >> pmt_type;
+		if (pmt_position_file.eof()) break;
+		G4cout << "Read in PMT "<<PMTID<<", panel nr: "<<panel_nr<<", Position ("<<pmt_x<<","<<pmt_y<<","<<pmt_z<<"), PMT type: "<<pmt_type<<G4endl;
+		G4LogicalVolume *logicWCPMT = logicWCPMTs.at(pmt_type);
+		G4RotationMatrix *pmt_rot = pmt_rotation_matrices.at(panel_nr);
+		pmt_x_shift = pmt_x*cm;
+		pmt_y_shift = (168.1-pmt_z)*cm;
+		pmt_z_shift = ((pmt_y+14.45))*cm;
+		//pmt_z_shift = ((pmt_y+14.45)-InnerStructureCentreOffset/10.)*cm;
+		G4cout <<"Edited PMT position ("<<pmt_x_shift<<","<<pmt_y_shift<<","<<pmt_z_shift<<")"<<G4endl;
+		G4ThreeVector PMTPosition(pmt_x_shift,pmt_y_shift,pmt_z_shift);
+		G4VPhysicalVolume *physicalWCPMT = new G4PVPlacement(pmt_rot,	//its rotation
+															PMTPosition,		//its position
+															logicWCPMT,			//its logical volume
+															"WCPMT",			//its name
+															logicWCBarrel,		//its mother volume
+															false,				//no boolean operations
+															PMTID,				//ID for this PMT (=channelkey in data)
+															true);				//check overlaps*/
+	}
+	pmt_position_file.close();
+
+	// Leave LAPPD placement in for now (?)
 	
+	//////-------------------------------------------------
 	//////----------- Barrel LAPPD placement --------------
+	//////-------------------------------------------------
+
 	G4RotationMatrix* WCLAPPDRotation = new G4RotationMatrix;
 	WCLAPPDRotation->rotateY(90.*deg);
 	
+	G4cout <<"Barrel LAPPD placement"<<G4endl;
 	for(int facei=0; facei<WCBarrelRingNPhi; facei++){
 		// rotate the LAPPD to point to tank centre. We need a new rotation matrix for each G4VPhysicalVolume
 		G4RotationMatrix* WCLAPPDRotationNext = new G4RotationMatrix(*WCLAPPDRotation);
@@ -343,60 +314,30 @@ G4LogicalVolume* WCSimDetectorConstruction::ConstructANNIECylinder()
 		}
 	}
 	
+	//--------------------------------------------------------------
 	//---------------------------- CAPS ----------------------------
-	
-	ConstructANNIECaps(-1);
-	ConstructANNIECaps(1);
-	
-	//------------------------OUTER DETECTOR-------------------------
-	// place 12 * 2" PMTs on the outside of the blacksheet, between the inner structure and the tank wall
-	// two on each of the three upstream most octagon face 
-	G4RotationMatrix* WCODPMTRotationMatrix = new G4RotationMatrix();
-	WCODPMTRotationMatrix->rotateY(180.*deg);
-	for(int facei=0; facei<WCBarrelRingNPhi; facei++){
-		
-		// facei==0 is x<0, upstream. inner structure is rotated with corners upstream/downstream
-		//  if( facei!=0 && facei!=7 ) continue; // ALL faces have od pmts
-		
-//		for(G4double i = 0; i < 2; i++){                                    // 1 OD PMT per face
-			for(G4double j = 0; j<WCBarrelNRings; j+=(WCBarrelNRings-1)){   // ODs at top and bottom of face
-				
-				// Select the appropriate PMT logical volume - from DetectorConfigs:
-				// {R7081 (WB/LUX), D784KFLB (LBNE), R5912HQE (new HQE), R7081HQE (HQE WM), EMI9954KB (2" OD)}
-				int PMTindex=4;
-				logicWCPMT = logicWCPMTs.at(PMTindex);
-				G4String pmtCollectionName = WCTankCollectionNames.at(PMTindex);
-				
-				// account only for rotation of the cell and vertical (ring) translation
-				// ring j==0 is top of tank.
-				G4double zflip = (j==0) ? -1 : 1;
-				G4ThreeVector PMTPosition =
-					G4ThreeVector((-barrelCellWidth/2.+horizontalSpacing)*sin((dPhi*facei)+112.5*deg),
-								  (-barrelCellWidth/2.+horizontalSpacing)*cos((dPhi*facei)+112.5*deg),
-								   -mainAnnulusHeight/2.-InnerStructureCentreOffset/2.
-								   +(j+1)*verticalSpacing+zflip*verticalSpacing*1.);
-				
-				// add translation of cell centre
-				G4double MountingRadius = WCIDRadius + WCPMTExposeHeightMap.at(pmtCollectionName);
-				G4double CellCentreX = MountingRadius * sin(dPhi*(facei+0.5));
-				G4double CellCentreY = MountingRadius * cos(dPhi*(facei+0.5));
-				PMTPosition.setX(PMTPosition.getX()+CellCentreX);
-				PMTPosition.setY(PMTPosition.getY()+CellCentreY);
-				
-				G4RotationMatrix* WCPMTRotationNext = (j!=0) ? WCODPMTRotationMatrix : nullptr;
-				
-				G4VPhysicalVolume* physiOuterDetectorPMT =
-						new G4PVPlacement(WCPMTRotationNext,    // its rotation
-										  PMTPosition,          // its position
-										  logicWCPMT,          // its logical volume
-										  "ODPMT",             // its name
-										  logicWCBarrel,        // its mother volume
-										  false,                // no boolean operations
-										  PMTcounter,           // a unique ID for this PMT
-										  true);                // check overlaps
-				PMTcounter++;
-			}
-		//}
+	//--------------------------------------------------------------
+
+	// Leave the ConstructANNIECaps functions inside to create the black sheet in the top and bottom planes
+	// Change the name: ConstructANNIECaps -> ConstructANNIECapsSheet to avoid conflicts with version in WCSimConstructANNIECylinder.cc
+
+	ConstructANNIECapsSheet(-1);
+	ConstructANNIECapsSheet(1);
+
+	//--------------------------------------------------------------
+	//--------------------ANNIE PMT holders ------------------------
+	//--------------------------------------------------------------
+
+	//If desired, construct ANNIE PMT holders
+	//Geometrical properties of the holders are roughly extracted from the laser scan file (edges not clearly visible)
+
+    G4bool HOLDER = WCSimTuningParams->GetHolder();
+    G4cout <<"HOLDER variable: "<<HOLDER<<G4endl;
+    G4double bsrff = WCSimTuningParams->GetBsrff();
+    G4cout <<"Bsrff: "<<bsrff<<G4endl;
+
+	if (HOLDER){
+		ConstructANNIEHolders();
 	}
 	
 	
@@ -404,11 +345,14 @@ G4LogicalVolume* WCSimDetectorConstruction::ConstructANNIECylinder()
 	
 }
 
+//--------------------------------------------------------------------
 //------------------------- Construct Caps ---------------------------
-void WCSimDetectorConstruction::ConstructANNIECaps(G4int zflip)
+//--------------------------------------------------------------------
+
+void WCSimDetectorConstruction::ConstructANNIECapsSheet(G4int zflip)
 {
-	//---------------------------------------------------------------------
-	// add cap blacksheet
+	//--------------------------------------------------------------------
+	// ---------------------Add cap blacksheet----------------------------
 	// -------------------------------------------------------------------
 	
 	G4double capBlackSheetZ[2] = {-WCBlackSheetThickness*zflip, 0.};
@@ -481,112 +425,90 @@ void WCSimDetectorConstruction::ConstructANNIECaps(G4int zflip)
 				logicWCCapBlackSheet->SetVisAttributes(WCCapBlackSheetVisAtt);
 	}
 	
-	//---------------------------------------------------------
-	// Add top and bottom PMTs
-	// -----------------------------------------------------
-	G4String thecollectionName;
-	//G4cout<<"Adding cap PMTs to "<<WCDetectorName<<" detetor"<<G4endl;
-	if(zflip>0){
-		thecollectionName = WCTankCollectionNames.at(0);
-		WCPMTName = WCPMTNameMap.at(thecollectionName); // bottom is R7081
-	} else {
-		thecollectionName = WCTankCollectionNames.at(1);
-		WCPMTName = WCPMTNameMap.at(thecollectionName); // top is D784KFLB
-	}
-	//G4cout<<"Placing "<<WCPMTName<<" in " << ((zflip>0) ? "bottom" : "top") << " caps"<<G4endl;
-	G4LogicalVolume* logicWCPMT = ConstructPMT(WCPMTName, thecollectionName, "tank");
-	
-	G4double xoffset;
-	G4double yoffset;
-	G4double zoffset;
-	
-	G4RotationMatrix* WCCapPMTRotation = new G4RotationMatrix;
-	if(zflip==-1){
-		WCCapPMTRotation->rotateY(180.*deg);
-	}
-	
-	// loop over the cap and place PMTs
-	//G4cout<<"Constructing caps for "<<WCDetectorName<<G4endl;
-	
-	if(zflip>0){ // bottom cap, PMTs placed in regular grid, but with different X:Y spacing
-		G4int CapNCellX = WCCapEdgeLimit/WCCapPMTSpacing + 2;
-		G4int CapNCellY = WCCapEdgeLimit/WCCapPMTSpacing*capcompressionratio + 2;
-		for ( int i = -CapNCellX ; i < CapNCellX; i++) {
-			for (int j = -CapNCellY ; j < CapNCellY; j++) {
-				
-				xoffset = i*WCCapPMTSpacing + WCCapPMTSpacing*0.5;
-				int yside = (j<0) ? -1 : 1;
-				yoffset = (j*WCCapPMTSpacing + WCCapPMTSpacing*0.5)*capcompressionratio+(capcentrebarwidth*yside);
-				zoffset = -capAssemblyHeight*zflip+InnerStructureCentreOffset+WCCapBottomPMTOffset;
-				
-				//G4ThreeVector cellpos = G4ThreeVector(xoffset, yoffset, zoffset);
-				//if (((sqrt(xoffset*xoffset + yoffset*yoffset) + WCPMTRadius) < WCCapEdgeLimit) ) {
-				
-				G4double xoffset_rot45 = 1./sqrt(2)*(yoffset+xoffset);
-				G4double yoffset_rot45 = 1./sqrt(2)*(yoffset-xoffset);
-				G4cout <<"Bottom position ("<<xoffset_rot45<<","<<yoffset_rot45<<","<<zoffset<<")"<<G4endl;
-
-				G4ThreeVector cellpos = G4ThreeVector(xoffset_rot45, yoffset_rot45, zoffset);
-				if (((sqrt(xoffset_rot45*xoffset_rot45 + yoffset_rot45*yoffset_rot45) + WCPMTRadius) < WCCapEdgeLimit) ) {
-					//G4cout<<"Constructing bottom cap PMT "<<i<<","<<j<<" at ("
-					//		<<xoffset<<", "<<yoffset<<")"<<G4endl;
-					G4VPhysicalVolume* physiCapPMT =
-								new G4PVPlacement(WCCapPMTRotation,
-												  cellpos,        // its position
-												  logicWCPMT,     // its logical volume
-												  "WCPMT",        // its name 
-												  logicWCBarrel,  // its mother volume
-												  false,          // no boolean os
-												  PMTcounter);    // every PMT need a unique id.
-					PMTcounter++;
-				} //else { G4cout<<"skipping bottom cap PMT "<<i<<","<<j<<")"<<G4endl; }
-			}
-		}
-	} else { // top cap
-		
-		// first position the ring of PMTs
-		G4double PMTangle = dPhi/WCPMTperCellHorizontal;
-		for ( int i = 0 ; i < WCBarrelNumPMTHorizontal; i++) {
-			// 2 PMTs per cell, as per the barrel, but with smaller radius 
-			xoffset = WCCapPMTPosRadius*cos((i+0.5)*PMTangle);
-			yoffset = WCCapPMTPosRadius*sin((i+0.5)*PMTangle);
-			zoffset = -capAssemblyHeight*zflip+InnerStructureCentreOffset+WCBlackSheetThickness*zflip+WCCapTopPMTOffset;
-			//G4cout<<"Constructing top cap ring PMT "<<i<<" at ("<<xoffset<<", "<<yoffset<<")"<<G4endl;
-			
-			G4ThreeVector cellpos = G4ThreeVector(xoffset, yoffset, zoffset);
-			G4VPhysicalVolume* physiCapPMT =
-						new G4PVPlacement(WCCapPMTRotation,  // its rotation
-										  cellpos,           // its position
-										  logicWCPMT,        // its logical volume
-										  "WCPMT",           // its name 
-										  logicWCBarrel,     // its mother volume
-										  false,             // no boolean os
-										  PMTcounter);       // every PMT need a unique id.
-			PMTcounter++;
-		}
-		
-		// then position the odd PMTs on the hatch
-		PMTangle = 2*pi/numhatchpmts;
-		for ( int i = 0 ; i < numhatchpmts; i++) {
-			xoffset = WCCapPMTPosRadius2*cos(i*PMTangle);
-			yoffset = WCCapPMTPosRadius2*sin(i*PMTangle);
-			zoffset = -capAssemblyHeight*zflip+InnerStructureCentreOffset+WCBlackSheetThickness*zflip+WCCapTopPMTOffset;
-			//G4cout<<"Constructing top cap hatch PMT "<<i<<" at ("<<xoffset<<", "<<yoffset<<")"<<G4endl;
-			
-			G4ThreeVector cellpos = G4ThreeVector(xoffset, yoffset, zoffset);
-			G4VPhysicalVolume* physiCapPMT =
-						new G4PVPlacement(WCCapPMTRotation,   // its rotation
-										  cellpos,            // its position
-										  logicWCPMT,         // its logical volume
-										  "WCPMT",            // its name 
-										  logicWCBarrel,      // its mother volume
-										  false,              // no boolean os
-										  PMTcounter);        // every PMT need a unique id.
-			PMTcounter++;
-		}
-		
-	}
-	
 }
 
+void WCSimDetectorConstruction::ConstructANNIEHolders(){
 
+	G4cout <<"Construct ANNIE Holders"<<G4endl;
+
+	//Tried to get rough dimensions of the ANNIE holder from the laser scan file
+	//Not really sure about the thickness, assume 2cm thickness for now (should not be super important)
+	G4Box *ANNIEHolder_Box = new G4Box("ANNIEHolder_Box",11.0*cm,17.75*cm,1.*cm);
+	G4Tubs *ANNIEHolder_Tube = new G4Tubs("ANNIEHolder_Tube",0.0*cm,6.0*cm,1*cm,0*deg,360*deg);
+
+	//Create combined logical volume of the Box + Tube to get holder with hole (Subtraction Solid)
+
+	G4SubtractionSolid *solidANNIEHolder = new G4SubtractionSolid("ANNIEHolder",
+																ANNIEHolder_Box,
+																ANNIEHolder_Tube,
+																0,
+																G4ThreeVector(0.,0.,0.));
+
+	//Check the material of the ANNIE holders somewhere!
+	G4LogicalVolume *logANNIEHolder = new G4LogicalVolume(solidANNIEHolder,
+			G4Material::GetMaterial("StainlessSteel"),
+			"WCANNIEHolder",
+			0,0,0);
+
+	G4double dist_pmt_holder = 10.84;		//Holder is 20cm away from the front face of the ANNIE PMTs, WCSim center is 9.16cm away from front --> 10.84cm distance
+
+	//Read in PMT positions again, and project position of holder positions from the PMT positions
+
+	// Create rotation matrices for the orientations of the PMTs
+	std::vector<G4RotationMatrix*> holder_rotation_matrices;
+	// Bottom PMTs have panel number 0
+	G4RotationMatrix *WCBottomCapRotation = new G4RotationMatrix();
+	holder_rotation_matrices.push_back(WCBottomCapRotation);
+	G4RotationMatrix* WCPMTRotation = new G4RotationMatrix;
+	WCPMTRotation->rotateY(90.*deg);	
+	// Barrel PMTs have panel numbers 1-8
+	for(int facei=0; facei<WCBarrelRingNPhi; facei++){
+		G4RotationMatrix* WCPMTRotationNext = new G4RotationMatrix(*WCPMTRotation);
+		WCPMTRotationNext->rotateX((dPhi*facei)-67.5*deg+180*deg);
+		holder_rotation_matrices.push_back(WCPMTRotationNext);
+	}
+	// Top PMTs have panel number 9
+	G4RotationMatrix *WCTopCapRotation = new G4RotationMatrix();
+	WCTopCapRotation->rotateY(180.*deg);
+	holder_rotation_matrices.push_back(WCTopCapRotation);
+
+	//Select only ANNIE PMTs and propagate their position outwards to get central holder position
+	std::ifstream pmt_position_file("PMTPositions_Scan.txt");
+	std::string next_pmt;
+	double pmt_x, pmt_y, pmt_z, pmt_dirx, pmt_diry, pmt_dirz;
+	double holder_x, holder_y, holder_z;
+	int panel_nr, pmt_type;
+	int HolderID;
+	while (!pmt_position_file.eof()){
+		pmt_position_file >> HolderID >> panel_nr >> pmt_x >> pmt_y >> pmt_z >> pmt_dirx >> pmt_diry >> pmt_dirz >> pmt_type;
+		if (pmt_position_file.eof()) break;
+		G4cout << "Read in PMT "<<HolderID<<", panel nr: "<<panel_nr<<", Position ("<<pmt_x<<","<<pmt_y<<","<<pmt_z<<"), PMT type: "<<pmt_type<<G4endl;
+		
+		if (pmt_type == 2){	//select only ANNIE (Hamamatsu 8inch) PMTs for the holders
+		G4RotationMatrix *holder_rot = holder_rotation_matrices.at(panel_nr);
+
+		//Shift the PMT position outwards
+		pmt_x -= (pmt_dirx*dist_pmt_holder);
+		pmt_y -= (pmt_diry*dist_pmt_holder);
+		pmt_z -= (pmt_dirz*dist_pmt_holder);
+
+		holder_x = pmt_x*cm;
+		holder_y = (168.1-pmt_z)*cm;
+		holder_z = ((pmt_y+14.45))*cm;
+		//pmt_z_shift = ((pmt_y+14.45)-InnerStructureCentreOffset/10.)*cm;
+		G4cout <<"Edited Holder position ("<<holder_x<<","<<holder_y<<","<<holder_z<<")"<<G4endl;
+		
+		G4ThreeVector HolderPosition(holder_x,holder_y,holder_z);
+		G4VPhysicalVolume *physicalHolder = new G4PVPlacement(holder_rot,	//its rotation
+															HolderPosition,		//its position
+															logANNIEHolder,			//its logical volume
+															"ANNIE-Holder",			//its name
+															logicWCBarrel,		//its mother volume
+															false,				//no boolean operations
+															HolderID,				//ID for this PMT (=channelkey in data)
+															true);				//check overlaps*/
+		}
+	}
+	pmt_position_file.close();
+
+}

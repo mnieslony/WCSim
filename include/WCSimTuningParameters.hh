@@ -27,6 +27,19 @@ public:
   G4double GetMieff() {return mieff;}
   void SetMieff(G4double rparam) {mieff=rparam;}
 
+  //ANNIE-specific setters and getters
+  G4double GetTeflonrff() {return teflonrff;}
+  void SetTeflonrff(G4double rparam) {teflonrff=rparam;}
+
+  G4double GetHolderrff() {return holderrff;}
+  void SetHolderrff(G4double rparam) {holderrff=rparam;}
+
+  G4double GetLinerrff() {return linerrff;}
+  void SetLinerrff(G4double rparam) {linerrff=rparam;}
+
+  G4bool GetHolder() {return holder;}
+  void SetHolder(G4double hparam) {holder=hparam;}
+
   //For Top Veto - jl145
   G4double GetTVSpacing() {return tvspacing;}
   void SetTVSpacing(G4double tparam) {tvspacing=tparam;}
@@ -41,7 +54,6 @@ private:
   // The messenger
   WCSimTuningMessenger* TuningMessenger;
 
-
   // The parameters that need to be set before WCSimDetectorConstruction
   // is created
 
@@ -50,6 +62,12 @@ private:
   G4double abwff;
   G4double rgcff;
   G4double mieff;
+
+  // ANNIE-specfic tuning parameters
+  G4double teflonrff;   //Teflon-wrapped Inner Structure --> Reflectivity tuning factor
+  G4double holderrff;   //ANNIE holders --> Reflectivity tuning factor
+  G4double linerrff;    //Liner --> Reflectivity tuning factor
+  G4bool holder;        //Should ANNIE PMT holders be implemented in the simulation?
 
   //For Top Veto - jl145
   G4double tvspacing;

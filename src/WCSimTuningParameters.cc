@@ -15,6 +15,12 @@ WCSimTuningParameters::WCSimTuningParameters()
  rgcff=0.32;
  mieff=0.0;
 
+ //ANNIE-default values
+ teflonrff=1.00;
+ holderrff=1.00;
+ linerrff=1.00;
+ holder=false;
+
  //jl145 - For Top Veto
  tvspacing = 100.0;
  topveto = false;
@@ -34,6 +40,10 @@ void WCSimTuningParameters::SaveOptionsToOutput(WCSimRootOptions * wcopt)
   wcopt->SetAbwff(abwff);
   wcopt->SetRgcff(rgcff);
   wcopt->SetMieff(mieff);
+  wcopt->SetTeflonrff(teflonrff);
+  wcopt->SetHolderrff(holderrff);
+  wcopt->SetLinerrff(linerrff);
+  wcopt->SetHolder(holder);
   wcopt->SetTvspacing(tvspacing);
   wcopt->SetTopveto(topveto);
 }

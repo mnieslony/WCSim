@@ -1008,11 +1008,14 @@ void WCSimDetectorConstruction::ConstructMaterials()
 
    // reflectivity of steel inner structure
    // =====================================
+   G4double TEFLONRFF = WCSimTuningParams->GetTeflonrff();
    const G4int arrEntries = 2;
    G4double photEneSteel[] = { 1.56962*CLHEP::eV, 6.19998*CLHEP::eV };
    G4double rIndexSteel[] = { 1.35, 1.35};
    G4double absSteel[] = { 1.0e-9*CLHEP::cm,  1.0e-9*CLHEP::cm};
-   G4double refSteel[] = {0.5, 0.5}; // low estimate.
+   //G4double refSteel[] = {0.5, 0.5}; // low estimate. --> replaced by tunable teflon reflectivity value (whole structure is wrapped)
+   //Introduce the reflectivity of the steel inner structure as a function of a tunable variable. Previous behavior can be replicated with a tuning factor of 0.5 (most definitely too low).
+   G4double refSteel[] = {1.0*TEFLONRFF,1.0*TEFLONRFF}; // Introduce tuning parameter for impact of teflon wrapping on reflections
    G4double specularlobeSteel[] = {0.8, 0.8};   // ¯\_(ツ)_/¯
    G4double specularspikeSteel[] = {0.1, 0.1};
    G4double backscatterSteel[] = {0.01, 0.01};
@@ -1039,7 +1042,8 @@ void WCSimDetectorConstruction::ConstructMaterials()
    // reflectivity of tank liner
    // ===========================
    // re-use the properties from steel, only reflectivity is important?
-   G4double refLiner[] = {0.87, 0.87}; // from datasheet
+   G4double LINERRFF = WCSimTuningParams->GetLinerrff();
+   G4double refLiner[] = {0.87*LINERRFF, 0.87*LINERRFF}; // from datasheet // add possibility to tune reflectivity value a little
    G4double rIndexLiner[] = { 1.5, 1.5};
    // remaining reflection type (lambertian) is the remainder from 1
    
@@ -1058,6 +1062,8 @@ void WCSimDetectorConstruction::ConstructMaterials()
    LinerOpSurface->SetFinish(ground);
    LinerOpSurface->SetSigmaAlpha(0.1);
    LinerOpSurface->SetMaterialPropertiesTable(linerSurfaceMatProps);
+
+   G4double HOLDERRFF = WCSimTuningParams->GetHolderrff();
 
    //	------------- Surfaces --------------
 
