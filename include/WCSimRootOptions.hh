@@ -112,6 +112,10 @@ public:
   void SetAbwff(double iAbwff) {Abwff = iAbwff;}
   void SetRgcff(double iRgcff) {Rgcff = iRgcff;}
   void SetMieff(double iMieff) {Mieff = iMieff;}
+  void SetTeflonrff(double iTeflonrff) {Teflonrff = iTeflonrff;}
+  void SetHolderrff(double iHolderrff) {Holderrff = iHolderrff;}
+  void SetLinerrff(double iLinerrff) {Linerrff = iLinerrff;}
+  void SetHolder(bool iHolder) {Holder = iHolder;}
   void SetTvspacing(double iTvspacing) {Tvspacing = iTvspacing;}
   void SetTopveto(bool iTopveto) {Topveto = iTopveto;}
   //WCSimTuningParameters gets
@@ -120,6 +124,10 @@ public:
   double GetAbwff() {return Abwff;}
   double GetRgcff() {return Rgcff;}
   double GetMieff() {return Mieff;}
+  double GetTeflonrff() {return Teflonrff;}
+  double GetLinerrff() {return Linerrff;}
+  double GetHolderrff() {return Holderrff;}
+  bool GetHolder() {return Holder;}
   double GetTvspacing() {return Tvspacing;}
   bool   GetTopveto() {return Topveto;}
   //WCSimPhysicsListFactory sets
@@ -189,6 +197,10 @@ private:
   double Abwff;
   double Rgcff;
   double Mieff;
+  double Teflonrff;
+  double Linerrff;
+  double Holderrff;
+  bool Holder;
   double Tvspacing;
   bool   Topveto;
 

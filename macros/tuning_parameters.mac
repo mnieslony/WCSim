@@ -2,8 +2,17 @@
 /WCSim/tuning/abwff 1.30
 /WCSim/tuning/rgcff 0.32
 /WCSim/tuning/rayff 0.75
-/WCSim/tuning/bsrff 2.50
+#/WCSim/tuning/bsrff 2.50
+/WCSim/tuning/bsrff 2.40
 /WCSim/tuning/mieff 0.0
+
+# ANNIE tuning parameters
+/WCSim/tuning/teflonrff 1.00
+/WCSim/tuning/holderrff 1.00
+/WCSim/tuning/linerrff 1.00
+
+#Turning holders on (1) or off (0)
+/WCSim/tuning/holder 1
 
 # Parameters to set up Top Veto - jl145
 # Set to "1" to turn on top veto.
