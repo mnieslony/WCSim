@@ -47,6 +47,7 @@ class WCSimPrimaryGeneratorMessenger: public G4UImessenger
   G4UIcmdWith3VectorAndUnit* sourcepositionCmd;
   G4UIcmdWith3VectorAndUnit* targetpositionCmd;
   G4UIcmdWithADouble* angleCmd;
+  G4UIcmdWithADouble* thetaCmd;
   G4UIcmdWithAnInteger* nphotonsCmd;
 
 };

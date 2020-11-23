@@ -101,6 +101,10 @@ WCSimPrimaryGeneratorMessenger::WCSimPrimaryGeneratorMessenger(WCSimPrimaryGener
   angleCmd->SetGuidance("Set LED Opening Angle");
   angleCmd->SetDefaultValue(30.);
 
+  thetaCmd = new G4UIcmdWithADouble("/mygen/LEDtheta",this);
+  thetaCmd->SetGuidance("Set LED theta mean");
+  thetaCmd->SetDefaultValue(0.0);
+
   nphotonsCmd = new G4UIcmdWithAnInteger("/mygen/LEDphotons",this);
   nphotonsCmd->SetGuidance("Set LED number of photons");
   nphotonsCmd->SetDefaultValue(5000);
@@ -126,6 +130,7 @@ WCSimPrimaryGeneratorMessenger::~WCSimPrimaryGeneratorMessenger()
   delete sourcepositionCmd;
   delete targetpositionCmd;
   delete angleCmd;
+  delete thetaCmd;
   delete nphotonsCmd;
 }
 
@@ -319,6 +324,12 @@ void WCSimPrimaryGeneratorMessenger::SetNewValue(G4UIcommand * command,G4String 
   {
     myAction->SetLEDAngle(angleCmd->ConvertToDouble(newValue));
     G4cout << "Openind angle for LED set." << G4endl;
+  }
+  
+  if ( command == thetaCmd )
+  {
+    myAction->SetLEDTheta(thetaCmd->ConvertToDouble(newValue));
+    G4cout << "Theta angle for LED set." << G4endl;
   }
 
   if ( command == nphotonsCmd )

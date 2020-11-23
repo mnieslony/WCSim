@@ -219,6 +219,7 @@ private:
   G4ThreeVector ledsourcepos;
   G4ThreeVector ledtargetpos;
   G4double ledopening;
+  G4double ledtheta;
   G4int photons_per_pulse; 	
 
 public:
@@ -285,6 +286,7 @@ public:
   void SetLEDSourcePosition(G4ThreeVector position) {ledsourcepos = position;}
   void SetLEDTargetPosition(G4ThreeVector position) {ledtargetpos = position;}
   void SetLEDAngle(G4double opening) {ledopening = opening;}
+  void SetLEDTheta(G4double theta) {ledtheta = theta;}
   void SetLEDPhotons(G4int nph) {photons_per_pulse = nph;}
   G4ThreeVector EulerTransform(G4ThreeVector _ledxyz, G4ThreeVector _ledeuler, G4double _leddiry);
   G4ThreeVector EulerAngle(G4ThreeVector _leddirection);

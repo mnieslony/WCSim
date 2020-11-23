@@ -1449,21 +1449,27 @@ void WCSimPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
       rand.SetSeed(0);
       //RandGauss gauss(hep_rndm,0,0.66);
 
-      for (int i_pulse=0; i_pulse < photons_per_pulse; i_pulse++){
+      G4int num_photons = photons_per_pulse;
+
+      for (int i_pulse=0; i_pulse < num_photons; i_pulse++){
         
         G4float myRandom1 = G4UniformRand();
         G4float myRandom2 = G4UniformRand();
         //G4cout <<"myRandom1: "<<myRandom1<<", myRandom2: "<<myRandom2<<G4endl;
 	//G4float myRandomTheta = asin(0.5*myRandom1*sin(ledopening*deg/2));
         //G4float myRandom3 = gauss->shoot();
-	G4float myRandom3 = rand.Gaus(0,0.66);
-        if (myRandom3 < 0) myRandom3 = -myRandom3;
-	if (myRandom3 > TMath::Pi()) {
-		photons_per_pulse++;
+	//G4float myRandom3 = rand.Gaus(0,0.66);
+        //G4float myRandom3 = rand.Gaus(-1.0,1.5);
+        //G4float myRandom3 = rand.Gaus(0,1.0);
+	G4float myRandom3 = rand.Gaus(ledtheta,ledopening);
+	//if (myRandom3 < 0) myRandom3 = -myRandom3;
+	if (myRandom3 < 0. || myRandom3 > TMath::Pi()) {
+		num_photons++;
 		continue;
 	}
 	G4float myRandomTheta = myRandom3;
 	G4float myRandomPhi = myRandom2*2*TMath::Pi();
+	//G4cout << "Theta: "<<myRandomTheta<<G4endl;
 
  	G4ThreeVector myRandomXYZ(sin(myRandomTheta)*cos(myRandomPhi),sin(myRandomTheta)*sin(myRandomPhi),cos(myRandomTheta));
    
