@@ -285,6 +285,9 @@ private:
   // Tank liner surface
   G4OpticalSurface * LinerOpSurface;
 
+  // ANNIE Holder surface
+  G4OpticalSurface * HolderOpSurface;
+
   // The messenger we use to change the geometry.
 
   WCSimDetectorMessenger* messenger;
@@ -415,6 +418,7 @@ private:
   G4double WCLAPPDExposeHeight;
   G4double WCBarrelLAPPDOffset;
   G4double WCIDDiameter;
+  G4double WCLAPPDSliderThickness;
 
   G4double WCCapLength;
   G4double WCBackODLength;

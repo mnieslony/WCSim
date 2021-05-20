@@ -331,10 +331,10 @@ G4LogicalVolume* WCSimDetectorConstruction::ConstructANNIECylinderScan()
 	//If desired, construct ANNIE PMT holders
 	//Geometrical properties of the holders are roughly extracted from the laser scan file (edges not clearly visible)
 
-    G4bool HOLDER = WCSimTuningParams->GetHolder();
-    G4cout <<"HOLDER variable: "<<HOLDER<<G4endl;
-    G4double bsrff = WCSimTuningParams->GetBsrff();
-    G4cout <<"Bsrff: "<<bsrff<<G4endl;
+	G4bool HOLDER = WCSimTuningParams->GetHolder();
+	G4cout <<"HOLDER variable: "<<HOLDER<<G4endl;
+	G4double bsrff = WCSimTuningParams->GetBsrff();
+	G4cout <<"Bsrff: "<<bsrff<<G4endl;
 
 	if (HOLDER){
 		ConstructANNIEHolders();
@@ -433,7 +433,7 @@ void WCSimDetectorConstruction::ConstructANNIEHolders(){
 
 	//Tried to get rough dimensions of the ANNIE holder from the laser scan file
 	//Not really sure about the thickness, assume 2cm thickness for now (should not be super important)
-	G4Box *ANNIEHolder_Box = new G4Box("ANNIEHolder_Box",11.0*cm,17.75*cm,1.*cm);
+	G4Box *ANNIEHolder_Box = new G4Box("ANNIEHolder_Box",10.5*cm,17.75*cm,1.*cm);
 	G4Tubs *ANNIEHolder_Tube = new G4Tubs("ANNIEHolder_Tube",0.0*cm,6.0*cm,1*cm,0*deg,360*deg);
 
 	//Create combined logical volume of the Box + Tube to get holder with hole (Subtraction Solid)
@@ -446,7 +446,7 @@ void WCSimDetectorConstruction::ConstructANNIEHolders(){
 
 	//Check the material of the ANNIE holders somewhere!
 	G4LogicalVolume *logANNIEHolder = new G4LogicalVolume(solidANNIEHolder,
-			G4Material::GetMaterial("StainlessSteel"),
+			G4Material::GetMaterial("PVC"),
 			"WCANNIEHolder",
 			0,0,0);
 
@@ -507,6 +507,11 @@ void WCSimDetectorConstruction::ConstructANNIEHolders(){
 															false,				//no boolean operations
 															HolderID,				//ID for this PMT (=channelkey in data)
 															true);				//check overlaps*/
+		G4LogicalBorderSurface* ANNIEHolderSurface
+                = new G4LogicalBorderSurface("ANNIEHolderSurface",
+                                                                         physiWCBarrel,
+                                                                         physicalHolder,
+                                                                         HolderOpSurface);
 		}
 	}
 	pmt_position_file.close();

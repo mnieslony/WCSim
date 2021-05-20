@@ -122,7 +122,17 @@ void WCSimDetectorConstruction::ConstructMaterials()
   DryIce->AddElement(elC, 1);
   DryIce->AddElement(elO, 2);
 
+  //---PVC
 
+  a = 35.45*CLHEP::g/CLHEP::mole;
+  G4Element *elCl
+    = new G4Element("Chlorine","Cl",17,a);
+
+  density = 1.380*CLHEP::g/CLHEP::cm3;
+  G4Material* PVC = new G4Material("PVC",density,3);
+  PVC->AddElement(elH,4.84*CLHEP::perCent);
+  PVC->AddElement(elC,38.44*CLHEP::perCent);
+  PVC->AddElement(elCl,56.73*CLHEP::perCent);
 
   //---Air
   
@@ -1064,6 +1074,25 @@ void WCSimDetectorConstruction::ConstructMaterials()
    LinerOpSurface->SetMaterialPropertiesTable(linerSurfaceMatProps);
 
    G4double HOLDERRFF = WCSimTuningParams->GetHolderrff();
+   G4double refHolder[] = {1.00*HOLDERRFF,1.00*HOLDERRFF};
+   G4double rIndexHolder[] = {1.531,1.531};
+
+   G4MaterialPropertiesTable *holderSurfaceMatProps = new G4MaterialPropertiesTable();
+   holderSurfaceMatProps->AddProperty("RINDEX", photEneSteel, rIndexHolder, arrEntries);
+   holderSurfaceMatProps->AddProperty("ABSLENGTH",photEneSteel,absSteel,arrEntries);		//This should probably be something else, check (TODO)
+   holderSurfaceMatProps->AddProperty("REFLECTIVITY",photEneSteel, refHolder,arrEntries);
+   holderSurfaceMatProps->AddProperty("SPECULARLOBECONSTANT",photEneSteel,specularlobeSteel,arrEntries);
+   holderSurfaceMatProps->AddProperty("SPECULARSPIKECONSTANT",photEneSteel,specularspikeSteel,arrEntries);
+   holderSurfaceMatProps->AddProperty("BACKSCATTERCONSTANT",photEneSteel,backscatterSteel,arrEntries);
+   
+   HolderOpSurface = new G4OpticalSurface("HolderOpSurface");
+   HolderOpSurface->SetType(dielectric_metal); // fine, reflection or absorption only.
+   HolderOpSurface->SetModel(unified);
+   HolderOpSurface->SetFinish(ground);
+   HolderOpSurface->SetSigmaAlpha(0.1);
+   HolderOpSurface->SetMaterialPropertiesTable(holderSurfaceMatProps);
+
+
 
    //	------------- Surfaces --------------
 

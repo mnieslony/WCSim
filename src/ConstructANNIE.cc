@@ -244,7 +244,8 @@ G4LogicalVolume* WCSimDetectorConstruction::ConstructANNIE()
 		}
 	}
 
-  // Add markers for debugging
+  // Add markers for debugging (only debugging)
+  /*
   G4Box* marker = new G4Box("marker",1*cm,1*cm,1*cm);
   G4LogicalVolume* marker_log = 
     new G4LogicalVolume(marker,G4Material::GetMaterial("Air"),"Marker",0,0,0);
@@ -266,11 +267,11 @@ G4LogicalVolume* WCSimDetectorConstruction::ConstructANNIE()
 															expHall_log,		//its mother volume
 															false,				//no boolean operations
 															PMTID,				//ID for this PMT (=channelkey in data)
-															true);				//check overlaps*/
+															true);				//check overlaps
 															PMTID++;
   }
   pmt_position_file.close();
-
+*/
     //============================================================
   //                    Add NCV for Phase 1
   //============================================================
