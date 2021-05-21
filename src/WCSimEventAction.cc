@@ -44,12 +44,12 @@
 
 // GENIE headers
 #ifndef NO_GENIE
-#include "GHEP/GHepParticle.h"
-#include "Ntuple/NtpMCTreeHeader.h"
-#include "Interaction/Interaction.h"
-#include "PDG/PDGCodes.h"
-#include "PDG/PDGUtils.h"
-#include "PDG/PDGLibrary.h"
+//#include "GHEP/GHepParticle.h"
+//#include "Ntuple/NtpMCTreeHeader.h"
+//#include "Interaction/Interaction.h"
+//#include "PDG/PDGCodes.h"
+//#include "PDG/PDGUtils.h"
+//#include "PDG/PDGLibrary.h"
 #endif
 #include "NCVSD.hh"
 
@@ -788,13 +788,13 @@ void WCSimEventAction::EndOfEventAction(const G4Event* evt)
   //  Get Event Information
   // ----------------------------------------------------------------------
   // pull information about the genie primary interactions from the PrimaryGeneratorAction
-#ifdef NO_GENIE
+/*#ifdef NO_GENIE
   G4cout<<" !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"<<G4endl;
   G4cout<<" !!! Genie not loaded!!! Primary interaction information will not be filled! !!!"<<G4endl;
   G4cout<<" !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"<<G4endl;
-#endif
+#endif*/
   }
-  
+  /*
   G4int         mode     = generatorAction->GetMode();			// neut interaction code
   G4int         nvtxs   = generatorAction->GetNvtxs();			// always 1
   G4ThreeVector vtxs[MAX_N_PRIMARIES];					// interaction vertices of the neutrino
@@ -826,7 +826,7 @@ void WCSimEventAction::EndOfEventAction(const G4Event* evt)
      jhfNtuple.vtxs[u][2] = vtxs[u][2]/CLHEP::cm;    // interaction vertex
      jhfNtuple.vtxsvol[u] = vtxsvol[u];              // looked up at start of EndOfEventAction
      /* !! jhfNtuple.vtxs & jhfNtuple.vtxsvol arrays have half as many elements as others in jhfNtuple!! */
-     
+     /*
      /////////////////////////////////
      // npar = 0        NEUTRINO /////
      /////////////////////////////////
@@ -1028,7 +1028,7 @@ void WCSimEventAction::EndOfEventAction(const G4Event* evt)
         npar++; 
       }
     }
-  }
+  }*/
 
    // Draw Charged Tracks
    for (G4int i=0; i < n_trajectories; i++) {
@@ -1051,7 +1051,7 @@ void WCSimEventAction::EndOfEventAction(const G4Event* evt)
    // G4cout << "MRDxHC: " << &MRDxHC << G4endl;
    // G4cout << "MRDyHC: " << &MRDyHC << G4endl;
    
-  jhfNtuple.npar = npar;
+  // jhfNtuple.npar = npar;
   
   FillRootEvent(event_id,
 		jhfNtuple,
@@ -1092,8 +1092,6 @@ void WCSimEventAction::EndOfEventAction(const G4Event* evt)
   if(event_id%10000==0&&event_id!=0){
     GetRunAction()->CreateNewOutputFile(); // careful: we should maintain 1:1:1 files genie:g4dirt:wcsim
     if(isANNIE) CreateNewLAPPDFile(); // this must always come *after* the runaction version
-  }
-  
   G4cout<<"############# WCSIM FINISH END OF EVENT ACTION  ################"<<G4endl;
 
   //save DAQ options here. This ensures that when the user selects a default option

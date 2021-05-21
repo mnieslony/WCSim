@@ -29,10 +29,10 @@
 
 // GENIE headers
 #ifndef NO_GENIE
-#include "GHEP/GHepParticle.h"
-#include "GHEP/GHepUtils.h"
-#include "Ntuple/NtpMCTreeHeader.h"
-#include "Interaction/Interaction.h"
+//#include "GHEP/GHepParticle.h"
+//#include "GHEP/GHepUtils.h"
+//#include "Ntuple/NtpMCTreeHeader.h"
+//#include "Interaction/Interaction.h"
 #endif
 
 // when loading dirt primaries, skip entries that are from upstream rock interactions. 
@@ -102,7 +102,7 @@ WCSimPrimaryGeneratorAction::WCSimPrimaryGeneratorAction(
   useGPSEvt = false;
       
 #ifndef NO_GENIE
-  genierecordval = new genie::NtpMCEventRecord;
+ // genierecordval = new genie::NtpMCEventRecord;
 #endif
 }
 
@@ -126,9 +126,9 @@ WCSimPrimaryGeneratorAction::~WCSimPrimaryGeneratorAction()
       delete inputdata;
       delete metadata;
 #ifndef NO_GENIE
-      if(geniedata) geniedata->ResetBranchAddresses();
-      if(geniedata) delete geniedata;
-      if(genierecordval) delete genierecordval;
+     // if(geniedata) geniedata->ResetBranchAddresses();
+     // if(geniedata) delete geniedata;
+     // if(genierecordval) delete genierecordval;
 #endif
     }
   }
@@ -397,6 +397,8 @@ void WCSimPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
   
   else if (useBeamEvt)
     {
+
+		/*
 		// Load the next entry, with all required trees and files
 		// ------------------------------------------------------
 		loadbeamentry:
@@ -469,7 +471,7 @@ void WCSimPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 		genieEntryNum = genieentrybranchval;
 		genieFileName = nufluxfilenameval;
 		
-#ifdef ONLY_TANK_EVENTS
+//#ifdef ONLY_TANK_EVENTS
 		if(strcmp(numatval,"TankWater")!=0){ // nu intx not in tank
 		G4cout<<"---------------SKIPPING NON-TANK ENTRY----------------"<<G4endl;
 		inputEntry++; 
@@ -483,9 +485,9 @@ void WCSimPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 			G4cout<<"@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#"<<G4endl;
 		} else { goto loadbeamentry; } // load the next entry
 		}
-#endif
+//#endif
 		
-#ifndef NO_GENIE
+//#ifndef NO_GENIE
 		Long64_t genielocalEntry = geniedata->LoadTree(genieentrybranchval);
 		// load the appropriate genie entry. we assume 1:1 correspondance of genie:g4dirt files.
 		// So the following should not be necessary, as the files should be loaded synchronously
@@ -724,7 +726,7 @@ void WCSimPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 			beamdirs[i] = probemomdir;
 			targetdirs[i] = targetnucleonmomdir;
 		}
-#else
+//#else
 		// without genie we don't have the primary interaction information....
 		vecRecNumber = genieentrybranchval;
 		mode = -999;
@@ -740,7 +742,7 @@ void WCSimPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 			targetenergies[i] = -999.;
 			targetdirs[i] = G4ThreeVector(-0., -0., -1.);
 		}
-#endif
+//#endif
 		
 		// Now read the outgoing particles: These we will simulate
 		// =======================================================
@@ -771,12 +773,12 @@ void WCSimPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 			char strA[10]={0};
 			char strZ[10]={0};
 			long int A=0,Z=0;
-#ifdef ONLY_MUONS
+//#ifdef ONLY_MUONS
 			if(abs(pdgval)!=13){
 				// skip non-muon primary
 				continue;
 			}
-#endif
+//#endif
 			if(abs(pdgval) >= 1000000000){
 				//ion
 				sprintf(strPDG,"%i",abs(pdgval));
@@ -830,7 +832,7 @@ void WCSimPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 			G4cout<<"@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#"<<G4endl;
 			G4cout<<"@#@#@#@#@#@#@#@#@#@ REACHED END OF INPUT FILE! #@#@#@#@#@#@#@#@#@#@#@#"<<G4endl;
 			G4cout<<"@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#"<<G4endl;
-		}
+		}*/
 		
 	}
 
@@ -955,12 +957,12 @@ void WCSimPrimaryGeneratorAction::LoadNewPrimaries(){
 	metadata = new TChain("tankmeta");
 	metadata->Add(primariesDirectory);
 	metadata->LoadTree(0);
-#ifndef NO_GENIE
+//#ifndef NO_GENIE
 	if(geniedata){ geniedata->ResetBranchAddresses(); delete geniedata; }
 	geniedata = new TChain("gtree");
 	geniedata->Add(neutrinosDirectory);
 	geniedata->LoadTree(0);
-#endif
+//#endif
 	
 	inputdata->SetBranchAddress("run",&runbranchval,&runBranch);
 	inputdata->SetBranchAddress("ntank",&ntankbranchval,&nTankBranch);
@@ -973,11 +975,11 @@ void WCSimPrimaryGeneratorAction::LoadNewPrimaries(){
 	inputdata->SetBranchAddress("vtxmat",&numatval,&nuvtxmatBranch);
 	inputdata->SetBranchAddress("entry",&genieentrybranchval,&genieentryBranch);
 	metadata->SetBranchAddress("inputFluxName",&nufluxfilenameval,&nufluxfilenameBranch);
-#ifndef NO_GENIE
+//#ifndef NO_GENIE
 	geniedata->SetBranchAddress("gmcrec",&genierecordval,&genierecordBranch);
-#else 
+//#else 
 	genierecordBranch=(TBranch*)1;
-#endif
+//#endif
 	
 	vtxxBranch=inputdata->GetBranch("vx");
 	vtxyBranch=inputdata->GetBranch("vy");
