@@ -294,7 +294,7 @@ G4LogicalVolume* WCSimDetectorConstruction::ConstructANNIECylinder()
 				PMTPosition.setX(PMTPosition.getX()+CellCentreX);
 				PMTPosition.setY(PMTPosition.getY()+CellCentreY);
 
-				G4cout <<"PMTID: "<<PMTcounter<<", Position ("<<PMTPosition.getX()<<","<<PMTPosition.getY()<<","<<PMTPosition.getZ()<<")"<<G4endl;
+				//G4cout <<"PMTID: "<<PMTcounter<<", Position ("<<PMTPosition.getX()<<","<<PMTPosition.getY()<<","<<PMTPosition.getZ()<<")"<<G4endl;
 
 				
 				G4VPhysicalVolume* physiWCBarrelPMT =

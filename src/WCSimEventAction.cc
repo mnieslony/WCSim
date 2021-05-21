@@ -1422,7 +1422,7 @@ void WCSimEventAction::FillRootEvent(G4int event_id,
         G4ThreeVector mom    = trj->GetInitialMomentum();
         G4double      mommag = mom.mag();
         G4double      energy = sqrt(mom.mag2() + mass*mass);
-	G4cout <<"ipnu: "<<ipnu<<", energy: "<<energy<<std::endl;
+	//G4cout <<"ipnu: "<<ipnu<<", energy: "<<energy<<std::endl;
         G4ThreeVector momend = trj->GetFinalMomentum();
         G4double      mommagend = momend.mag();
         G4double      energyend = sqrt(momend.mag2() + mass*mass);

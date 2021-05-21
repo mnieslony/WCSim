@@ -242,7 +242,7 @@ void WCSimPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 						      atof(token[4]),
 						      atof(token[5]));
 		    std::cout<<"PDGcode "<<pdgid<<"\n";
-		    std::cout <<"dirX: "<<token[3]<<", dirY: "<<token[4]<<", dirZ: "<<token[5]<<std::endl;
+		    //std::cout <<"dirX: "<<token[3]<<", dirY: "<<token[4]<<", dirZ: "<<token[5]<<std::endl;
 		    //must handle the case of an ion speratly from other particles
 		    //check PDG code if we have an ion.
 		    //PDG code format for ions ±10LZZZAAAI
