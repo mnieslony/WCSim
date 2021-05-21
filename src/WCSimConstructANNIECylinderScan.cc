@@ -338,6 +338,7 @@ G4LogicalVolume* WCSimDetectorConstruction::ConstructANNIECylinderScan()
 
 	if (HOLDER){
 		ConstructANNIEHolders();
+		ConstructANNIEHoldersLUX();
 	}
 	
 	
@@ -445,8 +446,10 @@ void WCSimDetectorConstruction::ConstructANNIEHolders(){
 																G4ThreeVector(0.,0.,0.));
 
 	//Check the material of the ANNIE holders somewhere!
+	//ANNIE holders should be made out of polyethylene
+	//Assume white acrylic since it should be similar
 	G4LogicalVolume *logANNIEHolder = new G4LogicalVolume(solidANNIEHolder,
-			G4Material::GetMaterial("PVC"),
+			G4Material::GetMaterial("Acrylic"),
 			"WCANNIEHolder",
 			0,0,0);
 
@@ -515,5 +518,132 @@ void WCSimDetectorConstruction::ConstructANNIEHolders(){
 		}
 	}
 	pmt_position_file.close();
+
+}
+
+void WCSimDetectorConstruction::ConstructANNIEHoldersLUX(){
+
+ 	G4cout <<"Construct LUX/ETEL Holders"<<G4endl;
+
+	//Dimensions for LUX holders taken from this presentation:
+	//https://annie-docdb.fnal.gov/cgi-bin/sso/RetrieveFile?docid=654&filename=LUXPMTs_Phone_2017-04-13_FISCHER.pdf&version=1
+	//Thickness: 3/4" (1.905cm, half-height: ~0.95cm), Width: 6" (15.24cm), Length: 2x7"+6" = 20" (50.8cm)
+	//Hole has a diameter of 6.625" (r=8.41375cm)
+	//
+
+	//Dimensions for ETEL holders are assumed to be the same, no reference though	
+
+	G4Box *LUXHolder_Box = new G4Box("ANNIEHolder_Box",7.62*cm,25.4*cm,0.95*cm);
+ 	G4Tubs *LUXHolder_Tube = new G4Tubs("ANNIEHolder_Tube",0.0*cm,8.41375*cm,0.95*cm,0*deg,360*deg);
+
+	//Create combined logical volume of the Box + Tube to get holder with hole (Subtraction Solid)
+
+	G4SubtractionSolid *solidLUXHolder = new G4SubtractionSolid("LUXHolder",
+											LUXHolder_Box,
+											LUXHolder_Tube,
+											0,
+											G4ThreeVector(0.,0.,0.));
+
+	//Do the same & name it ETEL
+	G4SubtractionSolid *solidETELHolder = new G4SubtractionSolid("ETELHolder",
+											LUXHolder_Box,
+											LUXHolder_Tube,
+											0,
+											G4ThreeVector(0.,0.,0.));
+
+
+	//LUX & ETEL holders are made of Schedule 80 PVC --> Use PVC as material
+	G4LogicalVolume *logLUXHolder = new G4LogicalVolume(solidLUXHolder,
+			G4Material::GetMaterial("PVC"),
+			"WCLUXHolder",
+			0,0,0);
+
+	G4double dist_pmt_holder_lux = 6.0*cm;		//LUX center is 11.7cm from glass front surface total distance glass surface-wings = 17.7cm, dist = 6.0cm
+
+	G4LogicalVolume *logETELHolder = new G4LogicalVolume(solidETELHolder,
+			G4Material::GetMaterial("PVC"),
+			"WCETELHolder",
+			0,0,0);
+
+	G4double dist_pmt_holder_etel = 7.25*cm;	//ETEL center is 11.8cm from glass front surface, total distance from glass surface to wings is 19.05cm (7.5") -> dist = 19.05cm-11.8cm = 7.25cm
+	
+	//Create Rotation matrix for PMT holders
+	G4RotationMatrix* WCPMTRotation = new G4RotationMatrix;
+
+	//Select only ETEL + LUX PMTs and propagate their position up-/downwards to get central holder position
+	std::ifstream pmt_position_file("PMTPositions_Scan.txt");
+ 	std::string next_pmt;
+ 	double pmt_x, pmt_y, pmt_z, pmt_dirx, pmt_diry, pmt_dirz;
+ 	double holder_x, holder_y, holder_z;
+ 	int panel_nr, pmt_type;
+ 	int HolderID;
+ 	while (!pmt_position_file.eof()){
+ 		pmt_position_file >> HolderID >> panel_nr >> pmt_x >> pmt_y >> pmt_z >> pmt_dirx >> pmt_diry >> pmt_dirz >> pmt_type;
+ 		if (pmt_position_file.eof()) break;
+ 		G4cout << "Read in PMT "<<HolderID<<", panel nr: "<<panel_nr<<", Position ("<<pmt_x<<","<<pmt_y<<","<<pmt_z<<"), PMT type: "<<pmt_type<<G4endl;
+
+ 		if (fabs(pmt_diry-1.) < 0.00001) {	//select only LUX PMTs for the holders (pointing upwards)
+ 			//G4RotationMatrix *holder_rot = holder_rotation_matrices.at(panel_nr);
+//Shift the PMT position outwards
+
+			G4RotationMatrix *holder_rot = WCPMTRotation;
+			pmt_x -= (pmt_dirx*dist_pmt_holder_lux);
+ 			pmt_y -= (pmt_diry*dist_pmt_holder_lux);
+ 			pmt_z -= (pmt_dirz*dist_pmt_holder_lux);
+
+ 			holder_x = pmt_x*cm;
+ 			holder_y = (168.1-pmt_z)*cm;
+ 			holder_z = ((pmt_y+14.45))*cm;
+
+			G4cout <<"Edited LUX Holder position ("<<holder_x<<","<<holder_y<<","<<holder_z<<")"<<G4endl;
+
+ 			G4ThreeVector HolderPosition(holder_x,holder_y,holder_z);
+ 			G4VPhysicalVolume *physicalHolder = new G4PVPlacement(holder_rot,	//its rotation
+								HolderPosition,			//its position
+ 								logLUXHolder,			//its logical volume
+ 								"LUX-Holder",			//its name
+ 								logicWCBarrel,			//its mother volume
+ 								false,				//no boolean operations
+ 								HolderID,			//ID for this PMT (=channelkey in data)
+ 								true);				//check overlaps*/
+
+ 			G4LogicalBorderSurface* LUXHolderSurface = new G4LogicalBorderSurface("LUXHolderSurface",
+                                                                          physiWCBarrel,
+                                                                          physicalHolder,
+                                                                          LUXHolderOpSurface);
+
+ 		} else if (fabs(pmt_diry+1.) < 0.00001) {       //select only ETEL PMTs for the holders (pointing downwards)
+			
+			G4RotationMatrix *holder_rot = WCPMTRotation;
+
+			pmt_x += (pmt_dirx*dist_pmt_holder_etel);
+ 			pmt_y += (pmt_diry*dist_pmt_holder_etel);
+ 			pmt_z += (pmt_dirz*dist_pmt_holder_etel);
+
+ 			holder_x = pmt_x*cm;
+ 			holder_y = (168.1-pmt_z)*cm;
+ 			holder_z = ((pmt_y+14.45))*cm;
+
+			G4cout <<"Edited ETEL Holder position ("<<holder_x<<","<<holder_y<<","<<holder_z<<")"<<G4endl;
+
+ 			G4ThreeVector HolderPosition(holder_x,holder_y,holder_z);
+ 			G4VPhysicalVolume *physicalHolder = new G4PVPlacement(holder_rot,	//its rotation
+								HolderPosition,			//its position
+ 								logETELHolder,			//its logical volume
+ 								"ETEL-Holder",			//its name
+ 								logicWCBarrel,			//its mother volume
+ 								false,				//no boolean operations
+ 								HolderID,			//ID for this PMT (=channelkey in data)
+ 								true);				//check overlaps*/
+
+ 			G4LogicalBorderSurface* ETELHolderSurface = new G4LogicalBorderSurface("LUXHolderSurface",
+                                                                          physiWCBarrel,
+                                                                          physicalHolder,
+                                                                          LUXHolderOpSurface);
+		}
+			
+ 	}
+ 	pmt_position_file.close();
+
 
 }
