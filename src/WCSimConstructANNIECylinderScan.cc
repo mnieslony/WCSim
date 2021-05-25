@@ -338,7 +338,7 @@ G4LogicalVolume* WCSimDetectorConstruction::ConstructANNIECylinderScan()
 
 	if (HOLDER){
 		ConstructANNIEHolders();
-		ConstructANNIEHoldersLUX();
+		ConstructLUXETELHolders();
 	}
 	
 	
@@ -521,7 +521,7 @@ void WCSimDetectorConstruction::ConstructANNIEHolders(){
 
 }
 
-void WCSimDetectorConstruction::ConstructANNIEHoldersLUX(){
+void WCSimDetectorConstruction::ConstructLUXETELHolders(){
 
  	G4cout <<"Construct LUX/ETEL Holders"<<G4endl;
 
@@ -558,14 +558,14 @@ void WCSimDetectorConstruction::ConstructANNIEHoldersLUX(){
 			"WCLUXHolder",
 			0,0,0);
 
-	G4double dist_pmt_holder_lux = 6.0*cm;		//LUX center is 11.7cm from glass front surface total distance glass surface-wings = 17.7cm, dist = 6.0cm
+	G4double dist_pmt_holder_lux = 6.0;		//LUX center is 11.7cm from glass front surface total distance glass surface-wings = 17.7cm, dist = 6.0cm
 
 	G4LogicalVolume *logETELHolder = new G4LogicalVolume(solidETELHolder,
 			G4Material::GetMaterial("PVC"),
 			"WCETELHolder",
 			0,0,0);
 
-	G4double dist_pmt_holder_etel = 7.25*cm;	//ETEL center is 11.8cm from glass front surface, total distance from glass surface to wings is 19.05cm (7.5") -> dist = 19.05cm-11.8cm = 7.25cm
+	G4double dist_pmt_holder_etel = 7.25;	//ETEL center is 11.8cm from glass front surface, total distance from glass surface to wings is 19.05cm (7.5") -> dist = 19.05cm-11.8cm = 7.25cm
 	
 	//Create Rotation matrix for PMT holders
 	G4RotationMatrix* WCPMTRotation = new G4RotationMatrix;
@@ -586,7 +586,8 @@ void WCSimDetectorConstruction::ConstructANNIEHoldersLUX(){
  			//G4RotationMatrix *holder_rot = holder_rotation_matrices.at(panel_nr);
 //Shift the PMT position outwards
 
-			G4RotationMatrix *holder_rot = WCPMTRotation;
+			G4RotationMatrix *holder_rot = WCPMTRotation(*WCPMTRotation);
+			holder_rot->rotateZ((45_90)*deg);
 			pmt_x -= (pmt_dirx*dist_pmt_holder_lux);
  			pmt_y -= (pmt_diry*dist_pmt_holder_lux);
  			pmt_z -= (pmt_dirz*dist_pmt_holder_lux);
@@ -614,11 +615,10 @@ void WCSimDetectorConstruction::ConstructANNIEHoldersLUX(){
 
  		} else if (fabs(pmt_diry+1.) < 0.00001) {       //select only ETEL PMTs for the holders (pointing downwards)
 			
-			G4RotationMatrix *holder_rot = WCPMTRotation;
 
-			pmt_x += (pmt_dirx*dist_pmt_holder_etel);
- 			pmt_y += (pmt_diry*dist_pmt_holder_etel);
- 			pmt_z += (pmt_dirz*dist_pmt_holder_etel);
+			pmt_x -= (pmt_dirx*dist_pmt_holder_etel);
+ 			pmt_y -= (pmt_diry*dist_pmt_holder_etel);
+ 			pmt_z -= (pmt_dirz*dist_pmt_holder_etel);
 
  			holder_x = pmt_x*cm;
  			holder_y = (168.1-pmt_z)*cm;
@@ -626,6 +626,22 @@ void WCSimDetectorConstruction::ConstructANNIEHoldersLUX(){
 
 			G4cout <<"Edited ETEL Holder position ("<<holder_x<<","<<holder_y<<","<<holder_z<<")"<<G4endl;
 
+			G4RotationMatrix *holder_rot = WCPMTRotation(*WCPMTRotation);
+			double phi = atan2(holder_x,holder_y);
+			phi = (phi > 0)? phi : 2*pi+phi;
+			//There are 8 different rotations for the top PMT holders, depending on the phi positions of the PMTs
+			for (int i_phi = 0; i_phi < 8; i_phi++){
+				double lower_phi = i_phi*pi/4.-pi/8.;
+				double upper_phi = i_phi*pi/4.+pi/8.;
+				if (lower_phi <= phi && phi <= upper_phi) holder_rot->rotateZ((i_phi*45)*deg);
+				else {
+					lower_phi += 2*pi;
+					upper_phi += 2*pi;
+					if (lower_phi <= phi && phi <= upper_phi) holder_rot->rotateZ((i_phi*45)*deg);
+				}
+			}
+			//4 holder in the inner ring are rotated by 90degrees w.r.t. the holders in the outer ring
+			if (sqrt(holder_x*holder_x+holder_y*holder_y)<320.) holder_rot->rotateZ(90*deg);
  			G4ThreeVector HolderPosition(holder_x,holder_y,holder_z);
  			G4VPhysicalVolume *physicalHolder = new G4PVPlacement(holder_rot,	//its rotation
 								HolderPosition,			//its position
@@ -636,7 +652,7 @@ void WCSimDetectorConstruction::ConstructANNIEHoldersLUX(){
  								HolderID,			//ID for this PMT (=channelkey in data)
  								true);				//check overlaps*/
 
- 			G4LogicalBorderSurface* ETELHolderSurface = new G4LogicalBorderSurface("LUXHolderSurface",
+ 			G4LogicalBorderSurface* ETELHolderSurface = new G4LogicalBorderSurface("ETELHolderSurface",
                                                                           physiWCBarrel,
                                                                           physicalHolder,
                                                                           LUXHolderOpSurface);
