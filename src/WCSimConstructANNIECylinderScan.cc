@@ -587,7 +587,7 @@ void WCSimDetectorConstruction::ConstructLUXETELHolders(){
 //Shift the PMT position outwards
 
 			G4RotationMatrix *holder_rot = WCPMTRotation(*WCPMTRotation);
-			holder_rot->rotateZ((45_90)*deg);
+			holder_rot->rotateZ((45+90)*deg);
 			pmt_x -= (pmt_dirx*dist_pmt_holder_lux);
  			pmt_y -= (pmt_diry*dist_pmt_holder_lux);
  			pmt_z -= (pmt_dirz*dist_pmt_holder_lux);
