@@ -609,7 +609,7 @@ void WCSimPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 		// genie information available: (not all is currently stored)
 		genie::EventRecord* gevtRec = genierecordval->event;
 		genie::Interaction* genieint = gevtRec->Summary();
-		// we write files with v2_8_6, but read with v2_12_0, so /*V*/ indicates reading is validated
+		// we write files with v2_8_6, but read with v2_12_0, so /*V*/ /*indicates reading is validated
 	
 		// process information:
 //		TString procinfostring = genieint->ProcInfo().AsString();
@@ -625,14 +625,14 @@ void WCSimPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 //		G4double y = genieVtx->Y() * m;         // GENIE uses meters
 //		G4double z = genieVtx->Z() * m;         // GENIE uses meters
 //		G4double t = genieVtx->T() * second;    // GENIE uses seconds for time
-		Int_t neutinteractioncode = genie::utils::ghep::NeutReactionCode(gevtRec); /*V*/
+		Int_t neutinteractioncode = genie::utils::ghep::NeutReactionCode(gevtRec); /*V*/ /*
 //		Int_t nuanceinteractioncode  = genie::utils::ghep::NuanceReactionCode(gevtRec);
 		
 		// neutrino information:
-		Double_t probeenergy = genieint->InitState().ProbeE(genie::kRfLab) * GeV;  /*V*/
+		Double_t probeenergy = genieint->InitState().ProbeE(genie::kRfLab) * GeV;  /*V*/ /*
 //		TSring probepartname = genieint->InitState().Probe()->GetName();
-		Int_t probepdg = genieint->InitState().Probe()->PdgCode();                 /*V*/
-		TLorentzVector* probemomentum = gevtRec->Probe()->P4();                    /*V*/
+		Int_t probepdg = genieint->InitState().Probe()->PdgCode();                 /*V*/ /*
+		TLorentzVector* probemomentum = gevtRec->Probe()->P4();                    /*V*/ /*
 		TVector3 probethreemomentum = probemomentum->Vect();
 		TVector3 probemomentumdir = probethreemomentum.Unit();
 		// n.b.  genieint->InitState().Probe != gevtRec->Probe()
@@ -650,13 +650,13 @@ void WCSimPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 		TVector3 targetnucleonthreemomentum(0.,0.,0.);
 		Double_t targetnucleonenergy =0;
 		if(gevtRec->HitNucleon()){
-			targetnucleonmomentum = gevtRec->HitNucleon()->P4();               /*V*/
+			targetnucleonmomentum = gevtRec->HitNucleon()->P4();               /*V*/ /*
 			targetnucleonthreemomentum = targetnucleonmomentum->Vect();
 			targetnucleonenergy = targetnucleonmomentum->Energy() * GeV;
 		}
 		
 		// target nucleus:
-		Int_t targetnucleuspdg = genieint->InitState().Tgt().Pdg();                /*V*/
+		Int_t targetnucleuspdg = genieint->InitState().Tgt().Pdg();                /*V*/ /*
 //		TParticlePDG * targetnucleus = genie::PDGLibrary::Instance()->Find( targetnucleuspdg );
 //		TString targetnucleusname = "unknown";
 //		if(targetnucleus){ targetnucleusname = nucleartarget->GetName(); }
@@ -976,7 +976,7 @@ void WCSimPrimaryGeneratorAction::LoadNewPrimaries(){
 	inputdata->SetBranchAddress("entry",&genieentrybranchval,&genieentryBranch);
 	metadata->SetBranchAddress("inputFluxName",&nufluxfilenameval,&nufluxfilenameBranch);
 //#ifndef NO_GENIE
-	geniedata->SetBranchAddress("gmcrec",&genierecordval,&genierecordBranch);
+	//geniedata->SetBranchAddress("gmcrec",&genierecordval,&genierecordBranch);
 //#else 
 	genierecordBranch=(TBranch*)1;
 //#endif

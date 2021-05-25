@@ -1106,19 +1106,19 @@ void WCSimDetectorConstruction::ConstructMaterials()
    G4double refHolderLUX[] = {1.00*LUXHOLDERRFF,1.00*LUXHOLDERRFF};
 
    G4MaterialPropertiesTable *luxholderSurfaceMatProps= new G4MaterialPropertiesTable();
-   luxholdersurfaceMatProps->AddProperty("RINDEX",photEneHolder, rIndexHolder, arrEntriesHolder);
-   luxholdersurfaceMatProps->AddProperty("ABSLENGTH",photEneSteel,absSteel,arrEntries); //This should probably be something else, check
-   luxholdersurfaceMatProps->AddProperty("REFLECTIVITY",photEneSteel, rIndexHolderLUX, arrEntries);
-   luxholdersurfaceMatProps->AddProperty("SPECULARLOBECONSTANT",photEneSteel,specularlobeSteel,arrEntries); //Do we need this?
-   luxholdersurfaceMatProps->AddProperty("SPECULARSPIKECONSTANT",photEneSteel,specularspikeSteel,arrEntries); // Do we need this?
-   luxholdersurfaceMatProps->AddProperty("BACKSCATTERCONSTANT",photEneSteel,backscatterSteel,arrEntries); //Do we need this?
+   luxholderSurfaceMatProps->AddProperty("RINDEX",photEneHolder, rIndexHolder, arrEntriesHolder);
+   luxholderSurfaceMatProps->AddProperty("ABSLENGTH",photEneSteel,absSteel,arrEntries); //This should probably be something else, check
+   luxholderSurfaceMatProps->AddProperty("REFLECTIVITY",photEneSteel, refHolderLUX, arrEntries);
+   luxholderSurfaceMatProps->AddProperty("SPECULARLOBECONSTANT",photEneSteel,specularlobeSteel,arrEntries); //Do we need this?
+   luxholderSurfaceMatProps->AddProperty("SPECULARSPIKECONSTANT",photEneSteel,specularspikeSteel,arrEntries); // Do we need this?
+   luxholderSurfaceMatProps->AddProperty("BACKSCATTERCONSTANT",photEneSteel,backscatterSteel,arrEntries); //Do we need this?
 
    LUXHolderOpSurface = new G4OpticalSurface("LUXHolderOpSurface");
    LUXHolderOpSurface->SetType(dielectric_metal); //fine, reflection or absorption only
    LUXHolderOpSurface->SetModel(unified);
    LUXHolderOpSurface->SetFinish(ground);
    LUXHolderOpSurface->SetSigmaAlpha(0.1);
-   LUXHolderOpSurface->SetMaterialPropertiesTable(luxholdersurfaceMatProps);
+   LUXHolderOpSurface->SetMaterialPropertiesTable(luxholderSurfaceMatProps);
 
    //	------------- Surfaces --------------
 
