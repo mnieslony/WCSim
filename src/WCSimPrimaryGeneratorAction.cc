@@ -11,8 +11,11 @@
 #include "G4IonTable.hh"
 #include "G4ParticleDefinition.hh"
 #include "G4ThreeVector.hh"
+#include "G4SPSAngDistribution.hh"
+#include "G4SPSPosDistribution.hh"
 #include "TFile.h"
 #include "TLorentzVector.h"
+#include "TRandom3.h"
 #include "globals.hh"
 #include "Randomize.hh"
 #include <fstream>
@@ -58,12 +61,24 @@ inline vector<string> readInLine(fstream& inFile, int lineSize, char* inBuf)
   return tokenize(" $", inBuf);
 }
 
+inline void ReadInEnergySpectrum(fstream& EFile,std::vector<G4double>& vecE,std::vector<G4double>& vecProb)
+{
+	double temp_E, temp_Prob;
+	while (EFile >> temp_E >> temp_Prob){
+		if (EFile.eof()) break;
+		std::cout <<"Reading in antineutrino energy "<<temp_E<<", and probability "<<temp_Prob<<std::endl;
+		vecE.push_back(temp_E);
+		vecProb.push_back(temp_Prob);
+	}
+}
+
 inline float atof( const string& s ) {return std::atof( s.c_str() );}
 inline int   atoi( const string& s ) {return std::atoi( s.c_str() );}
 
 WCSimPrimaryGeneratorAction::WCSimPrimaryGeneratorAction(
 					  WCSimDetectorConstruction* myDC)
-  :myDetector(myDC), loadNewPrimaries(true), inputdata(0), primariesDirectory(""), neutrinosDirectory(""), vectorFileName("")
+  :myDetector(myDC), loadNewPrimaries(true), loadNewGenie(true), inputdata(0), geniedata(0), primariesDirectory(""), neutrinosDirectory(""), genieDirectory(""), vectorFileName("")
+
 {
   //T. Akiri: Initialize GPS to allow for the laser use 
   MyGPS = new G4GeneralParticleSource();
@@ -93,14 +108,29 @@ WCSimPrimaryGeneratorAction::WCSimPrimaryGeneratorAction(
 
   particleGun->
     SetParticlePosition(G4ThreeVector(0.*CLHEP::m,0.*CLHEP::m,0.*CLHEP::m));
-    
+ 
+  theSPSAng = new G4SPSAngDistribution;
+  theSPSPos = new G4SPSPosDistribution;
+  G4SPSRandomGenerator *RndGen = new G4SPSRandomGenerator;
+  theSPSPos->SetBiasRndm(RndGen);
+  theSPSAng->SetBiasRndm(RndGen);
+  theSPSPos->SetPosDisType("Volume");
+  theSPSPos->SetPosDisShape("Cylinder");
+  thePosition = G4ThreeVector(0., 0., 0.);
+
+  Espectrum.clear();
+  ProbabilitySpec.clear();
+  isFirstEvent = true;
+   
   messenger = new WCSimPrimaryGeneratorMessenger(this);
   useMulineEvt = false;
   useGunEvt = false;
   useLaserEvt = false;
   useBeamEvt = true;
   useGPSEvt = false;
-      
+  useAntiNuEvt = false;
+  useLEDEvt = false;      
+
 #ifndef NO_GENIE
   genierecordval = new genie::NtpMCEventRecord;
 #endif
@@ -115,10 +145,14 @@ WCSimPrimaryGeneratorAction::~WCSimPrimaryGeneratorAction()
              << " = " << _counterRock/(G4double)_counterCublic << G4endl;
   }
   inputFile.close();
+  inputSpecFile.close();
   delete particleGun;
   delete MyGPS;   //T. Akiri: Delete the GPS variable
   delete messenger;
-  
+
+  delete theSPSPos;
+  delete theSPSAng;  
+
   if(useBeamEvt){
     if(inputdata){
       inputdata->ResetBranchAddresses();
@@ -879,6 +913,179 @@ void WCSimPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
         }
       }
     }
+  else if (useAntiNuEvt){
+
+      if ( !inputSpecFile.is_open() )
+      {
+        G4cout << "Set an energy spectrum file using the command /mygen/Efile name"
+             << G4endl;
+        exit(-1);
+      }
+
+       if (isFirstEvent){
+	ReadInEnergySpectrum(inputSpecFile,Espectrum,ProbabilitySpec);
+
+  	G4double me = 0.511;
+  	Espectrum_positron.clear();
+  	//convert antineutrino energies to positron energies
+  	for (unsigned int iE = 0; iE < Espectrum.size(); iE++){
+    		double positron_energy = Espectrum.at(iE) - 2*me - 0.782;
+    		Espectrum_positron.push_back(positron_energy);
+  	}
+	isFirstEvent = false;
+	}
+
+
+	theSPSAng->SetAngDistType("iso");
+        theSPSAng->SetPosDistribution(theSPSPos);
+        thePosition = theSPSPos->GenerateOne();
+
+        G4ParticleDefinition* positron = particleTable->FindParticle(-11);
+        G4double KinE = 0.;
+        KinE = ShootEnergyPositronCustom()/MeV;
+        G4double energy = KinE + positron->GetPDGMass();
+
+        theDirection = theSPSAng->GenerateOne();
+        G4double pmom = std::sqrt(pow(energy,2.) - pow(positron->GetPDGMass(),2.));
+        G4double px = pmom*theDirection.x();
+        G4double py = pmom*theDirection.y();
+        G4double pz = pmom*theDirection.z();
+
+        G4PrimaryVertex*   vertex   = new G4PrimaryVertex(thePosition,0);
+        G4PrimaryParticle* particle = new G4PrimaryParticle(positron,px,py,pz);     
+	vertex->SetPrimary( particle );
+	anEvent->AddPrimaryVertex( vertex );
+
+	SetNvtxs(3);	//antineutrino + positron + neutron
+
+        //anti-electron neutrino
+        SetVtxs(0,thePosition);
+        SetBeamEnergy(0.,0);	//dummy value for neutrino
+        SetBeamDir(G4ThreeVector(0,0,1),0);  //dummy value for neutrino
+        SetBeamPDG(-12,0);      
+
+	//positron
+	SetVtxs(1,thePosition);
+	SetBeamEnergy(energy,1);
+	SetBeamDir(theDirection,1);
+	SetBeamPDG(-11,1);
+
+	G4cout <<"Anti-Neutrino event: Generating positron at position ("<<thePosition.x()<<","<<thePosition.y()<<","<<thePosition.z()<<", energy "<<energy<<", dir = ("<<theDirection.x()<<","<<theDirection.y()<<","<<theDirection.z()<<")"<<G4endl;
+
+        G4ParticleDefinition* neutron = particleTable->FindParticle(2112);
+	KinE = ShootEnergyNeutron()/MeV;
+	energy = KinE + neutron->GetPDGMass();
+	theDirection = theSPSAng->GenerateOne();
+
+	pmom = std::sqrt(pow(energy,2.) - pow(neutron->GetPDGMass(),2.));
+	px = pmom*theDirection.x();
+	py = pmom*theDirection.y();
+	pz = pmom*theDirection.z();
+
+	vertex = new G4PrimaryVertex(thePosition,0);
+	particle = new G4PrimaryParticle(neutron,px,py,pz);
+	vertex->SetPrimary( particle );
+	anEvent->AddPrimaryVertex( vertex );
+
+	//neutron
+	SetVtxs(2,thePosition);
+	SetBeamEnergy(energy,2);
+	SetBeamDir(theDirection,2);
+	SetBeamPDG(2112,2);
+
+	G4cout <<"Anti-Neutrino event: Generating neutron at position ("<<thePosition.x()<<","<<thePosition.y()<<","<<thePosition.z()<<", energy "<<energy<<", dir = ("<<theDirection.x()<<","<<theDirection.y()<<","<<theDirection.z()<<")"<<G4endl;
+
+	//print properties of generated particles
+	double tote = anEvent->GetPrimaryVertex()->GetPrimary()->GetTotalEnergy();
+      	double ke = anEvent->GetPrimaryVertex()->GetPrimary()->GetKineticEnergy();
+
+      	int nprimaryvertices = anEvent->GetNumberOfPrimaryVertex();
+      	G4cout<<"Generating event with "<<nprimaryvertices<<" primary vertices"<<G4endl;
+      	for(int evtvtxi=0; evtvtxi<nprimaryvertices; evtvtxi++){
+        	G4PrimaryVertex* thevertex = anEvent->GetPrimaryVertex(evtvtxi);
+        	int nparticles = thevertex->GetNumberOfParticle();
+        	G4cout<<"Primary vertex "<<evtvtxi<<" has "<<nparticles<<" particles"<<G4endl;
+        	G4ThreeVector vtx  = thevertex->GetPosition();
+
+        	for(int parti=0; parti<nparticles; parti++){
+          		G4PrimaryParticle* theprimary = thevertex->GetPrimary(parti);
+          		G4int pdg  = theprimary->GetPDGcode();
+          		tote = theprimary->GetTotalEnergy();
+         		ke   = theprimary->GetKineticEnergy();
+          		G4ThreeVector dir  = theprimary->GetMomentum().unit();
+
+          		G4ParticleDefinition* parttype = particleTable->FindParticle(pdg);
+          		G4String particlename;
+          		particlename = (parttype!=0) ? (std::string(parttype->GetParticleName())) : (std::to_string(pdg));
+          		G4cout<<"Generating primary "<<particlename<<" with total energy "
+                		<<tote/MeV<<"MeV and kinetic energy "<<ke/MeV
+                		<<"MeV at ("<<vtx.x()<<", "<<vtx.y()<<", "<<vtx.z()<<") in direction ("
+                		<<dir.x()<<", "<<dir.y()<<", "<<dir.z()<<") "<<G4endl;
+        	}
+      	}
+
+  }
+  else if (useLEDEvt){
+      G4ThreeVector leddirection = ledtargetpos - ledsourcepos;
+      G4ThreeVector eulerangle = EulerAngle(leddirection);
+
+      G4cout<<"Generating LED event with "<<  photons_per_pulse <<" photons from source ( "
+                <<ledsourcepos.x()<<","<<ledsourcepos.y()<<","<<ledsourcepos.z()<<") to target ("
+                <<ledtargetpos.x()<<","<<ledtargetpos.y()<<","<<ledtargetpos.z()<<")."<<G4endl;
+
+      G4ParticleTable* theParticleTable = G4ParticleTable::GetParticleTable();
+      G4ParticleDefinition* theParticleDefinition   = theParticleTable->FindParticle("opticalphoton");
+
+      TRandom3 rand;
+      rand.SetSeed(0);
+      //RandGauss gauss(hep_rndm,0,0.66);
+       G4int num_photons = photons_per_pulse;
+
+      for (int i_pulse=0; i_pulse < num_photons; i_pulse++){
+
+        G4float myRandom1 = G4UniformRand();
+        G4float myRandom2 = G4UniformRand();
+	G4float myRandom3 = rand.Gaus(ledtheta,ledopening);
+if (myRandom3 < 0. || myRandom3 > TMath::Pi()) {
+		num_photons++;
+		continue;
+	}
+	G4float myRandomTheta = myRandom3;
+	G4float myRandomPhi = myRandom2*2*TMath::Pi();
+G4ThreeVector myRandomXYZ(sin(myRandomTheta)*cos(myRandomPhi),sin(myRandomTheta)*sin(myRandomPhi),cos(myRandomTheta));
+
+        G4ThreeVector dir = EulerTransform(myRandomXYZ,eulerangle,leddirection.y()).unit();
+
+        thePosition = ledsourcepos;        
+
+        G4double KinE = 3.061*eV;	//405nm LED light
+        G4double px = KinE*dir.x();
+        G4double py = KinE*dir.y();
+        G4double pz = KinE*dir.z();
+
+        G4ThreeVector thePolarization = DefineRandomPolarization(dir).unit();
+
+	G4double polx = thePolarization.x();
+        G4double poly = thePolarization.y();
+        G4double polz = thePolarization.z();
+
+        G4PrimaryVertex* vertex = new G4PrimaryVertex(thePosition,0);
+        G4PrimaryParticle *particle = new G4PrimaryParticle(theParticleDefinition,px,py,pz);
+        particle->SetPolarization(polx,poly,polz);
+        vertex->SetPrimary( particle );
+        anEvent->AddPrimaryVertex( vertex );             
+
+	if (i_pulse == 0){
+          SetVtx(thePosition);
+          SetBeamEnergy(KinE);
+          SetBeamDir(dir);
+          SetBeamPDG(0);
+        }
+
+      }
+    } 
+
+  }
 }
 
 void WCSimPrimaryGeneratorAction::SaveOptionsToOutput(WCSimRootOptions * wcopt)
@@ -902,6 +1109,10 @@ G4String WCSimPrimaryGeneratorAction::GetGeneratorTypeString()
     return "laser";
   else if(useBeamEvt)
     return "beam";
+  else if (useAntiNuEvt)
+    return "antinu";
+  else if (useLEDEvt)
+    return "led";
   return "";
 }
 
@@ -1009,3 +1220,150 @@ void WCSimPrimaryGeneratorAction::LoadNewPrimaries(){
 	loadNewPrimaries=false;
 }
 
+G4double WCSimPrimaryGeneratorAction::ShootEnergyNeutron() {
+
+	G4double sum = 0.;
+	G4double norm = 0.;
+	G4double Probability [51];
+	G4double EnergyBin [51];
+	G4double deltaX, x, y;
+
+	G4double ANeutronEnergySp [51] =    
+ 	{ 0., 274.4119, 342.3826, 257.9844, 187.8962, 141.1938,
+   	107.2338,  78.0118,  62.4729,  45.4234,  37.3674,
+   	28.1552,  27.4770,  17.0363,  17.4592,   9.9503,
+   	9.9544,   7.9960,   4.7464,   5.1454,   3.6949,
+   	2.1576,   1.7950,   1.1628,   1.1344,   0.9440,
+   	0.5982,   0.4545,   0.3037,   0.3071,   0.2996,
+   	0.1526,   0.1976,   0.0576,   0.1063,   0.0565,
+   	0.0597,   0.0334,   0.0270,   0.0326,   0.0113,
+   	0.0121,   0.0025,   0.0063,   0.0022,   0.0011,
+   	0.0000,   0.0000,   0.0000,   0.0000,   0.0000};
+
+	norm= 0;
+
+     	for(G4int i = 0; i< 51 ; i++) {
+      		norm += ANeutronEnergySp[i];
+     	}
+
+    	for(G4int i = 0; i< 51 ; i++) {
+      		sum += ANeutronEnergySp[i]/norm;
+      		Probability[i]=sum;
+      		EnergyBin[i]=G4float(i)*4;
+		//energy range of emitted neutrons will be 0MeV - 0.2 MeV (4*50MeV/1000)
+	}
+
+G4double val = G4UniformRand();
+
+  	for(G4int i=0;i<51;i++) {
+    		if(Probability[i] >= val) {
+	    		if(i == 0) {  
+		    		return EnergyBin[0]/1000;
+	    		}
+			deltaX = val - Probability[i] ;
+      			y = EnergyBin[i] - EnergyBin[i-1] ;
+      			x = Probability[i] - Probability[i-1] ;
+      			return ((deltaX*y/x + EnergyBin[i])/1000) ;
+    		}
+  	}
+
+	return 0;
+}
+
+G4double WCSimPrimaryGeneratorAction::ShootEnergyPositronCustom(){
+
+
+	G4double deltaX, x, y;	
+	G4double val = G4UniformRand();
+
+	for (G4int i = 0; i < Espectrum_positron.size(); i++){
+		if (ProbabilitySpec.at(i) >= val){
+			if (i == 0) return Espectrum_positron.at(0);
+			deltaX = val - ProbabilitySpec.at(i);
+			y = Espectrum_positron.at(i) - Espectrum_positron.at(i-1);
+			x = ProbabilitySpec.at(i) - ProbabilitySpec.at(i-1);
+			return (deltaX*y/x + Espectrum_positron.at(i));
+		}
+	}
+
+}
+
+
+G4ThreeVector WCSimPrimaryGeneratorAction::EulerAngle(G4ThreeVector _leddirection){
+
+  _leddirection = _leddirection.unit();
+
+  G4double Psi ;
+  G4double Phi = 0;
+  G4double z = _leddirection.z();
+  G4double x = _leddirection.x();
+
+  G4double Theta = acos(z);
+  G4double Norma = sqrt(1 - pow(z,2));
+  if(Norma != 0) {
+    Psi = acos(x/Norma) + 0.5*TMath::Pi() ;
+  } else {
+    Psi = 0 ;
+  }
+  G4ThreeVector VectorEuler;
+  VectorEuler.set(Theta, Psi, Phi);
+
+  return VectorEuler; 
+
+}
+
+G4ThreeVector WCSimPrimaryGeneratorAction::EulerTransform(G4ThreeVector _ledxyz, G4ThreeVector _ledeuler, G4double _leddiry){
+
+  G4int flag = 0;
+  if (_leddiry < 0) flag = 1;
+
+  G4double Theta = _ledeuler.getX();
+  G4double Psi   = _ledeuler.getY();
+  G4double Phi   = _ledeuler.getZ();
+  G4double S1 = sin(Theta);
+  G4double C1 = cos(Theta);
+  G4double S2 = sin(Psi);
+  G4double C2 = cos(Psi);
+  G4double S3 = sin(Phi);
+  G4double C3 = cos(Phi);
+  G4double A11=C2*C3-C1*S2*S3;
+  G4double A12=-C2*S3-C1*S2*C3;
+  G4double A13=S1*S2;
+  G4double A21=S2*C3+C1*C2*S3;
+  G4double A22=-S2*S3+C1*C2*C3;
+  G4double A23=-S1*C2;
+  G4double A31=S1*S3;
+  G4double A32=S1*C3;
+  G4double A33=C1;
+  G4ThreeVector Rotated ;
+
+  Rotated.setX(+A11*_ledxyz.x()+A12*_ledxyz.y()+A13*_ledxyz.z());
+  if(flag == 0) {
+    Rotated.setY(+A21*_ledxyz.x()+A22*_ledxyz.y()+A23*_ledxyz.z());
+  } else {
+    Rotated.setY(-A21*_ledxyz.x()-A22*_ledxyz.y()-A23*_ledxyz.z());
+  }
+  Rotated.setZ(+A31*_ledxyz.x()+A32*_ledxyz.y()+A33*_ledxyz.z());
+
+  return  Rotated ;
+}
+
+G4ThreeVector WCSimPrimaryGeneratorAction::DefineRandomPolarization(G4ThreeVector PhotonDirection) {
+
+  G4ThreeVector PhotonPolarization, Perp;
+  G4double      Phi, SinPhi, CosPhi;
+
+  PhotonPolarization = PhotonDirection.orthogonal();
+
+  Perp = PhotonDirection.cross(PhotonPolarization);
+
+  Phi = 2*TMath::Pi()*G4UniformRand();
+  SinPhi = sin(Phi);
+  CosPhi = cos(Phi);
+
+  PhotonPolarization = CosPhi * PhotonPolarization + SinPhi * Perp;
+
+  PhotonPolarization = PhotonPolarization.unit();
+
+  return PhotonPolarization;
+}

@@ -5,6 +5,10 @@ class WCSimPrimaryGeneratorAction;
 class G4UIdirectory;
 class G4UIcmdWithAString;
 class G4UIcmdWithAnInteger;
+class G4UIcmdWithADouble;
+class G4UIcmdWith3Vector;
+class G4UIcmdWith3VectorAndUnit;
+class G4UIcmdWithADoubleAndUnit;
 
 #include "G4UImessenger.hh"
 #include "globals.hh"
@@ -26,10 +30,23 @@ class WCSimPrimaryGeneratorMessenger: public G4UImessenger
   G4UIdirectory*      mydetDirectory;
   G4UIcmdWithAString* genCmd;
   G4UIcmdWithAString* fileNameCmd;
+  G4UIcmdWithAString* spectrumFileCmd;
   G4UIcmdWithAString* primariesfileDirectoryCmd;
   G4UIcmdWithAString* neutrinosfileDirectoryCmd;
   G4UIcmdWithAnInteger* primariesStartEventCmd;
   
+  G4UIcmdWith3VectorAndUnit* positionCmd;
+  G4UIcmdWithADoubleAndUnit* radiusCmd;
+  G4UIcmdWithADoubleAndUnit* heightCmd;
+  G4UIcmdWith3Vector* rot1Cmd;
+  G4UIcmdWith3Vector* rot2Cmd;
+
+  G4UIcmdWith3VectorAndUnit* sourcepositionCmd;
+  G4UIcmdWith3VectorAndUnit* targetpositionCmd;
+  G4UIcmdWithADouble* angleCmd;
+  G4UIcmdWithADouble* thetaCmd;
+  G4UIcmdWithAnInteger* nphotonsCmd;
+
 };
 
 #endif

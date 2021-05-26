@@ -3,6 +3,9 @@
 
 #include "G4VUserPrimaryGeneratorAction.hh"
 #include "G4ThreeVector.hh"
+#include "G4SPSAngDistribution.hh"
+#include "G4SPSPosDistribution.hh"
+#include "G4RandomDirection.hh"
 #include "globals.hh"
 #include "TTree.h"
 #include "TChain.h"
@@ -45,6 +48,9 @@ public:
   void SetNvtxs(G4int i)     { nvtxs = i; };
   void SetVtxs(G4int i, G4ThreeVector v)     { vtxs[i] = v; };
 
+  G4double ShootEnergyPositronCustom();
+  G4double ShootEnergyNeutron();
+
   // These go with jhfNtuple
   G4int GetVecRecNumber(){return vecRecNumber;}
   G4int GetMode() {return mode;};
@@ -84,14 +90,25 @@ private:
   G4GeneralParticleSource*        MyGPS;  //T. Akiri: GPS to run Laser
   WCSimPrimaryGeneratorMessenger* messenger;
   
+  // Angular and positional generators (AntiNu generator)
+  G4SPSAngDistribution *theSPSAng = nullptr;
+  G4SPSPosDistribution *theSPSPos = nullptr;
+  G4ThreeVector thePosition;
+  G4ThreeVector theDirection;
+  G4bool isFirstEvent;
+
   // Variables set by the messenger
   G4bool   useMulineEvt;
   G4bool   useGunEvt;
   G4bool   useLaserEvt;  //T. Akiri: Laser flag
   G4bool   useBeamEvt;
   G4bool   useGPSEvt;
+  G4bool   useAntiNuEvt;
+  G4bool   useLEDEvt;
   std::fstream inputFile;
+  std::fstream inputSpecFile;
   G4String vectorFileName;
+  G4String spectrumFileName;
   G4bool   GenerateVertexInRock;
   
   G4String dirtFileName;
@@ -122,27 +139,39 @@ private:
   TChain* metadata;
   TChain* geniedata;
 	
-	Long64_t localEntry;
-	Int_t inputEntry;
-	Int_t entriesInThisTree;
-	Int_t treeNumber;
-	TBranch* runBranch=0, *vtxxBranch=0, *vtxyBranch=0, *vtxzBranch=0, *vtxtBranch=0, *pxBranch=0, *pyBranch=0, *pzBranch=0, *EBranch=0, *KEBranch=0, *pdgBranch=0, *nTankBranch=0, *nupdgBranch=0, *nuvtxxBranch=0, *nuvtxyBranch=0, *nuvtxzBranch=0, *nuvtxtBranch=0, *nuPVBranch=0, *nuvtxmatBranch=0, *nuprimaryBranch=0, *nufluxfilenameBranch=0, *genieentryBranch=0, *genierecordBranch=0;
-	Int_t runbranchval, entrybranchval, ntankbranchval, nupdgval, genieentrybranchval, pdgval, nuprimaryval;
-	Double_t vtxxval, vtxyval, vtxzval, vtxtval, pxval, pyval, pzval, eval, keval, nuvtxxval, nuvtxyval, nuvtxzval, nuvtxtval;
-	Int_t* pdgbranchval=0, *nuprimarybranchval=0;
-	Double_t* vtxxbranchval=0, *vtxybranchval=0, *vtxzbranchval=0, *vtxtbranchval=0, *pxbranchval=0, *pybranchval=0, *pzbranchval=0, *ebranchval=0, *kebranchval=0;
-	Char_t nupvval[100];
-	Char_t numatval[100];
-	Char_t nufluxfilenameval[100];
+  Long64_t localEntry;
+  Int_t inputEntry;
+  Int_t entriesInThisTree;
+  Int_t treeNumber;
+  TBranch* runBranch=0, *vtxxBranch=0, *vtxyBranch=0, *vtxzBranch=0, *vtxtBranch=0, *pxBranch=0, *pyBranch=0, *pzBranch=0, *EBranch=0, *KEBranch=0, *pdgBranch=0, *nTankBranch=0, *nupdgBranch=0, *nuvtxxBranch=0, *nuvtxyBranch=0, *nuvtxzBranch=0, *nuvtxtBranch=0, *nuPVBranch=0, *nuvtxmatBranch=0, *nuprimaryBranch=0, *nufluxfilenameBranch=0, *genieentryBranch=0, *genierecordBranch=0;
+  Int_t runbranchval, entrybranchval, ntankbranchval, nupdgval, genieentrybranchval, pdgval, nuprimaryval;
+  Double_t vtxxval, vtxyval, vtxzval, vtxtval, pxval, pyval, pzval, eval, keval, nuvtxxval, nuvtxyval, nuvtxzval, nuvtxtval;
+  Int_t* pdgbranchval=0, *nuprimarybranchval=0;
+  Double_t* vtxxbranchval=0, *vtxybranchval=0, *vtxzbranchval=0, *vtxtbranchval=0, *pxbranchval=0, *pybranchval=0, *pzbranchval=0, *ebranchval=0, *kebranchval=0;
+  Char_t nupvval[100];
+  Char_t numatval[100];
+  Char_t nufluxfilenameval[100];
 #ifndef NO_GENIE
-	genie::NtpMCEventRecord* genierecordval;
+  genie::NtpMCEventRecord* genierecordval;
 #endif
 	
-	G4String primariesDirectory;
-	G4String neutrinosDirectory;
-	G4bool loadNewPrimaries;
-	G4int primariesoffset;
+  G4String primariesDirectory;
+  G4String neutrinosDirectory;
+  G4bool loadNewPrimaries;
+  G4int primariesoffset;
 	
+  // antinu read-in of the energy spectrum
+  std::vector<G4double> Espectrum;
+  std::vector<G4double> Espectrum_positron;
+  std::vector<G4double> ProbabilitySpec;
+
+  // LED variables
+  G4ThreeVector ledsourcepos;
+  G4ThreeVector ledtargetpos;
+  G4double ledopening;
+  G4double ledtheta;
+  G4int photons_per_pulse; 	
+
 public:
 
   inline void SetMulineEvtGenerator(G4bool choice) { useMulineEvt = choice; }
@@ -150,6 +179,12 @@ public:
 
   inline void SetGunEvtGenerator(G4bool choice) { useGunEvt = choice; }
   inline G4bool IsUsingGunEvtGenerator()  { return useGunEvt; }
+
+  inline void SetAntiNuEvtGenerator(G4bool choice) { useAntiNuEvt = choice; }
+  inline G4bool IsUsingAntiNuEvtGenerator()  { return useAntiNuEvt; }
+
+  inline void SetLEDEvtGenerator(G4bool choice) { useLEDEvt = choice; }
+  inline G4bool IsUsingLEDEvtGenerator() { return useLEDEvt; }
 
   //T. Akiri: Addition of function for the laser flag
   inline void SetLaserEvtGenerator(G4bool choice) { useLaserEvt = choice; }
@@ -174,7 +209,37 @@ public:
       exit(-1);
     }
   }
+
+  inline void OpenSpectrumFile(G4String spectrumFile)
+  {
+    if ( inputSpecFile.is_open() )
+      inputSpecFile.close();
+
+    spectrumFileName = spectrumFile;
+    inputSpecFile.open(spectrumFileName, std::fstream::in);
+
+    if (!inputSpecFile.is_open() ) {
+      G4cout << "Energy spectrum file "<< spectrumFileName << "not found" << G4endl;
+      exit(-1);
+    }
+  }
   
+  void SetPosition(G4ThreeVector position) {theSPSPos->SetCentreCoords(position);}
+  void SetRadius(G4double radius) {theSPSPos->SetRadius(radius);}
+  void SetHalfZ(G4double height) {theSPSPos->SetHalfZ(height);}
+  void SetRot1(G4ThreeVector rot) {theSPSPos->SetPosRot1(rot);}
+  void SetRot2(G4ThreeVector rot) {theSPSPos->SetPosRot2(rot);}
+
+  void SetLEDSourcePosition(G4ThreeVector position) {ledsourcepos = position;}
+  void SetLEDTargetPosition(G4ThreeVector position) {ledtargetpos = position;}
+  void SetLEDAngle(G4double opening) {ledopening = opening;}
+  void SetLEDTheta(G4double theta) {ledtheta = theta;}
+  void SetLEDPhotons(G4int nph) {photons_per_pulse = nph;}
+  G4ThreeVector EulerTransform(G4ThreeVector _ledxyz, G4ThreeVector _ledeuler, G4double _leddiry);
+  G4ThreeVector EulerAngle(G4ThreeVector _leddirection);
+  G4ThreeVector DefineRandomPolarization(G4ThreeVector PhotonDirection);
+
+
   inline void SetPrimaryFilesDirectory(G4String directoryName) { primariesDirectory = directoryName; }
   inline void SetNeutrinoFilesDirectory(G4String directoryName) { neutrinosDirectory = directoryName; }
   inline void SetNewPrimariesFlag(G4bool flagin){ loadNewPrimaries=flagin; }
