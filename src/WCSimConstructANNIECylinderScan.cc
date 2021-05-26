@@ -586,7 +586,7 @@ void WCSimDetectorConstruction::ConstructLUXETELHolders(){
  			//G4RotationMatrix *holder_rot = holder_rotation_matrices.at(panel_nr);
 //Shift the PMT position outwards
 
-			G4RotationMatrix *holder_rot = WCPMTRotation(*WCPMTRotation);
+			G4RotationMatrix *holder_rot = new G4RotationMatrix(*WCPMTRotation);
 			holder_rot->rotateZ((45+90)*deg);
 			pmt_x -= (pmt_dirx*dist_pmt_holder_lux);
  			pmt_y -= (pmt_diry*dist_pmt_holder_lux);
@@ -626,7 +626,7 @@ void WCSimDetectorConstruction::ConstructLUXETELHolders(){
 
 			G4cout <<"Edited ETEL Holder position ("<<holder_x<<","<<holder_y<<","<<holder_z<<")"<<G4endl;
 
-			G4RotationMatrix *holder_rot = WCPMTRotation(*WCPMTRotation);
+			G4RotationMatrix *holder_rot = new G4RotationMatrix(*WCPMTRotation);
 			double phi = atan2(holder_x,holder_y);
 			phi = (phi > 0)? phi : 2*pi+phi;
 			//There are 8 different rotations for the top PMT holders, depending on the phi positions of the PMTs
