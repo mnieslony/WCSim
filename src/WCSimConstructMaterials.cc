@@ -1053,7 +1053,7 @@ void WCSimDetectorConstruction::ConstructMaterials()
    // ===========================
    // re-use the properties from steel, only reflectivity is important?
    G4double LINERRFF = WCSimTuningParams->GetLinerrff();
-   G4double refLiner[] = {0.87*LINERRFF, 0.87*LINERRFF}; // from datasheet // add possibility to tune reflectivity value a little
+   G4double refLiner[] = {1.00*LINERRFF, 1.00*LINERRFF}; // from datasheet // add possibility to tune reflectivity value a little
    G4double rIndexLiner[] = { 1.5, 1.5};
    // remaining reflection type (lambertian) is the remainder from 1
    
