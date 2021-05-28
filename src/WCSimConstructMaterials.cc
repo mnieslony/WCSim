@@ -122,7 +122,17 @@ void WCSimDetectorConstruction::ConstructMaterials()
   DryIce->AddElement(elC, 1);
   DryIce->AddElement(elO, 2);
 
+  //---PVC
 
+  a = 35.45*CLHEP::g/CLHEP::mole;
+  G4Element *elCl
+    = new G4Element("Chlorine","Cl",17,a);
+
+  density = 1.380*CLHEP::g/CLHEP::cm3;
+  G4Material* PVC = new G4Material("PVC",density,3);
+  PVC->AddElement(elH,4.84*CLHEP::perCent);
+  PVC->AddElement(elC,38.44*CLHEP::perCent);
+  PVC->AddElement(elCl,56.73*CLHEP::perCent);
 
   //---Air
   
@@ -1008,11 +1018,14 @@ void WCSimDetectorConstruction::ConstructMaterials()
 
    // reflectivity of steel inner structure
    // =====================================
+   G4double TEFLONRFF = WCSimTuningParams->GetTeflonrff();
    const G4int arrEntries = 2;
    G4double photEneSteel[] = { 1.56962*CLHEP::eV, 6.19998*CLHEP::eV };
    G4double rIndexSteel[] = { 1.35, 1.35};
    G4double absSteel[] = { 1.0e-9*CLHEP::cm,  1.0e-9*CLHEP::cm};
-   G4double refSteel[] = {0.5, 0.5}; // low estimate.
+   //G4double refSteel[] = {0.5, 0.5}; // low estimate. --> replaced by tunable teflon reflectivity value (whole structure is wrapped)
+   //Introduce the reflectivity of the steel inner structure as a function of a tunable variable. Previous behavior can be replicated with a tuning factor of 0.5 (most definitely too low).
+   G4double refSteel[] = {1.0*TEFLONRFF,1.0*TEFLONRFF}; // Introduce tuning parameter for impact of teflon wrapping on reflections
    G4double specularlobeSteel[] = {0.8, 0.8};   // ¯\_(ツ)_/¯
    G4double specularspikeSteel[] = {0.1, 0.1};
    G4double backscatterSteel[] = {0.01, 0.01};
@@ -1039,7 +1052,8 @@ void WCSimDetectorConstruction::ConstructMaterials()
    // reflectivity of tank liner
    // ===========================
    // re-use the properties from steel, only reflectivity is important?
-   G4double refLiner[] = {0.87, 0.87}; // from datasheet
+   G4double LINERRFF = WCSimTuningParams->GetLinerrff();
+   G4double refLiner[] = {0.87*LINERRFF, 0.87*LINERRFF}; // from datasheet // add possibility to tune reflectivity value a little
    G4double rIndexLiner[] = { 1.5, 1.5};
    // remaining reflection type (lambertian) is the remainder from 1
    
@@ -1058,6 +1072,27 @@ void WCSimDetectorConstruction::ConstructMaterials()
    LinerOpSurface->SetFinish(ground);
    LinerOpSurface->SetSigmaAlpha(0.1);
    LinerOpSurface->SetMaterialPropertiesTable(linerSurfaceMatProps);
+
+   G4double HOLDERRFF = WCSimTuningParams->GetHolderrff();
+   G4double refHolder[] = {1.00*HOLDERRFF,1.00*HOLDERRFF};
+   G4double rIndexHolder[] = {1.531,1.531};
+
+   G4MaterialPropertiesTable *holderSurfaceMatProps = new G4MaterialPropertiesTable();
+   holderSurfaceMatProps->AddProperty("RINDEX", photEneSteel, rIndexHolder, arrEntries);
+   holderSurfaceMatProps->AddProperty("ABSLENGTH",photEneSteel,absSteel,arrEntries);		//This should probably be something else, check (TODO)
+   holderSurfaceMatProps->AddProperty("REFLECTIVITY",photEneSteel, refHolder,arrEntries);
+   holderSurfaceMatProps->AddProperty("SPECULARLOBECONSTANT",photEneSteel,specularlobeSteel,arrEntries);
+   holderSurfaceMatProps->AddProperty("SPECULARSPIKECONSTANT",photEneSteel,specularspikeSteel,arrEntries);
+   holderSurfaceMatProps->AddProperty("BACKSCATTERCONSTANT",photEneSteel,backscatterSteel,arrEntries);
+   
+   HolderOpSurface = new G4OpticalSurface("HolderOpSurface");
+   HolderOpSurface->SetType(dielectric_metal); // fine, reflection or absorption only.
+   HolderOpSurface->SetModel(unified);
+   HolderOpSurface->SetFinish(ground);
+   HolderOpSurface->SetSigmaAlpha(0.1);
+   HolderOpSurface->SetMaterialPropertiesTable(holderSurfaceMatProps);
+
+
 
    //	------------- Surfaces --------------
 

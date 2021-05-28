@@ -87,12 +87,18 @@ void WCSimTrackingAction::PostUserTrackingAction(const G4Track* aTrack){
   // *  is the process in the set ?
   // *  is the particle in the set ?
   // *  is it a gamma with energy > threshold?
-  if( ( aTrack->GetParentID()==0 ) ||
+  /*if( ( aTrack->GetParentID()==0 ) ||
       ( (creatorProcess!=0) && ProcessList.count(creatorProcess->GetProcessName()) ) ||
       ( ParticleList.count(thispdg) ) ||
       ( thispdg==22 && aTrack->GetTotalEnergy()>50.0*MeV ) ||     // 50 MeV? 1MeV? what threshold?
       ( thispdg==22 && anInfo->GetParentPdg()==111 )              // gamma from a Pi0 decay
-    ){
+    ){*/		//-->this is currently the default
+    if( aTrack->GetParentID()==0 || 
+      ((creatorProcess!=0) && ProcessList.count(creatorProcess->GetProcessName())) ||
+      (ParticleList.count(aTrack->GetDefinition()->GetPDGEncoding())) || 
+      (aTrack->GetDefinition()->GetPDGEncoding()==22 && aTrack->GetTotalEnergy() > 1.0*MeV) ||
+      (creatorProcess->GetProcessName() == "muMinusCaptureAtRest" && aTrack->GetTotalEnergy() > 1.0*MeV)||
+      ( thispdg==22 && anInfo->GetParentPdg()==111) ){	//---> try this out to get lower energetic gammas
     anInfo->WillBeSaved(true);
   } else {
     anInfo->WillBeSaved(false);

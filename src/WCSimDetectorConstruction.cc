@@ -82,7 +82,8 @@ WCSimDetectorConstruction::WCSimDetectorConstruction(G4int DetConfig,WCSimTuning
   //SetANNIEPhase2Geometryv3();
   //SetANNIEPhase2Geometryv4();
   //SetANNIEPhase2Geometryv5();
-  SetANNIEPhase2Geometryv6();
+  //SetANNIEPhase2Geometryv6();
+  SetANNIEPhase2Geometryv7();
 
   //----------------------------------------------------- 
   // Set whether or not Pi0-specific info is saved

@@ -285,6 +285,7 @@ G4LogicalVolume* WCSimDetectorConstruction::ConstructANNIECylinder()
 								  (-barrelCellWidth/2.+(i+0.5)*horizontalSpacing)*cos((dPhi*facei)+112.5*deg),
 								   -mainAnnulusHeight/2.+(j+1)*verticalSpacing-InnerStructureCentreOffset/2.);
 				
+
 				// add translation of cell centre
 				// this will depend on the PMT type, because of different mounting radii
 				G4double MountingRadius = WCIDRadius - WCPMTExposeHeightMap.at(pmtCollectionName);
@@ -292,6 +293,9 @@ G4LogicalVolume* WCSimDetectorConstruction::ConstructANNIECylinder()
 				G4double CellCentreY = MountingRadius * cos(dPhi*(facei+0.5));
 				PMTPosition.setX(PMTPosition.getX()+CellCentreX);
 				PMTPosition.setY(PMTPosition.getY()+CellCentreY);
+
+				//G4cout <<"PMTID: "<<PMTcounter<<", Position ("<<PMTPosition.getX()<<","<<PMTPosition.getY()<<","<<PMTPosition.getZ()<<")"<<G4endl;
+
 				
 				G4VPhysicalVolume* physiWCBarrelPMT =
 						new G4PVPlacement(WCPMTRotationNext,    // its rotation

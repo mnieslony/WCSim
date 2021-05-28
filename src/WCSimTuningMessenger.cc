@@ -37,6 +37,26 @@ WCSimTuningMessenger::WCSimTuningMessenger(WCSimTuningParameters* WCTuningPars):
   Mieff->SetParameterName("Mieff",true);
   Mieff->SetDefaultValue(0.0);
 
+  Teflonrff = new G4UIcmdWithADouble("/WCSim/tuning/teflonrff",this);
+  Teflonrff->SetGuidance("Set teflon wrapping reflectivity parameter");
+  Teflonrff->SetParameterName("Teflonrff",true);
+  Teflonrff->SetDefaultValue(1.00);
+
+  Holderrff = new G4UIcmdWithADouble("/WCSim/tuning/holderrff",this);
+  Holderrff->SetGuidance("Set ANNIE holder reflectivity parameter");
+  Holderrff->SetParameterName("Holderrff",true);
+  Holderrff->SetDefaultValue(1.00);
+
+  Linerrff = new G4UIcmdWithADouble("/WCSim/tuning/linerrff",this);
+  Linerrff->SetGuidance("Set Liner reflectivity parameter");
+  Linerrff->SetParameterName("Linerrff",true);
+  Linerrff->SetDefaultValue(1.00);
+
+  Holder = new G4UIcmdWithABool("/WCSim/tuning/holder",this);
+  Holder->SetGuidance("Turn ANNIE holders on/off");
+  Holder->SetParameterName("Holder",true);
+  Holder->SetDefaultValue(0);
+
   //jl145 - for Top Veto
   TVSpacing = new G4UIcmdWithADouble("/WCSim/tuning/tvspacing",this);
   TVSpacing->SetGuidance("Set the Top Veto PMT Spacing, in cm.");
@@ -57,6 +77,12 @@ WCSimTuningMessenger::~WCSimTuningMessenger()
   delete Abwff;
   delete Rgcff;
   delete Mieff;
+
+  //ANNIE-specific variables
+  delete Teflonrff;
+  delete Holderrff;
+  delete Linerrff;
+  delete Holder;
 
   //jl145 - for Top Veto
   delete TVSpacing;
@@ -116,6 +142,48 @@ void WCSimTuningMessenger::SetNewValue(G4UIcommand* command,G4String newValue)
 
   printf("Setting Mie scattering parameter %f\n",Mieff->GetNewDoubleValue(newValue));
 
+  }
+
+  // ANNIE - Teflon reflectivity
+  if (command == Teflonrff){
+    // Set the Teflon reflectivity parameter
+    //    printf("Input parameter %f\n",Teflonrff->GetNewDoubleValue(newValue));
+
+  WCSimTuningParams->SetTeflonrff(Teflonrff->GetNewDoubleValue(newValue));
+
+  printf("Setting ANNIE Teflon reflectivity parameter %f\n",Teflonrff->GetNewDoubleValue(newValue));
+
+  }
+
+  // ANNIE - Holder reflectivity
+  if (command == Holderrff){
+    // Set the ANNIE holder reflectivity parameter
+    //    printf("Input parameter %f\n",Holderrff->GetNewDoubleValue(newValue));
+
+  WCSimTuningParams->SetHolderrff(Holderrff->GetNewDoubleValue(newValue));
+
+  printf("Setting ANNIE holder reflectivity parameter %f\n",Holderrff->GetNewDoubleValue(newValue));
+  
+  }
+
+  // ANNIE - Liner reflectivity
+  if (command == Linerrff){
+    // Set the ANNIE liner reflectivity parameter
+    //    printf("Input parameter %f\n",Linerrff->GetNewDoubleValue(newValue));
+
+  WCSimTuningParams->SetHolderrff(Linerrff->GetNewDoubleValue(newValue));
+
+  printf("Setting ANNIE liner reflectivity parameter %f\n",Linerrff->GetNewDoubleValue(newValue));
+  
+  }
+
+  else if(command == Holder) {
+    // Turn the ANNIE PMT holders on/off in the simulation
+    WCSimTuningParams->SetHolder(Holder->GetNewBoolValue(newValue));
+    if(Holder->GetNewBoolValue(newValue))
+      printf("Setting ANNIE PMT holders On\n");
+    else
+      printf("Setting ANNIE PMT holders Off\n");
   }
 
   //jl145 - For Top Veto

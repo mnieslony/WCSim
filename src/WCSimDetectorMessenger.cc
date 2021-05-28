@@ -32,6 +32,11 @@ WCSimDetectorMessenger::WCSimDetectorMessenger(WCSimDetectorConstruction* WCSimD
 			  "ANNIEp1\n"
 			  "ANNIEp2\n"
 			  "ANNIEp2v2\n"
+			  "ANNIEp2v3\n"
+			  "ANNIEp2v4\n"
+			  "ANNIEp2v5\n"
+			  "ANNIEp2v6\n"
+			  "ANNIEP2v7\n"
 			  );
   PMTConfig->SetParameterName("PMTConfig", false);
   PMTConfig->SetCandidates("SuperK "
@@ -48,7 +53,12 @@ WCSimDetectorMessenger::WCSimDetectorMessenger(WCSimDetectorConstruction* WCSimD
 			  "EggShapedHyperK_withHPD "
 			  "ANNIEp1 "
 			  "ANNIEp2 "
-			  "ANNIEp2v2"
+			  "ANNIEp2v2 "
+			  "ANNIEp2v3 "
+			  "ANNIEp2v4 "
+			  "ANNIEp2v5 "
+			  "ANNIEp2v6 "
+			  "ANNIEp2v7 "
 			  );
   PMTConfig->AvailableForStates(G4State_PreInit, G4State_Idle);
 
@@ -238,7 +248,18 @@ void WCSimDetectorMessenger::SetNewValue(G4UIcommand* command,G4String newValue)
 		  WCSimDetector->SetANNIEPhase2Geometry();
 		} else if (newValue == "ANNIEp2v2") {
 		  WCSimDetector->SetANNIEPhase2Geometryv2();
-		} else {
+		} else if (newValue == "ANNIEp2v3") {
+		  WCSimDetector->SetANNIEPhase2Geometryv3();
+		} else if (newValue == "ANNIEp2v4") {
+		  WCSimDetector->SetANNIEPhase2Geometryv4();
+		} else if (newValue == "ANNIEp2v5") {
+		  WCSimDetector->SetANNIEPhase2Geometryv5();
+		} else if (newValue == "ANNIEp2v6") {
+		  WCSimDetector->SetANNIEPhase2Geometryv6();
+		} else if (newValue == "ANNIEp2v7") {
+		  WCSimDetector->SetANNIEPhase2Geometryv7();
+		}
+		else {
 		  G4cout << "That geometry choice not defined!" << G4endl;
 		}
 	}

@@ -33,6 +33,12 @@ private:
   G4UIcmdWithADouble* Rgcff;
   G4UIcmdWithADouble* Mieff;
 
+  //ANNIE commands
+  G4UIcmdWithADouble* Teflonrff;
+  G4UIcmdWithADouble* Linerrff;
+  G4UIcmdWithADouble* Holderrff;
+  G4UIcmdWithABool *Holder;
+
   //For Top Veto - jl145
   G4UIcmdWithADouble* TVSpacing;
   G4UIcmdWithABool* TopVeto;
