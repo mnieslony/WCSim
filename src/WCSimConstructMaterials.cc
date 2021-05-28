@@ -1120,6 +1120,7 @@ void WCSimDetectorConstruction::ConstructMaterials()
    LUXHolderOpSurface->SetSigmaAlpha(0.1);
    LUXHolderOpSurface->SetMaterialPropertiesTable(luxholderSurfaceMatProps);
 
+
    //	------------- Surfaces --------------
 
    // Blacksheet
