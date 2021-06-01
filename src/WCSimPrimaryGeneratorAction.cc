@@ -77,7 +77,7 @@ inline int   atoi( const string& s ) {return std::atoi( s.c_str() );}
 
 WCSimPrimaryGeneratorAction::WCSimPrimaryGeneratorAction(
 					  WCSimDetectorConstruction* myDC)
-  :myDetector(myDC), loadNewPrimaries(true), loadNewGenie(true), inputdata(0), geniedata(0), primariesDirectory(""), neutrinosDirectory(""), genieDirectory(""), vectorFileName("")
+  :myDetector(myDC), loadNewPrimaries(true), inputdata(0), geniedata(0), primariesDirectory(""), neutrinosDirectory(""), vectorFileName("")
 
 {
   //T. Akiri: Initialize GPS to allow for the laser use 
@@ -1084,8 +1084,6 @@ G4ThreeVector myRandomXYZ(sin(myRandomTheta)*cos(myRandomPhi),sin(myRandomTheta)
 
       }
     } 
-
-  }
 }
 
 void WCSimPrimaryGeneratorAction::SaveOptionsToOutput(WCSimRootOptions * wcopt)
@@ -1253,7 +1251,7 @@ G4double WCSimPrimaryGeneratorAction::ShootEnergyNeutron() {
 		//energy range of emitted neutrons will be 0MeV - 0.2 MeV (4*50MeV/1000)
 	}
 
-G4double val = G4UniformRand();
+	G4double val = G4UniformRand();
 
   	for(G4int i=0;i<51;i++) {
     		if(Probability[i] >= val) {

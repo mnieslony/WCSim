@@ -76,17 +76,6 @@ WCSimPrimaryGeneratorMessenger::WCSimPrimaryGeneratorMessenger(WCSimPrimaryGener
   primariesStartEventCmd->SetParameterName("primariesoffset",true);
   primariesStartEventCmd->SetDefaultValue(0);
 
-
-  geniefileDirectoryCmd = new G4UIcmdWithAString("/mygen/geniedirectory", this);
-  geniefileDirectoryCmd->SetGuidance("Specify the directory containing genie (non-beam) root files");
-  geniefileDirectoryCmd->SetParameterName("directoryName",true);
-  geniefileDirectoryCmd->SetDefaultValue("");
-
-  talysfileDirectoryCmd = new G4UIcmdWithAString("/mygen/talysdirectory", this);
-  talysfileDirectoryCmd->SetGuidance("Specify the directory containing talys root files");
-  talysfileDirectoryCmd->SetParameterName("directoryName",true);
-  talysfileDirectoryCmd->SetDefaultValue("");
-
   sourcepositionCmd = new G4UIcmdWith3VectorAndUnit("/mygen/LEDsourcepos",this);
   sourcepositionCmd->SetGuidance("Set LED Source Position");
   sourcepositionCmd->SetUnitCategory("Length");
@@ -202,7 +191,6 @@ void WCSimPrimaryGeneratorMessenger::SetNewValue(G4UIcommand * command,G4String 
       myAction->SetBeamEvtGenerator(false);
       myAction->SetGPSEvtGenerator(false);
       myAction->SetAntiNuEvtGenerator(true);
-      myAction->SetGenieEvtGenerator(false);
       myAction->SetLEDEvtGenerator(false);
     }
     else if ( newValue == "led")
@@ -214,7 +202,6 @@ void WCSimPrimaryGeneratorMessenger::SetNewValue(G4UIcommand * command,G4String 
       myAction->SetBeamEvtGenerator(false);
       myAction->SetGPSEvtGenerator(false);
       myAction->SetAntiNuEvtGenerator(false);
-      myAction->SetGenieEvtGenerator(false);
       myAction->SetLEDEvtGenerator(true);
     }
   }
