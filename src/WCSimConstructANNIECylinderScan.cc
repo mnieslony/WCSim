@@ -254,14 +254,14 @@ G4LogicalVolume* WCSimDetectorConstruction::ConstructANNIECylinderScan()
 	while (!pmt_position_file.eof()){
 		pmt_position_file >> PMTID >> panel_nr >> pmt_x >> pmt_y >> pmt_z >> pmt_dirx >> pmt_diry >> pmt_dirz >> pmt_type;
 		if (pmt_position_file.eof()) break;
-		G4cout << "Read in PMT "<<PMTID<<", panel nr: "<<panel_nr<<", Position ("<<pmt_x<<","<<pmt_y<<","<<pmt_z<<"), PMT type: "<<pmt_type<<G4endl;
+		//G4cout << "Read in PMT "<<PMTID<<", panel nr: "<<panel_nr<<", Position ("<<pmt_x<<","<<pmt_y<<","<<pmt_z<<"), PMT type: "<<pmt_type<<G4endl;
 		G4LogicalVolume *logicWCPMT = logicWCPMTs.at(pmt_type);
 		G4RotationMatrix *pmt_rot = pmt_rotation_matrices.at(panel_nr);
 		pmt_x_shift = pmt_x*cm;
 		pmt_y_shift = (168.1-pmt_z)*cm;
 		pmt_z_shift = ((pmt_y+14.45))*cm;
 		//pmt_z_shift = ((pmt_y+14.45)-InnerStructureCentreOffset/10.)*cm;
-		G4cout <<"Edited PMT position ("<<pmt_x_shift<<","<<pmt_y_shift<<","<<pmt_z_shift<<")"<<G4endl;
+		//G4cout <<"Edited PMT position ("<<pmt_x_shift<<","<<pmt_y_shift<<","<<pmt_z_shift<<")"<<G4endl;
 		G4ThreeVector PMTPosition(pmt_x_shift,pmt_y_shift,pmt_z_shift);
 		G4VPhysicalVolume *physicalWCPMT = new G4PVPlacement(pmt_rot,	//its rotation
 															PMTPosition,		//its position
@@ -434,7 +434,8 @@ void WCSimDetectorConstruction::ConstructANNIEHolders(){
 
 	//Tried to get rough dimensions of the ANNIE holder from the laser scan file
 	//Not really sure about the thickness, assume 2cm thickness for now (should not be super important)
-	G4Box *ANNIEHolder_Box = new G4Box("ANNIEHolder_Box",10.5*cm,17.75*cm,1.*cm);
+	//G4Box *ANNIEHolder_Box = new G4Box("ANNIEHolder_Box",10.5*cm,17.75*cm,1.*cm);
+	G4Box *ANNIEHolder_Box = new G4Box("ANNIEHolder_Box",10.5*cm,16.75*cm,1.*cm); // Make holder slightly less wide to prevent geometry overlaps
 	G4Tubs *ANNIEHolder_Tube = new G4Tubs("ANNIEHolder_Tube",0.0*cm,6.0*cm,1*cm,0*deg,360*deg);
 
 	//Create combined logical volume of the Box + Tube to get holder with hole (Subtraction Solid)
@@ -453,7 +454,8 @@ void WCSimDetectorConstruction::ConstructANNIEHolders(){
 			"WCANNIEHolder",
 			0,0,0);
 
-	G4double dist_pmt_holder = 10.84;		//Holder is 20cm away from the front face of the ANNIE PMTs, WCSim center is 9.16cm away from front --> 10.84cm distance
+	//G4double dist_pmt_holder = 10.84;		//Holder is 20cm away from the front face of the ANNIE PMTs, WCSim center is 9.16cm away from front --> 10.84cm distance
+	G4double dist_pmt_holder = 9.84;		//Reduce distance by 1cm to prevent geometry overlaps
 
 	//Read in PMT positions again, and project position of holder positions from the PMT positions
 
@@ -485,7 +487,7 @@ void WCSimDetectorConstruction::ConstructANNIEHolders(){
 	while (!pmt_position_file.eof()){
 		pmt_position_file >> HolderID >> panel_nr >> pmt_x >> pmt_y >> pmt_z >> pmt_dirx >> pmt_diry >> pmt_dirz >> pmt_type;
 		if (pmt_position_file.eof()) break;
-		G4cout << "Read in PMT "<<HolderID<<", panel nr: "<<panel_nr<<", Position ("<<pmt_x<<","<<pmt_y<<","<<pmt_z<<"), PMT type: "<<pmt_type<<G4endl;
+		//G4cout << "Read in PMT "<<HolderID<<", panel nr: "<<panel_nr<<", Position ("<<pmt_x<<","<<pmt_y<<","<<pmt_z<<"), PMT type: "<<pmt_type<<G4endl;
 		
 		if (pmt_type == 2){	//select only ANNIE (Hamamatsu 8inch) PMTs for the holders
 		G4RotationMatrix *holder_rot = holder_rotation_matrices.at(panel_nr);
@@ -499,7 +501,7 @@ void WCSimDetectorConstruction::ConstructANNIEHolders(){
 		holder_y = (168.1-pmt_z)*cm;
 		holder_z = ((pmt_y+14.45))*cm;
 		//pmt_z_shift = ((pmt_y+14.45)-InnerStructureCentreOffset/10.)*cm;
-		G4cout <<"Edited Holder position ("<<holder_x<<","<<holder_y<<","<<holder_z<<")"<<G4endl;
+		//G4cout <<"Edited Holder position ("<<holder_x<<","<<holder_y<<","<<holder_z<<")"<<G4endl;
 		
 		G4ThreeVector HolderPosition(holder_x,holder_y,holder_z);
 		G4VPhysicalVolume *physicalHolder = new G4PVPlacement(holder_rot,	//its rotation
@@ -533,7 +535,8 @@ void WCSimDetectorConstruction::ConstructLUXETELHolders(){
 
 	//Dimensions for ETEL holders are assumed to be the same, no reference though	
 
-	G4Box *LUXHolder_Box = new G4Box("ANNIEHolder_Box",7.62*cm,25.4*cm,0.95*cm);
+	//G4Box *LUXHolder_Box = new G4Box("ANNIEHolder_Box",7.62*cm,25.4*cm,0.95*cm);
+	G4Box *LUXHolder_Box = new G4Box("ANNIEHolder_Box",7.62*cm,21.4*cm,0.95*cm); //Make holders smaller to prevent geometry overlaps
  	G4Tubs *LUXHolder_Tube = new G4Tubs("ANNIEHolder_Tube",0.0*cm,8.41375*cm,0.95*cm,0*deg,360*deg);
 
 	//Create combined logical volume of the Box + Tube to get holder with hole (Subtraction Solid)
@@ -558,7 +561,8 @@ void WCSimDetectorConstruction::ConstructLUXETELHolders(){
 			"WCLUXHolder",
 			0,0,0);
 
-	G4double dist_pmt_holder_lux = 6.0;		//LUX center is 11.7cm from glass front surface total distance glass surface-wings = 17.7cm, dist = 6.0cm
+	//G4double dist_pmt_holder_lux = 6.0;		//LUX center is 11.7cm from glass front surface total distance glass surface-wings = 17.7cm, dist = 6.0cm
+	G4double dist_pmt_holder_lux = 5.5;		//Slightly reduce distance from 6 to 5.5 cm to prevent geometry overlaps
 
 	G4LogicalVolume *logETELHolder = new G4LogicalVolume(solidETELHolder,
 			G4Material::GetMaterial("PVC"),
@@ -580,7 +584,7 @@ void WCSimDetectorConstruction::ConstructLUXETELHolders(){
  	while (!pmt_position_file.eof()){
  		pmt_position_file >> HolderID >> panel_nr >> pmt_x >> pmt_y >> pmt_z >> pmt_dirx >> pmt_diry >> pmt_dirz >> pmt_type;
  		if (pmt_position_file.eof()) break;
- 		G4cout << "Read in PMT "<<HolderID<<", panel nr: "<<panel_nr<<", Position ("<<pmt_x<<","<<pmt_y<<","<<pmt_z<<"), PMT type: "<<pmt_type<<G4endl;
+ 		//G4cout << "Read in PMT "<<HolderID<<", panel nr: "<<panel_nr<<", Position ("<<pmt_x<<","<<pmt_y<<","<<pmt_z<<"), PMT type: "<<pmt_type<<G4endl;
 
  		if (fabs(pmt_diry-1.) < 0.00001) {	//select only LUX PMTs for the holders (pointing upwards)
  			//G4RotationMatrix *holder_rot = holder_rotation_matrices.at(panel_nr);
@@ -596,7 +600,7 @@ void WCSimDetectorConstruction::ConstructLUXETELHolders(){
  			holder_y = (168.1-pmt_z)*cm;
  			holder_z = ((pmt_y+14.45))*cm;
 
-			G4cout <<"Edited LUX Holder position ("<<holder_x<<","<<holder_y<<","<<holder_z<<")"<<G4endl;
+			//G4cout <<"Edited LUX Holder position ("<<holder_x<<","<<holder_y<<","<<holder_z<<")"<<G4endl;
 
  			G4ThreeVector HolderPosition(holder_x,holder_y,holder_z);
  			G4VPhysicalVolume *physicalHolder = new G4PVPlacement(holder_rot,	//its rotation
@@ -624,7 +628,7 @@ void WCSimDetectorConstruction::ConstructLUXETELHolders(){
  			holder_y = (168.1-pmt_z)*cm;
  			holder_z = ((pmt_y+14.45))*cm;
 
-			G4cout <<"Edited ETEL Holder position ("<<holder_x<<","<<holder_y<<","<<holder_z<<")"<<G4endl;
+			//G4cout <<"Edited ETEL Holder position ("<<holder_x<<","<<holder_y<<","<<holder_z<<")"<<G4endl;
 
 			G4RotationMatrix *holder_rot = new G4RotationMatrix(*WCPMTRotation);
 			double phi = atan2(holder_x,holder_y);
