@@ -1,5 +1,10 @@
 ## Based on CMakeLists.txt from AnaEx02 in examples/extended of Geant4.9.6 ##
 #----------------------------------------------------------------------------
+# Make CMAKE use g++ on PATH not cc in /usr/bin (which we have no control over version of)
+# note: must come BEFORE 'project' line
+find_program(CMAKE_C_COMPILER NAMES $ENV{CC} gcc PATHS ENV PATH NO_DEFAULT_PATH)
+find_program(CMAKE_CXX_COMPILER NAMES $ENV{CXX} g++ PATHS ENV PATH NO_DEFAULT_PATH)
+
 # Setup the project
 cmake_minimum_required(VERSION 2.8 FATAL_ERROR)
 project(WCSim)
@@ -201,6 +206,8 @@ set(WCSIM_SCRIPTS
   dirtdirectory.txt
   WCSimVersion.txt
   CommitHash.txt
+  PMTPositions_Scan_Glass.txt
+  PMTPositions_Scan.txt
   )
 
 foreach(_script ${WCSIM_SCRIPTS})
@@ -210,6 +217,35 @@ foreach(_script ${WCSIM_SCRIPTS})
     COPYONLY
     )
 endforeach()
+
+set(MRD_SCRIPTS
+   mrdmodule.txt
+   mrdposition.txt
+   mrd-align.txt
+   mrdnoisehit.txt
+   )
+
+foreach(_script ${MRD_SCRIPTS})
+  configure_file(
+    ${PROJECT_SOURCE_DIR}/src/${_script}
+    ${PROJECT_BINARY_DIR}/${_script}
+    COPYONLY
+  )
+endforeach()
+
+# dunno why but on sl7 we seem to need to copy these manually?
+configure_file(
+  ${PROJECT_SOURCE_DIR}/libWCSimRoot.rootmap
+  ${PROJECT_BINARY_DIR}/libWCSimRoot.rootmap
+  COPYONLY
+)
+
+# this one also needs renaming
+configure_file(
+  ${PROJECT_SOURCE_DIR}/WCSimRootDict_rdict.pcm
+  ${PROJECT_BINARY_DIR}/libWCSimRoot_rdict.pcm
+  COPYONLY
+)
 
 #----------------------------------------------------------------------------
 # For internal Geant4 use - but has no effect if you build this
