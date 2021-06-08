@@ -1053,7 +1053,7 @@ void WCSimDetectorConstruction::ConstructMaterials()
    // ===========================
    // re-use the properties from steel, only reflectivity is important?
    G4double LINERRFF = WCSimTuningParams->GetLinerrff();
-   G4double refLiner[] = {0.87*LINERRFF, 0.87*LINERRFF}; // from datasheet // add possibility to tune reflectivity value a little
+   G4double refLiner[] = {1.00*LINERRFF, 1.00*LINERRFF}; // from datasheet // add possibility to tune reflectivity value a little
    G4double rIndexLiner[] = { 1.5, 1.5};
    // remaining reflection type (lambertian) is the remainder from 1
    
@@ -1108,7 +1108,7 @@ void WCSimDetectorConstruction::ConstructMaterials()
    G4MaterialPropertiesTable *luxholderSurfaceMatProps= new G4MaterialPropertiesTable();
    luxholderSurfaceMatProps->AddProperty("RINDEX",photEneHolder, rIndexHolder, arrEntriesHolder);
    luxholderSurfaceMatProps->AddProperty("ABSLENGTH",photEneSteel,absSteel,arrEntries); //This should probably be something else, check
-   luxholderSurfaceMatProps->AddProperty("REFLECTIVITY",photEneSteel, refHolder, arrEntries);
+   luxholderSurfaceMatProps->AddProperty("REFLECTIVITY",photEneSteel, refHolderLUX, arrEntries);
    luxholderSurfaceMatProps->AddProperty("SPECULARLOBECONSTANT",photEneSteel,specularlobeSteel,arrEntries); //Do we need this?
    luxholderSurfaceMatProps->AddProperty("SPECULARSPIKECONSTANT",photEneSteel,specularspikeSteel,arrEntries); // Do we need this?
    luxholderSurfaceMatProps->AddProperty("BACKSCATTERCONSTANT",photEneSteel,backscatterSteel,arrEntries); //Do we need this?
