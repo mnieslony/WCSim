@@ -202,6 +202,7 @@ private:
   double Teflonrff;
   double Linerrff;
   double Holderrff;
+  double HolderrffLUX;
   bool Holder;
   double Tvspacing;
   bool   Topveto;
