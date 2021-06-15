@@ -139,6 +139,7 @@ G4LogicalVolume* WCSimDetectorConstruction::ConstructANNIECylinderScan()
 	G4double annulusBlackSheetRmin[2] = {(WCIDRadius),
 										  WCIDRadius};
 	mainAnnulusHeight = WCIDHeight -2.*WCBarrelPMTOffset;
+	mainAnnulusHeight += 30*cm;	//WCBlackSheet needs to extend to above ETEL holders and below LUX housings to match reality
 	G4double mainAnnulusZ[2] = {-mainAnnulusHeight/2., mainAnnulusHeight/2};
 	
 	G4Polyhedra* solidWCBarrelCellBlackSheet = new G4Polyhedra("WCBarrelCellBlackSheet",
@@ -158,7 +159,7 @@ G4LogicalVolume* WCSimDetectorConstruction::ConstructANNIECylinderScan()
 	
 	G4VPhysicalVolume* physiWCBarrelCellBlackSheet =
 		new G4PVPlacement(0,
-						  G4ThreeVector(0.,0.,InnerStructureCentreOffset),
+						  G4ThreeVector(0.,0.,InnerStructureCentreOffset-5*cm),
 						  logicWCBarrelCellBlackSheet,
 						  "WCBarrelCellBlackSheet",
 						  logicWCBarrel,
@@ -375,26 +376,76 @@ void WCSimDetectorConstruction::ConstructANNIECapsSheet(G4int zflip)
 		// G4cout << *solidWCCapBlackSheet << G4endl;
 	}
 	
-	G4LogicalVolume* logicWCCapBlackSheet =
+	G4LogicalVolume* logicWCCapBlackSheet;
+	G4SubtractionSolid* solidWCCapBlackSheetHole = (G4SubtractionSolid*) solidWCCapBlackSheet;
+	G4bool HOLDER = WCSimTuningParams->GetHolder();
+	if (HOLDER && zflip == 1){
+		//Select only ETEL + LUX PMTs and propagate their position up-/downwards to get central holder position
+		std::ifstream pmt_position_file("PMTPositions_Scan.txt");
+		std::string next_pmt;
+		double pmt_x, pmt_y, pmt_z, pmt_dirx, pmt_diry, pmt_dirz;
+		double hole_x, hole_y, hole_z;
+		int panel_nr, pmt_type;
+		int HolderID;
+		while (!pmt_position_file.eof()){
+			pmt_position_file >> HolderID >> panel_nr >> pmt_x >> pmt_y >> pmt_z >> pmt_dirx >> pmt_diry >> pmt_dirz >> pmt_type;
+			if (pmt_position_file.eof()) break;
+			if (fabs(pmt_diry+1.) < 0.00001) {       //select only ETEL PMTs for the holders (pointing downwards)
+
+			hole_x = pmt_x*cm;
+			hole_y = (168.1-pmt_z)*cm;
+			hole_z = ((pmt_y+14.45))*cm;
+
+			G4Tubs *WCCap_Hole = new G4Tubs("WCCap_Hole",0.0*cm,8.414*cm,WCBlackSheetThickness+0.1*cm,0*deg,360*deg);
+
+			//Create combined logical volume of the Box + Tube to get holder with hole (Subtraction Solid)
+
+			solidWCCapBlackSheetHole = new G4SubtractionSolid("WCCapBlackSheetHole",
+											solidWCCapBlackSheetHole,
+											WCCap_Hole,
+											0,
+											G4ThreeVector(hole_x,hole_y,0.));
+
+
+			}
+
+		}
+		pmt_position_file.close();
+
+	    logicWCCapBlackSheet =
+		new G4LogicalVolume(solidWCCapBlackSheetHole,
+							G4Material::GetMaterial("Blacksheet"),
+							"WCCapBlackSheet",
+							0,0,0);
+
+	} else {
+
+	  logicWCCapBlackSheet =
 		new G4LogicalVolume(solidWCCapBlackSheet,
 							G4Material::GetMaterial("Blacksheet"),
 							"WCCapBlackSheet",
 							0,0,0);
+
+	}
 	
 	capAssemblyHeight = mainAnnulusHeight/2+1*mm+WCBlackSheetThickness;
 	
+	G4double AssemblyHeight = capAssemblyHeight*zflip + InnerStructureCentreOffset - 5*cm;
+
+
 	G4VPhysicalVolume* physiWCCapBlackSheet =
 		new G4PVPlacement(0,
-						  G4ThreeVector(0.,0.,capAssemblyHeight*zflip+InnerStructureCentreOffset),
+						  G4ThreeVector(0.,0.,AssemblyHeight),
 						  logicWCCapBlackSheet,
 						  "WCCapBlackSheet",
 						  logicWCBarrel,
 						  false,
 						  0,
 						  true);
-	G4cout<<"constructed cap blacksheet at height "<<capAssemblyHeight*zflip+InnerStructureCentreOffset<<G4endl;
-	WCCylInfo[(zflip>0)]=(capAssemblyHeight*zflip+InnerStructureCentreOffset)/10.;
-	
+
+	G4cout<<"constructed cap blacksheet at height "<<AssemblyHeight<<G4endl;
+	WCCylInfo[(zflip>0)]=(AssemblyHeight)/10.;
+
 	G4LogicalBorderSurface * WaterBSBottomCapSurface 
 			= new G4LogicalBorderSurface("WaterBSCapPolySurface",
 										 physiWCBarrel,physiWCCapBlackSheet,
@@ -436,7 +487,7 @@ void WCSimDetectorConstruction::ConstructANNIEHolders(){
 	//Not really sure about the thickness, assume 2cm thickness for now (should not be super important)
 	//G4Box *ANNIEHolder_Box = new G4Box("ANNIEHolder_Box",10.5*cm,17.75*cm,1.*cm);
 	G4Box *ANNIEHolder_Box = new G4Box("ANNIEHolder_Box",10.5*cm,16.75*cm,1.*cm); // Make holder slightly less wide to prevent geometry overlaps
-	G4Tubs *ANNIEHolder_Tube = new G4Tubs("ANNIEHolder_Tube",0.0*cm,6.0*cm,1*cm,0*deg,360*deg);
+	G4Tubs *ANNIEHolder_Tube = new G4Tubs("ANNIEHolder_Tube",0.0*cm,6.0*cm,1.1*cm,0*deg,360*deg);
 
 	//Create combined logical volume of the Box + Tube to get holder with hole (Subtraction Solid)
 
@@ -537,22 +588,18 @@ void WCSimDetectorConstruction::ConstructLUXETELHolders(){
 
 	//G4Box *LUXHolder_Box = new G4Box("ANNIEHolder_Box",7.62*cm,25.4*cm,0.95*cm);
 	G4Box *LUXHolder_Box = new G4Box("ANNIEHolder_Box",7.62*cm,21.4*cm,0.95*cm); //Make holders smaller to prevent geometry overlaps
- 	G4Tubs *LUXHolder_Tube = new G4Tubs("ANNIEHolder_Tube",0.0*cm,8.41375*cm,0.95*cm,0*deg,360*deg);
+	//G4Tubs *LUXHolder_Tube = new G4Tubs("LUXHolder_Tube",0.0*cm,8.41375*cm,0.95*cm,0*deg,360*deg);
+	//G4Tubs *LUXHolder_Tube = new G4Tubs("LUXHolder_Tube",0.0*cm,8.41375*cm,2.74*cm,0*deg,360*deg);
+	//Distance between holder and PMT: 5.5cm (-> 2.75cm) + 18 cm housing height (->9cm): 11.75cm
+	G4Tubs *LUXHolder_Tube = new G4Tubs("LUXHolder_Tube",0.0*cm,8.41375*cm,11.74*cm,0*deg,360*deg);
 
 	//Create combined logical volume of the Box + Tube to get holder with hole (Subtraction Solid)
 
-	G4SubtractionSolid *solidLUXHolder = new G4SubtractionSolid("LUXHolder",
+	G4UnionSolid *solidLUXHolder = new G4UnionSolid("LUXHolder",
 											LUXHolder_Box,
 											LUXHolder_Tube,
 											0,
-											G4ThreeVector(0.,0.,0.));
-
-	//Do the same & name it ETEL
-	G4SubtractionSolid *solidETELHolder = new G4SubtractionSolid("ETELHolder",
-											LUXHolder_Box,
-											LUXHolder_Tube,
-											0,
-											G4ThreeVector(0.,0.,0.));
+											G4ThreeVector(0.,0.,-6.25*cm));
 
 
 	//LUX & ETEL holders are made of Schedule 80 PVC --> Use PVC as material
@@ -564,13 +611,26 @@ void WCSimDetectorConstruction::ConstructLUXETELHolders(){
 	//G4double dist_pmt_holder_lux = 6.0;		//LUX center is 11.7cm from glass front surface total distance glass surface-wings = 17.7cm, dist = 6.0cm
 	G4double dist_pmt_holder_lux = 5.5;		//Slightly reduce distance from 6 to 5.5 cm to prevent geometry overlaps
 
+	//G4Tubs *ETELHolder_Tube = new G4Tubs("ETELHolder_Tube",0.0*cm,8.41375*cm,5.62*cm,0*deg,360*deg);
+	//Distance ETEL holder /PMT: 11.25cm (->5.625cm) + 18cm housing height (->9cm): 14.625cm
+	G4Tubs *ETELHolder_Tube = new G4Tubs("ETELHolder_Tube",0.0*cm,8.41375*cm,14.62*cm,0*deg,360*deg);
+	G4UnionSolid *solidETELHolder = new G4UnionSolid("ETELHolder",
+										LUXHolder_Box,
+										ETELHolder_Tube,
+										0,
+										G4ThreeVector(0.,0.,3.375*cm));
+
 	G4LogicalVolume *logETELHolder = new G4LogicalVolume(solidETELHolder,
 			G4Material::GetMaterial("PVC"),
 			"WCETELHolder",
 			0,0,0);
 
-	G4double dist_pmt_holder_etel = 7.25;	//ETEL center is 11.8cm from glass front surface, total distance from glass surface to wings is 19.05cm (7.5") -> dist = 19.05cm-11.8cm = 7.25cm
 	
+
+	//G4double dist_pmt_holder_etel = 7.25;	//ETEL center is 11.8cm from glass front surface, total distance from glass surface to wings is 19.05cm (7.5") -> dist = 19.05cm-11.8cm = 7.25cm
+	G4double dist_pmt_holder_etel = 11.25;	//Try to get ETEL wings above the top part of the Inner Structure--> increase distance
+
+
 	//Create Rotation matrix for PMT holders
 	G4RotationMatrix* WCPMTRotation = new G4RotationMatrix;
 
